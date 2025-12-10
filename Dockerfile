@@ -5,14 +5,9 @@ RUN apk add --no-cache \
     rsync \
     openssh-server
 
-RUN echo "\
-    PermitRootLogin no \
-    PasswordAuthentication no \
-    PermitEmptyPasswords no \
-    AuthenticationMethods publickey \
-    " > /etc/ssh/sshd_config.d/50-game-sync.conf
+COPY dockerfiles/sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
 
-COPY entrypoint.sh /entrypoint.sh
+COPY dockerfiles/entrypoint.sh /entrypoint.sh
 RUN chmod 700 /entrypoint.sh
 
 EXPOSE 22
