@@ -15,10 +15,12 @@ create_users() {
             continue
         fi
 
-        # -H no home
         # -D no password
-        adduser $user --shell /usr/bin/nologin -D &> /dev/null
+        adduser "$user" -D &> /dev/null
+        passwd -u "$user"
 
+
+        # adds ssh key to authorized_keys
         ssh_dir="/home/$user/.ssh"
         ssh_keys="$ssh_dir/authorized_keys"
 
@@ -28,6 +30,8 @@ create_users() {
         chmod 600 "$ssh_keys"
         chown -R "$user:$user" "$ssh_dir"
 
+
+        # creates data dirs
         user_save=${SAVE_DIR}/${user}
         user_repo=${REPO_DIR}/${user}
 
