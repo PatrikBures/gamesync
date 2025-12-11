@@ -6,6 +6,7 @@ USERS=(bob bertil bamse)
 PRIVATE_KEY_DIR="$TESTDIR/keys_private"
 PUBLIC_KEY_DIR="$TESTDIR/keys_public"
 HOST_KEY_DIR="$TESTDIR/keys_host"
+DATA="$TESTDIR/data"
 
 
 if [ -d "$PRIVATE_KEY_DIR" ] || [ -d "$PUBLIC_KEY_DIR" ]; then
@@ -30,6 +31,7 @@ docker build ./dockerfiles -t game-sync:latest
 docker run -d \
     --volume "$PUBLIC_KEY_DIR":/config/users \
     --volume "$HOST_KEY_DIR":/etc/ssh/keys \
+    --volume "$DATA":/data \
     -p 127.0.0.1:2222:22 \
     --name game-sync-test \
     game-sync:latest
