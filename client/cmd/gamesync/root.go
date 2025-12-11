@@ -18,7 +18,6 @@ var rootCmd = &cobra.Command{
 		if err := config.Load(configFile); err != nil {
 			return fmt.Errorf("Failed loading config: %w", err)
 		}
-		fmt.Printf("Loaded config: %s", configFile)
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
