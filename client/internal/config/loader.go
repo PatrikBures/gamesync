@@ -27,9 +27,7 @@ func Load(customPath string) error {
 		return fmt.Errorf("Failed reading config file: %w", err)
 	}
 
-	var config Config
-
-	if err := yaml.Unmarshal(data, &config); err != nil {
+	if err := yaml.Unmarshal(data, &Current); err != nil {
 		return fmt.Errorf("Failed parsing config file: %w", err)
 	}
 

@@ -1,5 +1,7 @@
 package config
 
+var Current Config
+
 type Config struct {
 	Server	ServerConfig	`yaml:"server"`
 	Pools	[]PoolConfig	`yaml:"pools"`
