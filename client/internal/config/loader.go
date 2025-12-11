@@ -42,3 +42,12 @@ func GetGame(gameID string) (*GameConfig, error) {
 	}
 	return nil, fmt.Errorf("Game id %s not found in config.", gameID)
 }
+
+func GetPool(poolID string) (*PoolConfig, error) {
+	for _, p := range Current.Pools {
+		if p.ID == poolID {
+			return &p, nil
+		}
+	}
+	return nil, fmt.Errorf("Pool id %s could not be found in config.", poolID)
+}
