@@ -33,3 +33,12 @@ func Load(customPath string) error {
 
 	return nil
 }
+
+func GetGame(gameID string) (*GameConfig, error) {
+	for _, g := range Current.Games {
+		if g.ID == gameID {
+			return &g, nil
+		}
+	}
+	return nil, fmt.Errorf("Game id %s not found in config.", gameID)
+}
