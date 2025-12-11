@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"gamesync/internal/config"
 )
 
 var runCmd = &cobra.Command{
@@ -12,9 +13,13 @@ var runCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// check if game with that id exists
-		game_ID := args[0]
-		fmt.Printf("Syncing game %s...\n", game_ID)
-		fmt.Printf("Starting game %s...\n", game_ID)
+		gameID := args[0]
+		game, err := config.GetGame(gameID)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			return
+		}
+		fmt.Println("found game:", game.ID)
 	},
 }
 
