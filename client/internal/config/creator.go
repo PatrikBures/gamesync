@@ -68,7 +68,11 @@ func AddSave(gameID string, poolID string, savePath string, updateConfigPath str
 
 	poolConfig, err := GetPoolConfig(poolID) 
 	if err != nil {
-		return fmt.Errorf("pool with id \"%s\" does not exist.", poolID)
+		return fmt.Errorf("pool with id \"%s\" does not exist in global config.", poolID)
+	}
+	pool := Pool{ID: poolID}
+	if err := verifyPool(pool, poolConfig.Path); err != nil {
+		return err
 	}
 
 	file, err := os.Stat(savePath)
@@ -122,6 +126,26 @@ func WriteGlobalConfig(configPath string) error {
 	err = os.WriteFile(configPath, data, 0644)
 	if err != nil {
 		return fmt.Errorf("writing config.")
+	}
+
+	return nil
+}
+
+func verifyPool(poolExpect Pool, dirPath string) error {
+	filePath := filepath.Join(dirPath, poolName)
+	
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	var pool Pool
+	if err := yaml.Unmarshal(data, &pool); err != nil {
+		return err
+	}
+
+	if pool.ID != poolExpect.ID {
+		return fmt.Errorf("Pool ids do not match, expected: %s, got: %s", poolExpect.ID, pool.ID)
 	}
 
 	return nil
