@@ -34,7 +34,13 @@ var poolInitCmd = &cobra.Command{
 			poolDir = args[1]
 		}
 
-		err := config.InitPool(poolId, poolDir)
+		update, _ := cmd.Flags().GetBool("update")
+		configPath := ""
+		if update {
+			configPath = configFile
+		}
+		fmt.Println("passed, ", configFile)
+		err := config.InitPool(poolId, poolDir, configPath)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -45,4 +51,5 @@ var poolInitCmd = &cobra.Command{
 func init() {
 	poolCmd.AddCommand(poolInitCmd)
 	rootCmd.AddCommand(poolCmd)
+	poolInitCmd.Flags().BoolP("update", "u", false, "Updates global config")
 }
