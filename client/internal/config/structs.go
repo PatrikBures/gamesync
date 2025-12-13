@@ -23,3 +23,7 @@ type GameConfig struct {
 	PoolID		string `yaml:"pool_id"`
 	SavePath	string `yaml:"save_path"`
 }
+
+type Pool struct {
+	ID		string `yaml:"id"`
+}
