@@ -4,8 +4,8 @@ stages:
 build-client:
   stage: build
   image: golang:1.25-alpine
-  only:
-    - main
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
   script:
     - cd client
     - go build -o ../gamesync ./cmd/gamesync
@@ -17,7 +17,8 @@ build-client:
 build-server:
   stage: build
   image: quay.io/buildah/stable:latest
-  
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
   variables:
     STORAGE_DRIVER: vfs
     BUILDAH_FORMAT: docker
