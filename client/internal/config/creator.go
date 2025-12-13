@@ -19,34 +19,38 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 		return fmt.Errorf("Path is not dir: %s", dirPath)
 	}
 
-	configPath := filepath.Join(dirPath, poolName)
+	poolPath := filepath.Join(dirPath, poolName)
 
-	_, err = os.Stat(configPath)
+	_, err = os.Stat(poolPath)
 	if err == nil {
-		return fmt.Errorf("Pool already exists at %s", configPath)
+		return fmt.Errorf("Pool already exists at %s", poolPath)
 	}
 
-	pool, _ := GetPool(id)
-	if pool != nil {
+	poolConfig, _ := GetPool(id)
+	if poolConfig != nil {
 		return fmt.Errorf("A pool with the id \"%s\" already exists.", id)
 	}
 
-	config := PoolConfig{
+	pool := Pool{
 		ID: id,
 	}
 
-	data, err := yaml.Marshal(config)
+	data, err := yaml.Marshal(pool)
 	if err != nil {
 		return fmt.Errorf("Failed marshaling config to yaml, %w", err)
 	}
 
-	err = os.WriteFile(configPath, data, 0644)
+	err = os.WriteFile(poolPath, data, 0644)
 	if err != nil {
 		return fmt.Errorf("Failed writing pool config file, %w", err)
 	}
 
 	if updateConfigPath != "" {
-		Current.Pools = append(Current.Pools, config)
+		poolConfig := PoolConfig{
+			ID: id,
+			Path: poolPath,
+		}
+		Current.Pools = append(Current.Pools, poolConfig)
 		err = WriteGlobalConfig(updateConfigPath)
 		if err != nil {
 			return fmt.Errorf("Failed updating config, %w", err)
