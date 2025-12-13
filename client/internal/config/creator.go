@@ -48,7 +48,7 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 	if updateConfigPath != "" {
 		poolConfig := PoolConfig{
 			ID: id,
-			Path: poolPath,
+			Path: dirPath,
 		}
 		Current.Pools = append(Current.Pools, poolConfig)
 		err = WriteGlobalConfig(updateConfigPath)
