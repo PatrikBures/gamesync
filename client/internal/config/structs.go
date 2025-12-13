@@ -15,6 +15,7 @@ type ServerConfig struct {
 
 type PoolConfig struct {
 	ID		string `yaml:"id"`
+	Path	string `yaml:"path"`
 }
 
 type GameConfig struct {
