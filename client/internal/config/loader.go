@@ -3,24 +3,12 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/goccy/go-yaml"
 )
 
 
-func Load(customPath string) error {
-	var configPath string
-
-	if customPath != "" {
-		configPath = customPath
-	} else {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("Could not find home directory: %w", err)
-		}
-		configPath = filepath.Join(home, ".config", "gamesync", "config.yml")
-	}
+func Load(configPath string) error {
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
