@@ -12,7 +12,7 @@ build-client:
   artifacts:
     paths:
       - gamesync
-    expire_in: 1 week
+    expire_in: 1 day
 
 build-server:
   stage: build
