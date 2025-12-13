@@ -17,7 +17,8 @@ build-client:
 build-server:
   stage: build
   image: quay.io/buildah/stable:latest
-  
+  only:
+    - main
   variables:
     STORAGE_DRIVER: vfs
     BUILDAH_FORMAT: docker
