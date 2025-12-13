@@ -13,22 +13,22 @@ const poolName = ".gamesync-pool.yml"
 func InitPool(id string, dirPath string, updateConfigPath string) error {
 	file, err := os.Stat(dirPath)
 	if err != nil {
-		return fmt.Errorf("Failed stating dir %w", err)
+		return fmt.Errorf("stating dir %w", err)
 	}
 	if ! file.IsDir() {
-		return fmt.Errorf("Path is not dir: %s", dirPath)
+		return fmt.Errorf("path is not dir: %s", dirPath)
 	}
 
 	poolPath := filepath.Join(dirPath, poolName)
 
 	_, err = os.Stat(poolPath)
 	if err == nil {
-		return fmt.Errorf("Pool already exists at %s", poolPath)
+		return fmt.Errorf("pool already exists at %s", poolPath)
 	}
 
 	poolConfig, _ := GetPool(id)
 	if poolConfig != nil {
-		return fmt.Errorf("A pool with the id \"%s\" already exists.", id)
+		return fmt.Errorf("pool with id \"%s\" already exists.", id)
 	}
 
 	pool := Pool{
@@ -37,12 +37,12 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 
 	data, err := yaml.Marshal(pool)
 	if err != nil {
-		return fmt.Errorf("Failed marshaling config to yaml, %w", err)
+		return fmt.Errorf("marshaling config to yaml, %w", err)
 	}
 
 	err = os.WriteFile(poolPath, data, 0644)
 	if err != nil {
-		return fmt.Errorf("Failed writing pool config file, %w", err)
+		return fmt.Errorf("writing pool config file, %w", err)
 	}
 
 	if updateConfigPath != "" {
@@ -53,7 +53,7 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 		Current.Pools = append(Current.Pools, poolConfig)
 		err = WriteGlobalConfig(updateConfigPath)
 		if err != nil {
-			return fmt.Errorf("Failed updating config, %w", err)
+			return fmt.Errorf("updating config, %w", err)
 		}
 	}
 
@@ -63,12 +63,12 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 func WriteGlobalConfig(configPath string) error {
 	data, err := yaml.Marshal(Current)
 	if err != nil {
-		return fmt.Errorf("error marshaling config.")
+		return fmt.Errorf("marshaling config.")
 	}
 
 	err = os.WriteFile(configPath, data, 0644)
 	if err != nil {
-		return fmt.Errorf("error writing config.")
+		return fmt.Errorf("writing config.")
 	}
 
 	return nil

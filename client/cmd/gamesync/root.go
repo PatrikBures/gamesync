@@ -20,7 +20,7 @@ var rootCmd = &cobra.Command{
 		if configFile == "" {
 			home, err := os.UserHomeDir()
 			if err != nil {
-				return fmt.Errorf("Could not find home directory %w", err)
+				return fmt.Errorf("could not find home directory %w", err)
 			}
 			configFile = filepath.Join(home, ".config", "gamesync", "config.yml")
 		}

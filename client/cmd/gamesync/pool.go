@@ -27,7 +27,7 @@ var poolInitCmd = &cobra.Command{
 			var err error
 			poolDir, err = os.Getwd()
 			if err != nil {
-				fmt.Printf("Failed getting working directory, %v", err)
+				fmt.Printf("Error getting working directory, %v", err)
 				os.Exit(1)
 			}
 		} else {
