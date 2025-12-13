@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/goccy/go-yaml"
@@ -55,6 +56,58 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 		if err != nil {
 			return fmt.Errorf("updating config, %w", err)
 		}
+	}
+
+	return nil
+}
+
+func AddSave(gameID string, poolID string, savePath string, updateConfigPath string, move bool) error {
+	if _, err := GetGame(gameID); err == nil {
+		return fmt.Errorf("game with id \"%s\" already exists.", gameID)
+	}
+
+	pool, err := GetPool(poolID) 
+	if err != nil {
+		return fmt.Errorf("pool with id \"%s\" does not exist.", poolID)
+	}
+
+	file, err := os.Stat(savePath)
+	if err != nil {
+		return fmt.Errorf("stating dir %s", savePath)
+	}
+	if !file.IsDir() {
+		return fmt.Errorf("path is not dir %s", savePath)
+	}
+
+	if move {
+		gameIdPathInPool := path.Join(pool.Path, gameID)
+		if err := moveAndSymlink(savePath, gameIdPathInPool); err != nil {
+			return err
+		}
+	}
+
+	if updateConfigPath != "" {
+		gameConfig := GameConfig{
+			ID: gameID,
+			PoolID: poolID,
+			SavePath: savePath,
+		}
+		Current.Games = append(Current.Games, gameConfig)
+		if err := WriteGlobalConfig(updateConfigPath); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func moveAndSymlink(source string, dest string) error {
+	fmt.Printf("from: %s\nto:   %s\n", source, dest)
+	if err := os.Rename(source, dest); err != nil {
+		return err
+	}
+	if err := os.Symlink(dest, source); err != nil {
+		return err
 	}
 
 	return nil
