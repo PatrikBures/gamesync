@@ -10,7 +10,7 @@ import (
 
 const poolName = ".gamesync-pool.yml"
 
-func InitPool(id string, dirPath string) error {
+func InitPool(id string, dirPath string, updateConfigPath string) error {
 	file, err := os.Stat(dirPath)
 	if err != nil {
 		return fmt.Errorf("Failed stating dir %w", err)
@@ -45,6 +45,13 @@ func InitPool(id string, dirPath string) error {
 		return fmt.Errorf("Failed writing pool config file, %w", err)
 	}
 
+	if updateConfigPath != "" {
+		Current.Pools = append(Current.Pools, config)
+		err = WriteGlobalConfig(updateConfigPath)
+		if err != nil {
+			return fmt.Errorf("Failed updating config, %w", err)
+		}
+	}
 
 	return nil
 }
