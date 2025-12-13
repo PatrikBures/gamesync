@@ -22,7 +22,7 @@ func InitPool(id string, dirPath string) error {
 	configPath := filepath.Join(dirPath, poolName)
 
 	_, err = os.Stat(configPath)
-	if os.IsExist(err) {
+	if err == nil {
 		return fmt.Errorf("Pool already exists at %s", configPath)
 	}
 
