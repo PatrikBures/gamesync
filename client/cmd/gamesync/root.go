@@ -24,7 +24,6 @@ var rootCmd = &cobra.Command{
 			}
 			configFile = filepath.Join(home, ".config", "gamesync", "config.yml")
 		}
-		fmt.Println("current config: ", configFile)
 		if err := config.Load(configFile); err != nil {
 			return fmt.Errorf("loading config: %w", err)
 		}
