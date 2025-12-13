@@ -27,7 +27,7 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 		return fmt.Errorf("pool already exists at %s", poolPath)
 	}
 
-	poolConfig, _ := GetPool(id)
+	poolConfig, _ := GetPoolConfig(id)
 	if poolConfig != nil {
 		return fmt.Errorf("pool with id \"%s\" already exists.", id)
 	}
@@ -66,7 +66,7 @@ func AddSave(gameID string, poolID string, savePath string, updateConfigPath str
 		return fmt.Errorf("game with id \"%s\" already exists.", gameID)
 	}
 
-	pool, err := GetPool(poolID) 
+	poolConfig, err := GetPoolConfig(poolID) 
 	if err != nil {
 		return fmt.Errorf("pool with id \"%s\" does not exist.", poolID)
 	}
@@ -80,7 +80,7 @@ func AddSave(gameID string, poolID string, savePath string, updateConfigPath str
 	}
 
 	if move {
-		gameIdPathInPool := path.Join(pool.Path, gameID)
+		gameIdPathInPool := path.Join(poolConfig.Path, gameID)
 		if err := moveAndSymlink(savePath, gameIdPathInPool); err != nil {
 			return err
 		}

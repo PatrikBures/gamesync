@@ -19,7 +19,7 @@ var runCmd = &cobra.Command{
 			return
 		}
 
-		pool, err := config.GetPool(game.PoolID)
+		pool, err := config.GetPoolConfig(game.PoolID)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			return
