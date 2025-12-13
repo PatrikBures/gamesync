@@ -45,5 +45,20 @@ func InitPool(id string, dirPath string) error {
 		return fmt.Errorf("Failed writing pool config file, %w", err)
 	}
 
+
+	return nil
+}
+
+func WriteGlobalConfig(configPath string) error {
+	data, err := yaml.Marshal(Current)
+	if err != nil {
+		return fmt.Errorf("error marshaling config.")
+	}
+
+	err = os.WriteFile(configPath, data, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing config.")
+	}
+
 	return nil
 }
