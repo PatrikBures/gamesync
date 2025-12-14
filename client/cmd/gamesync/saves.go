@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gamesync/internal/config"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -26,6 +27,12 @@ var savesAddCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
+
+		savePath, err := filepath.Abs(savePath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(2)
+		}
 
 		configPath := ""
 		if saveUpdate {
