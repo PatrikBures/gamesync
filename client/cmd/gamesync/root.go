@@ -23,6 +23,12 @@ var rootCmd = &cobra.Command{
 				return fmt.Errorf("could not find home directory %w", err)
 			}
 			configFile = filepath.Join(home, ".config", "gamesync", "config.yml")
+		} else {
+			var err error
+			configFile, err = filepath.Abs(configFile)
+			if err != nil {
+				return err
+			}
 		}
 		if err := config.Load(configFile); err != nil {
 			return fmt.Errorf("loading config: %w", err)
