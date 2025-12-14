@@ -1,5 +1,3 @@
-# game-sync
+# gamesync
 
-Features:
-- multiple users
-- each user can have multiple profiles on each save game
+gamesync is used to sync game save files to a server.
