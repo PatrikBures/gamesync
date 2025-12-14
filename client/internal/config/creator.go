@@ -26,8 +26,7 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 		return fmt.Errorf("pool already exists at %s", poolPath)
 	}
 
-	poolConfig, _ := GetPoolConfig(id)
-	if poolConfig != nil {
+	if poolConfig, _ := GetPoolConfig(id); poolConfig != nil {
 		return fmt.Errorf("pool with id \"%s\" already exists.", id)
 	}
 
