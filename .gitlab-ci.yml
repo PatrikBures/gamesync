@@ -1,24 +1,25 @@
 stages:
   - build
+  - release
 
 build-client:
   stage: build
   image: golang:1.25-alpine
   rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - cd client
     - go build -o ../gamesync ./cmd/gamesync
   artifacts:
     paths:
       - gamesync
-    expire_in: 1 day
+    expire_in: 1 hour
 
 build-server:
   stage: build
   image: quay.io/buildah/stable:latest
   rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
   variables:
     STORAGE_DRIVER: vfs
     BUILDAH_FORMAT: docker
@@ -28,3 +29,31 @@ build-server:
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - buildah build -t "$CI_REGISTRY_IMAGE:latest" ./server
     - buildah push "$CI_REGISTRY_IMAGE:latest"
+
+
+release-latest:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  needs:
+    - job: build-client
+      artifacts: true
+  script:
+    - echo "Preparing release..."
+    - apk add --no-cache curl
+
+    - |
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file gamesync "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/gamesync/latest/gamesync"
+      curl --request DELETE --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/latest" || true
+      curl --request DELETE --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags/latest" || true
+
+  release:
+    name: "Latest Release"
+    description: "Latest build from main branch (Commit $CI_COMMIT_SHORT_SHA)"
+    tag_name: "latest"
+    ref: "$CI_COMMIT_SHA"
+    assets:
+      links:
+        - name: "Download gamesync (latest)"
+          url: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/gamesync/latest/gamesync"
