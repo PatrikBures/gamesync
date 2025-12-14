@@ -45,8 +45,8 @@ var poolInitCmd = &cobra.Command{
 		if update {
 			configPath = configFile
 		}
-		err := config.InitPool(poolId, poolDir, configPath)
-		if err != nil {
+		
+		if err := config.InitPool(poolId, poolDir, configPath); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
