@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gamesync/internal/config"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -31,7 +32,12 @@ var poolInitCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		} else {
-			poolDir = args[1]
+			var err error
+			poolDir, err = filepath.Abs(args[1])
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 
 		update, _ := cmd.Flags().GetBool("update")
