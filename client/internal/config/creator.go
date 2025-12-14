@@ -39,8 +39,7 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 		return fmt.Errorf("marshaling config to yaml, %w", err)
 	}
 
-	err = os.WriteFile(poolPath, data, 0644)
-	if err != nil {
+	if err := os.WriteFile(poolPath, data, 0644); err != nil {
 		return fmt.Errorf("writing pool config file, %w", err)
 	}
 
