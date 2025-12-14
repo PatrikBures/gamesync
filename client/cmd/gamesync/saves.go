@@ -38,8 +38,8 @@ var savesAddCmd = &cobra.Command{
 		if saveUpdate {
 			configPath = configFile
 		}
-		err := config.AddSave(gameID, poolID, savePath, configPath, saveMove)
-		if err != nil {
+		
+		if err := config.AddSave(gameID, poolID, savePath, configPath, saveMove); err != nil {
 			fmt.Println(err)
 			os.Exit(2)
 		}

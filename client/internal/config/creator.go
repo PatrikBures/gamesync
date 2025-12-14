@@ -22,13 +22,11 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 
 	poolPath := filepath.Join(dirPath, poolName)
 
-	_, err = os.Stat(poolPath)
-	if err == nil {
+	if _, err := os.Stat(poolPath); err == nil {
 		return fmt.Errorf("pool already exists at %s", poolPath)
 	}
 
-	poolConfig, _ := GetPoolConfig(id)
-	if poolConfig != nil {
+	if poolConfig, _ := GetPoolConfig(id); poolConfig != nil {
 		return fmt.Errorf("pool with id \"%s\" already exists.", id)
 	}
 
@@ -41,8 +39,7 @@ func InitPool(id string, dirPath string, updateConfigPath string) error {
 		return fmt.Errorf("marshaling config to yaml, %w", err)
 	}
 
-	err = os.WriteFile(poolPath, data, 0644)
-	if err != nil {
+	if err := os.WriteFile(poolPath, data, 0644); err != nil {
 		return fmt.Errorf("writing pool config file, %w", err)
 	}
 
