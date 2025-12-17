@@ -26,7 +26,7 @@ mkdir -p "$HOST_KEY_DIR"
 docker container stop game-sync-test
 docker container rm game-sync-test
 
-docker build ./dockerfiles -t game-sync:latest 
+docker build ./server -t game-sync:latest 
 
 docker run -d \
     --volume "$PUBLIC_KEY_DIR":/config/users \
