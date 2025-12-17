@@ -19,13 +19,7 @@ var runCmd = &cobra.Command{
 			return
 		}
 
-		pool, err := config.GetPoolConfig(game.PoolID)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			return
-		}
-
-		fmt.Printf("Syncing %s, in pool: %s\n", game.ID, pool.ID)
+		fmt.Printf("Syncing %s\n", game.ID)
 	},
 }
 

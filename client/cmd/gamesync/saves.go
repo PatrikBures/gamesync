@@ -10,10 +10,8 @@ import (
 )
 
 var (
-	poolID		string
 	savePath	string
 	saveUpdate	bool
-	saveMove	bool
 )
 
 var savesCmd = &cobra.Command{
@@ -39,7 +37,7 @@ var savesAddCmd = &cobra.Command{
 			configPath = configFile
 		}
 		
-		if err := config.AddSave(gameID, poolID, savePath, configPath, saveMove); err != nil {
+		if err := config.AddSave(gameID, savePath, configPath); err != nil {
 			fmt.Println(err)
 			os.Exit(2)
 		}
@@ -48,12 +46,9 @@ var savesAddCmd = &cobra.Command{
 
 func init() {
 	savesCmd.AddCommand(savesAddCmd)
-	savesAddCmd.Flags().StringVarP(&poolID, "pool", "p", "", "ID of pool (required)")
 	savesAddCmd.Flags().StringVarP(&savePath, "path", "d", "", "Directory path of the save (required)")
 	savesAddCmd.Flags().BoolVarP(&saveUpdate, "update", "u", false, "Updates global config")
-	savesAddCmd.Flags().BoolVarP(&saveMove, "move", "m", false, "Moves save to pool and symlinks back")
 
-	savesAddCmd.MarkFlagRequired("pool")
 	savesAddCmd.MarkFlagRequired("path")
 	savesAddCmd.MarkFlagDirname("path")
 
