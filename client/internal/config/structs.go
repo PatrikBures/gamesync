@@ -8,8 +8,10 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host string `yaml:"host"`
-	User string `yaml:"user"`
+	Host			string `yaml:"host"`
+	User			string `yaml:"user"`
+	Port			string `yaml:"port"`
+	IdentityFile	string `yaml:"identity_file"`
 }
 
 type GameConfig struct {
