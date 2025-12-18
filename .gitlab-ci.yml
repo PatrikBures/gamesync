@@ -1,6 +1,14 @@
 stages:
+  - test
   - build
   - release
+
+lint:
+  stage: test
+  image: golangci/golangci-lint:v2.7.2-alpine
+  script:
+    - cd client
+    - golangci-lint run
 
 build-client:
   stage: build
