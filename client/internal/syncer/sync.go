@@ -28,16 +28,16 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	if pull {
 		switch remoteState {
 		case remoteOlder:
-			return fmt.Errorf("Can not pull as remote is older than local save")
+			return fmt.Errorf("can not pull as remote is older than local save")
 		case remoteNo:
-			return fmt.Errorf("Can not pull as there is no save for %s", game.ID)
+			return fmt.Errorf("can not pull as there is no save for %s", game.ID)
 		}
 
 		fmt.Println("Pulling save")
 		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, remoteDest, game.SavePath)
 	} else {
 		if remoteState == remoteNewer {
-			return  fmt.Errorf("Can not push remote as remote is newer than local save")
+			return  fmt.Errorf("can not push remote as remote is newer than local save")
 		}
 		fmt.Println("Pushing save")
 		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, game.SavePath, remoteDest)
