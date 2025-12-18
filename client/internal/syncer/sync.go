@@ -2,10 +2,16 @@ package syncer
 
 import (
 	"fmt"
+	"gamesync/internal/config"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"gamesync/internal/config"
+)
+
+const (
+	remoteNewer = iota
+	remoteOlder
+	remoteNo
 )
 
 func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) error {
@@ -14,19 +20,23 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	sshCmd := fmt.Sprintf("ssh -p %s -i %s", server.Port, server.IdentityFile)
 	var cmd *exec.Cmd
 
-	isRemoteNewer, err := isRemoteNewer(remoteDest, sshCmd, game.SavePath)
+	remoteState, err := isRemoteNewer(remoteDest, sshCmd, game.SavePath)
 	if err != nil {
 		return fmt.Errorf("getting remote, %w", err)
 	}
 
 	if pull {
-		if ! isRemoteNewer {
+		switch remoteState {
+		case remoteOlder:
 			return fmt.Errorf("Can not pull as remote is older than local save")
+		case remoteNo:
+			return fmt.Errorf("Can not pull as there is no save for %s", game.ID)
 		}
+
 		fmt.Println("Pulling save")
 		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, remoteDest, game.SavePath)
 	} else {
-		if isRemoteNewer {
+		if remoteState == remoteNewer {
 			return  fmt.Errorf("Can not push remote as remote is newer than local save")
 		}
 		fmt.Println("Pushing save")
@@ -48,18 +58,26 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	return nil
 }
 
-func isRemoteNewer(remoteDest string, sshCmd string, localDir string) (bool, error) {
+func isRemoteNewer(remoteDest string, sshCmd string, localDir string) (int, error) {
 	cmd := exec.Command("rsync", "-naui", "-e", sshCmd, remoteDest, localDir)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Println(string(output))
-		return false, err
+		if exitError, ok := err.(*exec.ExitError); ok {
+			code := exitError.ExitCode()
+			switch code {
+			case 23:
+				return remoteNo, nil
+			default:
+				fmt.Println(string(output))
+				return remoteOlder, err
+			}
+		}
 	}
 
 	if len(output) > 0 {
-		return true, nil
+		return remoteNewer, nil
 	}
 
-	return false, nil
+	return remoteOlder, nil
 }
