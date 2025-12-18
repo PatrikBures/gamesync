@@ -49,8 +49,13 @@ func init() {
 	savesAddCmd.Flags().StringVarP(&savePath, "path", "d", "", "Directory path of the save (required)")
 	savesAddCmd.Flags().BoolVarP(&saveUpdate, "update", "u", false, "Updates global config")
 
-	savesAddCmd.MarkFlagRequired("path")
-	savesAddCmd.MarkFlagDirname("path")
+	if err := savesAddCmd.MarkFlagRequired("path"); err != nil {
+		fmt.Println("Error marking flag as required")
+		os.Exit(30)
+	}
+	if err := savesAddCmd.MarkFlagDirname("path"); err != nil {
+		fmt.Println("Error marking flag as dirname")
+	}
 
 	rootCmd.AddCommand(savesCmd)
 }

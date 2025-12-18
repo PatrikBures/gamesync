@@ -9,7 +9,7 @@ import (
 
 func AddSave(gameID string, savePath string, updateConfigPath string) error {
 	if _, err := GetGame(gameID); err == nil {
-		return fmt.Errorf("game with id \"%s\" already exists.", gameID)
+		return fmt.Errorf("game with id \"%s\" already exists", gameID)
 	}
 
 	file, err := os.Stat(savePath)
@@ -37,12 +37,12 @@ func AddSave(gameID string, savePath string, updateConfigPath string) error {
 func WriteGlobalConfig(configPath string) error {
 	data, err := yaml.Marshal(Current)
 	if err != nil {
-		return fmt.Errorf("marshaling config.")
+		return fmt.Errorf("marshaling config")
 	}
 
 	err = os.WriteFile(configPath, data, 0644)
 	if err != nil {
-		return fmt.Errorf("writing config.")
+		return fmt.Errorf("writing config")
 	}
 
 	return nil
