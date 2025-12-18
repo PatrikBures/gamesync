@@ -55,7 +55,7 @@ var savesSyncPullCmd = &cobra.Command{
 	Short: "Pull the save if remote is newer",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := syncOrPull(args[0], true); err != nil {
+		if err := pushOrPull(args[0], true); err != nil {
 			fmt.Printf("Error pulling, %v\n", err)
 			os.Exit(20)
 		}
@@ -67,7 +67,7 @@ var savesSyncPushCmd = &cobra.Command{
 	Short: "Push the save if remote is older",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := syncOrPull(args[0], false); err != nil {
+		if err := pushOrPull(args[0], false); err != nil {
 			fmt.Printf("Error pushing, %v\n", err)
 			os.Exit(21)
 		}
@@ -75,7 +75,7 @@ var savesSyncPushCmd = &cobra.Command{
 
 }
 
-func syncOrPull(gameID string, pull bool) error {
+func pushOrPull(gameID string, pull bool) error {
 	game, err := config.GetGame(gameID)
 	if err != nil {
 		return err
