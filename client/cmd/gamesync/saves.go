@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/config"
+	"gamesync/internal/syncer"
 	"os"
 	"path/filepath"
 
@@ -44,6 +45,49 @@ var savesAddCmd = &cobra.Command{
 	},
 }
 
+var savesSyncCmd = &cobra.Command{
+	Use: "sync <game_id> <push/pull>",
+	Short: "Sync game save",
+}
+
+var savesSyncPullCmd = &cobra.Command{
+	Use: "pull <game_id>",
+	Short: "Pull the save if remote is newer",
+	Args: cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := syncOrPull(args[0], true); err != nil {
+			fmt.Println(err)
+			os.Exit(3)
+		}
+	},
+}
+
+var savesSyncPushCmd = &cobra.Command{
+	Use: "push <game_id>",
+	Short: "Push the save if remote is older",
+	Args: cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := syncOrPull(args[0], true); err != nil {
+			fmt.Println(err)
+			os.Exit(3)
+		}
+	},
+
+}
+
+func syncOrPull(gameID string, pull bool) error {
+	game, err := config.GetGame(gameID)
+	if err != nil {
+		return err
+	}
+
+	if err := syncer.SyncGame(*game, config.Current.Server, pull); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func init() {
 	savesCmd.AddCommand(savesAddCmd)
 	savesAddCmd.Flags().StringVarP(&savePath, "path", "d", "", "Directory path of the save (required)")
@@ -51,6 +95,10 @@ func init() {
 
 	savesAddCmd.MarkFlagRequired("path")
 	savesAddCmd.MarkFlagDirname("path")
+
+	savesCmd.AddCommand(savesSyncCmd)
+	savesSyncCmd.AddCommand(savesSyncPullCmd)
+	savesSyncCmd.AddCommand(savesSyncPushCmd)
 
 	rootCmd.AddCommand(savesCmd)
 }
