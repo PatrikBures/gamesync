@@ -16,7 +16,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 
 	isRemoteNewer, err := isRemoteNewer(remoteDest, sshCmd, game.SavePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("getting remote, %w", err)
 	}
 
 	if pull {
@@ -53,6 +53,7 @@ func isRemoteNewer(remoteDest string, sshCmd string, localDir string) (bool, err
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		fmt.Println(string(output))
 		return false, err
 	}
 

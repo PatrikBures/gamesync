@@ -56,7 +56,7 @@ var savesSyncPullCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := syncOrPull(args[0], true); err != nil {
-			fmt.Println(err)
+			fmt.Printf("Error pulling while %v\n", err)
 			os.Exit(3)
 		}
 	},
@@ -68,7 +68,7 @@ var savesSyncPushCmd = &cobra.Command{
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := syncOrPull(args[0], true); err != nil {
-			fmt.Println(err)
+			fmt.Printf("Error pushing while %v\n", err)
 			os.Exit(3)
 		}
 	},
