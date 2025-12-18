@@ -51,7 +51,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 
 	fmt.Println("--- rsync output start ---")
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("Error syncing %s, from %s, to %s", game.ID, game.SavePath, remoteDest)
+		return fmt.Errorf("error syncing %s, from %s, to %s", game.ID, game.SavePath, remoteDest)
 	}
 	fmt.Println("--- rsync output end ---")
 
