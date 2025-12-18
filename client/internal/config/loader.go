@@ -28,5 +28,5 @@ func GetGame(gameID string) (*GameConfig, error) {
 			return &g, nil
 		}
 	}
-	return nil, fmt.Errorf("game id %s could not found in config.", gameID)
+	return nil, fmt.Errorf("game id %s could not found in config", gameID)
 }
