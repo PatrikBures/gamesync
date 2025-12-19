@@ -20,7 +20,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	sshCmd := fmt.Sprintf("ssh -p %s -i %s", server.Port, server.IdentityFile)
 	var cmd *exec.Cmd
 
-	remoteState, err := isRemoteNewer(remoteDest, sshCmd, game.SavePath)
+	remoteState, err := getRemoteState(remoteDest, sshCmd, game.SavePath)
 	if err != nil {
 		return fmt.Errorf("getting remote, %w", err)
 	}
@@ -58,7 +58,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	return nil
 }
 
-func isRemoteNewer(remoteDest string, sshCmd string, localDir string) (int, error) {
+func getRemoteState(remoteDest string, sshCmd string, localDir string) (int, error) {
 	cmd := exec.Command("rsync", "-naui", "-e", sshCmd, remoteDest, localDir)
 
 	output, err := cmd.CombinedOutput()
