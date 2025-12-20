@@ -9,38 +9,57 @@ import (
 )
 
 const (
-	remoteNewer = iota
-	remoteOlder
-	remoteNo
+	statusChange = iota
+	statusSyncedOrOlder
+	statusMissing
 )
 
 func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) error {
-	remoteDest := filepath.Join(fmt.Sprintf("%s@%s:", server.User, server.Host), "data", "saves", server.User, game.ID)
+	remotePath := filepath.Join(fmt.Sprintf("%s@%s:", server.User, server.Host), "data", "saves", server.User, game.ID)
+	localPath := game.SavePath
 
 	sshCmd := fmt.Sprintf("ssh -p %s -i %s", server.Port, server.IdentityFile)
 	var cmd *exec.Cmd
 
-	remoteState, err := getRemoteState(remoteDest, sshCmd, game.SavePath)
-	if err != nil {
-		return fmt.Errorf("getting remote, %w", err)
-	}
 
 	if pull {
-		switch remoteState {
-		case remoteOlder:
-			return fmt.Errorf("can not pull as remote is older than local save")
-		case remoteNo:
-			return fmt.Errorf("can not pull as there is no save for %s", game.ID)
+		state, err := getRemoteState(remotePath, localPath, sshCmd)
+		if err != nil {
+			return fmt.Errorf("checking remote state: %w", err)
 		}
 
-		fmt.Println("Pulling save")
-		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, remoteDest, game.SavePath)
+		switch state {
+		case statusMissing:
+			return fmt.Errorf("cannot pull: save does not exist on remote")
+		case statusSyncedOrOlder:
+			fmt.Println("Already up to date")
+			return nil
+		}
+
+		fmt.Println("Pulling save...")
+		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, remotePath, localPath)
 	} else {
-		if remoteState == remoteNewer {
+		remoteState, err := getRemoteState(remotePath, localPath, sshCmd)
+		if err != nil {
+			return fmt.Errorf("checking remote state: %w", err)
+		}
+
+		if remoteState == statusChange {
 			return  fmt.Errorf("can not push remote as remote is newer than local save")
 		}
-		fmt.Println("Pushing save")
-		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, game.SavePath, remoteDest)
+
+		localState, err := getRemoteState(localPath, remotePath, sshCmd)
+		if err != nil {
+			return fmt.Errorf("checking local state: %w", err)
+		}
+
+		if localState == statusSyncedOrOlder {
+			fmt.Println("Remote save is already up to date.")
+			return nil
+		}
+
+		fmt.Println("Pushing save...")
+		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, localPath, remotePath)
 	}
 
 
@@ -51,15 +70,15 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 
 	fmt.Println("--- rsync output start ---")
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("error syncing %s, from %s, to %s", game.ID, game.SavePath, remoteDest)
+		return fmt.Errorf("error syncing %s, from %s, to %s", game.ID, localPath, remotePath)
 	}
 	fmt.Println("--- rsync output end ---")
 
 	return nil
 }
 
-func getRemoteState(remoteDest string, sshCmd string, localDir string) (int, error) {
-	cmd := exec.Command("rsync", "-naui", "-e", sshCmd, remoteDest, localDir)
+func getRemoteState(src string, dest string, sshCmd string, ) (int, error) {
+	cmd := exec.Command("rsync", "-naui", "-e", sshCmd, src, dest)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -67,17 +86,17 @@ func getRemoteState(remoteDest string, sshCmd string, localDir string) (int, err
 			code := exitError.ExitCode()
 			switch code {
 			case 23:
-				return remoteNo, nil
+				return statusMissing, nil
 			default:
 				fmt.Println(string(output))
-				return remoteOlder, err
+				return statusSyncedOrOlder, err
 			}
 		}
 	}
 
 	if len(output) > 0 {
-		return remoteNewer, nil
+		return statusChange, nil
 	}
 
-	return remoteOlder, nil
+	return statusSyncedOrOlder, nil
 }
