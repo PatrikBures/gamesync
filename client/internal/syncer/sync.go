@@ -5,7 +5,9 @@ import (
 	"gamesync/internal/config"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -15,12 +17,12 @@ const (
 )
 
 func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) error {
-	remotePath := filepath.Join(fmt.Sprintf("%s@%s:", server.User, server.Host), "data", "saves", server.User, game.ID)
-	localPath := game.SavePath
+	remoteDir := path.Join("data", "saves", server.User, game.ID)
+	remotePath := fmt.Sprintf("%s@%s:/%s/", server.User, server.Host, remoteDir)
+	localPath := ensureTrailingSep(game.SavePath)
 
 	sshCmd := fmt.Sprintf("ssh -p %s -i %s", server.Port, server.IdentityFile)
 	var cmd *exec.Cmd
-
 
 	if pull {
 		state, err := checkDryRun(remotePath, localPath, sshCmd)
@@ -99,4 +101,11 @@ func checkDryRun(src string, dest string, sshCmd string, ) (int, error) {
 	}
 
 	return statusSyncedOrOlder, nil
+}
+
+func ensureTrailingSep(p string) string {
+	if !strings.HasSuffix(p, string(filepath.Separator)) {
+		return p + string(filepath.Separator)
+	}
+	return p
 }
