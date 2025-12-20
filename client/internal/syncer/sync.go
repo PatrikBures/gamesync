@@ -23,7 +23,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 
 
 	if pull {
-		state, err := getRemoteState(remotePath, localPath, sshCmd)
+		state, err := checkDryRun(remotePath, localPath, sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
@@ -39,7 +39,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 		fmt.Println("Pulling save...")
 		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, remotePath, localPath)
 	} else {
-		remoteState, err := getRemoteState(remotePath, localPath, sshCmd)
+		remoteState, err := checkDryRun(remotePath, localPath, sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
@@ -48,7 +48,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 			return  fmt.Errorf("can not push remote as remote is newer than local save")
 		}
 
-		localState, err := getRemoteState(localPath, remotePath, sshCmd)
+		localState, err := checkDryRun(localPath, remotePath, sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking local state: %w", err)
 		}
@@ -77,7 +77,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	return nil
 }
 
-func getRemoteState(src string, dest string, sshCmd string, ) (int, error) {
+func checkDryRun(src string, dest string, sshCmd string, ) (int, error) {
 	cmd := exec.Command("rsync", "-naui", "-e", sshCmd, src, dest)
 
 	output, err := cmd.CombinedOutput()
