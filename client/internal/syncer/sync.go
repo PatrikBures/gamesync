@@ -39,7 +39,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 		}
 
 		fmt.Println("Pulling save...")
-		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, remotePath, localPath)
+		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, remotePath, localPath[:len(localPath)-1])
 	} else {
 		remoteState, err := checkDryRun(remotePath, localPath, sshCmd)
 		if err != nil {
@@ -61,7 +61,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 		}
 
 		fmt.Println("Pushing save...")
-		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, localPath, remotePath)
+		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, localPath, remotePath[:len(remotePath)-1])
 	}
 
 
