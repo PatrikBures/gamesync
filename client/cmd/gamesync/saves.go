@@ -44,6 +44,23 @@ var savesAddCmd = &cobra.Command{
 	},
 }
 
+var savesLsCmd = &cobra.Command{
+	Use: "ls",
+	Short: "list all games",
+	Args: cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+		games := &config.Current.Games
+
+		if games == nil {
+			fmt.Println("no games found in config")
+		} else {
+			for _, game := range *games {
+				fmt.Println(game.ID)
+			}
+		}
+	},
+}
+
 func init() {
 	savesCmd.AddCommand(savesAddCmd)
 	savesAddCmd.Flags().StringVarP(&savePath, "path", "d", "", "Directory path of the save (required)")
@@ -56,6 +73,8 @@ func init() {
 	if err := savesAddCmd.MarkFlagDirname("path"); err != nil {
 		fmt.Println("Error marking flag as dirname")
 	}
+
+	savesCmd.AddCommand(savesLsCmd)
 
 	rootCmd.AddCommand(savesCmd)
 }
