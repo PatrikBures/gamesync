@@ -9,14 +9,13 @@ create_users() {
 
         # uses id to check if user exists,
         # the -u option is used because it prints out less info making it faster
-        id -u "$user" &> /dev/null
-        if [ $? -eq 0 ] ; then
+        if id -u "$user" > /dev/null 2>&1 ; then
             echo "$user already exists"
             continue
         fi
 
         # -D no password
-        adduser "$user" -D &> /dev/null
+        adduser "$user" -D > /dev/null 2>&1
         passwd -u "$user"
 
 
@@ -37,7 +36,7 @@ create_users() {
 
         mkdir "$user_save" "$user_repo"
         chmod 0700 "$user_save" "$user_repo"
-        chown $user:$user "$user_save" "$user_repo"
+        chown "$user:$user" "$user_save" "$user_repo"
 
         echo "created user $user"
     done
