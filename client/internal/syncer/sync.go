@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	statusChange = iota
-	statusSyncedOrOlder
-	statusMissing
+	stateSynced = iota
+	stateSourceNewer
+	stateSourceHasExtra
+	stateError
 )
 
 func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) error {
@@ -25,43 +26,41 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	var cmd *exec.Cmd
 
 	if pull {
-		state, err := checkDryRun(remotePath, localPath, sshCmd)
+		state, err := checkSyncState(remotePath, localPath, sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
 
 		switch state {
-		case statusMissing:
-			return fmt.Errorf("cannot pull: save does not exist on remote")
-		case statusSyncedOrOlder:
+		case stateSynced:
 			fmt.Println("Already up to date")
 			return nil
 		}
 
 		fmt.Println("Pulling save...")
-		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, remotePath, localPath[:len(localPath)-1])
+		cmd = exec.Command("rsync", "-avzhP", "--delete", "-e", sshCmd, remotePath, localPath[:len(localPath)-1])
 	} else {
-		remoteState, err := checkDryRun(remotePath, localPath, sshCmd)
+		remoteState, err := checkSyncState(remotePath, localPath, sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
 
-		if remoteState == statusChange {
+		if remoteState == stateSourceNewer {
 			return  fmt.Errorf("can not push remote as remote is newer than local save")
 		}
 
-		localState, err := checkDryRun(localPath, remotePath, sshCmd)
+		localState, err := checkSyncState(localPath, remotePath, sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking local state: %w", err)
 		}
 
-		if localState == statusSyncedOrOlder {
+		if localState == stateSynced && remoteState == stateSynced {
 			fmt.Println("Remote save is already up to date.")
 			return nil
 		}
 
 		fmt.Println("Pushing save...")
-		cmd = exec.Command("rsync", "-avzhP", "-e", sshCmd, localPath, remotePath[:len(remotePath)-1])
+		cmd = exec.Command("rsync", "-avzhP", "--delete", "-e", sshCmd, localPath, remotePath[:len(remotePath)-1])
 	}
 
 
@@ -79,28 +78,46 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	return nil
 }
 
-func checkDryRun(src string, dest string, sshCmd string, ) (int, error) {
+func checkSyncState(src string, dest string, sshCmd string) (int, error) {
 	cmd := exec.Command("rsync", "-naui", "-e", sshCmd, src, dest)
 
-	output, err := cmd.CombinedOutput()
+	outputBytes, err := cmd.CombinedOutput()
+	output := string(outputBytes)
+
+	fmt.Printf("checking sync state with this command:\n%s\n\n", cmd.String())
+
 	if err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			code := exitError.ExitCode()
-			switch code {
-			case 23:
-				return statusMissing, nil
-			default:
-				fmt.Println(string(output))
-				return statusSyncedOrOlder, err
-			}
+		return stateError, err
+	}
+
+	lines := strings.Split(output, "\n")
+	hasNewerFiles := false
+	hasExtraFiles := false
+
+	for _, line := range lines {
+		if len(line) < 12 { continue }
+
+		parts := strings.Fields(line)
+		code := parts[0]
+		if !strings.HasPrefix(code, ">f") {
+			continue
+		}
+
+		if code[2] == '+' {
+			hasExtraFiles = true
+		} else {
+			hasNewerFiles = true
 		}
 	}
 
-	if len(output) > 0 {
-		return statusChange, nil
+	if hasNewerFiles {
+		return stateSourceNewer, nil
+	}
+	if hasExtraFiles {
+		return stateSourceHasExtra, nil
 	}
 
-	return statusSyncedOrOlder, nil
+	return stateSynced, nil
 }
 
 func ensureTrailingSep(p string) string {
