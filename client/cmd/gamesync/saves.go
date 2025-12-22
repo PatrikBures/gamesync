@@ -61,6 +61,19 @@ var savesLsCmd = &cobra.Command{
 	},
 }
 
+var savesRmCmd = &cobra.Command{
+	Use: "rm <game_id>...",
+	Short: "remove a game ids from config",
+	Args: cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		err := config.RemoveGames(args, configFile)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(23)
+		}
+	},
+}
+
 func init() {
 	savesCmd.AddCommand(savesAddCmd)
 	savesAddCmd.Flags().StringVarP(&savePath, "path", "d", "", "Directory path of the save (required)")
@@ -75,6 +88,7 @@ func init() {
 	}
 
 	savesCmd.AddCommand(savesLsCmd)
+	savesCmd.AddCommand(savesRmCmd)
 
 	rootCmd.AddCommand(savesCmd)
 }
