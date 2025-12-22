@@ -5,9 +5,11 @@ SAVE_DIR=/data/saves
 
 create_users() {
     for file in /config/users/*; do
-        if [ "$file" = "*" ]; then
-            continue
-        fi
+        case "$file" in 
+            *\*)
+                continue
+                ;;
+        esac
 
         user="$(basename "${file}")"
 
