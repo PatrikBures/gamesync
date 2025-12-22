@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/config"
-	"gamesync/internal/syncer"
 	"os"
 	"path/filepath"
 
@@ -45,49 +44,6 @@ var savesAddCmd = &cobra.Command{
 	},
 }
 
-var savesSyncCmd = &cobra.Command{
-	Use: "sync <game_id> <push/pull>",
-	Short: "Sync game save",
-}
-
-var savesSyncPullCmd = &cobra.Command{
-	Use: "pull <game_id>",
-	Short: "Pull the save if remote is newer",
-	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := pushOrPull(args[0], true); err != nil {
-			fmt.Printf("Error pulling, %v\n", err)
-			os.Exit(20)
-		}
-	},
-}
-
-var savesSyncPushCmd = &cobra.Command{
-	Use: "push <game_id>",
-	Short: "Push the save if remote is older",
-	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := pushOrPull(args[0], false); err != nil {
-			fmt.Printf("Error pushing, %v\n", err)
-			os.Exit(21)
-		}
-	},
-
-}
-
-func pushOrPull(gameID string, pull bool) error {
-	game, err := config.GetGame(gameID)
-	if err != nil {
-		return err
-	}
-
-	if err := syncer.SyncGame(*game, config.Current.Server, pull); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func init() {
 	savesCmd.AddCommand(savesAddCmd)
 	savesAddCmd.Flags().StringVarP(&savePath, "path", "d", "", "Directory path of the save (required)")
@@ -100,10 +56,6 @@ func init() {
 	if err := savesAddCmd.MarkFlagDirname("path"); err != nil {
 		fmt.Println("Error marking flag as dirname")
 	}
-
-	savesCmd.AddCommand(savesSyncCmd)
-	savesSyncCmd.AddCommand(savesSyncPullCmd)
-	savesSyncCmd.AddCommand(savesSyncPushCmd)
 
 	rootCmd.AddCommand(savesCmd)
 }
