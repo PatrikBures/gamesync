@@ -5,18 +5,18 @@ SAVE_DIR=/data/saves
 
 create_users() {
     for file in /config/users/*; do
-        user="$(basename "${file%.*}")"
+        echo "file"
+        user="$(basename "${file}")"
 
         # uses id to check if user exists,
         # the -u option is used because it prints out less info making it faster
-        id -u "$user" &> /dev/null
-        if [ $? -eq 0 ] ; then
+        if id -u "$user" > /dev/null 2>&1 ; then
             echo "$user already exists"
             continue
         fi
 
         # -D no password
-        adduser "$user" -D &> /dev/null
+        adduser "$user" -D > /dev/null 2>&1
         passwd -u "$user"
 
 
@@ -37,7 +37,7 @@ create_users() {
 
         mkdir "$user_save" "$user_repo"
         chmod 0700 "$user_save" "$user_repo"
-        chown $user:$user "$user_save" "$user_repo"
+        chown "$user:$user" "$user_save" "$user_repo"
 
         echo "created user $user"
     done
@@ -55,9 +55,10 @@ create_users_loop() {
 
 
 # creates host key if it does not exist
-if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then
+if [ ! -f /etc/ssh/keys/ssh_host_ed25519_key ]; then
     echo "created host key"
     ssh-keygen -A
+    mv /etc/ssh/ssh_host_*key* /etc/ssh/keys/
 fi
 
 
