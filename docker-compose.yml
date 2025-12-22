@@ -1,0 +1,10 @@
+services:
+  gamesync:
+    image: registry.pabu.dev/patrikbures/gamesync:latest
+    container_name: gamesync
+    ports:
+      - "2222:22"
+    volumes:
+      - ./user_public_keys:/config/users:ro
+      - ./host_keys:/etc/ssh/keys
+      - ./data:/data
