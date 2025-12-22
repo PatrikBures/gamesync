@@ -5,7 +5,10 @@ SAVE_DIR=/data/saves
 
 create_users() {
     for file in /config/users/*; do
-        echo "file"
+        if [ "$file" = "*" ]; then
+            continue
+        fi
+
         user="$(basename "${file}")"
 
         # uses id to check if user exists,
