@@ -54,9 +54,10 @@ create_users_loop() {
 
 
 # creates host key if it does not exist
-if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then
+if [ ! -f /etc/ssh/keys/ssh_host_ed25519_key ]; then
     echo "created host key"
     ssh-keygen -A
+    mv /etc/ssh/ssh_host_*key* /etc/ssh/keys/
 fi
 
 
