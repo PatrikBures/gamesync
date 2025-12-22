@@ -19,7 +19,7 @@ create_users() {
         fi
 
         # -D no password
-        adduser "$user" -D > /dev/null 2>&1
+        adduser "$user" -D > /dev/null
         passwd -u "$user"
 
 
