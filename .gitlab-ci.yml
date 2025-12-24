@@ -3,11 +3,15 @@ stages:
   - build
   - release
 
-lint:
+lint-golang:
   stage: test
   image: golangci/golangci-lint:v2.7.2-alpine
-  only:
-    - merge_requests
+
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: 
+        - "client/**/*"
+        - "*.go"
   script:
     - cd client
     - golangci-lint run
