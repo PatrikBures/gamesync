@@ -26,7 +26,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	var cmd *exec.Cmd
 
 	if pull {
-		state, err := checkSyncState(remotePath, localPath, sshCmd)
+		state, err := checkSyncState(remotePath, localPath[:len(localPath)-1], sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
@@ -48,7 +48,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
 
-		remoteState, err := checkSyncState(remotePath, localPath, sshCmd)
+		remoteState, err := checkSyncState(remotePath, localPath[:len(localPath)-1], sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
@@ -57,7 +57,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 			return  fmt.Errorf("can not push remote as remote is newer than local save")
 		}
 
-		localState, err := checkSyncState(localPath, remotePath, sshCmd)
+		localState, err := checkSyncState(localPath, remotePath[:len(remotePath)-1], sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking local state: %w", err)
 		}
