@@ -40,6 +40,13 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 		fmt.Println("Pulling save...")
 		cmd = exec.Command("rsync", "-avzhP", "--delete", "-e", sshCmd, remotePath, localPath[:len(localPath)-1])
 	} else {
+		preCmd := exec.Command("ssh", "-p", server.Port, "-i", server.IdentityFile, 
+			fmt.Sprintf("%s@%s", server.User, server.Host),
+			"mkdir -p "+remoteDir)
+		if err := preCmd.Run(); err != nil {
+			return fmt.Errorf("failed to create remote dir: %w", err)
+		}
+
 		remoteState, err := checkSyncState(remotePath, localPath, sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
