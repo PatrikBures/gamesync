@@ -42,7 +42,8 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	} else {
 		preCmd := exec.Command("ssh", "-p", server.Port, "-i", server.IdentityFile, 
 			fmt.Sprintf("%s@%s", server.User, server.Host),
-			"mkdir -p "+remoteDir)
+			"mkdir -p /"+remoteDir)
+		fmt.Printf("Ran preCmd:\n%s\n", preCmd.String())
 		if err := preCmd.Run(); err != nil {
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
