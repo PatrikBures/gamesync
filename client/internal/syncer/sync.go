@@ -26,7 +26,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	var cmd *exec.Cmd
 
 	if pull {
-		state, err := checkSyncState(remotePath, localPath, sshCmd)
+		state, err := checkSyncState(remotePath, localPath[:len(localPath)-1], sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
@@ -40,7 +40,15 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 		fmt.Println("Pulling save...")
 		cmd = exec.Command("rsync", "-avzhP", "--delete", "-e", sshCmd, remotePath, localPath[:len(localPath)-1])
 	} else {
-		remoteState, err := checkSyncState(remotePath, localPath, sshCmd)
+		preCmd := exec.Command("ssh", "-p", server.Port, "-i", server.IdentityFile, 
+			fmt.Sprintf("%s@%s", server.User, server.Host),
+			"mkdir -p /"+remoteDir)
+		fmt.Printf("Ran preCmd:\n%s\n", preCmd.String())
+		if err := preCmd.Run(); err != nil {
+			return fmt.Errorf("failed to create remote dir: %w", err)
+		}
+
+		remoteState, err := checkSyncState(remotePath, localPath[:len(localPath)-1], sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
@@ -49,7 +57,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 			return  fmt.Errorf("can not push remote as remote is newer than local save")
 		}
 
-		localState, err := checkSyncState(localPath, remotePath, sshCmd)
+		localState, err := checkSyncState(localPath, remotePath[:len(remotePath)-1], sshCmd)
 		if err != nil {
 			return fmt.Errorf("checking local state: %w", err)
 		}
@@ -87,6 +95,7 @@ func checkSyncState(src string, dest string, sshCmd string) (int, error) {
 	fmt.Printf("checking sync state with this command:\n%s\n\n", cmd.String())
 
 	if err != nil {
+		fmt.Println(output)
 		return stateError, err
 	}
 
@@ -99,7 +108,12 @@ func checkSyncState(src string, dest string, sshCmd string) (int, error) {
 
 		parts := strings.Fields(line)
 		code := parts[0]
-		if !strings.HasPrefix(code, ">f") {
+
+		if len(code) < 2 || code[1] != 'f' {
+			continue
+		}
+
+		if code[0] != '>' && code[0] != '<' {
 			continue
 		}
 

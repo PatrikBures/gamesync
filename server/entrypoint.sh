@@ -21,8 +21,9 @@ create_users() {
         fi
 
         # -D no password
-        adduser "$user" -D > /dev/null
-        passwd -u "$user"
+        adduser "$user" -D -s /bin/sh > /dev/null
+        adduser "$user" client-users > /dev/null
+        passwd -u "$user" > /dev/null
 
 
         # adds ssh key to authorized_keys
@@ -40,7 +41,7 @@ create_users() {
         user_save=${SAVE_DIR}/${user}
         user_repo=${REPO_DIR}/${user}
 
-        mkdir "$user_save" "$user_repo"
+        mkdir -p "$user_save" "$user_repo"
         chmod 0700 "$user_save" "$user_repo"
         chown "$user:$user" "$user_save" "$user_repo"
 
@@ -68,6 +69,7 @@ fi
 
 
 
+addgroup -g 2000 client-users
 
 mkdir -p "$REPO_DIR" "$SAVE_DIR"
 

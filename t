@@ -46,4 +46,4 @@ sleep 0.2
 docker logs game-sync-test
 
 echo "try ssh with:"
-echo "ssh -i $PRIVATE_KEY_DIR/${USERS[0]}_${DEVICES[0]} -p 2222 ${USERS[0]}@localhost"
+echo "ssh -i $PRIVATE_KEY_DIR/${USERS[0]}_${DEVICES[0]} -p 2222 ${USERS[0]}@localhost -t \"<command>\""
