@@ -21,7 +21,7 @@ create_users() {
         fi
 
         # -D no password
-        adduser "$user" -D > /dev/null
+        adduser "$user" -D -s /bin/sh > /dev/null
         adduser "$user" client-users
         passwd -u "$user"
 
