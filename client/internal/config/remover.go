@@ -36,7 +36,7 @@ func RemoveGames(gameIdsToRemove []string, configPath string) error {
 	}
 
 	for _, game := range gamesRemoved {
-		fmt.Println(&game.ID)
+		fmt.Println(game.ID)
 	}
 
 	return nil
