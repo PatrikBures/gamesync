@@ -37,13 +37,22 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, ver
 			return nil
 		}
 
-		fmt.Println("Pulling save...")
-		cmd = exec.Command("rsync", "-avzhP", "--delete", "-e", sshCmd, remotePath, localPath[:len(localPath)-1])
+		flags := "-azhP"
+		if verbose {
+			flags = flags+"v"
+			fmt.Println("Pulling save...")
+		}
+
+		cmd = exec.Command("rsync", flags, "--delete", "-e", sshCmd, remotePath, localPath[:len(localPath)-1])
 	} else {
 		preCmd := exec.Command("ssh", "-p", server.Port, "-i", server.IdentityFile, 
 			fmt.Sprintf("%s@%s", server.User, server.Host),
 			"mkdir -p /"+remoteDir)
-		fmt.Printf("Ran preCmd:\n%s\n", preCmd.String())
+
+		if verbose {
+			fmt.Printf("Ran preCmd:\n%s\n\n", preCmd.String())
+		}
+
 		if err := preCmd.Run(); err != nil {
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
@@ -67,17 +76,21 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, ver
 			return nil
 		}
 
-		fmt.Println("Pushing save...")
-		cmd = exec.Command("rsync", "-avzhP", "--delete", "-e", sshCmd, localPath, remotePath[:len(remotePath)-1])
+		flags := "-azhP"
+		if verbose {
+			flags = flags+"v"
+			fmt.Println("Pushing save...")
+		}
+
+		cmd = exec.Command("rsync", flags, "--delete", "-e", sshCmd, localPath, remotePath[:len(remotePath)-1])
 	}
 
 
 	if verbose {
 		fmt.Printf("running this rsync command:\n%s\n", cmd.String())
-
-		cmd.Stdout = os.Stdout
 	}
 
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
