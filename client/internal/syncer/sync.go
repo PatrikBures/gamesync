@@ -108,7 +108,12 @@ func checkSyncState(src string, dest string, sshCmd string) (int, error) {
 
 		parts := strings.Fields(line)
 		code := parts[0]
-		if !strings.HasPrefix(code, ">f") {
+
+		if len(code) < 2 || code[1] != 'f' {
+			continue
+		}
+
+		if code[0] != '>' && code[0] != '<' {
 			continue
 		}
 
