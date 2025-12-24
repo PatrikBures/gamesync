@@ -36,9 +36,6 @@ var rootCmd = &cobra.Command{
 		}
 		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("GameSync!")
-	},
 }
 
 func Execute() {
