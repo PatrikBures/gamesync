@@ -2,6 +2,11 @@
 
 CMD=$SSH_ORIGINAL_COMMAND
 
+if echo "$CMD" | grep -q '[;&|]'; then
+    echo "Access Denied: Complex commands are not allowed."
+    exit 1
+fi
+
 case "$CMD" in
     rsync*)
         exec /usr/bin/rsync $CMD
