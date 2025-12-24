@@ -87,6 +87,7 @@ func checkSyncState(src string, dest string, sshCmd string) (int, error) {
 	fmt.Printf("checking sync state with this command:\n%s\n\n", cmd.String())
 
 	if err != nil {
+		fmt.Println(output)
 		return stateError, err
 	}
 
