@@ -14,6 +14,9 @@ case "$CMD" in
     restic*)
         eval "$CMD"
         ;;
+    mkdir*)
+        eval "$CMD"
+        ;;
     *)
         echo "Access Denied: Invalid command."
         exit 1
