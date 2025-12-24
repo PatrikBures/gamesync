@@ -9,10 +9,10 @@ fi
 
 case "$CMD" in
     rsync*)
-        exec /usr/bin/rsync $CMD
+        eval "$CMD"
         ;;
     restic*)
-        exec /usr/bin/restic $CMD
+        eval "$CMD"
         ;;
     *)
         echo "Access Denied: Invalid command."
