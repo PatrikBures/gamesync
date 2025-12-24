@@ -8,7 +8,7 @@ RUN apk add --no-cache \
 COPY sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod 700 /entrypoint.sh
+RUN chmod 500 /entrypoint.sh
 
 EXPOSE 22
 
