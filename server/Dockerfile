@@ -10,6 +10,9 @@ COPY sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod 500 /entrypoint.sh
 
+COPY restricted-shell /usr/local/bin/restricted-shell
+RUN chmod 555 /usr/local/bin/restricted-shell
+
 EXPOSE 22
 
 CMD ["/entrypoint.sh"]

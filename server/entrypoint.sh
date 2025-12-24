@@ -22,6 +22,7 @@ create_users() {
 
         # -D no password
         adduser "$user" -D > /dev/null
+        adduser "$user" client-users
         passwd -u "$user"
 
 
@@ -68,6 +69,7 @@ fi
 
 
 
+addgroup -g 2000 client-users
 
 mkdir -p "$REPO_DIR" "$SAVE_DIR"
 
