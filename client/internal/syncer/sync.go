@@ -17,7 +17,7 @@ const (
 	stateError
 )
 
-func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) error {
+func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, verbose bool) error {
 	remoteDir := path.Join("data", "saves", server.User, game.ID)
 	remotePath := fmt.Sprintf("%s@%s:/%s/", server.User, server.Host, remoteDir)
 	localPath := ensureTrailingSep(game.SavePath)
@@ -26,7 +26,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	var cmd *exec.Cmd
 
 	if pull {
-		state, err := checkSyncState(remotePath, localPath[:len(localPath)-1], sshCmd)
+		state, err := checkSyncState(remotePath, localPath[:len(localPath)-1], sshCmd, verbose)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
@@ -48,7 +48,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
 
-		remoteState, err := checkSyncState(remotePath, localPath[:len(localPath)-1], sshCmd)
+		remoteState, err := checkSyncState(remotePath, localPath[:len(localPath)-1], sshCmd, verbose)
 		if err != nil {
 			return fmt.Errorf("checking remote state: %w", err)
 		}
@@ -57,7 +57,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 			return  fmt.Errorf("can not push remote as remote is newer than local save")
 		}
 
-		localState, err := checkSyncState(localPath, remotePath[:len(remotePath)-1], sshCmd)
+		localState, err := checkSyncState(localPath, remotePath[:len(remotePath)-1], sshCmd, verbose)
 		if err != nil {
 			return fmt.Errorf("checking local state: %w", err)
 		}
@@ -72,27 +72,30 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool) err
 	}
 
 
-	fmt.Printf("running this rsync command:\n%s\n", cmd.String())
+	if verbose {
+		fmt.Printf("running this rsync command:\n%s\n", cmd.String())
 
-	cmd.Stdout = os.Stdout
+		cmd.Stdout = os.Stdout
+	}
+
 	cmd.Stderr = os.Stderr
 
-	fmt.Println("--- rsync output start ---")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("error syncing %s, from %s, to %s", game.ID, localPath, remotePath)
 	}
-	fmt.Println("--- rsync output end ---")
 
 	return nil
 }
 
-func checkSyncState(src string, dest string, sshCmd string) (int, error) {
+func checkSyncState(src string, dest string, sshCmd string, verbose bool) (int, error) {
 	cmd := exec.Command("rsync", "-naui", "-e", sshCmd, src, dest)
 
 	outputBytes, err := cmd.CombinedOutput()
 	output := string(outputBytes)
 
-	fmt.Printf("checking sync state with this command:\n%s\n\n", cmd.String())
+	if verbose {
+		fmt.Printf("checking sync state with this command:\n%s\n\n", cmd.String())
+	}
 
 	if err != nil {
 		fmt.Println(output)

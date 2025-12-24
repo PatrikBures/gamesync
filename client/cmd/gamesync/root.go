@@ -12,6 +12,7 @@ import (
 )
 
 var configFile string
+var verbose bool
 
 var rootCmd = &cobra.Command{
 	Use: "gamesync",
@@ -48,4 +49,5 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file (default ~/.config/gamesync/config.yml)")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "more verbose output")
 }
