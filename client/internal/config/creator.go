@@ -20,15 +20,13 @@ func AddSave(gameID string, savePath string, updateConfigPath string) error {
 		return fmt.Errorf("path is not dir %s", savePath)
 	}
 
-	if updateConfigPath != "" {
-		gameConfig := GameConfig{
-			ID: gameID,
-			SavePath: savePath,
-		}
-		Current.Games = append(Current.Games, gameConfig)
-		if err := WriteGlobalConfig(updateConfigPath); err != nil {
-			return err
-		}
+	gameConfig := GameConfig{
+		ID: gameID,
+		SavePath: savePath,
+	}
+	Current.Games = append(Current.Games, gameConfig)
+	if err := WriteGlobalConfig(updateConfigPath); err != nil {
+		return err
 	}
 
 	return nil
