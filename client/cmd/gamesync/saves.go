@@ -9,10 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	savePath	string
-	saveUpdate	bool
-)
+var savePath string
 
 var savesCmd = &cobra.Command{
 	Use: "saves <cmd>",
@@ -32,12 +29,8 @@ var savesAddCmd = &cobra.Command{
 			os.Exit(2)
 		}
 
-		configPath := ""
-		if saveUpdate {
-			configPath = configFile
-		}
 		
-		if err := config.AddSave(gameID, savePath, configPath); err != nil {
+		if err := config.AddSave(gameID, savePath, configFile); err != nil {
 			fmt.Println(err)
 			os.Exit(2)
 		}
@@ -77,7 +70,6 @@ var savesRmCmd = &cobra.Command{
 func init() {
 	savesCmd.AddCommand(savesAddCmd)
 	savesAddCmd.Flags().StringVarP(&savePath, "path", "d", "", "Directory path of the save (required)")
-	savesAddCmd.Flags().BoolVarP(&saveUpdate, "update", "u", false, "Updates global config")
 
 	if err := savesAddCmd.MarkFlagRequired("path"); err != nil {
 		fmt.Println("Error marking flag as required")
