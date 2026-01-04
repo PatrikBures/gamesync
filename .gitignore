@@ -1,3 +1,4 @@
 test
 *.gamesync-pool.yml
 client/testdata
+/manpages
