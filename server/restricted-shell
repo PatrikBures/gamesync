@@ -17,6 +17,9 @@ case "$CMD" in
     mkdir*)
         eval "$CMD"
         ;;
+    ls)
+        eval "ls -1 /data/saves/$USER"
+        ;;
     *)
         echo "Access Denied: Invalid command."
         exit 1
