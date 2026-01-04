@@ -16,7 +16,7 @@ var verbose bool
 
 var rootCmd = &cobra.Command{
 	Use: "gamesync",
-	Short: "A CLI to sync save games to a server",
+	Short: "Syncs save games to a server",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if configFile == "" {
 			home, err := os.UserHomeDir()

@@ -12,13 +12,14 @@ import (
 var savePath string
 
 var savesCmd = &cobra.Command{
-	Use: "saves <cmd>",
+	Use: "saves",
 	Short: "Manage saves",
 }
 
 var savesAddCmd = &cobra.Command{
-	Use: "add <game_id>",
-	Short: "add save dir of game to sync",
+	Use: "add GAME_ID",
+	Short: "Add save dir of a game to sync",
+	Example: "gamesync saves add openttd -d ~/.local/share/openttd/save",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
@@ -39,7 +40,7 @@ var savesAddCmd = &cobra.Command{
 
 var savesLsCmd = &cobra.Command{
 	Use: "ls",
-	Short: "list all games",
+	Short: "List all games in local config",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		games := &config.Current.Games
@@ -55,8 +56,9 @@ var savesLsCmd = &cobra.Command{
 }
 
 var savesRmCmd = &cobra.Command{
-	Use: "rm <game_id>...",
-	Short: "remove a game ids from config",
+	Use: "rm GAME_ID...",
+	Short: "Remove a game ids from config",
+	Long: `Does not remove the save dir`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		err := config.RemoveGames(args, configFile)

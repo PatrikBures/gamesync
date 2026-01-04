@@ -8,7 +8,7 @@ import (
 )
 
 var runCmd = &cobra.Command{
-	Use: "run [game_id]",
+	Use: "run GAME_ID",
 	Short: "Sync saves and run game",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

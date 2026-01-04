@@ -9,8 +9,9 @@ import (
 )
 
 var pullCmd = &cobra.Command{
-	Use: "pull <game_id>",
+	Use: "pull GAME_ID",
 	Short: "Pull the save if remote is newer",
+	Example: "gamesync pull openttd",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := pushOrPull(args[0], true); err != nil {
@@ -21,8 +22,9 @@ var pullCmd = &cobra.Command{
 }
 
 var pushCmd = &cobra.Command{
-	Use: "push <game_id>",
+	Use: "push GAME_ID",
 	Short: "Push the save if remote is older",
+	Example: "gamesync push openttd",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := pushOrPull(args[0], false); err != nil {

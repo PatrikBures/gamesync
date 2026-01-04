@@ -9,8 +9,8 @@ import (
 )
 
 var remoteCmd = &cobra.Command{
-	Use: "remote <cmd>",
-	Short: "Manage remote",
+	Use: "remote",
+	Short: "Manage remote saves",
 }
 
 var remoteLsCmd = &cobra.Command{
