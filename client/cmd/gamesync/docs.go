@@ -11,6 +11,8 @@ var genDocCmd = &cobra.Command{
 	Use: "gen-man",
 	Short: "Generate man-pages for program",
 	Hidden: true,
+	// this prerun is here so that the root prerun does not run
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {},
 	Run: func(cmd *cobra.Command, args []string) {
 		dir := "./manpages"
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
