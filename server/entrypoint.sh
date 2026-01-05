@@ -3,6 +3,10 @@
 REPO_DIR=/data/repos
 SAVE_DIR=/data/saves
 
+random_password() {
+    hexdump -n 64 -ve '/1 "%02x"' /dev/urandom
+}
+
 create_users() {
     for file in /config/users/*; do
         case "$file" in 
@@ -46,6 +50,16 @@ create_users() {
         chown "$user:$user" "$user_save" "$user_repo"
 
         echo "created user $user"
+
+        RESTIC_PASSWORD_FILE="${user_save}/.restic_password"
+
+        if ! [ -f "$RESTIC_PASSWORD_FILE" ]; then 
+            echo "created restic password for $user"
+            random_password > "$RESTIC_PASSWORD_FILE"
+        fi
+
+
+
     done
 }
 
