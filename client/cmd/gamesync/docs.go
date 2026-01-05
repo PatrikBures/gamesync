@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -16,7 +17,8 @@ var genDocCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		dir := "./manpages"
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			os.Mkdir(dir, 0755)
+			fmt.Printf("Error dir does not exist: %s", dir)
+			os.Exit(1)
 		}
 
 		header := &doc.GenManHeader{
