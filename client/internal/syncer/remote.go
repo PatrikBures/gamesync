@@ -7,7 +7,18 @@ import (
 	"os/exec"
 )
 
-func RunCmd(server config.ServerConfig, verbose bool, cmds ...string) (string, error){
+func RemoveSaveGame(gameID string, server config.ServerConfig, verbose bool) (string, error) {
+	output, err := RunCmd(server, verbose, "rm", "-rf", 
+		fmt.Sprintf("/data/saves/%s/%s", server.User, gameID))
+
+	if err != nil {
+		return output, err
+	}
+
+	return output, nil
+}
+
+func RunCmd(server config.ServerConfig, verbose bool, cmds ...string) (string, error) {
 	sshArgs := []string{
 		"-p", server.Port,
 		"-i", server.IdentityFile,
