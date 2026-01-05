@@ -17,6 +17,9 @@ case "$CMD" in
     mkdir*)
         eval "$CMD"
         ;;
+    rm*)
+        eval "$CMD"
+        ;;
     ls)
         eval "ls -1 /data/saves/$USER"
         ;;
