@@ -8,7 +8,7 @@ import (
 )
 
 func RemoveSaveGame(gameID string, server config.ServerConfig, verbose bool) (string, error) {
-	output, err := RunCmd(server, verbose, "rm", "-rf", 
+	output, err := RunCmd(server, verbose, "rm", "-r", 
 		fmt.Sprintf("/data/saves/%s/%s", server.User, gameID))
 
 	if err != nil {
