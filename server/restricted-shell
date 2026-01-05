@@ -8,13 +8,16 @@ if echo "$CMD" | grep -q '[;&|]'; then
 fi
 
 case "$CMD" in
-    rsync*)
+    rsync\ *)
         eval "$CMD"
         ;;
-    restic*)
+    restic\ *)
         eval "$CMD"
         ;;
-    mkdir*)
+    mkdir\ *)
+        eval "$CMD"
+        ;;
+    rm\ *)
         eval "$CMD"
         ;;
     ls)
@@ -25,3 +28,5 @@ case "$CMD" in
         exit 1
         ;;
 esac
+
+exit $?

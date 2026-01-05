@@ -36,4 +36,8 @@ clean:
 	rm -f $(BIN_NAME)
 	rm -rf manpages
 
+go-install:
+	@echo "installing..."
+	cd client && go install ./cmd/gamesync
+
 .PHONY: all build man install uninstall clean

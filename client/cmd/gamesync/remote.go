@@ -28,7 +28,24 @@ var remoteLsCmd = &cobra.Command{
 	},
 }
 
+var remoteRmCmd = &cobra.Command{
+	Use: "rm GAME_ID",
+	Short: "Remove a remote save for a game",
+	Args: cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		gameID := args[0]
+
+		output, err := syncer.RemoveSaveGame(gameID, config.Current.Server, verbose)
+
+		if err != nil {
+			fmt.Println("Error removing save:", err)
+			fmt.Println(output)
+		}
+	},
+}
+
 func init() {
 	remoteCmd.AddCommand(remoteLsCmd)
+	remoteCmd.AddCommand(remoteRmCmd)
 	rootCmd.AddCommand(remoteCmd)
 }
