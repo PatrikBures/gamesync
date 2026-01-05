@@ -44,8 +44,23 @@ var remoteRmCmd = &cobra.Command{
 	},
 }
 
+var remoteBackupCmd = &cobra.Command{
+	Use: "backup GAME_ID",
+	Short: "Uses restic to create a backup a game save",
+	Args: cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		gameID := args[0]
+
+		if err := syncer.BackupGame(config.Current.Server, verbose, gameID); err != nil {
+			fmt.Println("Error backing up save:", err)
+		}
+	},
+}
+
 func init() {
 	remoteCmd.AddCommand(remoteLsCmd)
 	remoteCmd.AddCommand(remoteRmCmd)
+	remoteCmd.AddCommand(remoteBackupCmd)
+
 	rootCmd.AddCommand(remoteCmd)
 }
