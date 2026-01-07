@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var wrapCreateSnapshot bool
+
 var wrapCmd = &cobra.Command{
 	Use: "wrap GAME_ID -- COMMAND...",
 	Short: "Wrap a game process",
@@ -72,6 +74,14 @@ var wrapCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		if wrapCreateSnapshot {
+			if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID); err != nil {
+				fmt.Printf("Failed creating snapshot: %v\n", err)
+			} else {
+				fmt.Printf("Snapshot created")
+			}
+		}
+
 		fmt.Printf("Game exited with exit code: %d\n", exitCode)
 
 		os.Exit(exitCode)
@@ -79,5 +89,6 @@ var wrapCmd = &cobra.Command{
 }
 
 func init() {
+	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshot, "snapshot", "s", false, "")
 	rootCmd.AddCommand(wrapCmd)
 }
