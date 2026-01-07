@@ -6,16 +6,22 @@ import (
 )
 
 func initRepo(server config.ServerConfig, verbose bool, passwordFile string, repo string) error {
-	_, err := RunCmd(server, verbose, "restic", 
+	output, err := RunCmd(server, verbose, "restic", 
 		"--password-file", passwordFile, 
 		"--repo", repo,
 		"cat", "config")
 
+	if err == nil {
+		return nil
+	}
+
+	output, err = RunCmd(server, verbose, "restic", 
+		"--password-file", passwordFile, 
+		"--repo", repo,
+		"init")
+
 	if err != nil {
-		_, err = RunCmd(server, verbose, "restic", 
-			"--password-file", passwordFile, 
-			"--repo", repo,
-			"init")
+		return fmt.Errorf("%s\n%s", err, output)
 	}
 
 	return nil
@@ -30,13 +36,13 @@ func BackupGame(server config.ServerConfig, verbose bool, gameID string) error {
 		return err
 	}
 
-	_, err := RunCmd(server, verbose, "restic", 
+	output, err := RunCmd(server, verbose, "restic", 
 		"--password-file", passwordFile, 
 		"--repo", repo,
 		"backup", saveGame)
 
 	if err != nil {
-		return nil
+		return fmt.Errorf("%s\n%s", err, output)
 	}
 
 	return nil
