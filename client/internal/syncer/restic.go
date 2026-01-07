@@ -6,7 +6,7 @@ import (
 )
 
 func initRepo(server config.ServerConfig, verbose bool, passwordFile string, repo string) error {
-	output, err := RunCmd(server, verbose, "restic", 
+	_, err := RunCmd(server, verbose, "restic", 
 		"--password-file", passwordFile, 
 		"--repo", repo,
 		"cat", "config")
@@ -15,7 +15,7 @@ func initRepo(server config.ServerConfig, verbose bool, passwordFile string, rep
 		return nil
 	}
 
-	output, err = RunCmd(server, verbose, "restic", 
+	output, err := RunCmd(server, verbose, "restic", 
 		"--password-file", passwordFile, 
 		"--repo", repo,
 		"init")
