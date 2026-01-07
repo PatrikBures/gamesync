@@ -27,7 +27,7 @@ func initRepo(server config.ServerConfig, verbose bool, passwordFile string, rep
 	return nil
 }
 
-func BackupGame(server config.ServerConfig, verbose bool, gameID string) error {
+func CreateSnapshot(server config.ServerConfig, verbose bool, gameID string) error {
 	passwordFile := fmt.Sprintf("/data/saves/%s/.restic_password", config.Current.Server.User)
 	repo := fmt.Sprintf("/data/repos/%s", config.Current.Server.User)
 	saveGame := fmt.Sprintf("/data/saves/%s/%s", config.Current.Server.User, gameID)
