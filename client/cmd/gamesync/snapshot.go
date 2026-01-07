@@ -20,7 +20,7 @@ var snapshotCreateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 
-		if err := syncer.BackupGame(config.Current.Server, verbose, gameID); err != nil {
+		if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID); err != nil {
 			fmt.Println("Error creating a snapshot save:", err)
 		}
 	},
