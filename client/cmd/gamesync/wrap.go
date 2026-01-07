@@ -47,8 +47,9 @@ var wrapCmd = &cobra.Command{
 
 		// pulls
 		if err := syncer.SyncGame(*game, config.Current.Server, true, verbose); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			fmt.Printf("WARNING: Pulling save failed: %v\n", err)
+		} else {
+			fmt.Println("Pulled game")
 		}
 
 		runCmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
@@ -70,8 +71,9 @@ var wrapCmd = &cobra.Command{
 
 		// pushes
 		if err := syncer.SyncGame(*game, config.Current.Server, false, verbose); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			fmt.Printf("WARNING: Pushing save failed: %v\n", err)
+		} else {
+			fmt.Println("Pushed game")
 		}
 
 		if wrapCreateSnapshot {
