@@ -34,9 +34,7 @@ lint-golang:
 
   script:
     - cd client
-    # --out-format colored-line-number makes logs easier to read in GitLab
-    # --print-resources-usage helps us monitor if we are hitting RAM limits
-    - golangci-lint run --out-format colored-line-number --print-resources-usage
+    - golangci-lint run
 build-client:
   stage: build
   image: golang:1.25-alpine
