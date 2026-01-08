@@ -12,6 +12,7 @@ lint-golang:
       changes: 
         - "client/**/*"
         - "*.go"
+        - ".gitlab-ci.yml"
 
   variables:
     # 1. Force Go to store modules locally so GitLab can cache them
