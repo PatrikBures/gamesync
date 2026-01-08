@@ -1,5 +1,10 @@
 #!/bin/sh
 
+saves_dir="/data/saves/$USER"
+
+export RESTIC_REPOSITORY="/data/repos/$USER"
+export RESTIC_PASSWORD_FILE="$saves_dir/.restic_password"
+
 CMD=$SSH_ORIGINAL_COMMAND
 
 if echo "$CMD" | grep -q '[;&|]'; then
@@ -21,7 +26,7 @@ case "$CMD" in
         eval "$CMD"
         ;;
     ls)
-        eval "ls -1 /data/saves/$USER"
+        eval "ls -1 $saves_dir"
         ;;
     *)
         echo "Access Denied: Invalid command."
