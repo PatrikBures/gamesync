@@ -15,18 +15,15 @@ lint-golang:
         - ".gitlab-ci.yml"
 
   variables:
-    # 1. Force Go to store modules locally so GitLab can cache them
     GOPATH: $CI_PROJECT_DIR/.go
-    # 2. Force the Build Cache (compilation artifacts) to be local
     GOCACHE: $CI_PROJECT_DIR/.go-build
-    # 3. Force linter metadata to be local
     GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.golangci-lint
 
   cache:
     key: 
       files:
-        - client/go.sum  # Invalidate cache if dependencies change
-      prefix: lint-client # Useful if you have multiple lint jobs
+        - client/go.sum
+      prefix: lint-client
     paths:
       - .go/pkg/mod
       - .go-build
