@@ -5,17 +5,37 @@ stages:
 
 lint-golang:
   stage: test
-  image: golangci/golangci-lint:v2.7.2-alpine
-
+  image: golangci/golangci-lint:v2.8-alpine
+  
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: 
         - "client/**/*"
         - "*.go"
+
+  variables:
+    # 1. Force Go to store modules locally so GitLab can cache them
+    GOPATH: $CI_PROJECT_DIR/.go
+    # 2. Force the Build Cache (compilation artifacts) to be local
+    GOCACHE: $CI_PROJECT_DIR/.go-build
+    # 3. Force linter metadata to be local
+    GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.golangci-lint
+
+  cache:
+    key: 
+      files:
+        - client/go.sum  # Invalidate cache if dependencies change
+      prefix: lint-client # Useful if you have multiple lint jobs
+    paths:
+      - .go/pkg/mod
+      - .go-build
+      - .golangci-lint
+
   script:
     - cd client
-    - golangci-lint run
-
+    # --out-format colored-line-number makes logs easier to read in GitLab
+    # --print-resources-usage helps us monitor if we are hitting RAM limits
+    - golangci-lint run --out-format colored-line-number --print-resources-usage
 build-client:
   stage: build
   image: golang:1.25-alpine
