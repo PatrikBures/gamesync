@@ -3,6 +3,7 @@ package syncer
 import (
 	"fmt"
 	"gamesync/internal/config"
+	"os"
 )
 
 func initRepo(server config.ServerConfig, verbose bool) error {
@@ -24,11 +25,16 @@ func initRepo(server config.ServerConfig, verbose bool) error {
 func CreateSnapshot(server config.ServerConfig, verbose bool, gameID string) error {
 	saveGame := fmt.Sprintf("/data/saves/%s/%s", config.Current.Server.User, gameID)
 
+	host, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+
 	if err := initRepo(server, verbose); err != nil {
 		return err
 	}
 
-	output, err := RunCmd(server, verbose, "restic", "backup", saveGame)
+	output, err := RunCmd(server, verbose, "restic", "backup", saveGame, "--host", host)
 
 	if err != nil {
 		return fmt.Errorf("%s\n%s", err, output)
