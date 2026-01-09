@@ -29,21 +29,21 @@ fi
 
 mkdir -p "$HOST_KEY_DIR"
 
-docker container stop game-sync-test
-docker container rm game-sync-test
+docker container stop gamesync-test
+docker container rm gamesync-test
 
-docker build ./server -t game-sync:latest 
+docker build ./server -t gamesync:latest 
 
 docker run -d \
     --volume "$PUBLIC_KEY_DIR":/config/users \
     --volume "$HOST_KEY_DIR":/etc/ssh/keys \
     --volume "$DATA":/data \
     -p 127.0.0.1:2222:22 \
-    --name game-sync-test \
-    game-sync:latest
+    --name gamesync-test \
+    gamesync:latest
 
 sleep 0.2
-docker logs game-sync-test
+docker logs gamesync-test
 
 echo "try ssh with:"
 echo "ssh -i $PRIVATE_KEY_DIR/${USERS[0]}_${DEVICES[0]} -p 2222 ${USERS[0]}@localhost -t \"<command>\""
