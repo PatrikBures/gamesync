@@ -3,7 +3,8 @@ FROM alpine:3.23
 RUN apk add --no-cache \
     restic \
     rsync \
-    openssh-server
+    openssh-server \
+    tzdata
 
 COPY sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
 
