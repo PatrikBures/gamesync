@@ -15,6 +15,14 @@ Snapshots can be created on the remote via the client using restic.
 - Multiple users
 - Snapshots
 
+## Example usage
+
+```sh
+gamesync saves add openttd -d ~/.local/share/openttd/save
+gamesync push openttd
+gamesync snapshot create openttd
+```
+
 ## Copyright
 
 Copyright (C) 2025-2026 Patrik Bures
