@@ -39,9 +39,6 @@ var snapshotLsCmd = &cobra.Command{
 		if len(args) > 0 {
 			gameID = args[0]
 		}
-		if gameID != "" {
-
-		}
 
 		snapshots, err := syncer.ListSnapshots(config.Current.Server, verbose, gameID)
 		if err != nil {
