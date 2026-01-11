@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"gamesync/internal/config"
 	"gamesync/internal/syncer"
+	"os"
+	"path/filepath"
+	"text/tabwriter"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -26,9 +30,39 @@ var snapshotCreateCmd = &cobra.Command{
 	},
 }
 
+var snapshotLsCmd = &cobra.Command{
+	Use: "ls [GAME_ID]",
+	Short: "List snapshots of GAME_ID or all",
+	Args: cobra.MaximumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		gameID := ""
+		if len(args) > 0 {
+			gameID = args[0]
+		}
+		if gameID != "" {
+
+		}
+
+		snapshots, err := syncer.ListSnapshots(config.Current.Server, verbose, gameID)
+		if err != nil {
+			fmt.Printf("Error listing snapshots: %v\n", err)
+		}
+
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+
+
+		fmt.Fprintf(w, "Name:\tHostname:\tTime:\n")
+		for _, snapshot := range snapshots {
+			fmt.Fprintf(w, "%s\t%s\t%s\n", filepath.Base(snapshot.Paths[0]), snapshot.Hostname, snapshot.Time.Format(time.DateTime))
+		}
+		w.Flush()
+	},
+}
+
 
 func init() {
 	snapshotCmd.AddCommand(snapshotCreateCmd)
+	snapshotCmd.AddCommand(snapshotLsCmd)
 
 	rootCmd.AddCommand(snapshotCmd)
 }
