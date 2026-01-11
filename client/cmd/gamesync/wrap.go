@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gamesync/internal/config"
 	"gamesync/internal/syncer"
+	"gamesync/internal/ui"
 	"os"
 	"os/exec"
 
@@ -11,6 +12,7 @@ import (
 )
 
 var wrapCreateSnapshot bool
+var wrapNotify bool
 
 var wrapCmd = &cobra.Command{
 	Use: "wrap GAME_ID -- COMMAND...",
@@ -48,8 +50,10 @@ var wrapCmd = &cobra.Command{
 		// pulls
 		if err := syncer.SyncGame(*game, config.Current.Server, true, verbose); err != nil {
 			fmt.Printf("WARNING: Pulling save failed: %v\n", err)
+			if wrapNotify { ui.Notify("error", "pulling save") }
 		} else {
 			fmt.Println("Pulled game")
+			if wrapNotify { ui.Notify("sucess", "pulling save") }
 		}
 
 		runCmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
@@ -72,15 +76,19 @@ var wrapCmd = &cobra.Command{
 		// pushes
 		if err := syncer.SyncGame(*game, config.Current.Server, false, verbose); err != nil {
 			fmt.Printf("WARNING: Pushing save failed: %v\n", err)
+			if wrapNotify { ui.Notify("error", "pushing save") }
 		} else {
 			fmt.Println("Pushed game")
+			if wrapNotify { ui.Notify("sucess", "pushing save") }
 		}
 
 		if wrapCreateSnapshot {
 			if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID); err != nil {
 				fmt.Printf("Failed creating snapshot: %v\n", err)
+				if wrapNotify { ui.Notify("error", "creating snapshot") }
 			} else {
 				fmt.Printf("Snapshot created")
+				if wrapNotify { ui.Notify("sucess", "creating snapshot") }
 			}
 		}
 
@@ -92,5 +100,6 @@ var wrapCmd = &cobra.Command{
 
 func init() {
 	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshot, "snapshot", "s", false, "")
+	wrapCmd.Flags().BoolVarP(&wrapNotify, "notify", "n", false, "")
 	rootCmd.AddCommand(wrapCmd)
 }
