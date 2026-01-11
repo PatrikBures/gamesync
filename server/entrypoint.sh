@@ -58,8 +58,8 @@ create_users() {
             random_password > "$RESTIC_PASSWORD_FILE"
         fi
 
-
-
+        chown "$user:$user" "$RESTIC_PASSWORD_FILE"
+        chmod 400 "$RESTIC_PASSWORD_FILE"
     done
 }
 
