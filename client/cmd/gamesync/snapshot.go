@@ -51,11 +51,20 @@ var snapshotLsCmd = &cobra.Command{
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 
 
-		fmt.Fprintf(w, "Name:\tHostname:\tTime:\n")
+		var printErr error
+		_, printErr = fmt.Fprintf(w, "Name:\tHostname:\tTime:\n")
+
 		for _, snapshot := range snapshots {
-			fmt.Fprintf(w, "%s\t%s\t%s\n", filepath.Base(snapshot.Paths[0]), snapshot.Hostname, snapshot.Time.Format(time.DateTime))
+			_, printErr = fmt.Fprintf(w, "%s\t%s\t%s\n", filepath.Base(snapshot.Paths[0]), snapshot.Hostname, snapshot.Time.Format(time.DateTime))
 		}
-		w.Flush()
+
+		if printErr != nil {
+			fmt.Println("Error printing:", printErr)
+		}
+
+		if err := w.Flush(); err != nil {
+			fmt.Println("Error flushing:", err)
+		}
 	},
 }
 
