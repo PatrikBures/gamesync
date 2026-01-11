@@ -52,7 +52,15 @@ func CreateSnapshot(server config.ServerConfig, verbose bool, gameID string) err
 }
 
 func ListSnapshots(server config.ServerConfig, verbose bool, gameID string) ([]Snapshot, error) {
-	output, err := RunCmd(server, verbose, "restic", "snapshots", "--json")
+	saveGame := fmt.Sprintf("/data/saves/%s/%s", config.Current.Server.User, gameID)
+
+	args := []string{"restic", "snapshots", "--json"}
+
+	if gameID != "" {
+		args = append(args, "--path", saveGame)
+	}
+
+	output, err := RunCmd(server, verbose, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%s\n%s", err, output)
 	}
