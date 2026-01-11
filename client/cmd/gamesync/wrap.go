@@ -87,7 +87,7 @@ var wrapCmd = &cobra.Command{
 				fmt.Printf("Failed creating snapshot: %v\n", err)
 				if wrapNotify { ui.Notify("error", "creating snapshot") }
 			} else {
-				fmt.Printf("Snapshot created")
+				fmt.Println("Snapshot created")
 				if wrapNotify { ui.Notify("sucess", "creating snapshot") }
 			}
 		}
