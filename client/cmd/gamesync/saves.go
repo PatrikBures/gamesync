@@ -9,22 +9,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var savePath string
-
 var savesCmd = &cobra.Command{
 	Use: "saves",
 	Short: "Manage saves",
 }
 
 var savesAddCmd = &cobra.Command{
-	Use: "add GAME_ID",
+	Use: "add GAME_ID SAVE_PATH",
 	Short: "Add save dir of a game to sync",
 	Example: "gamesync saves add openttd -d ~/.local/share/openttd/save",
-	Args: cobra.ExactArgs(1),
+	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 
-		savePath, err := filepath.Abs(savePath)
+		savePath, err := filepath.Abs(args[1])
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(2)
@@ -71,15 +69,6 @@ var savesRmCmd = &cobra.Command{
 
 func init() {
 	savesCmd.AddCommand(savesAddCmd)
-	savesAddCmd.Flags().StringVarP(&savePath, "path", "d", "", "Directory path of the save (required)")
-
-	if err := savesAddCmd.MarkFlagRequired("path"); err != nil {
-		fmt.Println("Error marking flag as required")
-		os.Exit(30)
-	}
-	if err := savesAddCmd.MarkFlagDirname("path"); err != nil {
-		fmt.Println("Error marking flag as dirname")
-	}
 
 	savesCmd.AddCommand(savesLsCmd)
 	savesCmd.AddCommand(savesRmCmd)
