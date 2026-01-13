@@ -46,11 +46,6 @@ var savesLsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		games := &config.Current.Games
 
-		if len(*games) == 0 {
-			fmt.Println("no games found in config")
-			os.Exit(0)
-		}
-
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 
 		for _, game := range *games {
