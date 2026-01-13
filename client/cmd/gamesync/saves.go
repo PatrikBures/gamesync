@@ -14,6 +14,8 @@ var savesCmd = &cobra.Command{
 	Short: "Manage saves",
 }
 
+var savesAddUpdate bool
+
 var savesAddCmd = &cobra.Command{
 	Use: "add GAME_ID SAVE_PATH",
 	Short: "Add save dir of a game to sync",
@@ -29,8 +31,8 @@ var savesAddCmd = &cobra.Command{
 		}
 
 		
-		if err := config.AddSave(gameID, savePath, configFile); err != nil {
-			fmt.Println(err)
+		if err := config.AddSave(gameID, savePath, configFile, savesAddUpdate); err != nil {
+			fmt.Println("Error adding save:", err)
 			os.Exit(2)
 		}
 	},
@@ -69,6 +71,7 @@ var savesRmCmd = &cobra.Command{
 
 func init() {
 	savesCmd.AddCommand(savesAddCmd)
+	savesAddCmd.Flags().BoolVarP(&savesAddUpdate, "update", "u", false, "Skips checking if gameID already exists")
 
 	savesCmd.AddCommand(savesLsCmd)
 	savesCmd.AddCommand(savesRmCmd)
