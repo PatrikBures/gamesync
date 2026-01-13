@@ -41,7 +41,7 @@ var wrapCmd = &cobra.Command{
 
 		gameID := userArgs[0]
 
-		game, err := config.GetGame(gameID)
+		game, _, err := config.GetGame(gameID)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

@@ -35,7 +35,7 @@ var pushCmd = &cobra.Command{
 }
 
 func pushOrPull(gameID string, pull bool) error {
-	game, err := config.GetGame(gameID)
+	game, _, err := config.GetGame(gameID)
 	if err != nil {
 		return err
 	}
