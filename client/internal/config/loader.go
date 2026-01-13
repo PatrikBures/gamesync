@@ -22,11 +22,11 @@ func Load(configPath string) error {
 	return nil
 }
 
-func GetGame(gameID string) (*GameConfig, error) {
-	for _, g := range Current.Games {
+func GetGame(gameID string) (*GameConfig, int, error) {
+	for i, g := range Current.Games {
 		if g.ID == gameID {
-			return &g, nil
+			return &g,i , nil
 		}
 	}
-	return nil, fmt.Errorf("game id %s could not found in config", gameID)
+	return nil, -1,  fmt.Errorf("game id %s could not found in config", gameID)
 }
