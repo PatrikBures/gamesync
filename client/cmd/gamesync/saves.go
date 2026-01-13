@@ -5,6 +5,7 @@ import (
 	"gamesync/internal/config"
 	"os"
 	"path/filepath"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
@@ -50,8 +51,16 @@ var savesLsCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+
 		for _, game := range *games {
-			fmt.Println(game.ID)
+			if _, err := fmt.Fprintf(w, "%s\t%s\n", game.ID, game.SavePath); err != nil {
+				fmt.Println("Error printing:", err)
+			}
+		}
+
+		if err := w.Flush(); err != nil {
+			fmt.Println("Error flushing:", err)
 		}
 	},
 }
