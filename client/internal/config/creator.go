@@ -7,7 +7,7 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-func AddSave(gameID string, savePath string, updateConfigPath string) error {
+func AddSave(gameID string, savePath string, configPath string) error {
 	if _, err := GetGame(gameID); err == nil {
 		return fmt.Errorf("game with id \"%s\" already exists", gameID)
 	}
@@ -25,7 +25,7 @@ func AddSave(gameID string, savePath string, updateConfigPath string) error {
 		SavePath: savePath,
 	}
 	Current.Games = append(Current.Games, gameConfig)
-	if err := WriteGlobalConfig(updateConfigPath); err != nil {
+	if err := WriteGlobalConfig(configPath); err != nil {
 		return err
 	}
 
