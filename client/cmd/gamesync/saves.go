@@ -45,12 +45,13 @@ var savesLsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		games := &config.Current.Games
 
-		if games == nil {
+		if len(*games) == 0 {
 			fmt.Println("no games found in config")
-		} else {
-			for _, game := range *games {
-				fmt.Println(game.ID)
-			}
+			os.Exit(0)
+		}
+
+		for _, game := range *games {
+			fmt.Println(game.ID)
 		}
 	},
 }
