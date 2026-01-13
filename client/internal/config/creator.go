@@ -8,9 +8,9 @@ import (
 )
 
 func AddSave(gameID string, savePath string, configPath string, update bool) error {
-	_, gameIdx, err := GetGame(gameID)
+	_, gameIdx, getGameErr := GetGame(gameID)
 
-	if !update && err == nil {
+	if !update && getGameErr == nil {
 		return fmt.Errorf("game with id \"%s\" already exists", gameID)
 	}
 
@@ -22,7 +22,7 @@ func AddSave(gameID string, savePath string, configPath string, update bool) err
 		return fmt.Errorf("path is not dir: %s", savePath)
 	}
 
-	if update {
+	if update && getGameErr == nil {
 		Current.Games[gameIdx].SavePath = savePath
 	} else {
 		gameConfig := GameConfig{
