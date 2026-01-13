@@ -14,10 +14,10 @@ func AddSave(gameID string, savePath string, configPath string) error {
 
 	file, err := os.Stat(savePath)
 	if err != nil {
-		return fmt.Errorf("stating dir %s", savePath)
+		return fmt.Errorf("stating dir: %v", err)
 	}
 	if !file.IsDir() {
-		return fmt.Errorf("path is not dir %s", savePath)
+		return fmt.Errorf("path is not dir: %s", savePath)
 	}
 
 	gameConfig := GameConfig{
@@ -35,12 +35,12 @@ func AddSave(gameID string, savePath string, configPath string) error {
 func WriteGlobalConfig(configPath string) error {
 	data, err := yaml.Marshal(Current)
 	if err != nil {
-		return fmt.Errorf("marshaling config")
+		return fmt.Errorf("marshaling config: %v", err)
 	}
 
 	err = os.WriteFile(configPath, data, 0644)
 	if err != nil {
-		return fmt.Errorf("writing config")
+		return fmt.Errorf("writing config: %v", err)
 	}
 
 	return nil
