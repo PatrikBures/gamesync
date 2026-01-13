@@ -16,6 +16,7 @@ var savesCmd = &cobra.Command{
 }
 
 var savesAddUpdate bool
+var savesLsQuiet bool
 
 var savesAddCmd = &cobra.Command{
 	Use: "add GAME_ID SAVE_PATH",
@@ -49,7 +50,15 @@ var savesLsCmd = &cobra.Command{
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 
 		for _, game := range *games {
-			if _, err := fmt.Fprintf(w, "%s\t%s\n", game.ID, game.SavePath); err != nil {
+			var err error
+
+			if savesLsQuiet {
+				_, err = fmt.Fprintf(w, "%s\n", game.ID)
+			} else {
+				_, err = fmt.Fprintf(w, "%s\t%s\n", game.ID, game.SavePath)
+			}
+
+			if err != nil {
 				fmt.Println("Error printing:", err)
 			}
 		}
@@ -79,6 +88,7 @@ func init() {
 	savesAddCmd.Flags().BoolVarP(&savesAddUpdate, "update", "u", false, "Skips checking if gameID already exists")
 
 	savesCmd.AddCommand(savesLsCmd)
+	savesLsCmd.Flags().BoolVarP(&savesLsQuiet, "quiet", "q", false, "Only prints gameIDs")
 	savesCmd.AddCommand(savesRmCmd)
 
 	rootCmd.AddCommand(savesCmd)
