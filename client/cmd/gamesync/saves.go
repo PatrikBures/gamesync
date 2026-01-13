@@ -45,11 +45,9 @@ var savesLsCmd = &cobra.Command{
 	Short: "List all games in local config",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		games := &config.Current.Games
-
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 
-		for _, game := range *games {
+		for _, game := range config.Current.Games {
 			var err error
 
 			if savesLsQuiet {
