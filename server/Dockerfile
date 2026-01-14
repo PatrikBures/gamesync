@@ -14,6 +14,9 @@ RUN chmod 500 /entrypoint.sh
 COPY restricted-shell /usr/local/bin/restricted-shell
 RUN chmod 555 /usr/local/bin/restricted-shell
 
+COPY gamesync-state /usr/local/bin/gamesync-state
+RUN chmod 555 /usr/local/bin/gamesync-state
+
 EXPOSE 22
 
 CMD ["/entrypoint.sh"]

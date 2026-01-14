@@ -25,6 +25,9 @@ case "$CMD" in
     rm\ *)
         eval "$CMD"
         ;;
+    gamesync-state\ *)
+        eval "$CMD"
+        ;;
     ls)
         eval "ls -1 $saves_dir"
         ;;

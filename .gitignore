@@ -2,3 +2,4 @@ test
 testdata
 *.gamesync-pool.yml
 /manpages
+server/gamesync-state
