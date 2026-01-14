@@ -15,7 +15,7 @@ func main() {
 
 	dir := os.Args[1]
 
-	state, err := state.GetState(dir)
+	state, err := state.Get(dir)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error getting state: %v\n", err)
 		os.Exit(11)

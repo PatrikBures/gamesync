@@ -11,7 +11,7 @@ type FileMeta struct {
 	Size	int64 `json:"size"`
 }
 
-func GetState(path string) (map[string]FileMeta, error) {
+func Get(path string) (map[string]FileMeta, error) {
 	files := make(map[string]FileMeta)
 
 	err := filepath.Walk(path, 
