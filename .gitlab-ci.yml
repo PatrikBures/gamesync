@@ -10,7 +10,7 @@ lint-golang:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: 
-        - "*.go"
+        - "**/*.go"
         - ".gitlab-ci.yml"
 
   variables:
