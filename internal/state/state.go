@@ -13,25 +13,21 @@ type FileMeta struct {
 	Size	int64 `json:"size"`
 }
 
-func Get(path string) (map[string]FileMeta, error) {
-	files := make(map[string]FileMeta)
+func Get(root string) (map[string]FileMeta, error) {
+	results := make(map[string]FileMeta)
 
-	err := filepath.Walk(path, 
-		func(path string, info fs.FileInfo, err error) error {
-			if err != nil {
-				return err
+	err := filepath.WalkDir(root, 
+		func(path string, d fs.DirEntry, err error) error {
+			if err != nil { return err }
+			if d.IsDir() { return nil }
+
+			relPath, err := filepath.Rel(root, path)
+
+			info, _ := d.Info()
+			results[relPath] = FileMeta{
+				ModTime: info.ModTime().Unix(),
+				Size: info.Size(),
 			}
-
-			if info.IsDir() {
-				return nil
-			}
-
-			var meta FileMeta
-
-			meta.ModTime = info.ModTime().Unix()
-			meta.Size = info.Size()
-
-			files[path] = meta
 
 			return nil
 		},
@@ -41,7 +37,7 @@ func Get(path string) (map[string]FileMeta, error) {
 		return nil, fmt.Errorf("walking dir: %w", err)
 	}
 
-	return files, nil
+	return results, nil
 }
 
 func Write(state map[string]FileMeta, path string) error {
