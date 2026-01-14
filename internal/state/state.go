@@ -1,8 +1,10 @@
 package state
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 )
 
@@ -40,4 +42,19 @@ func Get(path string) (map[string]FileMeta, error) {
 	}
 
 	return files, nil
+}
+
+func Write(state map[string]FileMeta, path string) error {
+	stateJson, err := json.MarshalIndent(state, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(path, stateJson, 0664)
+	err != nil {
+		os.Remove(path)
+		return err
+	}
+
+	return nil
 }
