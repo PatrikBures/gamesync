@@ -7,7 +7,7 @@ all: build man
 
 build:
 	@echo "Building $(BIN_NAME)..."
-	cd client && go build -o ../$(BIN_NAME) ./cmd/gamesync
+	go build -o $(BIN_NAME) ./cmd/gamesync
 
 man: build
 	@echo "Generating man pages..."
@@ -38,6 +38,6 @@ clean:
 
 go-install:
 	@echo "installing..."
-	cd client && go install ./cmd/gamesync
+	go install ./cmd/gamesync
 
 .PHONY: all build man install uninstall clean
