@@ -2,6 +2,7 @@ package state
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -15,6 +16,10 @@ type FileMeta struct {
 
 func Get(root string) (map[string]FileMeta, error) {
 	results := make(map[string]FileMeta)
+
+	if _, err := os.Stat(root); errors.Is(err, fs.ErrNotExist) {
+		return results, nil
+	}
 
 	err := filepath.WalkDir(root, 
 		func(path string, d fs.DirEntry, err error) error {
