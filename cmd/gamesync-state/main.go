@@ -1,4 +1,4 @@
-package gamesyncstate
+package main
 
 import (
 	"encoding/json"
