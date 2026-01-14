@@ -32,6 +32,8 @@ mkdir -p "$HOST_KEY_DIR"
 docker container stop gamesync-test
 docker container rm gamesync-test
 
+make build-state
+
 docker build ./server -t gamesync:latest 
 
 docker run -d \
