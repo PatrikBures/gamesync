@@ -65,3 +65,64 @@ func Write(state map[string]FileMeta, path string) error {
 
 	return nil
 }
+
+const (
+	CompareStateConflict = iota
+	CompareStatePull
+	CompareStatePush
+	CompareStateUnchanged
+	CompareStateError
+)
+
+func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, remoteState map[string]FileMeta, loose bool, verbose bool) (int, error) {
+	localChange := true
+	remoteChange := true
+
+	if verbose { fmt.Println("Comparing local to old local...") }
+	if stateEqual(localState, oldLocalState, loose, verbose) {
+		localChange = false
+	}
+	if verbose { fmt.Println("Comparing remote to old local...") }
+	if stateEqual(remoteState, oldLocalState, loose, verbose) {
+		remoteChange = false
+	}
+
+	if localChange  && remoteChange  { return CompareStateConflict, nil }
+	if localChange  && !remoteChange { return CompareStatePush, nil }
+	if !localChange && remoteChange  { return CompareStatePull, nil }
+	if !localChange && !remoteChange { return CompareStateUnchanged, nil }
+
+	return CompareStateError, fmt.Errorf("There is something very wrong, this error should not be possible")
+}
+
+func stateEqual(state1 map[string]FileMeta, state2 map[string]FileMeta, loose bool, verbose bool) bool {
+	for path, meta1 := range state1 {
+		meta2, ok := state2[path]
+		if !ok {
+			if verbose { fmt.Println("does not exist:", path) }
+			return false
+		}
+
+		if meta1.Size != meta2.Size {
+			if verbose { fmt.Println("size:", path)}
+			return false
+		}
+
+		if loose {
+			diff := meta1.ModTime - meta2.ModTime
+			if diff < -2 || diff > 2 {
+				if verbose { fmt.Println("loose modtime:", path) }
+				return false
+			}
+		} else {
+			if meta1.ModTime != meta2.ModTime {
+				if verbose { fmt.Println("modtime:", path) }
+				return false
+			}
+		}
+		if verbose { fmt.Println("same:", path) }
+	}
+
+	if verbose { fmt.Println("state 1 and 2 were same") }
+	return true
+}
