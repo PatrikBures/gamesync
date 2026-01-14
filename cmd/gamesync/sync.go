@@ -23,7 +23,7 @@ var syncCmd = &cobra.Command{
 
 		s, err := state.Get(game.SavePath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error getting state of game with id \"%s\": %v", game.ID, err)
+			fmt.Fprintf(os.Stderr, "Error getting state of game with id \"%s\": %v\n", game.ID, err)
 			os.Exit(41)
 		}
 
