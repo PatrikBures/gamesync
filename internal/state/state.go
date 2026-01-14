@@ -51,7 +51,10 @@ func Write(state map[string]FileMeta, path string) error {
 
 	if err := os.WriteFile(path, stateJson, 0664)
 	err != nil {
-		os.Remove(path)
+		errRemove := os.RemoveAll(path)
+		if errRemove != nil {
+			return fmt.Errorf("%w, %w", err, errRemove)
+		}
 		return err
 	}
 
