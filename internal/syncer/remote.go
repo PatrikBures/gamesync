@@ -2,9 +2,12 @@ package syncer
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"gamesync/internal/config"
+	"gamesync/internal/state"
 	"os/exec"
+	"path"
 )
 
 func RemoveSaveGame(gameID string, server config.ServerConfig, verbose bool) (string, error) {
@@ -49,4 +52,19 @@ func RunCmd(server config.ServerConfig, verbose bool, cmds ...string) (string, e
 	}
 
 	return outStr, nil
+}
+
+func GetRemoteState(gameID string, server config.ServerConfig, verbose bool) (map[string]state.FileMeta, error) {
+	output, err := RunCmd(server, verbose, "gamesync-state", "/"+path.Join("data", "saves", server.User, gameID))
+	if err != nil {
+		return nil, err
+	}
+
+	s := make(map[string]state.FileMeta)
+
+	if err := json.Unmarshal([]byte(output), &s); err != nil {
+		return nil, err
+	}
+
+	return s, nil
 }
