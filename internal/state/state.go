@@ -22,6 +22,9 @@ func Get(root string) (map[string]FileMeta, error) {
 			if d.IsDir() { return nil }
 
 			relPath, err := filepath.Rel(root, path)
+			if err != nil {
+				return err
+			}
 
 			info, _ := d.Info()
 			results[relPath] = FileMeta{

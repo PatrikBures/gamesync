@@ -28,6 +28,10 @@ var syncCmd = &cobra.Command{
 		}
 
 		stateDir, err := config.GetStateDir()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error getting state dir: %v\n", err)
+		}
+
 		stateFile := filepath.Join(stateDir, game.ID+".json")
 		
 		if err := state.Write(s, stateFile); err != nil {
