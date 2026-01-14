@@ -20,6 +20,9 @@ func main() {
 	}
 
 	stateJson, err := json.Marshal(state)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error marshaling to json: %v\n", err)
+	}
 
 	fmt.Println(string(stateJson))
 }
