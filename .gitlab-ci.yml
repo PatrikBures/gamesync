@@ -10,7 +10,6 @@ lint-golang:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: 
-        - "client/**/*"
         - "*.go"
         - ".gitlab-ci.yml"
 
@@ -22,7 +21,7 @@ lint-golang:
   cache:
     key: 
       files:
-        - client/go.sum
+        - go.sum
       prefix: lint-client
     paths:
       - .go/pkg/mod
@@ -30,7 +29,6 @@ lint-golang:
       - .golangci-lint
 
   script:
-    - cd client
     - golangci-lint run
 build-client:
   stage: build
@@ -38,8 +36,7 @@ build-client:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
-    - cd client
-    - go build -o ../gamesync ./cmd/gamesync
+    - go build -o gamesync ./cmd/gamesync
   artifacts:
     paths:
       - gamesync
