@@ -1,5 +1,7 @@
 BIN_NAME := gamesync
 BIN_STATE_NAME := gamesync-state
+CONTAINER_NAME := $(BIN_NAME)
+VERSION ?= latest
 PREFIX ?= /usr/local
 BIN_DIR := $(DESTDIR)$(PREFIX)/bin
 MAN1_DIR := $(DESTDIR)$(PREFIX)/share/man/man1
@@ -41,8 +43,14 @@ go-install:
 	@echo "installing..."
 	go install ./cmd/gamesync
 
+
+
 build-state:
-	@echo "building $(BIN_STATE_NAME)"
+	@echo "building $(BIN_STATE_NAME)..."
 	go build -o server/$(BIN_STATE_NAME) ./cmd/gamesync-state
+
+build-container: build-state
+	@echo "building container..."
+	docker build ./server -t $(CONTAINER_NAME):$(VERSION)
 
 .PHONY: all build man install uninstall clean
