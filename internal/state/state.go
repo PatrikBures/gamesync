@@ -11,8 +11,9 @@ type FileMeta struct {
 	Size	int64 `json:"size"`
 }
 
-func GetState(path string) ([]FileMeta, error) {
-	var files []FileMeta
+func GetState(path string) (map[string]FileMeta, error) {
+	files := make(map[string]FileMeta)
+
 	err := filepath.Walk(path, 
 		func(path string, info fs.FileInfo, err error) error {
 			if err != nil {
@@ -23,12 +24,12 @@ func GetState(path string) ([]FileMeta, error) {
 				return nil
 			}
 
-			var file FileMeta
+			var meta FileMeta
 
-			file.ModTime = info.ModTime().Unix()
-			file.Size = info.Size()
+			meta.ModTime = info.ModTime().Unix()
+			meta.Size = info.Size()
 
-			files = append(files, file)
+			files[path] = meta
 
 			return nil
 		},
