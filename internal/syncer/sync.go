@@ -36,9 +36,9 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, ver
 
 	if verbose {
 		fmt.Printf("running this rsync command:\n%s\n", cmd.String())
+		cmd.Stdout = os.Stdout
 	}
 
-	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
