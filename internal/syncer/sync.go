@@ -25,9 +25,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, ver
 		src = remotePath
 		dest = localPath[:len(localPath)-1]
 	} else {
-		_, err := RunCmd(server, verbose, "mkdir", "-p", "/"+remoteDir)
-
-		if err != nil {
+		if _, err := RunCmd(server, verbose, "mkdir", "-p", "/"+remoteDir); err != nil {
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
 		src = localPath
