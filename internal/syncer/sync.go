@@ -253,7 +253,7 @@ func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force 
 	stateFile := filepath.Join(stateDir, game.ID+".json")
 	if newStateToSave != nil {
 		if err := state.Write(newStateToSave, stateFile); err != nil {
-			return fmt.Errorf("writing state to file: %s: %v\n",stateFile, err)
+			return fmt.Errorf("writing state to file: %s: %v",stateFile, err)
 		}
 		fmt.Println("Updated state file:", stateFile)
 	}
