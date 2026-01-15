@@ -34,7 +34,6 @@ var syncCmd = &cobra.Command{
 			os.Exit(42)
 		}
 
-
 		oldLocalState, err := state.GetOld(game.ID, verbose)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error getting old local state for game with id \"%s\": %v\n", game.ID, err)
@@ -47,7 +46,10 @@ var syncCmd = &cobra.Command{
 			os.Exit(44)
 		}
 
+		updateStateFile := false
+
 		compareResult, err := state.Compare(localState, oldLocalState, remoteState, false, verbose)
+
 		switch compareResult {
 		case state.SyncStateConflict:
 			fmt.Println("Conflict! Local and remote changes, aborting.")
@@ -57,8 +59,9 @@ var syncCmd = &cobra.Command{
 			if err := syncer.SyncGame(*game, config.Current.Server, false, verbose); err != nil {
 				fmt.Fprintf(os.Stderr, "Error pushing game: %v\n", err)
 			}
-
 			fmt.Println("Local changes, pushing.")
+
+			updateStateFile = true
 		case state.SyncStatePull:
 			fmt.Println("Remote changes, pulling.")
 
@@ -71,19 +74,20 @@ var syncCmd = &cobra.Command{
 				fmt.Fprintf(os.Stderr, "Error getting local state of game with id \"%s\": %v\n", game.ID, err)
 				os.Exit(42)
 			}
-		
+			updateStateFile = true
 		case state.SyncStateError:
 			fmt.Fprintf(os.Stderr, "Error comparing states: %v\n", err)
 		default:
 			panic(fmt.Errorf("unknown state from state.Compare(): %d", compareResult))
 		}
 
-
-
-		stateFile := filepath.Join(stateDir, game.ID+".json")
-		if err := state.Write(localState, stateFile); err != nil {
-			fmt.Fprintf(os.Stderr, "Error writing state for game with id \"%s\":%v\n", game.ID, err)
-			os.Exit(43)
+		if updateStateFile {
+			stateFile := filepath.Join(stateDir, game.ID+".json")
+			if err := state.Write(localState, stateFile); err != nil {
+				fmt.Fprintf(os.Stderr, "Error writing state for game with id \"%s\":%v\n", game.ID, err)
+				os.Exit(43)
+			}
+			fmt.Println("Updated state file:", stateFile)
 		}
 	},
 }
