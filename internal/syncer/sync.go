@@ -177,7 +177,7 @@ func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force 
 
 	oldLocalState, err := state.GetOld(game.ID, verbose)
 	if err != nil {
-		return fmt.Errorf("getting old local state: %v\n", err)
+		return fmt.Errorf("getting old local state: %v", err)
 	}
 
 	remoteState, err := GetRemoteState(game.ID, config.Current.Server, verbose)
@@ -187,7 +187,7 @@ func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force 
 
 	compareResult, err := state.Compare(localState, oldLocalState, remoteState, false, verbose)
 	if err != nil {
-		return fmt.Errorf("comparing states: %v\n", err)
+		return fmt.Errorf("comparing states: %v", err)
 	}
 
 	var newStateToSave map[string]state.FileMeta = nil
@@ -197,7 +197,7 @@ func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force 
 		fmt.Println("Already in sync, nothing to do.")
 		return nil
 	case state.SyncStateError:
-		return fmt.Errorf("error during state comparison: %v\n", err)
+		return fmt.Errorf("error during state comparison: %v", err)
 	}
 
 	switch mode {
