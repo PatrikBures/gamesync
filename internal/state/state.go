@@ -66,15 +66,16 @@ func Write(state map[string]FileMeta, path string) error {
 	return nil
 }
 
+type SyncState int
 const (
-	SyncStateConflict = iota
+	SyncStateConflict SyncState = iota
 	SyncStatePull
 	SyncStatePush
 	SyncStateUnchanged
 	SyncStateError
 )
 
-func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, remoteState map[string]FileMeta, loose bool, verbose bool) (int, error) {
+func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, remoteState map[string]FileMeta, loose bool, verbose bool) (SyncState, error) {
 	localChange := true
 	remoteChange := true
 
