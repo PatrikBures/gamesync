@@ -162,27 +162,27 @@ const (
 func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force bool, verbose bool) error {
 	game, _, err := config.GetGame(gameID)
 	if err != nil {
-		return fmt.Errorf("Error getting game: %v\n", err)
+		return fmt.Errorf("getting game: %v", err)
 	}
 
 	stateDir, err := config.GetStateDir()
 	if err != nil {
-		return fmt.Errorf("Error getting state dir: %v\n", err)
+		return fmt.Errorf("getting state dir: %v", err)
 	}
 
 	localState, err := state.Get(game.SavePath)
 	if err != nil {
-		return fmt.Errorf("Error getting local state of game with id \"%s\": %v\n", game.ID, err)
+		return fmt.Errorf("getting local state: %v", err)
 	}
 
 	oldLocalState, err := state.GetOld(game.ID, verbose)
 	if err != nil {
-		return fmt.Errorf("Error getting old local state for game with id \"%s\": %v\n", game.ID, err)
+		return fmt.Errorf("getting old local state: %v\n", err)
 	}
 
 	remoteState, err := GetRemoteState(game.ID, config.Current.Server, verbose)
 	if err != nil {
-		return fmt.Errorf("Error getting remote state of game with id \"%s\": %v\n", game.ID, err)
+		return fmt.Errorf("getting remote state: %v", err)
 	}
 
 	compareResult, err := state.Compare(localState, oldLocalState, remoteState, false, verbose)
