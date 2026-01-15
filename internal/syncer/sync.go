@@ -19,19 +19,22 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, ver
 	sshCmd := fmt.Sprintf("ssh -p %s -i %s", server.Port, server.IdentityFile)
 	var cmd *exec.Cmd
 
-	flags := "-azhPv"
+	var src, dest string
 
 	if pull {
-		cmd = exec.Command("rsync", flags, "--delete", "-e", sshCmd, remotePath, localPath[:len(localPath)-1])
+		src = remotePath
+		dest = localPath[:len(localPath)-1]
 	} else {
 		_, err := RunCmd(server, verbose, "mkdir", "-p", "/"+remoteDir)
 
 		if err != nil {
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
-
-		cmd = exec.Command("rsync", flags, "--delete", "-e", sshCmd, localPath, remotePath[:len(remotePath)-1])
+		src = localPath
+		dest = remotePath[:len(remotePath)-1]
 	}
+
+	cmd = exec.Command("rsync", "-azhPv", "--delete", "-e", sshCmd, src, dest)
 
 	if verbose {
 		fmt.Printf("running this rsync command:\n%s\n", cmd.String())
