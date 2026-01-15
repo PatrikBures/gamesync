@@ -25,7 +25,9 @@ func GetOld(gameID string, verbose bool) (map[string]FileMeta, error) {
 
 	state := make(map[string]FileMeta)
 
-	json.Unmarshal(stateBytes, &state)
+	if err := json.Unmarshal(stateBytes, &state); err != nil {
+		return nil, err
+	}
 
 	return state, nil
 }
