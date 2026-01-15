@@ -53,6 +53,7 @@ var syncCmd = &cobra.Command{
 		switch compareResult {
 		case state.SyncStateConflict:
 			fmt.Println("Conflict! Local and remote changes, aborting.")
+			os.Exit(100)
 		case state.SyncStateUnchanged:
 			fmt.Println("Already in sync, nothing to do.")
 		case state.SyncStatePush:
