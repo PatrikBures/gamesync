@@ -53,6 +53,7 @@ build-server:
     BUILDAH_ISOLATION: chroot
 
   script:
+    - make build-container
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - buildah build -t "$CI_REGISTRY_IMAGE:latest" ./server
     - buildah push "$CI_REGISTRY_IMAGE:latest"
