@@ -67,11 +67,11 @@ func Write(state map[string]FileMeta, path string) error {
 }
 
 const (
-	CompareStateConflict = iota
-	CompareStatePull
-	CompareStatePush
-	CompareStateUnchanged
-	CompareStateError
+	SyncStateConflict = iota
+	SyncStatePull
+	SyncStatePush
+	SyncStateUnchanged
+	SyncStateError
 )
 
 func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, remoteState map[string]FileMeta, loose bool, verbose bool) (int, error) {
@@ -87,12 +87,12 @@ func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, 
 		remoteChange = false
 	}
 
-	if localChange  && remoteChange  { return CompareStateConflict, nil }
-	if localChange  && !remoteChange { return CompareStatePush, nil }
-	if !localChange && remoteChange  { return CompareStatePull, nil }
-	if !localChange && !remoteChange { return CompareStateUnchanged, nil }
+	if localChange  && remoteChange  { return SyncStateConflict, nil }
+	if localChange  && !remoteChange { return SyncStatePush, nil }
+	if !localChange && remoteChange  { return SyncStatePull, nil }
+	if !localChange && !remoteChange { return SyncStateUnchanged, nil }
 
-	return CompareStateError, fmt.Errorf("there is something very wrong, this error should not be possible")
+	return SyncStateError, fmt.Errorf("there is something very wrong, this error should not be possible")
 }
 
 func stateEqual(state1 map[string]FileMeta, state2 map[string]FileMeta, loose bool, verbose bool) bool {

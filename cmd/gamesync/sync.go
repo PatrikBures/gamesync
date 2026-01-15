@@ -49,17 +49,17 @@ var syncCmd = &cobra.Command{
 
 		compareResult, err := state.Compare(localState, oldLocalState, remoteState, false, verbose)
 		switch compareResult {
-		case state.CompareStateConflict:
+		case state.SyncStateConflict:
 			fmt.Println("Conflict! Local and remote changes, aborting.")
-		case state.CompareStateUnchanged:
+		case state.SyncStateUnchanged:
 			fmt.Println("Already in sync, nothing to do.")
-		case state.CompareStatePush:
+		case state.SyncStatePush:
 			if err := syncer.SyncGame(*game, config.Current.Server, false, verbose); err != nil {
 				fmt.Fprintf(os.Stderr, "Error pushing game: %v\n", err)
 			}
 
 			fmt.Println("Local changes, pushing.")
-		case state.CompareStatePull:
+		case state.SyncStatePull:
 			fmt.Println("Remote changes, pulling.")
 
 			if err := syncer.SyncGame(*game, config.Current.Server, true, verbose); err != nil {
@@ -72,7 +72,7 @@ var syncCmd = &cobra.Command{
 				os.Exit(42)
 			}
 		
-		case state.CompareStateError:
+		case state.SyncStateError:
 			fmt.Fprintf(os.Stderr, "Error comparing states: %v\n", err)
 		default:
 			panic(fmt.Errorf("unknown state from state.Compare(): %d", compareResult))
