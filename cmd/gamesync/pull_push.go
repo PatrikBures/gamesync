@@ -8,6 +8,8 @@ import (
 	"gamesync/internal/syncer"
 )
 
+var pullPushForce bool
+
 var pullCmd = &cobra.Command{
 	Use: "pull GAME_ID",
 	Short: "Pull the save if remote is newer",
@@ -16,7 +18,7 @@ var pullCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 
-		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, false, verbose); err != nil {
+		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, pullPushForce, verbose); err != nil {
 			fmt.Fprintf(os.Stderr, "Error pulling: %v\n", err)
 			os.Exit(20)
 		}
@@ -31,7 +33,7 @@ var pushCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 
-		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, false, verbose); err != nil {
+		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, pullPushForce, verbose); err != nil {
 			fmt.Fprintf(os.Stderr, "Error pushing: %v\n", err)
 			os.Exit(20)
 		}
@@ -40,5 +42,8 @@ var pushCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(pullCmd)
+	pullCmd.Flags().BoolVarP(&pullPushForce, "force", "f", false, "Overwrite local save with remote")
+
 	rootCmd.AddCommand(pushCmd)
+	pushCmd.Flags().BoolVarP(&pullPushForce, "force", "f", false, "Overwrite remote save with local")
 }
