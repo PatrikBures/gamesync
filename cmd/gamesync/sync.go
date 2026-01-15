@@ -75,7 +75,7 @@ var syncCmd = &cobra.Command{
 		case state.CompareStateError:
 			fmt.Fprintf(os.Stderr, "Error comparing states: %v\n", err)
 		default:
-			panic(fmt.Errorf("Unknown state from state.Compare(): %d", compareResult))
+			panic(fmt.Errorf("unknown state from state.Compare(): %d", compareResult))
 		}
 
 

@@ -92,7 +92,7 @@ func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, 
 	if !localChange && remoteChange  { return CompareStatePull, nil }
 	if !localChange && !remoteChange { return CompareStateUnchanged, nil }
 
-	return CompareStateError, fmt.Errorf("There is something very wrong, this error should not be possible")
+	return CompareStateError, fmt.Errorf("there is something very wrong, this error should not be possible")
 }
 
 func stateEqual(state1 map[string]FileMeta, state2 map[string]FileMeta, loose bool, verbose bool) bool {
