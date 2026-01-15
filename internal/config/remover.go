@@ -7,7 +7,7 @@ import (
 
 func RemoveGames(gameIdsToRemove []string, configPath string) error {
 	gamesRemovedQty := 0
-	var gamesRemoved []*GameConfig
+	var gamesRemoved []GameConfig
 
 	for _, gameIdToRemove := range gameIdsToRemove {
 		found := false
@@ -15,7 +15,7 @@ func RemoveGames(gameIdsToRemove []string, configPath string) error {
 		for i, game := range Current.Games {
 			if gameIdToRemove == game.ID {
 				Current.Games = slices.Delete(Current.Games, i, i+1)
-				gamesRemoved = append(gamesRemoved, &game)
+				gamesRemoved = append(gamesRemoved, game)
 				gamesRemovedQty++
 				found = true
 				break
