@@ -44,7 +44,7 @@ build-client:
   
 build-server-binary:
   stage: build
-  image: golang:1.25:alpine
+  image: golang:1.25-alpine
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
