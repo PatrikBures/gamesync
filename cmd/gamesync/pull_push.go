@@ -40,7 +40,7 @@ func pushOrPull(gameID string, pull bool) error {
 		return err
 	}
 
-	if err := syncer.SyncGame(*game, config.Current.Server, pull, verbose); err != nil {
+	if err := syncer.SyncGame(game, config.Current.Server, pull, verbose); err != nil {
 		return err
 	}
 
