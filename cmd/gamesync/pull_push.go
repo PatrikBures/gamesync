@@ -14,8 +14,10 @@ var pullCmd = &cobra.Command{
 	Example: "gamesync pull openttd",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := pushOrPull(args[0], true); err != nil {
-			fmt.Printf("Error pulling, %v\n", err)
+		gameID := args[0]
+
+		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, false, verbose); err != nil {
+			fmt.Fprintf(os.Stderr, "Error pulling: %v\n", err)
 			os.Exit(20)
 		}
 	},
@@ -27,24 +29,13 @@ var pushCmd = &cobra.Command{
 	Example: "gamesync push openttd",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := pushOrPull(args[0], false); err != nil {
-			fmt.Printf("Error pushing, %v\n", err)
-			os.Exit(21)
+		gameID := args[0]
+
+		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, false, verbose); err != nil {
+			fmt.Fprintf(os.Stderr, "Error pushing: %v\n", err)
+			os.Exit(20)
 		}
 	},
-}
-
-func pushOrPull(gameID string, pull bool) error {
-	game, _, err := config.GetGame(gameID)
-	if err != nil {
-		return err
-	}
-
-	if err := syncer.SyncGame(game, config.Current.Server, pull, verbose); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func init() {
