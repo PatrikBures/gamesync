@@ -94,6 +94,8 @@ upload-client:
       curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
     - |
       curl --request DELETE --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${VERSION}" || true
+    - |
+      curl --request DELETE --header "PRIVATE-TOKEN: ${RELEASE_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags/${VERSION}" || true
 
 release-client-latest:
   stage: release
@@ -103,8 +105,8 @@ release-client-latest:
   script:
     - export GITLAB_TOKEN=$RELEASE_TOKEN
     - export GITLAB_HOST=$CI_SERVER_URL
-    - git tag -f $VERSION $CI_COMMIT_SHA
-    - git push -f origin $VERSION
     - |
-      glab release create "$VERSION" --name "Release $VERSION" \
+      glab release create "$VERSION" \
+      --ref "$CI_COMMIT_SHA" \
+      --name "Release $VERSION" \
       --assets-links="[{\"name\":\"${LINUX_AMD64_BINARY}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}\"}]"
