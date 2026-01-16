@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 	"path/filepath"
 
 	"gamesync/internal/config"
@@ -19,11 +18,11 @@ var rootCmd = &cobra.Command{
 	Short: "Syncs save games to a server",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if configFile == "" {
-			home, err := os.UserHomeDir()
+			configDir, err := config.GetConfigDir()
 			if err != nil {
-				return fmt.Errorf("could not find home directory: %w", err)
+				return fmt.Errorf("error getting config dir: %w", err)
 			}
-			configFile = filepath.Join(home, ".config", "gamesync", "config.yml")
+			configFile = filepath.Join(configDir, "config.yml")
 		} else {
 			var err error
 			configFile, err = filepath.Abs(configFile)

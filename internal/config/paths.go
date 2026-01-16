@@ -25,3 +25,18 @@ func GetStateDir() (string, error) {
 
 	return stateDir, nil
 }
+
+func GetConfigDir() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+
+	configDir = filepath.Join(configDir, "gamesync")
+
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return "", err
+	}
+
+	return configDir, nil
+}
