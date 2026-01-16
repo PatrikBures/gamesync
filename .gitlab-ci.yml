@@ -35,6 +35,9 @@ build-client:
   image: golang:1.25-alpine
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+      changes: 
+        - "**/*.go"
+        - ".gitlab-ci.yml"
   script:
     - go build -o gamesync ./cmd/gamesync
   artifacts:
@@ -47,6 +50,10 @@ build-server-binary:
   image: golang:1.25-alpine
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+      changes: 
+        - "cmd/gamesync-state/*.go"
+        - "server/*"
+        - ".gitlab-ci.yml"
   script:
     - go build -o server/gamesync-state ./cmd/gamesync-state
   artifacts:
