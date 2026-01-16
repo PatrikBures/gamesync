@@ -103,6 +103,7 @@ release-client-latest:
   needs:
     - job: upload-client
   script:
+    - export GITLAB_TOKEN=$RELEASE_TOKEN
     - |
       glab release create "$CI_COMMIT_TAG" --name "Release $CI_COMMIT_TAG" \
       --assets-links="[{\"name\":\"${LINUX_AMD64_BINARY}\",\"url\":\"{PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}\"}]"
