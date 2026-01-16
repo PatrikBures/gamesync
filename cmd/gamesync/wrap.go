@@ -41,14 +41,8 @@ var wrapCmd = &cobra.Command{
 
 		gameID := userArgs[0]
 
-		game, _, err := config.GetGame(gameID)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
 		// pulls
-		if err := syncer.SyncGame(game, config.Current.Server, true, verbose); err != nil {
+		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, false, verbose); err != nil {
 			fmt.Printf("WARNING: Pulling save failed: %v\n", err)
 			if wrapNotify { ui.Notify("error", "pulling save") }
 		} else {
@@ -74,7 +68,7 @@ var wrapCmd = &cobra.Command{
 		}
 
 		// pushes
-		if err := syncer.SyncGame(game, config.Current.Server, false, verbose); err != nil {
+		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, false, verbose); err != nil {
 			fmt.Printf("WARNING: Pushing save failed: %v\n", err)
 			if wrapNotify { ui.Notify("error", "pushing save") }
 		} else {
