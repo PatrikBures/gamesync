@@ -106,12 +106,3 @@ release-client-latest:
     - |
       glab release create "$CI_COMMIT_TAG" --name "Release $CI_COMMIT_TAG" \
       --assets-links="[{\"name\":\"${LINUX_AMD64_BINARY}\",\"url\":\"{PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}\"}]"
-  release:
-    name: "Latest Release"
-    description: "Latest build from main branch (Commit $CI_COMMIT_SHORT_SHA)"
-    tag_name: "$CI_COMMIT_TAG"
-    ref: "$CI_COMMIT_SHA"
-    assets:
-      links:
-        - name: "Download gamesync (latest)"
-          url: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/gamesync/latest/gamesync"
