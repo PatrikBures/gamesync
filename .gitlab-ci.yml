@@ -1,6 +1,7 @@
 stages:
   - test
   - build
+  - upload
   - release
 
 lint-golang:
@@ -79,12 +80,9 @@ build-server:
     - buildah build -t "$CI_REGISTRY_IMAGE:latest" ./server
     - buildah push "$CI_REGISTRY_IMAGE:latest"
 
-
-release-latest:
-  stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+upload-client:
+  stage: upload
+  image: curlimages/curl:latest
   needs:
     - job: build-client
       artifacts: true
@@ -94,13 +92,18 @@ release-latest:
 
     - |
       curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file gamesync "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/gamesync/latest/gamesync"
+    - |
       curl --request DELETE --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/latest" || true
-      curl --request DELETE --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags/latest" || true
 
+release-client-latest:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  needs:
+    - job: upload-client
   release:
     name: "Latest Release"
     description: "Latest build from main branch (Commit $CI_COMMIT_SHORT_SHA)"
-    tag_name: "latest"
+    tag_name: "$CI_COMMIT_TAG"
     ref: "$CI_COMMIT_SHA"
     assets:
       links:
