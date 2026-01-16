@@ -28,13 +28,13 @@ var savesAddCmd = &cobra.Command{
 
 		savePath, err := filepath.Abs(args[1])
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintf(os.Stderr, "Error getting absolute path: %v\n", err)
 			os.Exit(2)
 		}
 
 		
 		if err := config.AddSave(gameID, savePath, configFile, savesAddUpdate); err != nil {
-			fmt.Println("Error adding save:", err)
+			fmt.Fprintf(os.Stderr, "Error adding save: %v\n", err)
 			os.Exit(2)
 		}
 	},
@@ -57,12 +57,12 @@ var savesLsCmd = &cobra.Command{
 			}
 
 			if err != nil {
-				fmt.Println("Error printing:", err)
+				fmt.Fprintf(os.Stderr, "Error printing: %v\n", err)
 			}
 		}
 
 		if err := w.Flush(); err != nil {
-			fmt.Println("Error flushing:", err)
+			fmt.Fprintf(os.Stderr, "Error flushing: %v\n", err)
 		}
 	},
 }
@@ -75,7 +75,7 @@ var savesRmCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := config.RemoveGames(args, configFile)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintf(os.Stderr, "Error removing games: %v\n", err)
 			os.Exit(23)
 		}
 	},

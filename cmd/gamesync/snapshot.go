@@ -25,7 +25,8 @@ var snapshotCreateCmd = &cobra.Command{
 		gameID := args[0]
 
 		if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID); err != nil {
-			fmt.Println("Error creating a snapshot save:", err)
+			fmt.Fprintf(os.Stderr, "Error creating a snapshot: %v\n", err)
+			os.Exit(4)
 		}
 	},
 }
@@ -42,25 +43,28 @@ var snapshotLsCmd = &cobra.Command{
 
 		snapshots, err := syncer.ListSnapshots(config.Current.Server, verbose, gameID)
 		if err != nil {
-			fmt.Printf("Error listing snapshots: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Error getting list of snapshots: %v\n", err)
+			os.Exit(4)
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 
 
-		var printErr error
-		_, printErr = fmt.Fprintf(w, "Name:\tHostname:\tTime:\n")
-
-		for _, snapshot := range snapshots {
-			_, printErr = fmt.Fprintf(w, "%s\t%s\t%s\n", filepath.Base(snapshot.Paths[0]), snapshot.Hostname, snapshot.Time.Format(time.DateTime))
+		if _, err = fmt.Fprintf(w, "Name:\tHostname:\tTime:\n"); err != nil {
+			fmt.Fprintf(os.Stderr, "Error adding table header to writer: %v\n", err)
+			os.Exit(4)
 		}
 
-		if printErr != nil {
-			fmt.Println("Error printing:", printErr)
+		for _, snapshot := range snapshots {
+			if _, err = fmt.Fprintf(w, "%s\t%s\t%s\n", filepath.Base(snapshot.Paths[0]), snapshot.Hostname, snapshot.Time.Format(time.DateTime)); err != nil {
+				fmt.Fprintf(os.Stderr, "Error adding row to writer: %v\n", err)
+				os.Exit(4)
+			}
 		}
 
 		if err := w.Flush(); err != nil {
-			fmt.Println("Error flushing:", err)
+			fmt.Fprintf(os.Stderr, "Error flushing: %v\n", err)
+			os.Exit(4)
 		}
 	},
 }
