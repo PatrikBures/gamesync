@@ -92,9 +92,6 @@ upload-client:
     - job: build-client
       artifacts: true
   script:
-    - echo "Preparing release..."
-    - apk add --no-cache curl
-
     - |
       curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
     - |
