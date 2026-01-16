@@ -105,6 +105,8 @@ release-client-latest:
   script:
     - export GITLAB_TOKEN=$RELEASE_TOKEN
     - export GITLAB_HOST=$CI_SERVER_URL
+    - glab release delete $VERSION -y || true
+    - glab api "projects/$CI_PROJECT_ID/repository/tags/$VERSION" -X DELETE || true
     - |
       glab release create "$VERSION" \
       --ref "$CI_COMMIT_SHA" \
