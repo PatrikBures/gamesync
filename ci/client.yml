@@ -7,7 +7,7 @@ lint-golang:
       changes: 
         - "**/*.go"
         - ".gitlab-ci.yml"
-        - "/ci/*"
+        - "ci/*"
 
   variables:
     GOPATH: $CI_PROJECT_DIR/.go
@@ -35,7 +35,7 @@ build-client:
       changes: 
         - "**/*.go"
         - ".gitlab-ci.yml"
-        - "/ci/*"
+        - "ci/*"
   script:
     - go build -o gamesync ./cmd/gamesync
   artifacts:
@@ -51,7 +51,7 @@ upload-client:
       changes: 
         - "**/*.go"
         - ".gitlab-ci.yml"
-        - "/ci/*"
+        - "ci/*"
   needs:
     - job: build-client
       artifacts: true
@@ -69,7 +69,7 @@ release-client:
       changes: 
         - "**/*.go"
         - ".gitlab-ci.yml"
-        - "/ci/*"
+        - "ci/*"
   needs:
     - job: upload-client
   script:
