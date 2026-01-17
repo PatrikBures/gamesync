@@ -7,6 +7,7 @@ build-server-binary:
         - "cmd/gamesync-state/*.go"
         - "server/*"
         - ".gitlab-ci.yml"
+        - "/ci/*"
   script:
     - go build -o server/gamesync-state ./cmd/gamesync-state
   artifacts:
@@ -23,6 +24,7 @@ build-server:
         - "cmd/gamesync-state/*.go"
         - "server/*"
         - ".gitlab-ci.yml"
+        - "/ci/*"
   needs:
     - job: build-server-binary
       artifacts: true
