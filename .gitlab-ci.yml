@@ -36,6 +36,7 @@ lint-golang:
 
   script:
     - golangci-lint run
+
 build-client:
   stage: build
   image: golang:1.25-alpine
@@ -50,7 +51,50 @@ build-client:
     paths:
       - gamesync
     expire_in: 15 min
-  
+
+upload-client:
+  stage: upload
+  image: curlimages/curl:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes: 
+        - "**/*.go"
+        - ".gitlab-ci.yml"
+  needs:
+    - job: build-client
+      artifacts: true
+  script:
+    - |
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
+    - |
+      curl --request DELETE --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${VERSION}" || true
+    - |
+      curl --request DELETE --header "PRIVATE-TOKEN: ${RELEASE_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags/${VERSION}" || true
+
+release-client-latest:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes: 
+        - "**/*.go"
+        - ".gitlab-ci.yml"
+  needs:
+    - job: upload-client
+  script:
+    - export GITLAB_TOKEN=$RELEASE_TOKEN
+    - export GITLAB_HOST=$CI_SERVER_URL
+    - glab release delete $VERSION -y || true
+    - glab api "projects/$CI_PROJECT_ID/repository/tags/$VERSION" -X DELETE || true
+    - |
+      glab release create "$VERSION" \
+      --ref "$CI_COMMIT_SHA" \
+      --name "Release $VERSION" \
+      --assets-links="[{\"name\":\"${LINUX_AMD64_BINARY}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}\"}]"
+
+
+
+
 build-server-binary:
   stage: build
   image: golang:1.25-alpine
@@ -70,6 +114,12 @@ build-server-binary:
 build-server:
   stage: build
   image: quay.io/buildah/stable:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes: 
+        - "cmd/gamesync-state/*.go"
+        - "server/*"
+        - ".gitlab-ci.yml"
   needs:
     - job: build-server-binary
       artifacts: true
@@ -82,33 +132,3 @@ build-server:
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - buildah build -t "$CI_REGISTRY_IMAGE:${VERSION}" ./server
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}"
-
-upload-client:
-  stage: upload
-  image: curlimages/curl:latest
-  needs:
-    - job: build-client
-      artifacts: true
-  script:
-    - |
-      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
-    - |
-      curl --request DELETE --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${VERSION}" || true
-    - |
-      curl --request DELETE --header "PRIVATE-TOKEN: ${RELEASE_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags/${VERSION}" || true
-
-release-client-latest:
-  stage: release
-  image: registry.gitlab.com/gitlab-org/cli:latest
-  needs:
-    - job: upload-client
-  script:
-    - export GITLAB_TOKEN=$RELEASE_TOKEN
-    - export GITLAB_HOST=$CI_SERVER_URL
-    - glab release delete $VERSION -y || true
-    - glab api "projects/$CI_PROJECT_ID/repository/tags/$VERSION" -X DELETE || true
-    - |
-      glab release create "$VERSION" \
-      --ref "$CI_COMMIT_SHA" \
-      --name "Release $VERSION" \
-      --assets-links="[{\"name\":\"${LINUX_AMD64_BINARY}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}\"}]"
