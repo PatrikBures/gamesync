@@ -7,6 +7,7 @@ lint-golang:
       changes: 
         - "**/*.go"
         - ".gitlab-ci.yml"
+        - "/ci/*"
 
   variables:
     GOPATH: $CI_PROJECT_DIR/.go
@@ -34,6 +35,7 @@ build-client:
       changes: 
         - "**/*.go"
         - ".gitlab-ci.yml"
+        - "/ci/*"
   script:
     - go build -o gamesync ./cmd/gamesync
   artifacts:
@@ -49,18 +51,17 @@ upload-client:
       changes: 
         - "**/*.go"
         - ".gitlab-ci.yml"
+        - "/ci/*"
   needs:
     - job: build-client
       artifacts: true
   script:
     - |
-      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
-    - |
-      curl --request DELETE --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${VERSION}" || true
-    - |
-      curl --request DELETE --header "PRIVATE-TOKEN: ${RELEASE_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/tags/${VERSION}" || true
+      curl \
+      --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+      --upload-file gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
 
-release-client-latest:
+release-client:
   stage: release
   image: registry.gitlab.com/gitlab-org/cli:latest
   rules:
@@ -68,6 +69,7 @@ release-client-latest:
       changes: 
         - "**/*.go"
         - ".gitlab-ci.yml"
+        - "/ci/*"
   needs:
     - job: upload-client
   script:
