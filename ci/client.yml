@@ -1,0 +1,84 @@
+lint-golang:
+  stage: test
+  image: golangci/golangci-lint:v2.8-alpine
+  
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: 
+        - "**/*.go"
+        - ".gitlab-ci.yml"
+        - "ci/*"
+
+  variables:
+    GOPATH: $CI_PROJECT_DIR/.go
+    GOCACHE: $CI_PROJECT_DIR/.go-build
+    GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.golangci-lint
+
+  cache:
+    key: 
+      files:
+        - go.sum
+      prefix: lint-client
+    paths:
+      - .go/pkg/mod
+      - .go-build
+      - .golangci-lint
+
+  script:
+    - golangci-lint run
+
+build-client:
+  stage: build
+  image: golang:1.25-alpine
+  rules:
+    - if: $DEPLOY
+      changes: 
+        - "**/*.go"
+        - ".gitlab-ci.yml"
+        - "ci/*"
+  script:
+    - go build -o gamesync ./cmd/gamesync
+  artifacts:
+    paths:
+      - gamesync
+    expire_in: 15 min
+
+upload-client:
+  stage: upload
+  image: curlimages/curl:latest
+  rules:
+    - if: $DEPLOY
+      changes: 
+        - "**/*.go"
+        - ".gitlab-ci.yml"
+        - "ci/*"
+  needs:
+    - job: build-client
+      artifacts: true
+  script:
+    - |
+      curl \
+      --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+      --upload-file gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
+
+release-client:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  rules:
+    - if: $DEPLOY
+      changes: 
+        - "**/*.go"
+        - ".gitlab-ci.yml"
+        - "ci/*"
+  needs:
+    - job: upload-client
+  script:
+    - export GITLAB_TOKEN=$RELEASE_TOKEN
+    - export GITLAB_HOST=$CI_SERVER_URL
+    - glab release delete $VERSION -y || true
+    - glab api "projects/$CI_PROJECT_ID/repository/tags/$VERSION" -X DELETE || true
+    - |
+      glab release create "$VERSION" \
+      --ref "$CI_COMMIT_SHA" \
+      --name "Release $VERSION" \
+      --assets-links="[{\"name\":\"${LINUX_AMD64_BINARY}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}\"}]"
