@@ -12,7 +12,7 @@ import (
 
 var saveCmd = &cobra.Command{
 	Use: "save",
-	Short: "Manage saves",
+	Short: "Manage game saves in local config",
 }
 
 var saveAddUpdate bool
