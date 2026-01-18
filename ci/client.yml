@@ -8,22 +8,6 @@ lint-golang:
         - "**/*.go"
         - ".gitlab-ci.yml"
         - "ci/*"
-
-  variables:
-    GOPATH: $CI_PROJECT_DIR/.go
-    GOCACHE: $CI_PROJECT_DIR/.go-build
-    GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.golangci-lint
-
-  cache:
-    key: 
-      files:
-        - go.sum
-      prefix: lint-client
-    paths:
-      - .go/pkg/mod
-      - .go-build
-      - .golangci-lint
-
   script:
     - golangci-lint run
 
