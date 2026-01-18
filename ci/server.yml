@@ -19,7 +19,9 @@
 build-server-binary:
   stage: build
   image: golang:1.25-alpine
-  extends: .container .arch
+  extends: 
+    - .container
+    - .arch
   before_script:
     - export GOOS=linux
     - export GOARCH=$ARCH
@@ -34,7 +36,10 @@ build-server-binary:
 build-server:
   stage: build
   image: quay.io/buildah/stable
-  extends: .container .setup-buildah .arch
+  extends:
+    - .container
+    - .setup-buildah
+    - .arch
   needs:
     - job: build-server-binary
       artifacts: true
@@ -61,7 +66,9 @@ build-server:
 create-manifest:
   stage: release
   image: quay.io/buildah/stable
-  extends: .container .setup-buildah
+  extends:
+    - .container
+    - .setup-buildah
   needs:
     - job: build-server
       artifacts: false
