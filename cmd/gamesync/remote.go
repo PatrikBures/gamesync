@@ -43,6 +43,8 @@ var remoteRmCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "Error removing save: %v\n%s", err, output)
 			os.Exit(3)
 		}
+
+		fmt.Println(gameID)
 	},
 }
 

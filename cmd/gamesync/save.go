@@ -10,18 +10,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var savesCmd = &cobra.Command{
-	Use: "saves",
-	Short: "Manage saves",
+var saveCmd = &cobra.Command{
+	Use: "save",
+	Short: "Manage game saves in local config",
 }
 
-var savesAddUpdate bool
-var savesLsQuiet bool
+var saveAddUpdate bool
+var saveLsQuiet bool
 
-var savesAddCmd = &cobra.Command{
+var saveAddCmd = &cobra.Command{
 	Use: "add GAME_ID SAVE_PATH",
 	Short: "Add save dir of a game to sync",
-	Example: "gamesync saves add openttd -d ~/.local/share/openttd/save",
+	Example: "gamesync save add openttd -d ~/.local/share/openttd/save",
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
@@ -33,14 +33,14 @@ var savesAddCmd = &cobra.Command{
 		}
 
 		
-		if err := config.AddSave(gameID, savePath, configFile, savesAddUpdate); err != nil {
+		if err := config.AddSave(gameID, savePath, configFile, saveAddUpdate); err != nil {
 			fmt.Fprintf(os.Stderr, "Error adding save: %v\n", err)
 			os.Exit(2)
 		}
 	},
 }
 
-var savesLsCmd = &cobra.Command{
+var saveLsCmd = &cobra.Command{
 	Use: "ls",
 	Short: "List all games in local config",
 	Args: cobra.ExactArgs(0),
@@ -50,7 +50,7 @@ var savesLsCmd = &cobra.Command{
 		for _, game := range config.Current.Games {
 			var err error
 
-			if savesLsQuiet {
+			if saveLsQuiet {
 				_, err = fmt.Fprintf(w, "%s\n", game.ID)
 			} else {
 				_, err = fmt.Fprintf(w, "%s\t%s\n", game.ID, game.SavePath)
@@ -67,7 +67,7 @@ var savesLsCmd = &cobra.Command{
 	},
 }
 
-var savesRmCmd = &cobra.Command{
+var saveRmCmd = &cobra.Command{
 	Use: "rm GAME_ID...",
 	Short: "Remove a game ids from config",
 	Long: `Does not remove the save dir`,
@@ -82,12 +82,12 @@ var savesRmCmd = &cobra.Command{
 }
 
 func init() {
-	savesCmd.AddCommand(savesAddCmd)
-	savesAddCmd.Flags().BoolVarP(&savesAddUpdate, "update", "u", false, "Skips checking if gameID already exists")
+	saveCmd.AddCommand(saveAddCmd)
+	saveAddCmd.Flags().BoolVarP(&saveAddUpdate, "update", "u", false, "Skips checking if gameID already exists")
 
-	savesCmd.AddCommand(savesLsCmd)
-	savesLsCmd.Flags().BoolVarP(&savesLsQuiet, "quiet", "q", false, "Only prints gameIDs")
-	savesCmd.AddCommand(savesRmCmd)
+	saveCmd.AddCommand(saveLsCmd)
+	saveLsCmd.Flags().BoolVarP(&saveLsQuiet, "quiet", "q", false, "Only prints gameIDs")
+	saveCmd.AddCommand(saveRmCmd)
 
-	rootCmd.AddCommand(savesCmd)
+	rootCmd.AddCommand(saveCmd)
 }
