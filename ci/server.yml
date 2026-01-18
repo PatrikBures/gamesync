@@ -29,7 +29,7 @@ build-server:
     - job: build-server-binary
       artifacts: true
   variables:
-    STORAGE_DRIVER: overlay
+    STORAGE_DRIVER: vfs
     BUILDAH_FORMAT: docker
     BUILDAH_ISOLATION: chroot
 
