@@ -7,18 +7,27 @@
         - ".gitlab-ci.yml"
         - "ci/*"
 
-build-server-binary:
-  stage: build
-  image: golang:1.25-alpine
-  extends: .container
-  script:
-    - export GOOS=linux
-    - export GOARCH=$ARCH
-    - mkdir -p bin
-    - go build -o bin/gamesync-state-$ARCH ./cmd/gamesync-state
+.setup-buildah:
+  before_script:
+    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+.arch:
   parallel:
     matrix:
       - ARCH: [amd64, arm64]
+
+build-server-binary:
+  stage: build
+  image: golang:1.25-alpine
+  extends: 
+    - .container
+    - .arch
+  before_script:
+    - export GOOS=linux
+    - export GOARCH=$ARCH
+    - mkdir -p bin
+  script:
+    - go build -o bin/gamesync-state-$ARCH ./cmd/gamesync-state
   artifacts:
     paths:
       - bin/
@@ -27,7 +36,10 @@ build-server-binary:
 build-server:
   stage: build
   image: quay.io/buildah/stable
-  extends: .container
+  extends:
+    - .container
+    - .setup-buildah
+    - .arch
   needs:
     - job: build-server-binary
       artifacts: true
@@ -38,8 +50,6 @@ build-server:
 
   script:
     - mv bin/gamesync-state-$ARCH server/gamesync-state
-
-    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
     - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
 
@@ -53,14 +63,12 @@ build-server:
 
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
 
-  parallel:
-    matrix:
-      - ARCH: [amd64, arm64]
-
 create-manifest:
   stage: release
   image: quay.io/buildah/stable
-  extends: .container
+  extends:
+    - .container
+    - .setup-buildah
   needs:
     - job: build-server
       artifacts: false
@@ -70,7 +78,6 @@ create-manifest:
     BUILDAH_FORMAT: docker
 
   script:
-    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - buildah manifest create ${CI_REGISTRY_IMAGE}:${VERSION}
 
     - buildah manifest add ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:${VERSION}-amd64
