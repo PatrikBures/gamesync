@@ -1,6 +1,4 @@
-build-server-binary:
-  stage: build
-  image: golang:1.25-alpine
+.container:
   rules:
     - if: $DEPLOY
       changes: 
@@ -8,6 +6,11 @@ build-server-binary:
         - "server/*"
         - ".gitlab-ci.yml"
         - "ci/*"
+
+build-server-binary:
+  stage: build
+  image: golang:1.25-alpine
+  extends: .container
   script:
     - export GOOS=linux
     - export GOARCH=$ARCH
@@ -24,13 +27,7 @@ build-server-binary:
 build-server:
   stage: build
   image: quay.io/buildah/stable
-  rules:
-    - if: $DEPLOY
-      changes: 
-        - "cmd/gamesync-state/*.go"
-        - "server/*"
-        - ".gitlab-ci.yml"
-        - "ci/*"
+  extends: .container
   needs:
     - job: build-server-binary
       artifacts: true
@@ -63,13 +60,7 @@ build-server:
 create-manifest:
   stage: release
   image: quay.io/buildah/stable
-  rules:
-    - if: $DEPLOY
-      changes: 
-        - "cmd/gamesync-state/*.go"
-        - "server/*"
-        - ".gitlab-ci.yml"
-        - "ci/*"
+  extends: .container
   needs:
     - job: build-server
       artifacts: false
