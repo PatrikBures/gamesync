@@ -50,17 +50,16 @@ build-server:
     BUILDAH_ISOLATION: chroot
 
   script:
-    - mv bin/gamesync-state-$ARCH server/gamesync-state
-
     - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
 
     - |
       buildah build \
       --arch $ARCH \
+      --build-arg GAMESYNC_STATE_PATH=bin/gamesync-state-$ARCH
       --layers \
       --cache-from "$CI_REGISTRY_IMAGE" \
       -t "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}" \
-      ./server
+      ./
 
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
 
