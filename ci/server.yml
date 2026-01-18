@@ -9,7 +9,13 @@ build-server-binary:
         - ".gitlab-ci.yml"
         - "ci/*"
   script:
-    - go build -o server/gamesync-state ./cmd/gamesync-state
+    - export GOOS=linux
+    - export GOARCH=$ARCH
+    - mkdir -p bin
+    - go build -o bin/gamesync-state-$ARCH ./cmd/gamesync-state
+  parallel:
+    matrix:
+      - ARCH: [amd64, arm64]
   artifacts:
     paths:
       - server/gamesync-state
@@ -34,14 +40,45 @@ build-server:
     BUILDAH_ISOLATION: chroot
 
   script:
+    - mv bin/gamesync-state-$ARCH server/gamesync-state
+
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
     - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
 
     - |
       buildah build \
+      --arch $ARCH \
       --layers \
-      -t "$CI_REGISTRY_IMAGE:${VERSION}" \
+      -t "$CI_REGISTRY_IMAGE:${ARCH}" \
       ./server
 
-    - buildah push "$CI_REGISTRY_IMAGE:${VERSION}"
+    - buildah push "$CI_REGISTRY_IMAGE:${ARCH}"
+
+  parallel:
+    matrix:
+      - ARCH: [amd64, arm64]
+
+create-manifest:
+  stage: release
+  image: quay.io/buildah/stable
+  rules:
+    - if: $DEPLOY
+      changes: 
+        - "cmd/gamesync-state/*.go"
+        - "server/*"
+        - ".gitlab-ci.yml"
+        - "ci/*"
+  needs:
+    - job: build-server
+      artifacts: false
+  script:
+    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - buildah manifest create ${CI_REGISTRY_IMAGE}:${VERSION}
+
+    - buildah manifest add ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:amd64
+    - buildah manifest add ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:arm64
+
+    - buildah manifest push --all ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:latest
+
+
