@@ -55,7 +55,7 @@ build-server:
     - |
       buildah build \
       --arch $ARCH \
-      --build-arg GAMESYNC_STATE_PATH=bin/gamesync-state-$ARCH
+      --build-arg GAMESYNC_STATE_PATH=bin/gamesync-state-$ARCH \
       --layers \
       --cache-from "$CI_REGISTRY_IMAGE" \
       -t "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}" \
