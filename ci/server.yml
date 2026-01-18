@@ -4,6 +4,7 @@
       changes: 
         - "cmd/gamesync-state/*.go"
         - "server/*"
+        - "Dockerfile"
         - ".gitlab-ci.yml"
         - "ci/*"
 
