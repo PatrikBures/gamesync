@@ -51,7 +51,7 @@ build-server:
       --arch $ARCH \
       --layers \
       --cache-from "$CI_REGISTRY_IMAGE" \
-      -t "$CI_REGISTRY_IMAGE:${ARCH}" \
+      -t "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}" \
       ./server
 
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
