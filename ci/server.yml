@@ -90,7 +90,9 @@ create-manifest:
 
 cleanup-temp-tags:
   stage: release
-  image: quay.io/skopeo/stable
+  image: 
+    name: quay.io/skopeo/stable
+    entrypoint: [""]
   rules:
     - if: $DEPLOY
       changes: 
