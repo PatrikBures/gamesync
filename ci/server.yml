@@ -74,6 +74,7 @@ create-manifest:
       artifacts: false
 
   variables:
+    STORAGE_DRIVER: vfs
     BUILDAH_FORMAT: docker
 
   script:
