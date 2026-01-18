@@ -38,7 +38,7 @@ build-server:
     - |
       buildah build \
       --layers \
-      --cache-from "$CI_REGISTRY_IMAGE:latest" \
+      --cache-from "$CI_REGISTRY_IMAGE" \
       -t "$CI_REGISTRY_IMAGE:${VERSION}" \
       ./server
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}"
