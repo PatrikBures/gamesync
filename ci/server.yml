@@ -84,6 +84,4 @@ create-manifest:
     - buildah manifest add ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:amd64
     - buildah manifest add ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:arm64
 
-    - buildah manifest push --all ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:${VERSION}
-
-
+    - buildah manifest push ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:${VERSION}
