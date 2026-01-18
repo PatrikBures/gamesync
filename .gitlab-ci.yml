@@ -8,6 +8,20 @@ variables:
   VERSION: latest
   LINUX_AMD64_BINARY: gamesync-linux-amd64-${VERSION}
   PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/gamesync/${VERSION}"
+  
+  GOPATH: $CI_PROJECT_DIR/.go
+  GOCACHE: $CI_PROJECT_DIR/.go-build
+  GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.golangci-lint
+
+cache:
+  key: 
+    files:
+      - go.sum
+    prefix: lint-client
+  paths:
+    - .go/pkg/mod
+    - .go-build
+    - .golangci-lint
 
 workflow:
   rules:
