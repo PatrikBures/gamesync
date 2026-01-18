@@ -1,25 +1,33 @@
-lint-golang:
-  stage: test
-  image: golangci/golangci-lint:v2.8-alpine
-  
+.golang-before-merge:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: 
         - "**/*.go"
         - ".gitlab-ci.yml"
         - "ci/*"
+
+.golang-deploy:
+  rules:
+    - if: $DEPLOY
+      changes: 
+      - "**/*.go"
+      - ".gitlab-ci.yml"
+      - "ci/*"
+
+
+lint-golang:
+  stage: test
+  image: golangci/golangci-lint:v2.8-alpine
+  extends:
+    - .golang-before-merge
   script:
     - golangci-lint run
 
 build-client:
   stage: build
   image: golang:1.25-alpine
-  rules:
-    - if: $DEPLOY
-      changes: 
-        - "**/*.go"
-        - ".gitlab-ci.yml"
-        - "ci/*"
+  extends: 
+    - .golang-deploy 
   script:
     - go build -o gamesync ./cmd/gamesync
   artifacts:
@@ -30,12 +38,8 @@ build-client:
 upload-client:
   stage: upload
   image: curlimages/curl:latest
-  rules:
-    - if: $DEPLOY
-      changes: 
-        - "**/*.go"
-        - ".gitlab-ci.yml"
-        - "ci/*"
+  extends:
+    - .golang-deploy 
   needs:
     - job: build-client
       artifacts: true
@@ -48,12 +52,8 @@ upload-client:
 release-client:
   stage: release
   image: registry.gitlab.com/gitlab-org/cli:latest
-  rules:
-    - if: $DEPLOY
-      changes: 
-        - "**/*.go"
-        - ".gitlab-ci.yml"
-        - "ci/*"
+  extends:
+    - .golang-deploy 
   needs:
     - job: upload-client
   script:
