@@ -18,7 +18,7 @@ build-server-binary:
       - ARCH: [amd64, arm64]
   artifacts:
     paths:
-      - server/gamesync-state
+      - bin/
     expire_in: 15 min
 
 build-server:
