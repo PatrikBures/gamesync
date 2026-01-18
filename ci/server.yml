@@ -50,6 +50,7 @@ build-server:
       buildah build \
       --arch $ARCH \
       --layers \
+      --cache-from "$CI_REGISTRY_IMAGE:latest" \
       -t "$CI_REGISTRY_IMAGE:${ARCH}" \
       ./server
 
