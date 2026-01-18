@@ -72,6 +72,10 @@ create-manifest:
   needs:
     - job: build-server
       artifacts: false
+
+  variables:
+    BUILDAH_FORMAT: docker
+
   script:
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - buildah manifest create ${CI_REGISTRY_IMAGE}:${VERSION}
