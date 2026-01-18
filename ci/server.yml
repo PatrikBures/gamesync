@@ -15,10 +15,11 @@ build-server-binary:
   stage: build
   image: golang:1.25-alpine
   extends: .container
-  script:
+  before_script:
     - export GOOS=linux
     - export GOARCH=$ARCH
     - mkdir -p bin
+  script:
     - go build -o bin/gamesync-state-$ARCH ./cmd/gamesync-state
   parallel:
     matrix:
