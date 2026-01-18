@@ -35,5 +35,10 @@ build-server:
 
   script:
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - buildah build -t "$CI_REGISTRY_IMAGE:${VERSION}" ./server
+    - |
+      buildah build \
+      --layers \
+      --cache-from "$CI_REGISTRY_IMAGE:latest" \
+      -t "$CI_REGISTRY_IMAGE:${VERSION}" \
+      ./server
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}"
