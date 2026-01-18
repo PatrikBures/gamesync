@@ -36,7 +36,7 @@ build-client:
     expire_in: 15 min
 
 upload-client:
-  stage: upload
+  stage: release
   image: curlimages/curl:latest
   extends:
     - .golang-deploy 

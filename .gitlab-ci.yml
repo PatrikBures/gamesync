@@ -1,7 +1,6 @@
 stages:
   - test
   - build
-  - upload
   - release
 
 variables:
