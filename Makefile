@@ -10,7 +10,8 @@ all: build man
 
 build:
 	@echo "Building $(BIN_NAME)..."
-	go build -o $(BIN_NAME) ./cmd/gamesync
+	mkdir -p bin
+	go build -o bin/$(BIN_NAME) ./cmd/gamesync
 
 man: build
 	@echo "Generating man pages..."
@@ -47,10 +48,11 @@ go-install:
 
 build-state:
 	@echo "building $(BIN_STATE_NAME)..."
-	go build -o server/$(BIN_STATE_NAME) ./cmd/gamesync-state
+	mkdir -p bin
+	go build -o bin/$(BIN_STATE_NAME) ./cmd/gamesync-state
 
 build-container: build-state
 	@echo "building container..."
-	docker build ./server -t $(CONTAINER_NAME):$(VERSION)
+	docker build ./ -t $(CONTAINER_NAME):$(VERSION)
 
 .PHONY: all build man install uninstall clean
