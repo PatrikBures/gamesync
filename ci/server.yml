@@ -23,7 +23,7 @@ build-server-binary:
 
 build-server:
   stage: build
-  image: quay.io/buildah/stable:latest
+  image: quay.io/buildah/stable
   rules:
     - if: $DEPLOY
       changes: 
