@@ -14,12 +14,32 @@
       - ".gitlab-ci.yml"
       - "ci/*"
 
+.builds:
+  parallel:
+    matrix:
+      - OS: linux
+        ARCH: [amd64, arm64, riscv64, '386']
+      - OS: darwin
+        ARCH: [amd64, arm64]
+  before_script:
+    - export BIN_NAME=gamesync-${OS}-${ARCH}-${VERSION}
+
+.glab:
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - export GITLAB_TOKEN=$RELEASE_TOKEN
+    - export GITLAB_REPO=$CI_PROJECT_PATH
+    - export GITLAB_HOST=$CI_SERVER_URL
+  
+
 
 lint-golang:
   stage: test
   image: golangci/golangci-lint:v2.8-alpine
   extends:
     - .golang-before-merge
+    - .gocache
   script:
     - golangci-lint run
 
@@ -27,12 +47,17 @@ build-client:
   stage: build
   image: golang:1.25-alpine
   extends: 
-    - .golang-deploy 
+    - .golang-deploy
+    - .builds
+    - .gocache
   script:
-    - go build -o gamesync ./cmd/gamesync
+    - export GOOS=$OS
+    - export GOARCH=$ARCH
+    - mkdir -p bin
+    - go build -o bin/${BIN_NAME} ./cmd/gamesync
   artifacts:
     paths:
-      - gamesync
+      - bin/
     expire_in: 15 min
 
 upload-client:
@@ -40,28 +65,49 @@ upload-client:
   image: curlimages/curl:latest
   extends:
     - .golang-deploy 
+    - .builds
   needs:
     - job: build-client
       artifacts: true
+  variables:
+    GIT_STRATEGY: none
   script:
     - |
       curl \
       --header "JOB-TOKEN: $CI_JOB_TOKEN" \
-      --upload-file gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
+      --upload-file bin/${BIN_NAME} "${PACKAGE_REGISTRY_URL}/${BIN_NAME}"
 
-release-client:
+
+release-create-client:
   stage: release
   image: registry.gitlab.com/gitlab-org/cli:latest
   extends:
     - .golang-deploy 
+    - .glab
   needs:
     - job: upload-client
   script:
-    - export GITLAB_TOKEN=$RELEASE_TOKEN
-    - export GITLAB_HOST=$CI_SERVER_URL
     - glab release delete $VERSION -y || true
     - |
       glab release create "$VERSION" \
       --ref "$CI_COMMIT_SHA" \
-      --name "Release $VERSION" \
-      --assets-links="[{\"name\":\"${LINUX_AMD64_BINARY}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}\"}]"
+      --name "Release $VERSION"
+
+release-assets-client:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  extends:
+    - .golang-deploy 
+    - .glab
+    - .builds
+  needs:
+    - job: release-create-client
+  before_script:
+    - !reference [.glab, before_script]
+    - !reference [.builds, before_script]
+  script:
+    - |
+      glab api projects/$CI_PROJECT_ID/releases/${VERSION}/assets/links \
+        -F name="${BIN_NAME}" \
+        -F url="${PACKAGE_REGISTRY_URL}/${BIN_NAME}"
+

@@ -23,6 +23,7 @@ build-server-binary:
   extends: 
     - .container
     - .arch
+    - .gocache
   before_script:
     - export GOOS=linux
     - export GOARCH=$ARCH
@@ -76,6 +77,7 @@ create-manifest:
   variables:
     STORAGE_DRIVER: vfs
     BUILDAH_FORMAT: docker
+    GIT_STRATEGY: none
 
   script:
     - buildah manifest create ${CI_REGISTRY_IMAGE}:${VERSION}
