@@ -25,7 +25,7 @@ var wrapCmd = &cobra.Command{
 		dashIdx := cmd.ArgsLenAtDash()
 
 		if dashIdx == -1 {
-			fmt.Fprintf(os.Stderr, "Error: Found no '--'")
+			fmt.Fprintf(os.Stderr, "Error: Found no '--'\n")
 			os.Exit(1)
 		}
 
@@ -33,11 +33,11 @@ var wrapCmd = &cobra.Command{
 		cmdArgs := args[dashIdx:]
 
 		if len(userArgs) < 1 {
-			fmt.Fprintf(os.Stderr, "Error: Missing GAME_ID")
+			fmt.Fprintf(os.Stderr, "Error: Missing GAME_ID\n")
 			os.Exit(1)
 		}
 		if len(cmdArgs) < 1 {
-			fmt.Fprintf(os.Stderr, "Error: Missing commands after '--'")
+			fmt.Fprintf(os.Stderr, "Error: Missing commands after '--'\n")
 			os.Exit(1)
 		}
 
