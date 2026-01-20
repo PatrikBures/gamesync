@@ -46,14 +46,17 @@ var wrapCmd = &cobra.Command{
 		gameID := userArgs[0]
 
 		// pulls
-		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, false, verbose); err != nil {
-			fmt.Printf("WARNING: Pulling save failed: %v\n", err)
-			if wrapNotify { ui.Notify("error", "pulling save") }
-		} else {
-			fmt.Println("Pulled game")
-			if wrapNotify { ui.Notify("sucess", "pulling save") }
+		if !wrapNoPull {
+			if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, false, verbose); err != nil {
+				fmt.Printf("WARNING: Pulling save failed: %v\n", err)
+				if wrapNotify { ui.Notify("error", "pulling save") }
+			} else {
+				fmt.Println("Pulled game")
+				if wrapNotify { ui.Notify("sucess", "pulling save") }
+			}
 		}
 
+		// runs command
 		runCmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
 		runCmd.Stdout = os.Stdout
@@ -72,14 +75,17 @@ var wrapCmd = &cobra.Command{
 		}
 
 		// pushes
-		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, false, verbose); err != nil {
-			fmt.Printf("WARNING: Pushing save failed: %v\n", err)
-			if wrapNotify { ui.Notify("error", "pushing save") }
-		} else {
-			fmt.Println("Pushed game")
-			if wrapNotify { ui.Notify("sucess", "pushing save") }
+		if !wrapNoPush {
+			if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, false, verbose); err != nil {
+				fmt.Printf("WARNING: Pushing save failed: %v\n", err)
+				if wrapNotify { ui.Notify("error", "pushing save") }
+			} else {
+				fmt.Println("Pushed game")
+				if wrapNotify { ui.Notify("sucess", "pushing save") }
+			}
 		}
 
+		// snapshot
 		if wrapCreateSnapshot {
 			if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID); err != nil {
 				fmt.Printf("Failed creating snapshot: %v\n", err)
