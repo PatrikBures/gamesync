@@ -12,6 +12,7 @@ import (
 )
 
 var wrapCreateSnapshot, 
+	wrapCreateSnapshotUnchanged,
 	wrapNotify,
 	wrapNoPull,
 	wrapForcePull,
@@ -86,8 +87,8 @@ var wrapCmd = &cobra.Command{
 		}
 
 		// snapshot
-		if wrapCreateSnapshot {
-			if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID); err != nil {
+		if wrapCreateSnapshot || wrapCreateSnapshotUnchanged {
+			if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID, wrapCreateSnapshotUnchanged); err != nil {
 				fmt.Printf("Failed creating snapshot: %v\n", err)
 				if wrapNotify { ui.Notify("error", "creating snapshot") }
 			} else {
@@ -104,6 +105,7 @@ var wrapCmd = &cobra.Command{
 
 func init() {
 	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshot, "snapshot", "s", false, "Creates snapshot on remote after push")
+	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshotUnchanged, "skip-unchanged", "S", false, "Creates snapshot if there were changes from the previous snapshot on remote after push")
 	wrapCmd.Flags().BoolVarP(&wrapNotify, "notify", "n", false, "Sends a notification when pulled, pushed and created a snapshot and if succeeded")
 
 	wrapCmd.Flags().BoolVarP(&wrapNoPull, "no-pull", "", false, "")
