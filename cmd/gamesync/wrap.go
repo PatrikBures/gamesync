@@ -87,7 +87,7 @@ var wrapCmd = &cobra.Command{
 
 		// snapshot
 		if wrapCreateSnapshot {
-			if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID); err != nil {
+			if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID, false); err != nil {
 				fmt.Printf("Failed creating snapshot: %v\n", err)
 				if wrapNotify { ui.Notify("error", "creating snapshot") }
 			} else {

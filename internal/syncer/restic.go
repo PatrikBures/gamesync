@@ -30,7 +30,7 @@ func initRepo(server config.ServerConfig, verbose bool) error {
 	return nil
 }
 
-func CreateSnapshot(server config.ServerConfig, verbose bool, gameID string) error {
+func CreateSnapshot(server config.ServerConfig, verbose bool, gameID string, skipUnchanged bool) error {
 	saveGame := fmt.Sprintf("/data/saves/%s/%s", config.Current.Server.User, gameID)
 
 	host, err := os.Hostname()
@@ -42,7 +42,13 @@ func CreateSnapshot(server config.ServerConfig, verbose bool, gameID string) err
 		return err
 	}
 
-	output, err := RunCmd(server, verbose, "restic", "backup", saveGame, "--host", host)
+	args := []string{"restic", "backup", saveGame, "--host", host}
+
+	if skipUnchanged {
+		args = append(args, "--skip-if-unchanged")
+	}
+
+	output, err := RunCmd(server, verbose, args...)
 
 	if err != nil {
 		return fmt.Errorf("%s\n%s", err, output)

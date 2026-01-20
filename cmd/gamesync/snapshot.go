@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var snapshotSkipUnchanged bool
+
 var snapshotCmd = &cobra.Command{
 	Use: "snapshot",
 	Short: "manage snapshots made using restic on the remote",
@@ -24,7 +26,7 @@ var snapshotCreateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 
-		if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID); err != nil {
+		if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID, snapshotSkipUnchanged); err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating a snapshot: %v\n", err)
 			os.Exit(4)
 		}
@@ -72,6 +74,8 @@ var snapshotLsCmd = &cobra.Command{
 
 func init() {
 	snapshotCmd.AddCommand(snapshotCreateCmd)
+	snapshotCreateCmd.Flags().BoolVarP(&snapshotSkipUnchanged, "skip-unchanged", "S", false, "Skips creating snapshot if there were no changes from the last one")
+
 	snapshotCmd.AddCommand(snapshotLsCmd)
 
 	rootCmd.AddCommand(snapshotCmd)
