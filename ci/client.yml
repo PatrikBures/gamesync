@@ -25,8 +25,11 @@
     - export BIN_NAME=gamesync-${OS}-${ARCH}-${VERSION}
 
 .glab:
+  variables:
+    GIT_STRATEGY: none
   before_script:
     - export GITLAB_TOKEN=$RELEASE_TOKEN
+    - export GITLAB_REPO=$CI_PROJECT_PATH
     - export GITLAB_HOST=$CI_SERVER_URL
   
 
@@ -83,8 +86,6 @@ release-create-client:
     - .glab
   needs:
     - job: upload-client
-  variables:
-    GIT_STRATEGY: none
   script:
     - glab release delete $VERSION -y || true
     - |
@@ -101,8 +102,6 @@ release-assets-client:
     - .builds
   needs:
     - job: release-create-client
-  variables:
-    GIT_STRATEGY: none
   before_script:
     - !reference [.glab, before_script]
     - !reference [.builds, before_script]
