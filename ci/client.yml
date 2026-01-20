@@ -66,6 +66,8 @@ upload-client:
   needs:
     - job: build-client
       artifacts: true
+  variables:
+    GIT_STRATEGY: none
   script:
     - |
       curl \
@@ -81,6 +83,8 @@ release-create-client:
     - .glab
   needs:
     - job: upload-client
+  variables:
+    GIT_STRATEGY: none
   script:
     - glab release delete $VERSION -y || true
     - |
@@ -97,6 +101,8 @@ release-assets-client:
     - .builds
   needs:
     - job: release-create-client
+  variables:
+    GIT_STRATEGY: none
   before_script:
     - !reference [.glab, before_script]
     - !reference [.builds, before_script]
