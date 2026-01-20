@@ -9,11 +9,6 @@
         - "ci/*"
 
 .setup-buildah:
-  variables:
-    STORAGE_DRIVER: vfs
-    BUILDAH_FORMAT: docker
-    BUILDAH_ISOLATION: chroot
-    GIT_STRATEGY: none
   before_script:
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
@@ -50,6 +45,11 @@ build-server:
   needs:
     - job: build-server-binary
       artifacts: true
+  variables:
+    STORAGE_DRIVER: vfs
+    BUILDAH_FORMAT: docker
+    BUILDAH_ISOLATION: chroot
+
   script:
     - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
 
@@ -73,6 +73,12 @@ create-manifest:
   needs:
     - job: build-server
       artifacts: false
+
+  variables:
+    STORAGE_DRIVER: vfs
+    BUILDAH_FORMAT: docker
+    GIT_STRATEGY: none
+
   script:
     - buildah manifest create ${CI_REGISTRY_IMAGE}:${VERSION}
 
