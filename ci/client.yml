@@ -29,10 +29,11 @@ build-client:
   extends: 
     - .golang-deploy 
   script:
-    - go build -o gamesync ./cmd/gamesync
+    - mkdir -p bin
+    - go build -o bin/gamesync ./cmd/gamesync
   artifacts:
     paths:
-      - gamesync
+      - bin/
     expire_in: 15 min
 
 upload-client:
@@ -47,7 +48,7 @@ upload-client:
     - |
       curl \
       --header "JOB-TOKEN: $CI_JOB_TOKEN" \
-      --upload-file gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
+      --upload-file bin/gamesync "${PACKAGE_REGISTRY_URL}/${LINUX_AMD64_BINARY}"
 
 release-client:
   stage: release
