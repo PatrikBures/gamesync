@@ -11,8 +11,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var wrapCreateSnapshot bool
-var wrapNotify bool
+var wrapCreateSnapshot, 
+	wrapNotify,
+	wrapNoPull,
+	wrapForcePull,
+	wrapNoPush,
+	wrapForcePush bool
 
 var wrapCmd = &cobra.Command{
 	Use: "wrap GAME_ID -- COMMAND...",
@@ -21,7 +25,7 @@ var wrapCmd = &cobra.Command{
 		dashIdx := cmd.ArgsLenAtDash()
 
 		if dashIdx == -1 {
-			fmt.Fprintf(os.Stderr, "Error: Found no '--'")
+			fmt.Fprintf(os.Stderr, "Error: Found no '--'\n")
 			os.Exit(1)
 		}
 
@@ -29,11 +33,11 @@ var wrapCmd = &cobra.Command{
 		cmdArgs := args[dashIdx:]
 
 		if len(userArgs) < 1 {
-			fmt.Fprintf(os.Stderr, "Error: Missing GAME_ID")
+			fmt.Fprintf(os.Stderr, "Error: Missing GAME_ID\n")
 			os.Exit(1)
 		}
 		if len(cmdArgs) < 1 {
-			fmt.Fprintf(os.Stderr, "Error: Missing commands after '--'")
+			fmt.Fprintf(os.Stderr, "Error: Missing commands after '--'\n")
 			os.Exit(1)
 		}
 
@@ -42,14 +46,17 @@ var wrapCmd = &cobra.Command{
 		gameID := userArgs[0]
 
 		// pulls
-		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, false, verbose); err != nil {
-			fmt.Printf("WARNING: Pulling save failed: %v\n", err)
-			if wrapNotify { ui.Notify("error", "pulling save") }
-		} else {
-			fmt.Println("Pulled game")
-			if wrapNotify { ui.Notify("sucess", "pulling save") }
+		if !wrapNoPull {
+			if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, wrapForcePull, verbose); err != nil {
+				fmt.Printf("WARNING: Pulling save failed: %v\n", err)
+				if wrapNotify { ui.Notify("error", "pulling save") }
+			} else {
+				fmt.Println("Pulled game")
+				if wrapNotify { ui.Notify("sucess", "pulling save") }
+			}
 		}
 
+		// runs command
 		runCmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
 		runCmd.Stdout = os.Stdout
@@ -68,14 +75,17 @@ var wrapCmd = &cobra.Command{
 		}
 
 		// pushes
-		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, false, verbose); err != nil {
-			fmt.Printf("WARNING: Pushing save failed: %v\n", err)
-			if wrapNotify { ui.Notify("error", "pushing save") }
-		} else {
-			fmt.Println("Pushed game")
-			if wrapNotify { ui.Notify("sucess", "pushing save") }
+		if !wrapNoPush {
+			if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, wrapForcePush, verbose); err != nil {
+				fmt.Printf("WARNING: Pushing save failed: %v\n", err)
+				if wrapNotify { ui.Notify("error", "pushing save") }
+			} else {
+				fmt.Println("Pushed game")
+				if wrapNotify { ui.Notify("sucess", "pushing save") }
+			}
 		}
 
+		// snapshot
 		if wrapCreateSnapshot {
 			if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID); err != nil {
 				fmt.Printf("Failed creating snapshot: %v\n", err)
@@ -93,7 +103,14 @@ var wrapCmd = &cobra.Command{
 }
 
 func init() {
-	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshot, "snapshot", "s", false, "")
-	wrapCmd.Flags().BoolVarP(&wrapNotify, "notify", "n", false, "")
+	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshot, "snapshot", "s", false, "Creates snapshot on remote after push")
+	wrapCmd.Flags().BoolVarP(&wrapNotify, "notify", "n", false, "Sends a notification when pulled, pushed and created a snapshot and if succeeded")
+
+	wrapCmd.Flags().BoolVarP(&wrapNoPull, "no-pull", "", false, "")
+	wrapCmd.Flags().BoolVarP(&wrapForcePull, "force-pull", "", false, "")
+
+	wrapCmd.Flags().BoolVarP(&wrapNoPush, "no-push", "", false, "")
+	wrapCmd.Flags().BoolVarP(&wrapForcePull, "force-push","" , false, "")
+
 	rootCmd.AddCommand(wrapCmd)
 }
