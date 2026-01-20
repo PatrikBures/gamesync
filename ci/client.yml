@@ -81,10 +81,10 @@ release-create-client:
     - job: upload-client
   script:
     - glab release delete $VERSION -y || true
-
-    - glab release create "$VERSION" \
+    - |
+      glab release create "$VERSION" \
       --ref "$CI_COMMIT_SHA" \
-      --name "Release $VERSION" \
+      --name "Release $VERSION"
 
 release-assets-client:
   stage: release
@@ -92,6 +92,7 @@ release-assets-client:
   extends:
     - .golang-deploy 
     - .glab
+    - .builds
   needs:
     - job: release-create-client
   script:
