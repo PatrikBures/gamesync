@@ -11,8 +11,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var wrapCreateSnapshot bool
-var wrapNotify bool
+var wrapCreateSnapshot, 
+	wrapNotify,
+	wrapNoPull,
+	wrapForcePull,
+	wrapNoPush,
+	wrapForcePush bool
 
 var wrapCmd = &cobra.Command{
 	Use: "wrap GAME_ID -- COMMAND...",
@@ -95,5 +99,12 @@ var wrapCmd = &cobra.Command{
 func init() {
 	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshot, "snapshot", "s", false, "")
 	wrapCmd.Flags().BoolVarP(&wrapNotify, "notify", "n", false, "")
+
+	wrapCmd.Flags().BoolVarP(&wrapNoPull, "no-pull", "", false, "")
+	wrapCmd.Flags().BoolVarP(&wrapForcePull, "force-pull", "", false, "")
+
+	wrapCmd.Flags().BoolVarP(&wrapNoPush, "no-push", "", false, "")
+	wrapCmd.Flags().BoolVarP(&wrapForcePull, "force-push","" , false, "")
+
 	rootCmd.AddCommand(wrapCmd)
 }
