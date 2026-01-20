@@ -103,8 +103,8 @@ var wrapCmd = &cobra.Command{
 }
 
 func init() {
-	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshot, "snapshot", "s", false, "")
-	wrapCmd.Flags().BoolVarP(&wrapNotify, "notify", "n", false, "")
+	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshot, "snapshot", "s", false, "Creates snapshot on remote after push")
+	wrapCmd.Flags().BoolVarP(&wrapNotify, "notify", "n", false, "Sends a notification when pulled, pushed and created a snapshot and if succeeded")
 
 	wrapCmd.Flags().BoolVarP(&wrapNoPull, "no-pull", "", false, "")
 	wrapCmd.Flags().BoolVarP(&wrapForcePull, "force-pull", "", false, "")
