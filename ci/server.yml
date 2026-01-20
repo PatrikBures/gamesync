@@ -23,6 +23,7 @@ build-server-binary:
   extends: 
     - .container
     - .arch
+    - .gocache
   before_script:
     - export GOOS=linux
     - export GOARCH=$ARCH

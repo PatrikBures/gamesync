@@ -36,6 +36,7 @@ lint-golang:
   image: golangci/golangci-lint:v2.8-alpine
   extends:
     - .golang-before-merge
+    - .gocache
   script:
     - golangci-lint run
 
@@ -45,6 +46,7 @@ build-client:
   extends: 
     - .golang-deploy
     - .builds
+    - .gocache
   script:
     - export GOOS=$OS
     - export GOARCH=$ARCH
