@@ -95,6 +95,9 @@ release-assets-client:
     - .builds
   needs:
     - job: release-create-client
+  before_script:
+    - !reference [.glab, before_script]
+    - !reference [.builds, before_script]
   script:
     - |
       glab api projects/$CI_PROJECT_ID/releases/${VERSION}/assets/links \
