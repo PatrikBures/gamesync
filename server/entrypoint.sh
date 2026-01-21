@@ -7,7 +7,7 @@ random_password() {
     hexdump -n 64 -ve '/1 "%02x"' /dev/urandom
 }
 
-setup_user() {
+create_user() {
     user=$1
     id=$2
 
@@ -57,7 +57,7 @@ setup_user() {
     chmod 400 "$RESTIC_PASSWORD_FILE"
 }
 
-setup_and_create_users() {
+create_users() {
     users_with_ids=()
     users_with_ids_id=()
     users=()
