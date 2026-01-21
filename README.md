@@ -26,7 +26,7 @@ gamesync snapshot create openttd
 ## Container environmental variables
 
 - GAMESYNC_LOOP
-    - when set to a number above 0 it will create users that often
+    - when set to a number above 0 it will create users that often in seconds
     - if unset or below 1, only creates user on startup
     - useful if you want to add or remove users without restarting container
 
