@@ -23,6 +23,13 @@ gamesync push openttd
 gamesync snapshot create openttd
 ```
 
+## Server environmental variables
+
+- GAMESYNC_LOOP
+    when set to a number above 0 it will create users that often
+    if unset or below 1, only creates user on startup
+    useful if you want to add or remove users without restarting container
+
 ## Copyright
 
 Copyright (C) 2025-2026 Patrik Bures
