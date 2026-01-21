@@ -122,7 +122,10 @@ fi
 
 addgroup -S "$GROUP"
 
-mkdir -p "$REPOS_DIR" "$SAVES_DIR"
+mkdir -p "$REPOS_DIR" "$SAVES_DIR" "$USER_IDS_DIR"
+
+chmod -R 0550 "$USER_IDS_DIR"
+chmod 0770 "$USER_IDS_DIR"
 
 setup_and_create_users
 
