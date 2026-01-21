@@ -61,6 +61,8 @@ create_user() {
 
     chown "$user:$user" "$RESTIC_PASSWORD_FILE"
     chmod 400 "$RESTIC_PASSWORD_FILE"
+
+    id -u "$user" > "$USER_IDS_DIR/$user"
 }
 
 create_users() {
