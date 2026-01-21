@@ -36,7 +36,7 @@ create_user() {
     ssh_keys="$ssh_dir/authorized_keys"
 
     mkdir "$ssh_dir"
-    cat "$file" > "$ssh_keys"
+    cat "$USERS_DIR/$user" > "$ssh_keys"
     chmod 700 "$ssh_dir"
     chmod 600 "$ssh_keys"
     chown -R "$user:$user" "$ssh_dir"
@@ -68,7 +68,7 @@ create_users() {
     users_with_ids_id=()
     users=()
 
-    for file in "$USERS_DIR"*; do
+    for file in "$USERS_DIR"/*; do
         user="$(basename "${file}")"
 
         id_file="$USER_IDS_DIR/$user"
@@ -92,18 +92,18 @@ create_users() {
         user="${users_with_ids[$i]}"
         id="${users_with_ids_id[$i]}"
 
-        setup_user "$user" "$id"
+        create_user "$user" "$id"
     done
 
     for user in "${users[@]}"; do
-        setup_user "$user"
+        create_user "$user"
     done
 }
 
 create_users_loop() {
     while true; do
         sleep "$GAMESYNC_LOOP"
-        setup_and_create_users 
+        create_users 
     done
 }
 
@@ -127,7 +127,7 @@ mkdir -p "$REPOS_DIR" "$SAVES_DIR" "$USER_IDS_DIR"
 chmod -R 0550 "$USER_IDS_DIR"
 chmod 0770 "$USER_IDS_DIR"
 
-setup_and_create_users
+create_users
 
 if [[ $GAMESYNC_LOOP -gt 0 ]]; then
     create_users_loop &
