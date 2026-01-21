@@ -7,6 +7,7 @@ DEVICES=(test1 test2)
 PRIVATE_KEY_DIR="$TESTDIR/keys_private"
 PUBLIC_KEY_DIR="$TESTDIR/keys_public"
 HOST_KEY_DIR="$TESTDIR/keys_host"
+USER_IDS_DIR="$TESTDIR/user_ids"
 DATA="$TESTDIR/data"
 
 
@@ -34,9 +35,10 @@ docker container rm gamesync-test
 
 make build-state
 
-docker build ./server -t gamesync:latest 
+docker build ./ -t gamesync:latest 
 
 docker run -d \
+    --volume "$USER_IDS_DIR":/config/user_ids \
     --volume "$PUBLIC_KEY_DIR":/config/users \
     --volume "$HOST_KEY_DIR":/etc/ssh/keys \
     --volume "$DATA":/data \
@@ -48,4 +50,4 @@ sleep 0.2
 docker logs gamesync-test
 
 echo "try ssh with:"
-echo "ssh -i $PRIVATE_KEY_DIR/${USERS[0]}_${DEVICES[0]} -p 2222 ${USERS[0]}@localhost -t \"<command>\""
+echo "ssh -i $PRIVATE_KEY_DIR/${USERS[0]}_${DEVICES[0]} -p 2222 ${USERS[0]}@localhost"

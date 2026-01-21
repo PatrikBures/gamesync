@@ -6,7 +6,8 @@ RUN apk add --no-cache \
     restic \
     rsync \
     openssh-server \
-    tzdata
+    tzdata \
+    bash
 
 COPY server/sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
 
