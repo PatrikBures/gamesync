@@ -8,13 +8,12 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"strings"
 )
 
 func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, verbose bool) error {
 	remoteDir := path.Join("data", "saves", server.User, game.ID)
-	remotePath := fmt.Sprintf("%s@%s:/%s/", server.User, server.Host, remoteDir)
-	localPath := ensureTrailingSep(game.SavePath)
+	remotePath := fmt.Sprintf("%s@%s:/%s", server.User, server.Host, path.Clean(remoteDir))
+	localPath := filepath.Clean(game.SavePath)
 
 	sshCmd := fmt.Sprintf("ssh -p %s -i %s", server.Port, server.IdentityFile)
 	var cmd *exec.Cmd
@@ -22,14 +21,14 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, ver
 	var src, dest string
 
 	if pull {
-		src = remotePath
-		dest = localPath[:len(localPath)-1]
+		src = remotePath+"/"
+		dest = localPath
 	} else {
 		if _, err := RunCmd(server, verbose, "mkdir", "-p", "/"+remoteDir); err != nil {
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
-		src = localPath
-		dest = remotePath[:len(remotePath)-1]
+		src = localPath+"/"
+		dest = remotePath
 	}
 
 	cmd = exec.Command("rsync", "-azhPv", "--delete", "-e", sshCmd, src, dest)
@@ -46,13 +45,6 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, ver
 	}
 
 	return nil
-}
-
-func ensureTrailingSep(p string) string {
-	if !strings.HasSuffix(p, string(filepath.Separator)) {
-		return p + string(filepath.Separator)
-	}
-	return p
 }
 
 type SyncMode int
