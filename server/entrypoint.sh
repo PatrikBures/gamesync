@@ -95,6 +95,28 @@ create_users() {
         create_user "$user" "$id"
     done
 
+
+    # remove owners of removed users
+    for file in "$SAVES_DIR"/*; do
+        user=$(basename "$file")
+
+        if [[ " ${users_with_ids[*]} ${users[*]} " =~ [[:space:]]${user}[[:space:]] ]]; then
+            continue
+        fi
+        
+        s="$SAVES_DIR/$user"
+        r="$REPOS_DIR/$user"
+
+        dir_owner=$(stat -c '%U' "$s")
+        
+        if [[ "$dir_owner" == "nobody" ]]; then
+            continue
+        fi
+
+        chown -R nobody:nobody "$s" "$r"
+        echo "made $user dirs owned by nobody"
+    done
+
     for user in "${users[@]}"; do
         create_user "$user"
     done
