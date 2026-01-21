@@ -12,7 +12,6 @@ setup_user() {
     id=$2
 
     if id -u "$user" &> /dev/null; then
-        echo "$user already exists"
         return
     fi
 
@@ -82,8 +81,8 @@ setup_and_create_users() {
 
 create_users_loop() {
     while true; do
+        sleep "$GAMESYNC_LOOP"
         setup_and_create_users 
-        sleep 10
     done
 }
 
@@ -105,6 +104,10 @@ addgroup -S client-users
 mkdir -p "$REPO_DIR" "$SAVE_DIR"
 
 setup_and_create_users
+
+if [[ $GAMESYNC_LOOP -gt 0 ]]; then
+    create_users_loop &
+fi
 
 # exec replaces the shell with the process sshd so that pid 1 is sshd and docker can stop it cleanly
 # -D do not detach
