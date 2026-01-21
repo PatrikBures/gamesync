@@ -1,7 +1,13 @@
 #!/bin/bash
 
-REPO_DIR=/data/repos
-SAVE_DIR=/data/saves
+DATA_DIR=/data
+SAVES_DIR=$DATA_DIR/saves
+REPOS_DIR=$DATA_DIR/repos
+CONFIG_DIR=/config
+USERS_DIR=$CONFIG_DIR/users
+USER_IDS_DIR=$CONFIG_DIR/user_ids
+
+GROUP=client-users
 
 random_password() {
     hexdump -n 64 -ve '/1 "%02x"' /dev/urandom
@@ -21,7 +27,7 @@ create_user() {
         adduser "$user" -D -s /bin/sh > /dev/null
     fi
 
-    adduser "$user" client-users > /dev/null
+    adduser "$user" "$GROUP" > /dev/null
     passwd -u "$user" &> /dev/null
 
 
@@ -37,8 +43,8 @@ create_user() {
 
 
     # creates data dirs
-    user_save=${SAVE_DIR}/${user}
-    user_repo=${REPO_DIR}/${user}
+    user_save=${SAVES_DIR}/${user}
+    user_repo=${REPOS_DIR}/${user}
 
     mkdir -p "$user_save" "$user_repo"
     chmod -R 0700 "$user_save" "$user_repo"
@@ -62,10 +68,10 @@ create_users() {
     users_with_ids_id=()
     users=()
 
-    for file in /config/users/*; do
+    for file in "$USERS_DIR"*; do
         user="$(basename "${file}")"
 
-        id_file="/config/user_ids/$user"
+        id_file="$USER_IDS_DIR/$user"
 
         if [[ -f "$id_file" ]]; then
             id=$(cat "$id_file")
@@ -114,9 +120,9 @@ fi
 
 
 
-addgroup -S client-users
+addgroup -S "$GROUP"
 
-mkdir -p "$REPO_DIR" "$SAVE_DIR"
+mkdir -p "$REPOS_DIR" "$SAVES_DIR"
 
 setup_and_create_users
 
