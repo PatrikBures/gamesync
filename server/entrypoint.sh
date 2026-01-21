@@ -58,13 +58,15 @@ setup_user() {
 }
 
 setup_and_create_users() {
+    users_with_ids=()
+    users_with_ids_id=()
+    users=()
 
     for file in /config/users/*; do
         user="$(basename "${file}")"
 
         id_file="/config/user_ids/$user"
 
-        id=""
         if [[ -f "$id_file" ]]; then
             id=$(cat "$id_file")
 
@@ -72,11 +74,24 @@ setup_and_create_users() {
                 echo "user $user has invalid id: $id"
                 exit 1
             fi
+
+            users_with_ids_id+=("$id")
+            users_with_ids+=("$user")
+        else
+            users+=("$user")
         fi
+    done
+
+    for i in "${!users_with_ids[@]}"; do
+        user="${users_with_ids[$i]}"
+        id="${users_with_ids_id[$i]}"
 
         setup_user "$user" "$id"
     done
 
+    for user in "${users[@]}"; do
+        setup_user "$user"
+    done
 }
 
 create_users_loop() {
