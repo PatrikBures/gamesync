@@ -1,72 +1,133 @@
-#!/bin/sh
+#!/bin/bash
 
-REPO_DIR=/data/repos
-SAVE_DIR=/data/saves
+DATA_DIR=/data
+SAVES_DIR=$DATA_DIR/saves
+REPOS_DIR=$DATA_DIR/repos
+CONFIG_DIR=/config
+USERS_DIR=$CONFIG_DIR/users
+USER_IDS_DIR=$CONFIG_DIR/user_ids
+
+GROUP=client-users
 
 random_password() {
     hexdump -n 64 -ve '/1 "%02x"' /dev/urandom
 }
 
-create_users() {
-    for file in /config/users/*; do
-        case "$file" in 
-            *\*)
-                continue
-                ;;
-        esac
+create_user() {
+    user=$1
+    id=$2
 
+    if id -u "$user" &> /dev/null; then
+        return
+    fi
+
+    if [[ -n "$id" ]]; then
+        adduser "$user" -D -s /bin/sh -u "$id" > /dev/null
+    else
+        adduser "$user" -D -s /bin/sh > /dev/null
+    fi
+
+    adduser "$user" "$GROUP" > /dev/null
+    passwd -u "$user" &> /dev/null
+
+
+    # adds ssh key to authorized_keys
+    ssh_dir="/home/$user/.ssh"
+    ssh_keys="$ssh_dir/authorized_keys"
+
+    mkdir "$ssh_dir"
+    cat "$USERS_DIR/$user" > "$ssh_keys"
+    chmod 700 "$ssh_dir"
+    chmod 600 "$ssh_keys"
+    chown -R "$user:$user" "$ssh_dir"
+
+
+    # creates data dirs
+    user_save=${SAVES_DIR}/${user}
+    user_repo=${REPOS_DIR}/${user}
+
+    mkdir -p "$user_save" "$user_repo"
+    chmod -R 0700 "$user_save" "$user_repo"
+    chown -R "$user:$user" "$user_save" "$user_repo"
+
+    echo "created user $user $id"
+
+    RESTIC_PASSWORD_FILE="${user_save}/.restic_password"
+
+    if ! [ -f "$RESTIC_PASSWORD_FILE" ]; then 
+        echo "created restic password for $user"
+        random_password > "$RESTIC_PASSWORD_FILE"
+    fi
+
+    chown "$user:$user" "$RESTIC_PASSWORD_FILE"
+    chmod 400 "$RESTIC_PASSWORD_FILE"
+
+    id -u "$user" > "$USER_IDS_DIR/$user"
+}
+
+create_users() {
+    users_with_ids=()
+    users_with_ids_id=()
+    users=()
+
+    for file in "$USERS_DIR"/*; do
         user="$(basename "${file}")"
 
-        # uses id to check if user exists,
-        # the -u option is used because it prints out less info making it faster
-        if id -u "$user" > /dev/null 2>&1 ; then
-            echo "$user already exists"
+        id_file="$USER_IDS_DIR/$user"
+
+        if [[ -f "$id_file" ]]; then
+            id=$(cat "$id_file")
+
+            if [[ "$id" -lt 1000 ]]; then
+                echo "user $user has invalid id: $id"
+                exit 1
+            fi
+
+            users_with_ids_id+=("$id")
+            users_with_ids+=("$user")
+        else
+            users+=("$user")
+        fi
+    done
+
+    for i in "${!users_with_ids[@]}"; do
+        user="${users_with_ids[$i]}"
+        id="${users_with_ids_id[$i]}"
+
+        create_user "$user" "$id"
+    done
+
+
+    # remove owners of removed users
+    for file in "$SAVES_DIR"/*; do
+        user=$(basename "$file")
+
+        if [[ " ${users_with_ids[*]} ${users[*]} " =~ [[:space:]]${user}[[:space:]] ]]; then
+            continue
+        fi
+        
+        s="$SAVES_DIR/$user"
+        r="$REPOS_DIR/$user"
+
+        dir_owner=$(stat -c '%U' "$s")
+        
+        if [[ "$dir_owner" == "nobody" ]]; then
             continue
         fi
 
-        # -D no password
-        adduser "$user" -D -s /bin/sh > /dev/null
-        adduser "$user" client-users > /dev/null
-        passwd -u "$user" > /dev/null
+        chown -R nobody:nobody "$s" "$r"
+        echo "made $user dirs owned by nobody"
+    done
 
-
-        # adds ssh key to authorized_keys
-        ssh_dir="/home/$user/.ssh"
-        ssh_keys="$ssh_dir/authorized_keys"
-
-        mkdir "$ssh_dir"
-        cat "$file" > "$ssh_keys"
-        chmod 700 "$ssh_dir"
-        chmod 600 "$ssh_keys"
-        chown -R "$user:$user" "$ssh_dir"
-
-
-        # creates data dirs
-        user_save=${SAVE_DIR}/${user}
-        user_repo=${REPO_DIR}/${user}
-
-        mkdir -p "$user_save" "$user_repo"
-        chmod 0700 "$user_save" "$user_repo"
-        chown "$user:$user" "$user_save" "$user_repo"
-
-        echo "created user $user"
-
-        RESTIC_PASSWORD_FILE="${user_save}/.restic_password"
-
-        if ! [ -f "$RESTIC_PASSWORD_FILE" ]; then 
-            echo "created restic password for $user"
-            random_password > "$RESTIC_PASSWORD_FILE"
-        fi
-
-        chown "$user:$user" "$RESTIC_PASSWORD_FILE"
-        chmod 400 "$RESTIC_PASSWORD_FILE"
+    for user in "${users[@]}"; do
+        create_user "$user"
     done
 }
 
 create_users_loop() {
     while true; do
-        create_users
-        sleep 10
+        sleep "$GAMESYNC_LOOP"
+        create_users 
     done
 }
 
@@ -83,11 +144,18 @@ fi
 
 
 
-addgroup -g 2000 client-users
+addgroup -S "$GROUP"
 
-mkdir -p "$REPO_DIR" "$SAVE_DIR"
+mkdir -p "$REPOS_DIR" "$SAVES_DIR" "$USER_IDS_DIR"
+
+chmod -R 0550 "$USER_IDS_DIR"
+chmod 0770 "$USER_IDS_DIR"
 
 create_users
+
+if [[ $GAMESYNC_LOOP -gt 0 ]]; then
+    create_users_loop &
+fi
 
 # exec replaces the shell with the process sshd so that pid 1 is sshd and docker can stop it cleanly
 # -D do not detach
