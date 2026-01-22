@@ -8,6 +8,7 @@ PRIVATE_KEY_DIR="$TESTDIR/keys_private"
 PUBLIC_KEY_DIR="$TESTDIR/keys_public"
 HOST_KEY_DIR="$TESTDIR/keys_host"
 USER_IDS_DIR="$TESTDIR/user_ids"
+RESTIC_PASSWORDS_DIR="$TESTDIR/restic_passwords"
 DATA="$TESTDIR/data"
 
 
