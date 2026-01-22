@@ -8,6 +8,7 @@ PRIVATE_KEY_DIR="$TESTDIR/keys_private"
 PUBLIC_KEY_DIR="$TESTDIR/keys_public"
 HOST_KEY_DIR="$TESTDIR/keys_host"
 USER_IDS_DIR="$TESTDIR/user_ids"
+RESTIC_PASSWORDS_DIR="$TESTDIR/restic_passwords"
 DATA="$TESTDIR/data"
 
 
@@ -40,6 +41,7 @@ docker build ./ -t gamesync:latest
 docker run -d \
     --volume "$USER_IDS_DIR":/config/user_ids \
     --volume "$PUBLIC_KEY_DIR":/config/users \
+    --volume "$RESTIC_PASSWORDS_DIR":/config/restic_passwords \
     --volume "$HOST_KEY_DIR":/etc/ssh/keys \
     --volume "$DATA":/data \
     -e "GAMESYNC_LOOP=10" \

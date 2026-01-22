@@ -6,6 +6,7 @@ REPOS_DIR=$DATA_DIR/repos
 CONFIG_DIR=/config
 USERS_DIR=$CONFIG_DIR/users
 USER_IDS_DIR=$CONFIG_DIR/user_ids
+RESTIC_PASSWORDS_DIR=$CONFIG_DIR/restic_passwords
 
 GROUP=client-users
 
@@ -52,10 +53,10 @@ create_user() {
 
     echo "created user $user $id"
 
-    RESTIC_PASSWORD_FILE="${user_save}/.restic_password"
+    RESTIC_PASSWORD_FILE="$RESTIC_PASSWORDS_DIR/${user}"
 
     if ! [ -f "$RESTIC_PASSWORD_FILE" ]; then 
-        echo "created restic password for $user"
+        echo "created restic password for $user at ${RESTIC_PASSWORD_FILE}"
         random_password > "$RESTIC_PASSWORD_FILE"
     fi
 
@@ -146,7 +147,7 @@ fi
 
 addgroup -S "$GROUP"
 
-mkdir -p "$REPOS_DIR" "$SAVES_DIR" "$USER_IDS_DIR"
+mkdir -p "$REPOS_DIR" "$SAVES_DIR" "$USER_IDS_DIR" "$RESTIC_PASSWORDS_DIR"
 
 chmod -R 0550 "$USER_IDS_DIR"
 chmod 0770 "$USER_IDS_DIR"

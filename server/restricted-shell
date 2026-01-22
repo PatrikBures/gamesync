@@ -3,7 +3,7 @@
 saves_dir="/data/saves/$USER"
 
 export RESTIC_REPOSITORY="/data/repos/$USER"
-export RESTIC_PASSWORD_FILE="$saves_dir/.restic_password"
+export RESTIC_PASSWORD_FILE="/config/restic_passwords/$USER"
 
 CMD=$SSH_ORIGINAL_COMMAND
 
