@@ -41,6 +41,7 @@ docker build ./ -t gamesync:latest
 docker run -d \
     --volume "$USER_IDS_DIR":/config/user_ids \
     --volume "$PUBLIC_KEY_DIR":/config/users \
+    --volume "$RESTIC_PASSWORDS_DIR":/config/restic_passwords \
     --volume "$HOST_KEY_DIR":/etc/ssh/keys \
     --volume "$DATA":/data \
     -e "GAMESYNC_LOOP=10" \
