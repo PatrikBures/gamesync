@@ -71,6 +71,9 @@ build-test-client-image:
     BUILDAH_ISOLATION: chroot
 
   script:
+    - echo "CLIENT_TEST_IMAGE $CLIENT_TEST_IMAGE"
+    - echo "CI_REGISTRY_IMAGE $CI_REGISTRY_IMAGE"
+
     - buildah pull "${CLIENT_TEST_IMAGE}:latest" || true
 
     - |

@@ -45,9 +45,6 @@ build-server:
     BUILDAH_ISOLATION: chroot
 
   script:
-    - echo "DEBUG: CLIENT_TEST_IMAGE is '$CLIENT_TEST_IMAGE'"
-    - echo "DEBUG: CI_REGISTRY_IMAGE is '$CI_REGISTRY_IMAGE'"
-
     - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
 
     - |
