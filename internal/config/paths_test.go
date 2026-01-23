@@ -15,7 +15,9 @@ func TestGetStateDir(t *testing.T) {
 
 	stateEnvVar := "XDG_STATE_HOME"
 
-	os.Setenv(stateEnvVar, tmpDir)
+	if err := os.Setenv(stateEnvVar, tmpDir); err != nil {
+		t.Fatal(err)
+	}
 	
 	wantStateDir := filepath.Join(tmpDir, "gamesync")
 
