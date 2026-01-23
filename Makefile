@@ -44,6 +44,9 @@ go-install:
 	@echo "installing..."
 	go install ./cmd/gamesync
 
+go-test:
+	@echo "testing..."
+	go test ./internal/...
 
 
 build-state:
