@@ -1,21 +1,16 @@
 package config
 
 import (
+	"gamesync/internal/testutils"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
 func TestGetStateDir(t *testing.T) {
-	tmpDir, err := os.MkdirTemp("", "state_dir")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer removeDir(tmpDir)
+	_, tmpDir := testutils.SetupTest(t)
 
-	stateEnvVar := "XDG_STATE_HOME"
-
-	if err := os.Setenv(stateEnvVar, tmpDir); err != nil {
+	if err := os.Setenv("XDG_STATE_HOME", tmpDir); err != nil {
 		t.Fatal(err)
 	}
 	
