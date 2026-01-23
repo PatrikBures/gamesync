@@ -10,7 +10,7 @@ variables:
 
   CLIENT_TEST_IMAGE: gamesync-client-test
 
-  ALPINE_VERSION: v3.23
+  ALPINE_VERSION: 3.23
   
   GOPATH: $CI_PROJECT_DIR/.go
   GOCACHE: $CI_PROJECT_DIR/.go-build
