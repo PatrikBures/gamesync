@@ -11,7 +11,7 @@ func TestGetStateDir(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer removeDir(tmpDir)
 
 	stateEnvVar := "XDG_STATE_HOME"
 
@@ -40,3 +40,9 @@ func TestGetStateDir(t *testing.T) {
 	}
 }
 
+func removeDir(dir string) {
+	err := os.RemoveAll(dir)
+	if err != nil {
+		panic(err)
+	}
+}
