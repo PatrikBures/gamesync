@@ -43,6 +43,15 @@ lint-golang:
   script:
     - golangci-lint run
 
+test-golang:
+  stage: test
+  image: golang:1.25-alpine
+  extends:
+    - .golang-before-merge
+    - .gocache
+  script:
+    - go test ./internal/...
+
 build-client:
   stage: build
   image: golang:1.25-alpine
