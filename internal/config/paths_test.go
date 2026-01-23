@@ -34,10 +34,3 @@ func TestGetStateDir(t *testing.T) {
 		t.Errorf("state dir is not a dir")
 	}
 }
-
-func removeDir(dir string) {
-	err := os.RemoveAll(dir)
-	if err != nil {
-		panic(err)
-	}
-}
