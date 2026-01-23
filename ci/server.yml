@@ -34,7 +34,6 @@ build-server-binary:
 
 build-server:
   stage: build
-  image: quay.io/buildah/stable
   extends:
     - .container
     - .setup-buildah
@@ -43,8 +42,6 @@ build-server:
     - job: build-server-binary
       artifacts: true
   variables:
-    STORAGE_DRIVER: vfs
-    BUILDAH_FORMAT: docker
     BUILDAH_ISOLATION: chroot
 
   script:
@@ -72,8 +69,6 @@ create-manifest:
       artifacts: false
 
   variables:
-    STORAGE_DRIVER: vfs
-    BUILDAH_FORMAT: docker
     GIT_STRATEGY: none
 
   script:

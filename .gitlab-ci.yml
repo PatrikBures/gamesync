@@ -7,6 +7,10 @@ variables:
   VERSION: latest
   LINUX_AMD64_BINARY: gamesync-linux-amd64-${VERSION}
   PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/gamesync/${VERSION}"
+
+  CLIENT_TEST_IMAGE: gamesync-client-test
+
+  ALPINE_VERSION: v3.23
   
   GOPATH: $CI_PROJECT_DIR/.go
   GOCACHE: $CI_PROJECT_DIR/.go-build
@@ -24,7 +28,10 @@ variables:
       - .golangci-lint
 
 .setup-buildah:
+  image: quay.io/buildah/stable
   before_script:
+    - export STORAGE_DRIVER=vfs
+    - export BUILDAH_FORMAT=docker
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 workflow:

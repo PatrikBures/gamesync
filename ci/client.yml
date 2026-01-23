@@ -31,7 +31,7 @@
     - export GITLAB_TOKEN=$RELEASE_TOKEN
     - export GITLAB_REPO=$CI_PROJECT_PATH
     - export GITLAB_HOST=$CI_SERVER_URL
-  
+
 
 
 lint-golang:
@@ -42,6 +42,44 @@ lint-golang:
     - .gocache
   script:
     - golangci-lint run
+
+build-test-client:
+  stage: build
+  image: golang:1.25-alpine
+  extends: 
+    - .golang-before-merge
+    - .gocache
+  script:
+    - mkdir -p bin
+    - go build -o ci/client-test/gamesync ./cmd/gamesync
+  artifacts:
+    paths:
+      - ci/client-test/gamesync
+    expire_in: 15 min
+
+build-test-client-image:
+  stage: test
+  extends:
+    - .golang-before-merge
+    - .setup-buildah
+  needs:
+    - job: build-test-client
+      artifacts: true
+
+  script:
+    - buildah pull "${CLIENT_TEST_IMAGE}:latest" || true
+
+    - |
+      buildah build \
+      --build-arg ALPINE_VERSION=${ALPINE_VERSION} \
+      --build-arg =${ALPINE_VERSION} \
+      --layers \
+      --cache-from "$CLIENT_TEST_IMAGE" \
+      -t "$CLIENT_TEST_IMAGE:latest" \
+      ./ci/client-test/
+
+    - buildah push "$CLIENT_TEST_IMAGE:latest"
+
 
 test-golang:
   stage: test
