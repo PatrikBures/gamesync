@@ -14,14 +14,14 @@ type Snapshot struct {
 	Time		time.Time	`json:"time"`
 }
 
-func initRepo(server config.ServerConfig, verbose bool) error {
-	_, err := RunCmd(server, verbose, "restic", "cat", "config")
+func initRepo(current config.Current) error {
+	_, err := RunCmd(current, "restic", "cat", "config")
 
 	if err == nil {
 		return nil
 	}
 
-	output, err := RunCmd(server, verbose, "restic", "init")
+	output, err := RunCmd(current, "restic", "init")
 
 	if err != nil {
 		return fmt.Errorf("%s\n%s", err, output)
@@ -30,15 +30,15 @@ func initRepo(server config.ServerConfig, verbose bool) error {
 	return nil
 }
 
-func CreateSnapshot(server config.ServerConfig, verbose bool, gameID string, skipUnchanged bool) error {
-	saveGame := fmt.Sprintf("/data/saves/%s/%s", config.Current.Server.User, gameID)
+func CreateSnapshot(current config.Current, gameID string, skipUnchanged bool) error {
+	saveGame := fmt.Sprintf("/data/saves/%s/%s", current.Config.Server.User, gameID)
 
 	host, err := os.Hostname()
 	if err != nil {
 		return err
 	}
 
-	if err := initRepo(server, verbose); err != nil {
+	if err := initRepo(current); err != nil {
 		return err
 	}
 
@@ -48,7 +48,7 @@ func CreateSnapshot(server config.ServerConfig, verbose bool, gameID string, ski
 		args = append(args, "--skip-if-unchanged")
 	}
 
-	output, err := RunCmd(server, verbose, args...)
+	output, err := RunCmd(current, args...)
 
 	if err != nil {
 		return fmt.Errorf("%s\n%s", err, output)
@@ -57,8 +57,8 @@ func CreateSnapshot(server config.ServerConfig, verbose bool, gameID string, ski
 	return nil
 }
 
-func ListSnapshots(server config.ServerConfig, verbose bool, gameID string) ([]Snapshot, error) {
-	saveGame := fmt.Sprintf("/data/saves/%s/%s", config.Current.Server.User, gameID)
+func ListSnapshots(current config.Current, gameID string) ([]Snapshot, error) {
+	saveGame := fmt.Sprintf("/data/saves/%s/%s", current.Config.Server.User, gameID)
 
 	args := []string{"restic", "snapshots", "--json"}
 
@@ -66,7 +66,7 @@ func ListSnapshots(server config.ServerConfig, verbose bool, gameID string) ([]S
 		args = append(args, "--path", saveGame)
 	}
 
-	output, err := RunCmd(server, verbose, args...)
+	output, err := RunCmd(current, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%s\n%s", err, output)
 	}
