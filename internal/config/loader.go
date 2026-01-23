@@ -15,7 +15,7 @@ func Load(current *Current) error {
 		return fmt.Errorf("reading config file: %w", err)
 	}
 
-	if err := yaml.Unmarshal(data, current); err != nil {
+	if err := yaml.Unmarshal(data, &current.Config); err != nil {
 		return fmt.Errorf("parsing config file: %w", err)
 	}
 
