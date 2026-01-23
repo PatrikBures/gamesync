@@ -44,7 +44,7 @@ lint-golang:
     - golangci-lint run
 
 build-test-client:
-  stage: build
+  stage: test
   image: golang:1.25-alpine
   extends: 
     - .golang-before-merge
