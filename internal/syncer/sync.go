@@ -102,7 +102,7 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 			return fmt.Errorf("conflict, remote and local changes")
 		case state.SyncStatePush:
 			fmt.Println("Pushing...")
-			if err := pull(current, game); err != nil { return err }
+			if err := push(current, game); err != nil { return err }
 			newStateToSave = localState
 		case state.SyncStatePull:
 			fmt.Println("Pulling...")
@@ -124,7 +124,7 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 			}
 			fmt.Println("Force pushing, overwriting newer remote changes...")
 		}
-		if err := pull(current, game); err != nil { return err }
+		if err := push(current, game); err != nil { return err }
 		newStateToSave = localState
 	case ModePull:
 		switch compareResult {
