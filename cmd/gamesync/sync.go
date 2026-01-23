@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/config"
 	"gamesync/internal/syncer"
 	"os"
 
@@ -14,7 +13,8 @@ var syncCmd = &cobra.Command{
 	Short: "Either pushes or pulls save for GAME_ID",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := syncer.HandleSync(config.Current.Server, args[0], syncer.ModeAuto, false,  verbose); err != nil {
+		gameID := args[0]
+		if err := syncer.HandleSync(current, gameID, syncer.ModeAuto, false); err != nil {
 			fmt.Fprintf(os.Stderr, "Error syncing game: %v\n", err)
 		}
 	},

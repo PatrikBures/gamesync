@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/config"
 	"gamesync/internal/syncer"
 	"os"
 	"path/filepath"
@@ -26,7 +25,7 @@ var snapshotCreateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 
-		if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID, snapshotSkipUnchanged); err != nil {
+		if err := syncer.CreateSnapshot(current, gameID, snapshotSkipUnchanged); err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating a snapshot: %v\n", err)
 			os.Exit(4)
 		}
@@ -43,7 +42,7 @@ var snapshotLsCmd = &cobra.Command{
 			gameID = args[0]
 		}
 
-		snapshots, err := syncer.ListSnapshots(config.Current.Server, verbose, gameID)
+		snapshots, err := syncer.ListSnapshots(current, gameID)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error getting list of snapshots: %v\n", err)
 			os.Exit(4)

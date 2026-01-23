@@ -10,12 +10,12 @@ import (
 	"path/filepath"
 )
 
-func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, verbose bool) error {
-	remoteDir := path.Join("data", "saves", server.User, game.ID)
-	remotePath := fmt.Sprintf("%s@%s:/%s", server.User, server.Host, path.Clean(remoteDir))
+func SyncGame(current config.Current, game config.GameConfig, pull bool) error {
+	remoteDir := path.Join("data", "saves", current.Config.Server.User, game.ID)
+	remotePath := fmt.Sprintf("%s@%s:/%s", current.Config.Server.User, current.Config.Server.Host, path.Clean(remoteDir))
 	localPath := filepath.Clean(game.SavePath)
 
-	sshCmd := fmt.Sprintf("ssh -p %s -i %s", server.Port, server.IdentityFile)
+	sshCmd := fmt.Sprintf("ssh -p %s -i %s", current.Config.Server.Port, current.Config.Server.IdentityFile)
 	var cmd *exec.Cmd
 
 	var src, dest string
@@ -24,7 +24,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, ver
 		src = remotePath+"/"
 		dest = localPath
 	} else {
-		if _, err := RunCmd(server, verbose, "mkdir", "-p", "/"+remoteDir); err != nil {
+		if _, err := RunCmd(current, "mkdir", "-p", "/"+remoteDir); err != nil {
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
 		src = localPath+"/"
@@ -33,7 +33,7 @@ func SyncGame(game config.GameConfig, server config.ServerConfig, pull bool, ver
 
 	cmd = exec.Command("rsync", "-azhPv", "--delete", "-e", sshCmd, src, dest)
 
-	if verbose {
+	if current.Verbose {
 		fmt.Printf("running this rsync command:\n%s\n", cmd.String())
 		cmd.Stdout = os.Stdout
 	}
@@ -54,8 +54,8 @@ const (
 	ModePull
 )
 
-func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force bool, verbose bool) error {
-	game, _, err := config.GetGame(gameID)
+func HandleSync(current config.Current, gameID string, mode SyncMode, force bool) error {
+	game, _, err := config.GetGame(current, gameID)
 	if err != nil {
 		return fmt.Errorf("getting game: %v", err)
 	}
@@ -70,17 +70,17 @@ func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force 
 		return fmt.Errorf("getting local state: %v", err)
 	}
 
-	oldLocalState, err := state.GetOld(game.ID, verbose)
+	oldLocalState, err := state.GetOld(current, game.ID)
 	if err != nil {
 		return fmt.Errorf("getting old local state: %v", err)
 	}
 
-	remoteState, err := GetRemoteState(game.ID, config.Current.Server, verbose)
+	remoteState, err := GetRemoteState(current, game.ID)
 	if err != nil {
 		return fmt.Errorf("getting remote state: %v", err)
 	}
 
-	compareResult, err := state.Compare(localState, oldLocalState, remoteState, false, verbose)
+	compareResult, err := state.Compare(localState, oldLocalState, remoteState, false, current.Verbose)
 	if err != nil {
 		return fmt.Errorf("comparing states: %v", err)
 	}
@@ -102,11 +102,11 @@ func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force 
 			return fmt.Errorf("conflict, remote and local changes")
 		case state.SyncStatePush:
 			fmt.Println("Pushing...")
-			if err := push(game, server, verbose); err != nil { return err }
+			if err := pull(current, game); err != nil { return err }
 			newStateToSave = localState
 		case state.SyncStatePull:
 			fmt.Println("Pulling...")
-			if err := pull(game, server, verbose); err != nil { return err }
+			if err := pull(current, game); err != nil { return err }
 			newStateToSave = remoteState
 		}
 	case ModePush:
@@ -124,7 +124,7 @@ func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force 
 			}
 			fmt.Println("Force pushing, overwriting newer remote changes...")
 		}
-		if err := push(game, server, verbose); err != nil { return err }
+		if err := pull(current, game); err != nil { return err }
 		newStateToSave = localState
 	case ModePull:
 		switch compareResult {
@@ -141,7 +141,7 @@ func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force 
 		case state.SyncStatePull:
 			fmt.Println("Pulling...")
 		}
-		if err := pull(game, server, verbose); err != nil { return err }
+		if err := pull(current, game); err != nil { return err }
 		newStateToSave = remoteState
 	}
 
@@ -155,9 +155,9 @@ func HandleSync(server config.ServerConfig, gameID string, mode SyncMode, force 
 	return nil
 }
 
-func pull(game config.GameConfig, server config.ServerConfig, verbose bool) error {
-	return SyncGame(game, server, true, verbose)
+func pull(current config.Current, game config.GameConfig) error {
+	return SyncGame(current, game, true)
 }
-func push(game config.GameConfig, server config.ServerConfig, verbose bool) error {
-	return SyncGame(game, server, false, verbose)
+func push(current config.Current, game config.GameConfig) error {
+	return SyncGame(current, game, false)
 }

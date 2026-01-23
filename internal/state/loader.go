@@ -9,14 +9,14 @@ import (
 	"path/filepath"
 )
 
-func GetOld(gameID string, verbose bool) (map[string]FileMeta, error) {
+func GetOld(current config.Current, gameID string) (map[string]FileMeta, error) {
 	stateDir, err := config.GetStateDir()
 	if err != nil { return nil, err }
 
 	gameStateFile := filepath.Join(stateDir, gameID+".json")
 
 	if _, err := os.Stat(gameStateFile); errors.Is(err, os.ErrNotExist) {
-		if verbose { fmt.Println("old local state does not exist, loading empty state:", gameStateFile) }
+		if current.Verbose { fmt.Println("old local state does not exist, loading empty state:", gameStateFile) }
 		return make(map[string]FileMeta), nil
 	}
 

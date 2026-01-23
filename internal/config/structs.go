@@ -1,6 +1,10 @@
 package config
 
-var Current Config
+type Current struct {
+	Config Config
+	ConfigPath string
+	Verbose bool
+}
 
 type Config struct {
 	Server	ServerConfig	`yaml:"server"`

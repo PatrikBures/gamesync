@@ -7,16 +7,16 @@ import (
 	"slices"
 )
 
-func RemoveGames(gameIdsToRemove []string, configPath string) error {
+func RemoveGames(current *Current, gameIdsToRemove []string) error {
 	gamesRemovedQty := 0
 	var gamesRemoved []GameConfig
 
 	for _, gameIdToRemove := range gameIdsToRemove {
 		found := false
 		
-		for i, game := range Current.Games {
+		for i, game := range current.Config.Games {
 			if gameIdToRemove == game.ID {
-				Current.Games = slices.Delete(Current.Games, i, i+1)
+				current.Config.Games = slices.Delete(current.Config.Games, i, i+1)
 				gamesRemoved = append(gamesRemoved, game)
 				gamesRemovedQty++
 				found = true
@@ -39,7 +39,7 @@ func RemoveGames(gameIdsToRemove []string, configPath string) error {
 		}
 	}
 
-	if err := WriteGlobalConfig(configPath); err != nil {
+	if err := WriteGlobalConfig(*current); err != nil {
 		return err
 	}
 

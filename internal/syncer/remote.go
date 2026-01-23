@@ -10,9 +10,9 @@ import (
 	"path"
 )
 
-func RemoveSaveGame(gameID string, server config.ServerConfig, verbose bool) (string, error) {
-	output, err := RunCmd(server, verbose, "rm", "-r", 
-		fmt.Sprintf("/data/saves/%s/%s", server.User, gameID))
+func RemoveSaveGame(current config.Current, gameID string) (string, error) {
+	output, err := RunCmd(current, "rm", "-r", 
+		fmt.Sprintf("/data/saves/%s/%s", current.Config.Server.User, gameID))
 
 	if err != nil {
 		return output, err
@@ -21,11 +21,11 @@ func RemoveSaveGame(gameID string, server config.ServerConfig, verbose bool) (st
 	return output, nil
 }
 
-func RunCmd(server config.ServerConfig, verbose bool, cmds ...string) (string, error) {
+func RunCmd(current config.Current, cmds ...string) (string, error) {
 	sshArgs := []string{
-		"-p", server.Port,
-		"-i", server.IdentityFile,
-		fmt.Sprintf("%s@%s", server.User, server.Host),
+		"-p", current.Config.Server.Port,
+		"-i", current.Config.Server.IdentityFile,
+		fmt.Sprintf("%s@%s", current.Config.Server.User, current.Config.Server.Host),
 	}
 
 	sshArgs = append(sshArgs, cmds...)
@@ -41,7 +41,7 @@ func RunCmd(server config.ServerConfig, verbose bool, cmds ...string) (string, e
 	outStr := stdoutBuf.String()
 	errStr := stderrBuf.String()
 
-	if verbose {
+	if current.Verbose {
 		fmt.Printf("Ran cmd:\n%s\n", cmd.String())
 		fmt.Printf("output:\n%s\n", outStr)
 		fmt.Printf("error:\n%s\n", errStr)
@@ -54,8 +54,10 @@ func RunCmd(server config.ServerConfig, verbose bool, cmds ...string) (string, e
 	return outStr, nil
 }
 
-func GetRemoteState(gameID string, server config.ServerConfig, verbose bool) (map[string]state.FileMeta, error) {
-	output, err := RunCmd(server, verbose, "gamesync-state", "/"+path.Join("data", "saves", server.User, gameID))
+func GetRemoteState(current config.Current, gameID string) (map[string]state.FileMeta, error) {
+	output, err := RunCmd(current, 
+		"gamesync-state",
+		"/"+path.Join("data", "saves", current.Config.Server.User, gameID))
 	if err != nil {
 		return nil, err
 	}

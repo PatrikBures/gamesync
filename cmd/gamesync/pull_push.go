@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/cobra"
 	"fmt"
 	"os"
-	"gamesync/internal/config"
 	"gamesync/internal/syncer"
 )
 
@@ -18,7 +17,7 @@ var pullCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 
-		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, pullPushForce, verbose); err != nil {
+		if err := syncer.HandleSync(current, gameID, syncer.ModePull, pullPushForce); err != nil {
 			fmt.Fprintf(os.Stderr, "Error pulling: %v\n", err)
 			os.Exit(20)
 		}
@@ -33,7 +32,7 @@ var pushCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 
-		if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, pullPushForce, verbose); err != nil {
+		if err := syncer.HandleSync(current, gameID, syncer.ModePush, pullPushForce); err != nil {
 			fmt.Fprintf(os.Stderr, "Error pushing: %v\n", err)
 			os.Exit(20)
 		}

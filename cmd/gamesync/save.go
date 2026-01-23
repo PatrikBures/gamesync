@@ -33,7 +33,7 @@ var saveAddCmd = &cobra.Command{
 		}
 
 		
-		if err := config.AddSave(gameID, savePath, configFile, saveAddUpdate); err != nil {
+		if err := config.AddSave(&current, gameID, savePath, saveAddUpdate); err != nil {
 			fmt.Fprintf(os.Stderr, "Error adding save: %v\n", err)
 			os.Exit(2)
 		}
@@ -47,7 +47,7 @@ var saveLsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 
-		for _, game := range config.Current.Games {
+		for _, game := range current.Config.Games {
 			var err error
 
 			if saveLsQuiet {
@@ -73,7 +73,7 @@ var saveRmCmd = &cobra.Command{
 	Long: `Does not remove the save dir`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := config.RemoveGames(args, configFile)
+		err := config.RemoveGames(&current, args)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error removing games: %v\n", err)
 			os.Exit(23)
