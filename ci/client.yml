@@ -74,7 +74,6 @@ build-test-client-image:
     - |
       buildah build \
       --build-arg ALPINE_VERSION=${ALPINE_VERSION} \
-      --build-arg =${ALPINE_VERSION} \
       --layers \
       --cache-from "$CLIENT_TEST_IMAGE" \
       -t "$CLIENT_TEST_IMAGE:latest" \
