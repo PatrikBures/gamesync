@@ -1,4 +1,8 @@
-#!/bin/sh
+#!/bin/bash
+
+if [[ -f /etc/gamesync.env ]]; then
+    source /etc/gamesync.env
+fi
 
 saves_dir="/data/saves/$USER"
 
@@ -7,6 +11,16 @@ export RESTIC_PASSWORD_FILE="/config/restic_passwords/$USER"
 
 CMD=$SSH_ORIGINAL_COMMAND
 
+if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then
+    >&2 echo "Running command unrestricted, only use this for testing!"
+    bash -c "$CMD"
+    exit $?
+fi
+
+if [[ -z "$CMD" ]]; then
+    exit 0
+fi
+
 if echo "$CMD" | grep -q '[;&|]'; then
     echo "Access Denied: Complex commands are not allowed."
     exit 1
@@ -14,22 +28,22 @@ fi
 
 case "$CMD" in
     rsync\ *)
-        eval "$CMD"
+        bash -c "$CMD"
         ;;
     restic\ *)
-        eval "$CMD"
+        bash -c "$CMD"
         ;;
     mkdir\ *)
-        eval "$CMD"
+        bash -c "$CMD"
         ;;
     rm\ *)
-        eval "$CMD"
+        bash -c "$CMD"
         ;;
     gamesync-state\ *)
-        eval "$CMD"
+        bash -c "$CMD"
         ;;
     ls)
-        eval "ls -1 $saves_dir"
+        ls -1 "$saves_dir"
         ;;
     *)
         echo "Access Denied: Invalid command."

@@ -133,6 +133,10 @@ create_users_loop() {
 }
 
 
+if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then
+    echo "export GAMESYNC_UNRESTRICTED=true" >> /etc/gamesync.env
+    chmod 664 /etc/gamesync.env
+fi
 
 
 
