@@ -67,6 +67,8 @@ build-test-client-image:
   needs:
     - job: build-test-client
       artifacts: true
+  variables:
+    BUILDAH_ISOLATION: chroot
 
   script:
     - buildah pull "${CLIENT_TEST_IMAGE}:latest" || true
