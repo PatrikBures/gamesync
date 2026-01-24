@@ -43,7 +43,7 @@ case "$CMD" in
     gamesync-state\ *)
         bash -c "$CMD"
         ;;
-    ls)
+    list-saves)
         ls -1 "$saves_dir"
         ;;
     *)

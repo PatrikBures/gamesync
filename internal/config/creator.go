@@ -7,8 +7,8 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-func AddSave(gameID string, savePath string, configPath string, update bool) error {
-	_, gameIdx, getGameErr := GetGame(gameID)
+func AddSave(current *Current, gameID string, savePath string, update bool) error {
+	_, gameIdx, getGameErr := GetGame(*current, gameID)
 
 	if !update && getGameErr == nil {
 		return fmt.Errorf("game with id \"%s\" already exists", gameID)
@@ -23,29 +23,29 @@ func AddSave(gameID string, savePath string, configPath string, update bool) err
 	}
 
 	if update && getGameErr == nil {
-		Current.Games[gameIdx].SavePath = savePath
+		current.Config.Games[gameIdx].SavePath = savePath
 	} else {
 		gameConfig := GameConfig{
 			ID: gameID,
 			SavePath: savePath,
 		}
 
-		Current.Games = append(Current.Games, gameConfig)
+		current.Config.Games = append(current.Config.Games, gameConfig)
 	}
-	if err := WriteGlobalConfig(configPath); err != nil {
+	if err := WriteGlobalConfig(*current); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func WriteGlobalConfig(configPath string) error {
-	data, err := yaml.Marshal(Current)
+func WriteGlobalConfig(current Current) error {
+	data, err := yaml.Marshal(current.Config)
 	if err != nil {
 		return fmt.Errorf("marshaling config: %v", err)
 	}
 
-	err = os.WriteFile(configPath, data, 0644)
+	err = os.WriteFile(current.ConfigPath, data, 0644)
 	if err != nil {
 		return fmt.Errorf("writing config: %v", err)
 	}

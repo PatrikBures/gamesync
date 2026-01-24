@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/config"
 	"gamesync/internal/syncer"
 	"gamesync/internal/ui"
 	"os"
@@ -48,7 +47,7 @@ var wrapCmd = &cobra.Command{
 
 		// pulls
 		if !wrapNoPull {
-			if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePull, wrapForcePull, verbose); err != nil {
+			if err := syncer.HandleSync(current, gameID, syncer.ModePull, wrapForcePull); err != nil {
 				fmt.Printf("WARNING: Pulling save failed: %v\n", err)
 				if wrapNotify { ui.Notify("error", "pulling save") }
 			} else {
@@ -77,7 +76,7 @@ var wrapCmd = &cobra.Command{
 
 		// pushes
 		if !wrapNoPush {
-			if err := syncer.HandleSync(config.Current.Server, gameID, syncer.ModePush, wrapForcePush, verbose); err != nil {
+			if err := syncer.HandleSync(current, gameID, syncer.ModePush, wrapForcePush); err != nil {
 				fmt.Printf("WARNING: Pushing save failed: %v\n", err)
 				if wrapNotify { ui.Notify("error", "pushing save") }
 			} else {
@@ -88,7 +87,7 @@ var wrapCmd = &cobra.Command{
 
 		// snapshot
 		if wrapCreateSnapshot || wrapCreateSnapshotUnchanged {
-			if err := syncer.CreateSnapshot(config.Current.Server, verbose, gameID, wrapCreateSnapshotUnchanged); err != nil {
+			if err := syncer.CreateSnapshot(current, gameID, wrapCreateSnapshotUnchanged); err != nil {
 				fmt.Printf("Failed creating snapshot: %v\n", err)
 				if wrapNotify { ui.Notify("error", "creating snapshot") }
 			} else {

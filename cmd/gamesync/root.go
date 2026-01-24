@@ -10,27 +10,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configFile string
-var verbose bool
+var current config.Current
 
 var rootCmd = &cobra.Command{
 	Use: "gamesync",
 	Short: "Syncs save games to a server",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if configFile == "" {
+		if current.ConfigPath == "" {
 			configDir, err := config.GetConfigDir()
 			if err != nil {
 				return fmt.Errorf("error getting config dir: %w", err)
 			}
-			configFile = filepath.Join(configDir, "config.yml")
+			current.ConfigPath = filepath.Join(configDir, "config.yml")
 		} else {
 			var err error
-			configFile, err = filepath.Abs(configFile)
+			current.ConfigPath, err = filepath.Abs(current.ConfigPath)
 			if err != nil {
 				return err
 			}
 		}
-		if err := config.Load(configFile); err != nil {
+		if err := config.Load(&current); err != nil {
 			return fmt.Errorf("loading config: %w", err)
 		}
 		return nil
@@ -44,6 +43,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file (default ~/.config/gamesync/config.yml)")
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "more verbose output")
+	rootCmd.PersistentFlags().StringVar(&current.ConfigPath, "config", "", "config file (default ~/.config/gamesync/config.yml)")
+	rootCmd.PersistentFlags().BoolVarP(&current.Verbose, "verbose", "v", false, "more verbose output")
 }

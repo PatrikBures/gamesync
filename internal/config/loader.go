@@ -8,22 +8,22 @@ import (
 )
 
 
-func Load(configPath string) error {
+func Load(current *Current) error {
 
-	data, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(current.ConfigPath)
 	if err != nil {
 		return fmt.Errorf("reading config file: %w", err)
 	}
 
-	if err := yaml.Unmarshal(data, &Current); err != nil {
+	if err := yaml.Unmarshal(data, &current.Config); err != nil {
 		return fmt.Errorf("parsing config file: %w", err)
 	}
 
 	return nil
 }
 
-func GetGame(gameID string) (GameConfig, int, error) {
-	for i, g := range Current.Games {
+func GetGame(current Current, gameID string) (GameConfig, int, error) {
+	for i, g := range current.Config.Games {
 		if g.ID == gameID {
 			return g,i , nil
 		}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/config"
 	"gamesync/internal/syncer"
 	"os"
 
@@ -19,7 +18,7 @@ var remoteLsCmd = &cobra.Command{
 	Short: "List remote saves",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		remoteSaves, err := syncer.RunCmd(config.Current.Server, verbose, "ls")
+		remoteSaves, err := syncer.RunCmd(current, "list-saves")
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error listing remote: %v\n", err)
@@ -37,7 +36,7 @@ var remoteRmCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 
-		output, err := syncer.RemoveSaveGame(gameID, config.Current.Server, verbose)
+		output, err := syncer.RemoveSaveGame(current, gameID)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error removing save: %v\n%s", err, output)
