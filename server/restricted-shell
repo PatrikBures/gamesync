@@ -28,7 +28,7 @@ case "$CMD" in
     gamesync-state\ *)
         eval "$CMD"
         ;;
-    ls)
+    list-saves)
         eval "ls -1 $saves_dir"
         ;;
     *)

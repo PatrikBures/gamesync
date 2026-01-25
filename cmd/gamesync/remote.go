@@ -18,7 +18,7 @@ var remoteLsCmd = &cobra.Command{
 	Short: "List remote saves",
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		remoteSaves, err := syncer.RunCmd(current, "ls")
+		remoteSaves, err := syncer.RunCmd(current, "list-saves")
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error listing remote: %v\n", err)
