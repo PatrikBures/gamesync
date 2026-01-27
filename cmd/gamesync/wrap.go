@@ -28,24 +28,21 @@ func newWrapCmd() *wrapCmd {
 	cmd := &cobra.Command{
 		Use: "wrap GAME_ID -- COMMAND...",
 		Short: "Wrap a game process",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			dashIdx := cmd.ArgsLenAtDash()
 
 			if dashIdx == -1 {
-				fmt.Fprintf(os.Stderr, "Error: Found no '--'\n")
-				os.Exit(1)
+				return fmt.Errorf("found no '--'")
 			}
 
 			userArgs := args[:dashIdx]
 			cmdArgs := args[dashIdx:]
 
 			if len(userArgs) < 1 {
-				fmt.Fprintf(os.Stderr, "Error: Missing GAME_ID\n")
-				os.Exit(1)
+				return fmt.Errorf("missing GAME_ID")
 			}
 			if len(cmdArgs) < 1 {
-				fmt.Fprintf(os.Stderr, "Error: Missing commands after '--'\n")
-				os.Exit(1)
+				return fmt.Errorf("missing command after '--'")
 			}
 
 
@@ -105,7 +102,7 @@ func newWrapCmd() *wrapCmd {
 
 			fmt.Printf("Game exited with exit code: %d\n", exitCode)
 
-			os.Exit(exitCode)
+			return nil
 		},
 	}
 
