@@ -2,116 +2,129 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/syncer"
-	"gamesync/internal/ui"
 	"os"
 	"os/exec"
+
+	"gamesync/internal/syncer"
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
 
-var wrapCreateSnapshot, 
-	wrapCreateSnapshotUnchanged,
-	wrapNotify,
-	wrapNoPull,
-	wrapForcePull,
-	wrapNoPush,
-	wrapForcePush bool
+type wrapCmd struct {
+	cmd			*cobra.Command
+	createSnapshot bool
+	createSnapshotUnchanged bool
+	notify		bool
+	noPull		bool
+	forcePull	bool
+	noPush		bool
+	forcePush	bool
+}
 
-var wrapCmd = &cobra.Command{
-	Use: "wrap GAME_ID -- COMMAND...",
-	Short: "Wrap a game process",
-	Run: func(cmd *cobra.Command, args []string) {
-		dashIdx := cmd.ArgsLenAtDash()
+func newWrapCmd() *wrapCmd {
+	root := wrapCmd{}
 
-		if dashIdx == -1 {
-			fmt.Fprintf(os.Stderr, "Error: Found no '--'\n")
-			os.Exit(1)
-		}
+	cmd := &cobra.Command{
+		Use: "wrap GAME_ID -- COMMAND...",
+		Short: "Wrap a game process",
+		Run: func(cmd *cobra.Command, args []string) {
+			dashIdx := cmd.ArgsLenAtDash()
 
-		userArgs := args[:dashIdx]
-		cmdArgs := args[dashIdx:]
-
-		if len(userArgs) < 1 {
-			fmt.Fprintf(os.Stderr, "Error: Missing GAME_ID\n")
-			os.Exit(1)
-		}
-		if len(cmdArgs) < 1 {
-			fmt.Fprintf(os.Stderr, "Error: Missing commands after '--'\n")
-			os.Exit(1)
-		}
-
-
-
-		gameID := userArgs[0]
-
-		// pulls
-		if !wrapNoPull {
-			if err := syncer.HandleSync(current, gameID, syncer.ModePull, wrapForcePull); err != nil {
-				fmt.Printf("WARNING: Pulling save failed: %v\n", err)
-				if wrapNotify { ui.Notify("error", "pulling save") }
-			} else {
-				fmt.Println("Pulled game")
-				if wrapNotify { ui.Notify("sucess", "pulling save") }
+			if dashIdx == -1 {
+				fmt.Fprintf(os.Stderr, "Error: Found no '--'\n")
+				os.Exit(1)
 			}
-		}
 
-		// runs command
-		runCmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
+			userArgs := args[:dashIdx]
+			cmdArgs := args[dashIdx:]
 
-		runCmd.Stdout = os.Stdout
-		runCmd.Stderr = os.Stderr
-		runCmd.Stdin = os.Stdin
-
-		exitCode := 0
-		if err := runCmd.Run(); err != nil {
-			fmt.Printf("Error ")
-			if exitError, ok := err.(*exec.ExitError); ok {
-				exitCode = exitError.ExitCode()
-			} else {
-				fmt.Printf("Error running game: %v\n", err)
-				exitCode = 1
+			if len(userArgs) < 1 {
+				fmt.Fprintf(os.Stderr, "Error: Missing GAME_ID\n")
+				os.Exit(1)
 			}
-		}
-
-		// pushes
-		if !wrapNoPush {
-			if err := syncer.HandleSync(current, gameID, syncer.ModePush, wrapForcePush); err != nil {
-				fmt.Printf("WARNING: Pushing save failed: %v\n", err)
-				if wrapNotify { ui.Notify("error", "pushing save") }
-			} else {
-				fmt.Println("Pushed game")
-				if wrapNotify { ui.Notify("sucess", "pushing save") }
+			if len(cmdArgs) < 1 {
+				fmt.Fprintf(os.Stderr, "Error: Missing commands after '--'\n")
+				os.Exit(1)
 			}
-		}
 
-		// snapshot
-		if wrapCreateSnapshot || wrapCreateSnapshotUnchanged {
-			if err := syncer.CreateSnapshot(current, gameID, wrapCreateSnapshotUnchanged); err != nil {
-				fmt.Printf("Failed creating snapshot: %v\n", err)
-				if wrapNotify { ui.Notify("error", "creating snapshot") }
-			} else {
-				fmt.Println("Snapshot created")
-				if wrapNotify { ui.Notify("sucess", "creating snapshot") }
+
+
+			gameID := userArgs[0]
+
+			// pulls
+			if !root.noPull {
+				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.forcePull); err != nil {
+					fmt.Printf("WARNING: Pulling save failed: %v\n", err)
+					if root.notify { ui.Notify("error", "pulling save") }
+				} else {
+					fmt.Println("Pulled game")
+					if root.notify { ui.Notify("sucess", "pulling save") }
+				}
 			}
-		}
 
-		fmt.Printf("Game exited with exit code: %d\n", exitCode)
+			// runs command
+			runCmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 
-		os.Exit(exitCode)
-	},
+			runCmd.Stdout = os.Stdout
+			runCmd.Stderr = os.Stderr
+			runCmd.Stdin = os.Stdin
+
+			exitCode := 0
+			if err := runCmd.Run(); err != nil {
+				fmt.Printf("Error ")
+				if exitError, ok := err.(*exec.ExitError); ok {
+					exitCode = exitError.ExitCode()
+				} else {
+					fmt.Printf("Error running game: %v\n", err)
+					exitCode = 1
+				}
+			}
+
+			// pushes
+			if !root.noPush {
+				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.forcePush); err != nil {
+					fmt.Printf("WARNING: Pushing save failed: %v\n", err)
+					if root.notify { ui.Notify("error", "pushing save") }
+				} else {
+					fmt.Println("Pushed game")
+					if root.notify { ui.Notify("sucess", "pushing save") }
+				}
+			}
+
+			// snapshot
+			if root.createSnapshot || root.createSnapshotUnchanged {
+				if err := syncer.CreateSnapshot(current, gameID, root.createSnapshotUnchanged); err != nil {
+					fmt.Printf("Failed creating snapshot: %v\n", err)
+					if root.notify { ui.Notify("error", "creating snapshot") }
+				} else {
+					fmt.Println("Snapshot created")
+					if root.notify { ui.Notify("sucess", "creating snapshot") }
+				}
+			}
+
+			fmt.Printf("Game exited with exit code: %d\n", exitCode)
+
+			os.Exit(exitCode)
+		},
+	}
+
+
+	cmd.Flags().BoolVarP(&root.createSnapshot, "snapshot", "s", false, "Creates snapshot on remote after push")
+	cmd.Flags().BoolVarP(&root.createSnapshotUnchanged, "skip-unchanged", "S", false, "Creates snapshot if there were changes from the previous snapshot on remote after push")
+	cmd.Flags().BoolVarP(&root.notify, "notify", "n", false, "Sends a notification when pulled, pushed and created a snapshot and if succeeded")
+
+	cmd.Flags().BoolVarP(&root.noPull, "no-pull", "", false, "")
+	cmd.Flags().BoolVarP(&root.forcePull, "force-pull", "", false, "")
+
+	cmd.Flags().BoolVarP(&root.noPush, "no-push", "", false, "")
+	cmd.Flags().BoolVarP(&root.forcePull, "force-push","" , false, "")
+
+	root.cmd = cmd
+
+	return &root
 }
 
 func init() {
-	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshot, "snapshot", "s", false, "Creates snapshot on remote after push")
-	wrapCmd.Flags().BoolVarP(&wrapCreateSnapshotUnchanged, "skip-unchanged", "S", false, "Creates snapshot if there were changes from the previous snapshot on remote after push")
-	wrapCmd.Flags().BoolVarP(&wrapNotify, "notify", "n", false, "Sends a notification when pulled, pushed and created a snapshot and if succeeded")
-
-	wrapCmd.Flags().BoolVarP(&wrapNoPull, "no-pull", "", false, "")
-	wrapCmd.Flags().BoolVarP(&wrapForcePull, "force-pull", "", false, "")
-
-	wrapCmd.Flags().BoolVarP(&wrapNoPush, "no-push", "", false, "")
-	wrapCmd.Flags().BoolVarP(&wrapForcePull, "force-push","" , false, "")
-
-	rootCmd.AddCommand(wrapCmd)
+	rootCmd.AddCommand(newWrapCmd().cmd)
 }
