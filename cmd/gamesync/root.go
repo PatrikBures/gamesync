@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"gamesync/internal/config"
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -31,6 +32,9 @@ var rootCmd = &cobra.Command{
 		}
 		if err := config.Load(&current); err != nil {
 			return fmt.Errorf("loading config: %w", err)
+		}
+		if current.Verbose {
+			ui.SetLevel(ui.LevelVerbose)
 		}
 		return nil
 	},
