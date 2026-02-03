@@ -20,6 +20,10 @@ func SetLevel(l Level) {
 	currentLevel = l
 }
 
+func GetLevel() Level {
+	return currentLevel
+}
+
 func Printf(l Level, format string, args ...any) {
 	if currentLevel <= l {
 		if l == LevelError {

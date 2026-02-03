@@ -52,10 +52,10 @@ func newWrapCmd() *wrapCmd {
 			// pulls
 			if !root.noPull {
 				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.forcePull); err != nil {
-					fmt.Printf("WARNING: Pulling save failed: %v\n", err)
+					ui.Info("WARNING: Pulling save failed: %v\n", err)
 					if root.notify { ui.Notify("error", "pulling save") }
 				} else {
-					fmt.Println("Pulled game")
+					ui.Info("Pulled game\n")
 					if root.notify { ui.Notify("sucess", "pulling save") }
 				}
 			}
@@ -69,11 +69,10 @@ func newWrapCmd() *wrapCmd {
 
 			exitCode := 0
 			if err := runCmd.Run(); err != nil {
-				fmt.Printf("Error ")
 				if exitError, ok := err.(*exec.ExitError); ok {
 					exitCode = exitError.ExitCode()
 				} else {
-					fmt.Printf("Error running game: %v\n", err)
+					ui.Error("Error running game: %v\n", err)
 					exitCode = 1
 				}
 			}
@@ -81,10 +80,10 @@ func newWrapCmd() *wrapCmd {
 			// pushes
 			if !root.noPush {
 				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.forcePush); err != nil {
-					fmt.Printf("WARNING: Pushing save failed: %v\n", err)
+					ui.Info("WARNING: Pushing save failed: %v\n", err)
 					if root.notify { ui.Notify("error", "pushing save") }
 				} else {
-					fmt.Println("Pushed game")
+					ui.Info("Pushed game\n")
 					if root.notify { ui.Notify("sucess", "pushing save") }
 				}
 			}
@@ -92,15 +91,15 @@ func newWrapCmd() *wrapCmd {
 			// snapshot
 			if root.createSnapshot || root.createSnapshotUnchanged {
 				if err := syncer.CreateSnapshot(current, gameID, root.createSnapshotUnchanged); err != nil {
-					fmt.Printf("Failed creating snapshot: %v\n", err)
+					ui.Error("Failed creating snapshot: %v\n", err)
 					if root.notify { ui.Notify("error", "creating snapshot") }
 				} else {
-					fmt.Println("Snapshot created")
+					ui.Info("Snapshot created\n")
 					if root.notify { ui.Notify("sucess", "creating snapshot") }
 				}
 			}
 
-			fmt.Printf("Game exited with exit code: %d\n", exitCode)
+			ui.Info("Game exited with exit code: %d\n", exitCode)
 
 			return nil
 		},

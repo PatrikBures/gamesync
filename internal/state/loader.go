@@ -3,10 +3,11 @@ package state
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"gamesync/internal/config"
 	"os"
 	"path/filepath"
+
+	"gamesync/internal/config"
+	"gamesync/internal/ui"
 )
 
 func GetOld(current config.Current, gameID string) (map[string]FileMeta, error) {
@@ -16,7 +17,7 @@ func GetOld(current config.Current, gameID string) (map[string]FileMeta, error) 
 	gameStateFile := filepath.Join(stateDir, gameID+".json")
 
 	if _, err := os.Stat(gameStateFile); errors.Is(err, os.ErrNotExist) {
-		if current.Verbose { fmt.Println("old local state does not exist, loading empty state:", gameStateFile) }
+		ui.Verbose("Old local state does not exist, loading empty state: %s\n", gameStateFile)
 		return make(map[string]FileMeta), nil
 	}
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"gamesync/internal/ui"
@@ -27,7 +26,7 @@ var remoteLsCmd = &cobra.Command{
 			os.Exit(3)
 		}
 
-		fmt.Print(remoteSaves)
+		ui.Info("%s\n", remoteSaves)
 	},
 }
 
@@ -45,7 +44,7 @@ var remoteRmCmd = &cobra.Command{
 			os.Exit(3)
 		}
 
-		fmt.Println(gameID)
+		ui.Info("%s\n", gameID)
 	},
 }
 

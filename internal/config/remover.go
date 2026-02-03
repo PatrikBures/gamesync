@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"gamesync/internal/ui"
 	"os"
 	"path/filepath"
 	"slices"
@@ -44,7 +45,7 @@ func RemoveGames(current *Current, gameIdsToRemove []string) error {
 	}
 
 	for _, game := range gamesRemoved {
-		fmt.Println(game.ID)
+		ui.Info("%s\n", game.ID)
 	}
 
 	return nil
