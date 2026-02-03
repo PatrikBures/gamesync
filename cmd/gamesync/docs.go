@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"os"
+
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
@@ -17,7 +18,7 @@ var genDocCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		dir := "./manpages"
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			fmt.Fprintf(os.Stderr, "Error dir does not exist: %s", dir)
+			ui.Error("Error dir does not exist: %s", dir)
 			os.Exit(1)
 		}
 
@@ -28,7 +29,7 @@ var genDocCmd = &cobra.Command{
 		}
 
 		if err := doc.GenManTree(rootCmd, header, dir); err != nil {
-			fmt.Fprintf(os.Stderr, "Error generating man-pages: %v\n", err)
+			ui.Error("Error generating man-pages: %v\n", err)
 			os.Exit(1)
 		}
 	},

@@ -9,7 +9,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s DIR\n", os.Args[0])
+		ui.Error("Usage: %s DIR\n", os.Args[0])
 		os.Exit(10)
 	}
 
@@ -17,13 +17,13 @@ func main() {
 
 	state, err := state.Get(dir)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error getting state: %v\n", err)
+		ui.Error("Error getting state: %v\n", err)
 		os.Exit(11)
 	}
 
 	stateJson, err := json.Marshal(state)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error marshaling to json: %v\n", err)
+		ui.Error("Error marshaling to json: %v\n", err)
 		os.Exit(12)
 	}
 
