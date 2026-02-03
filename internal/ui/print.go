@@ -30,3 +30,17 @@ func Printf(l Level, format string, args ...any) {
 		fmt.Printf(format, args...)
 	}
 }
+
+func Info(format string, args ...any) {
+	Printf(LevelNormal, format, args...)
+}
+func Error(format string, args ...any) {
+	Printf(LevelError, format, args...)
+}
+func Verbose(format string, args ...any) {
+	Printf(LevelVerbose, format, args...)
+}
+func Debug(format string, args ...any) {
+	Printf(LevelDebug, format, args...)
+}
+
