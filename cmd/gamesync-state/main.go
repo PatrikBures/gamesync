@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"gamesync/internal/state"
 	"os"
+
+	"gamesync/internal/state"
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		ui.Error("Usage: %s DIR\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s DIR\n", os.Args[0])
 		os.Exit(10)
 	}
 
@@ -17,13 +18,13 @@ func main() {
 
 	state, err := state.Get(dir)
 	if err != nil {
-		ui.Error("Error getting state: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error getting state: %v\n", err)
 		os.Exit(11)
 	}
 
 	stateJson, err := json.Marshal(state)
 	if err != nil {
-		ui.Error("Error marshaling to json: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error marshaling to json: %v\n", err)
 		os.Exit(12)
 	}
 
