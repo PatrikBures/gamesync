@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"gamesync/internal/syncer"
-	"os"
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +14,7 @@ var syncCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		gameID := args[0]
 		if err := syncer.HandleSync(current, gameID, syncer.ModeAuto, false); err != nil {
-			fmt.Fprintf(os.Stderr, "Error syncing game: %v\n", err)
+			ui.Error("Error syncing game: %v\n", err)
 		}
 	},
 }

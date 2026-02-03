@@ -1,10 +1,12 @@
 package main
 
 import (
-	"github.com/spf13/cobra"
-	"fmt"
 	"os"
+
+	"gamesync/internal/ui"
 	"gamesync/internal/syncer"
+
+	"github.com/spf13/cobra"
 )
 
 var pullPushForce bool
@@ -18,7 +20,7 @@ var pullCmd = &cobra.Command{
 		gameID := args[0]
 
 		if err := syncer.HandleSync(current, gameID, syncer.ModePull, pullPushForce); err != nil {
-			fmt.Fprintf(os.Stderr, "Error pulling: %v\n", err)
+			ui.Error("Error pulling: %v\n", err)
 			os.Exit(20)
 		}
 	},
@@ -33,7 +35,7 @@ var pushCmd = &cobra.Command{
 		gameID := args[0]
 
 		if err := syncer.HandleSync(current, gameID, syncer.ModePush, pullPushForce); err != nil {
-			fmt.Fprintf(os.Stderr, "Error pushing: %v\n", err)
+			ui.Error("Error pushing: %v\n", err)
 			os.Exit(20)
 		}
 	},

@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/config"
 	"os"
 	"path/filepath"
 	"text/tabwriter"
+
+	"gamesync/internal/ui"
+	"gamesync/internal/config"
 
 	"github.com/spf13/cobra"
 )
@@ -28,13 +30,13 @@ var saveAddCmd = &cobra.Command{
 
 		savePath, err := filepath.Abs(args[1])
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error getting absolute path: %v\n", err)
+			ui.Error("Error getting absolute path: %v\n", err)
 			os.Exit(2)
 		}
 
 		
 		if err := config.AddSave(&current, gameID, savePath, saveAddUpdate); err != nil {
-			fmt.Fprintf(os.Stderr, "Error adding save: %v\n", err)
+			ui.Error("Error adding save: %v\n", err)
 			os.Exit(2)
 		}
 	},
@@ -57,12 +59,12 @@ var saveLsCmd = &cobra.Command{
 			}
 
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error printing: %v\n", err)
+				ui.Error("Error printing: %v\n", err)
 			}
 		}
 
 		if err := w.Flush(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error flushing: %v\n", err)
+			ui.Error("Error flushing: %v\n", err)
 		}
 	},
 }
@@ -75,7 +77,7 @@ var saveRmCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := config.RemoveGames(&current, args)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error removing games: %v\n", err)
+			ui.Error("Error removing games: %v\n", err)
 			os.Exit(23)
 		}
 	},
