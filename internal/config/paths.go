@@ -1,12 +1,25 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
 
 func GetStateDir() (string, error) {
 	var stateDir string
+
+	if env := os.Getenv("GAMESYNC_STATE"); env != "" {
+		if state, err := os.Stat(env); err != nil {
+			if ! state.IsDir() {
+				return "", fmt.Errorf("env GAMESYNC_STATE=%s: is not a dir", env)
+			}
+			return "", fmt.Errorf("env GAMESYNC_STATE: %w", err)
+		}
+
+
+		return env, nil
+	} 
 
 	if env := os.Getenv("XDG_STATE_HOME"); env != "" {
 		stateDir = filepath.Join(env, "gamesync")
