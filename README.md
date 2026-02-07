@@ -23,6 +23,11 @@ gamesync push openttd
 gamesync snapshot create openttd
 ```
 
+## Client env vars
+
+- __GAMESYNC_CONFIG__: sets the config file to use, does not overwrite --config flag
+- __GAMESYNC_STATE__: sets the state dir where sync states are stored
+
 ## Container environmental variables
 
 - GAMESYNC_LOOP
