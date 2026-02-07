@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/syncer"
 	"os"
 	"path/filepath"
 	"text/tabwriter"
 	"time"
+
+	"gamesync/internal/syncer"
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -26,7 +28,7 @@ var snapshotCreateCmd = &cobra.Command{
 		gameID := args[0]
 
 		if err := syncer.CreateSnapshot(current, gameID, snapshotSkipUnchanged); err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating a snapshot: %v\n", err)
+			ui.Error("Error creating a snapshot: %v\n", err)
 			os.Exit(4)
 		}
 	},
@@ -44,7 +46,7 @@ var snapshotLsCmd = &cobra.Command{
 
 		snapshots, err := syncer.ListSnapshots(current, gameID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error getting list of snapshots: %v\n", err)
+			ui.Error("Error getting list of snapshots: %v\n", err)
 			os.Exit(4)
 		}
 
@@ -52,19 +54,19 @@ var snapshotLsCmd = &cobra.Command{
 
 
 		if _, err = fmt.Fprintf(w, "Name:\tHostname:\tTime:\n"); err != nil {
-			fmt.Fprintf(os.Stderr, "Error adding table header to writer: %v\n", err)
+			ui.Error("Error adding table header to writer: %v\n", err)
 			os.Exit(4)
 		}
 
 		for _, snapshot := range snapshots {
 			if _, err = fmt.Fprintf(w, "%s\t%s\t%s\n", filepath.Base(snapshot.Paths[0]), snapshot.Hostname, snapshot.Time.Format(time.DateTime)); err != nil {
-				fmt.Fprintf(os.Stderr, "Error adding row to writer: %v\n", err)
+				ui.Error("Error adding row to writer: %v\n", err)
 				os.Exit(4)
 			}
 		}
 
 		if err := w.Flush(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error flushing: %v\n", err)
+			ui.Error("Error flushing: %v\n", err)
 			os.Exit(4)
 		}
 	},

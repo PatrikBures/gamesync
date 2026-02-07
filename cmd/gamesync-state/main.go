@@ -3,8 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"gamesync/internal/state"
 	"os"
+
+	"gamesync/internal/state"
 )
 
 func main() {

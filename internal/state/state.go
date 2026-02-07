@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gamesync/internal/ui"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -75,16 +76,16 @@ const (
 	SyncStateError
 )
 
-func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, remoteState map[string]FileMeta, loose bool, verbose bool) (SyncState, error) {
+func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, remoteState map[string]FileMeta, loose bool) (SyncState, error) {
 	localChange := true
 	remoteChange := true
 
-	if verbose { fmt.Println("Comparing local to old local...") }
-	if stateEqual(localState, oldLocalState, loose, verbose) {
+	ui.Verbose("Comparing local to old local...\n")
+	if stateEqual(localState, oldLocalState, loose) {
 		localChange = false
 	}
-	if verbose { fmt.Println("Comparing remote to old local...") }
-	if stateEqual(remoteState, oldLocalState, loose, verbose) {
+	ui.Verbose("Comparing remote to old local...\n")
+	if stateEqual(remoteState, oldLocalState, loose) {
 		remoteChange = false
 	}
 
@@ -96,34 +97,34 @@ func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, 
 	return SyncStateError, fmt.Errorf("there is something very wrong, this error should not be possible")
 }
 
-func stateEqual(state1 map[string]FileMeta, state2 map[string]FileMeta, loose bool, verbose bool) bool {
+func stateEqual(state1 map[string]FileMeta, state2 map[string]FileMeta, loose bool) bool {
 	for path, meta1 := range state1 {
 		meta2, ok := state2[path]
 		if !ok {
-			if verbose { fmt.Println("does not exist:", path) }
+			ui.Verbose("does not exist: %s\n", path)
 			return false
 		}
 
 		if meta1.Size != meta2.Size {
-			if verbose { fmt.Println("size:", path)}
+			ui.Verbose("size: %s\n", path)
 			return false
 		}
 
 		if loose {
 			diff := meta1.ModTime - meta2.ModTime
 			if diff < -2 || diff > 2 {
-				if verbose { fmt.Println("loose modtime:", path) }
+				ui.Verbose("loose modtime: %s\n", path)
 				return false
 			}
 		} else {
 			if meta1.ModTime != meta2.ModTime {
-				if verbose { fmt.Println("modtime:", path) }
+				ui.Verbose("modtime: %s\n", path)
 				return false
 			}
 		}
-		if verbose { fmt.Println("same:", path) }
+		ui.Debug("same: %s\n", path)
 	}
 
-	if verbose { fmt.Println("state 1 and 2 were same") }
+	ui.Verbose("state 1 and 2 were same\n")
 	return true
 }
