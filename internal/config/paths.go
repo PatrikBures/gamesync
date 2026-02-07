@@ -12,7 +12,7 @@ func GetStateDir() (string, error) {
 	if env := os.Getenv("GAMESYNC_STATE"); env != "" {
 		if state, err := os.Stat(env); err != nil {
 			if ! state.IsDir() {
-				return "", fmt.Errorf("GAMESYNC_STATE=%s: is not a dir!", env)
+				return "", fmt.Errorf("env GAMESYNC_STATE=%s: is not a dir", env)
 			}
 			return "", fmt.Errorf("env GAMESYNC_STATE: %w", err)
 		}
