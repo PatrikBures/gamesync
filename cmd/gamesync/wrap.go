@@ -12,7 +12,11 @@ import (
 )
 
 type wrapCmd struct {
-	cmd			*cobra.Command
+	cmd *cobra.Command
+	opts wrapOpts
+}
+
+type wrapOpts struct {
 	createSnapshot bool
 	createSnapshotUnchanged bool
 	notify		bool
@@ -20,6 +24,7 @@ type wrapCmd struct {
 	forcePull	bool
 	noPush		bool
 	forcePush	bool
+
 }
 
 func newWrapCmd() *wrapCmd {
@@ -50,13 +55,13 @@ func newWrapCmd() *wrapCmd {
 			gameID := userArgs[0]
 
 			// pulls
-			if !root.noPull {
-				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.forcePull); err != nil {
+			if !root.opts.noPull {
+				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.forcePull); err != nil {
 					ui.Info("WARNING: Pulling save failed: %v\n", err)
-					if root.notify { ui.Notify("error", "pulling save") }
+					if root.opts.notify { ui.Notify("error", "pulling save") }
 				} else {
 					ui.Info("Pulled game\n")
-					if root.notify { ui.Notify("sucess", "pulling save") }
+					if root.opts.notify { ui.Notify("sucess", "pulling save") }
 				}
 			}
 
@@ -78,24 +83,24 @@ func newWrapCmd() *wrapCmd {
 			}
 
 			// pushes
-			if !root.noPush {
-				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.forcePush); err != nil {
+			if !root.opts.noPush {
+				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.forcePush); err != nil {
 					ui.Info("WARNING: Pushing save failed: %v\n", err)
-					if root.notify { ui.Notify("error", "pushing save") }
+					if root.opts.notify { ui.Notify("error", "pushing save") }
 				} else {
 					ui.Info("Pushed game\n")
-					if root.notify { ui.Notify("sucess", "pushing save") }
+					if root.opts.notify { ui.Notify("sucess", "pushing save") }
 				}
 			}
 
 			// snapshot
-			if root.createSnapshot || root.createSnapshotUnchanged {
-				if err := syncer.CreateSnapshot(current, gameID, root.createSnapshotUnchanged); err != nil {
+			if root.opts.createSnapshot || root.opts.createSnapshotUnchanged {
+				if err := syncer.CreateSnapshot(current, gameID, root.opts.createSnapshotUnchanged); err != nil {
 					ui.Error("Failed creating snapshot: %v\n", err)
-					if root.notify { ui.Notify("error", "creating snapshot") }
+					if root.opts.notify { ui.Notify("error", "creating snapshot") }
 				} else {
 					ui.Info("Snapshot created\n")
-					if root.notify { ui.Notify("sucess", "creating snapshot") }
+					if root.opts.notify { ui.Notify("sucess", "creating snapshot") }
 				}
 			}
 
@@ -106,15 +111,15 @@ func newWrapCmd() *wrapCmd {
 	}
 
 
-	cmd.Flags().BoolVarP(&root.createSnapshot, "snapshot", "s", false, "Creates snapshot on remote after push")
-	cmd.Flags().BoolVarP(&root.createSnapshotUnchanged, "skip-unchanged", "S", false, "Creates snapshot if there were changes from the previous snapshot on remote after push")
-	cmd.Flags().BoolVarP(&root.notify, "notify", "n", false, "Sends a notification when pulled, pushed and created a snapshot and if succeeded")
+	cmd.Flags().BoolVarP(&root.opts.createSnapshot, "snapshot", "s", false, "Creates snapshot on remote after push")
+	cmd.Flags().BoolVarP(&root.opts.createSnapshotUnchanged, "skip-unchanged", "S", false, "Creates snapshot if there were changes from the previous snapshot on remote after push")
+	cmd.Flags().BoolVarP(&root.opts.notify, "notify", "n", false, "Sends a notification when pulled, pushed and created a snapshot and if succeeded")
 
-	cmd.Flags().BoolVarP(&root.noPull, "no-pull", "", false, "")
-	cmd.Flags().BoolVarP(&root.forcePull, "force-pull", "", false, "")
+	cmd.Flags().BoolVarP(&root.opts.noPull, "no-pull", "", false, "")
+	cmd.Flags().BoolVarP(&root.opts.forcePull, "force-pull", "", false, "")
 
-	cmd.Flags().BoolVarP(&root.noPush, "no-push", "", false, "")
-	cmd.Flags().BoolVarP(&root.forcePull, "force-push","" , false, "")
+	cmd.Flags().BoolVarP(&root.opts.noPush, "no-push", "", false, "")
+	cmd.Flags().BoolVarP(&root.opts.forcePull, "force-push","" , false, "")
 
 	root.cmd = cmd
 
