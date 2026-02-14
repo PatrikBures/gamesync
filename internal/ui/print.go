@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -16,6 +17,9 @@ const (
 
 var currentLevel = LevelNormal
 
+var OutWriter io.Writer = os.Stdout
+var ErrWriter io.Writer = os.Stderr
+
 func SetLevel(l Level) {
 	currentLevel = l
 }
@@ -27,11 +31,11 @@ func GetLevel() Level {
 func Printf(l Level, format string, args ...any) {
 	if currentLevel <= l {
 		if l == LevelError {
-			fmt.Fprintf(os.Stderr, format, args...)
+			fmt.Fprintf(ErrWriter, format, args...)
 			return
 		}
 
-		fmt.Printf(format, args...)
+		fmt.Fprintf(OutWriter, format, args...)
 	}
 }
 
