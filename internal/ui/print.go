@@ -33,10 +33,9 @@ func Printf(l Level, format string, args ...any) {
 		var err error
 		if l == LevelError {
 			_, err = fmt.Fprintf(ErrWriter, format, args...)
-			return
+		} else {
+			_, err = fmt.Fprintf(OutWriter, format, args...)
 		}
-
-		_, err = fmt.Fprintf(OutWriter, format, args...)
 
 		if err != nil {
 			panic("Error printing")
