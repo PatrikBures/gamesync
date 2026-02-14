@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -77,6 +76,6 @@ func newRootCmd() *rootCmd {
 
 func Execute() {
 	if err := newRootCmd().cmd.Execute(); err != nil {
-		log.Fatalln(err)
+		os.Exit(1)
 	}
 }
