@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"gamesync/internal/syncer"
-	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -53,13 +52,14 @@ func newSnapshotCreateCmd() *snapshotCreateCmd {
 		Use: "create GAME_ID",
 		Short: "Uses restic to create a snapshot of a game save",
 		Args: cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			gameID := args[0]
 
 			if err := syncer.CreateSnapshot(current, gameID, snapshotSkipUnchanged); err != nil {
-				ui.Error("Error creating a snapshot: %v\n", err)
-				os.Exit(4)
+				return fmt.Errorf("error creating a snapshot: %v", err)
 			}
+
+			return nil
 		},
 	}
 
@@ -83,7 +83,7 @@ func newSnapshotLsCmd() *snapshotLsCmd {
 		Use: "ls [GAME_ID]",
 		Short: "List snapshots of GAME_ID or all",
 		Args: cobra.MaximumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			gameID := ""
 			if len(args) > 0 {
 				gameID = args[0]
@@ -91,29 +91,27 @@ func newSnapshotLsCmd() *snapshotLsCmd {
 
 			snapshots, err := syncer.ListSnapshots(current, gameID)
 			if err != nil {
-				ui.Error("Error getting list of snapshots: %v\n", err)
-				os.Exit(4)
+				return fmt.Errorf("error getting list of snapshots: %v", err)
 			}
 
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 
 
 			if _, err = fmt.Fprintf(w, "Name:\tHostname:\tTime:\n"); err != nil {
-				ui.Error("Error adding table header to writer: %v\n", err)
-				os.Exit(4)
+				return fmt.Errorf("error adding table header to writer: %v", err)
 			}
 
 			for _, snapshot := range snapshots {
 				if _, err = fmt.Fprintf(w, "%s\t%s\t%s\n", filepath.Base(snapshot.Paths[0]), snapshot.Hostname, snapshot.Time.Format(time.DateTime)); err != nil {
-					ui.Error("Error adding row to writer: %v\n", err)
-					os.Exit(4)
+					return fmt.Errorf("error adding row to writer: %v", err)
 				}
 			}
 
 			if err := w.Flush(); err != nil {
-				ui.Error("Error flushing: %v\n", err)
-				os.Exit(4)
+				return fmt.Errorf("error flushing: %v", err)
 			}
+
+			return nil
 		},
 	}
 
