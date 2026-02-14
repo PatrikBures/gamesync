@@ -81,10 +81,3 @@ func newPushCmd() *pushCmd {
 
 	return &root
 }
-
-
-
-func init() {
-	rootCmd.AddCommand(newPullCmd().cmd)
-	rootCmd.AddCommand(newPushCmd().cmd)
-}

@@ -92,9 +92,3 @@ func newRemoteRmCmd() *remoteRmCmd {
 
 	return &root
 }
-
-
-
-func init() {
-	rootCmd.AddCommand(newRemoteCmd().cmd)
-}

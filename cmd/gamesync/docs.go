@@ -33,7 +33,7 @@ func newGenDocCmd() *genDocCmd {
 				Source: "Auto Generated",
 			}
 
-			if err := doc.GenManTree(rootCmd, header, dir); err != nil {
+			if err := doc.GenManTree(cmd.Root(), header, dir); err != nil {
 				return fmt.Errorf("error generating man-pages: %v", err)
 			}
 
@@ -44,9 +44,4 @@ func newGenDocCmd() *genDocCmd {
 	root.cmd = cmd
 
 	return &root
-}
-
-func init() {
-	rootCmd.AddCommand(newGenDocCmd().cmd)
-	rootCmd.DisableAutoGenTag = true
 }

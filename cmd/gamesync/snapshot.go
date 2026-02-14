@@ -119,9 +119,3 @@ func newSnapshotLsCmd() *snapshotLsCmd {
 
 	return &root
 }
-
-
-
-func init() {
-	rootCmd.AddCommand(newSnapshotCmd().cmd)
-}

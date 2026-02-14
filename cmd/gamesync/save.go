@@ -154,7 +154,3 @@ func newSaveRmCmd() *saveRmCmd {
 
 	return &root
 }
-
-func init() {
-	rootCmd.AddCommand(newSaveCmd().cmd)
-}

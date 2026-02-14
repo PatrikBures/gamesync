@@ -125,7 +125,3 @@ func newWrapCmd() *wrapCmd {
 
 	return &root
 }
-
-func init() {
-	rootCmd.AddCommand(newWrapCmd().cmd)
-}

@@ -33,7 +33,3 @@ func newSyncCmd() *syncCmd {
 
 	return &root
 }
-
-func init() {
-	rootCmd.AddCommand(newSyncCmd().cmd)
-}
