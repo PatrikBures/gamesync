@@ -10,6 +10,7 @@ variables:
   PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/gamesync/${VERSION}"
 
   CLIENT_TEST_IMAGE_NAME: gamesync-client-test
+  CLIENT_TEST_IMAGE: ${CI_REGISTRY_IMAGE}/${CLIENT_TEST_IMAGE_NAME}
 
   ALPINE_VERSION: 3.23
   GOLANG_VERSION: 1.26
@@ -36,7 +37,7 @@ variables:
   before_script:
     - export STORAGE_DRIVER=vfs
     - export BUILDAH_FORMAT=docker
-    - export CLIENT_TEST_IMAGE=${CI_REGISTRY_IMAGE}/${CLIENT_TEST_IMAGE_NAME}
+    - export CLIENT_TEST_IMAGE=${CLIENT_TEST_IMAGE}
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 workflow:
