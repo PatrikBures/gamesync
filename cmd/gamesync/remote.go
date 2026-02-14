@@ -50,7 +50,7 @@ func newRemoteLsCmd() *remoteLsCmd {
 				os.Exit(3)
 			}
 
-			ui.Info("%s\n", remoteSaves)
+			ui.Info("%s", remoteSaves)
 		},
 	}
 
