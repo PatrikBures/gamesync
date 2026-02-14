@@ -90,10 +90,9 @@ test-golang:
   image: $GOLANG_IMAGE
   extends:
     - .golang-before-merge
+    - .gocache
   needs: 
     - job: build-test-client-container
-  variables:
-    GIT_STRATEGY: none
   script:
     - go mod tidy
     - go test -v ./...
