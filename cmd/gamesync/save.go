@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
-	"gamesync/internal/ui"
 	"gamesync/internal/config"
 
 	"github.com/spf13/cobra"
@@ -53,20 +52,20 @@ func newSaveAddCmd() *saveAddCmd {
 		Short: "Add save dir of a game to sync",
 		Example: "gamesync save add openttd -d ~/.local/share/openttd/save",
 		Args: cobra.ExactArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			gameID := args[0]
 
 			savePath, err := filepath.Abs(args[1])
 			if err != nil {
-				ui.Error("Error getting absolute path: %v\n", err)
-				os.Exit(2)
+				return fmt.Errorf("Error getting absolute path: %v\n", err)
 			}
 
 			
 			if err := config.AddSave(&current, gameID, savePath, root.opts.update); err != nil {
-				ui.Error("Error adding save: %v\n", err)
-				os.Exit(2)
+				return fmt.Errorf("Error adding save: %v\n", err)
 			}
+
+			return nil
 		},
 	}
 
@@ -95,7 +94,7 @@ func newSaveLsCmd() *saveLsCmd {
 		Use: "ls",
 		Short: "List all games in local config",
 		Args: cobra.ExactArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 
 			for _, game := range current.Config.Games {
@@ -108,13 +107,15 @@ func newSaveLsCmd() *saveLsCmd {
 				}
 
 				if err != nil {
-					ui.Error("Error printing: %v\n", err)
+					return fmt.Errorf("Error printing: %v\n", err)
 				}
 			}
 
 			if err := w.Flush(); err != nil {
-				ui.Error("Error flushing: %v\n", err)
+				return fmt.Errorf("Error flushing: %v\n", err)
 			}
+
+			return nil
 		},
 	}
 
@@ -138,12 +139,14 @@ func newSaveRmCmd() *saveRmCmd {
 		Short: "Remove a game ids from config",
 		Long: `Does not remove the save dir`,
 		Args: cobra.MinimumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			err := config.RemoveGames(&current, args)
+
 			if err != nil {
-				ui.Error("Error removing games: %v\n", err)
-				os.Exit(23)
+				return fmt.Errorf("Error removing games: %v\n", err)
 			}
+
+			return nil
 		},
 	}
 
