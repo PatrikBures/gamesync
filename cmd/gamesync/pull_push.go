@@ -1,9 +1,8 @@
 package main
 
 import (
-	"os"
+	"fmt"
 
-	"gamesync/internal/ui"
 	"gamesync/internal/syncer"
 
 	"github.com/spf13/cobra"
@@ -28,13 +27,14 @@ func newPullCmd() *pullCmd {
 		Short: "Pull the save if remote is newer",
 		Example: "gamesync pull openttd",
 		Args: cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			gameID := args[0]
 
 			if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.force); err != nil {
-				ui.Error("Error pulling: %v\n", err)
-				os.Exit(20)
+				return fmt.Errorf("Error pulling: %v\n", err)
 			}
+
+			return nil
 		},
 	}
 
@@ -64,13 +64,14 @@ func newPushCmd() *pushCmd {
 		Short: "Push the save if remote is older",
 		Example: "gamesync push openttd",
 		Args: cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			gameID := args[0]
 
 			if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.force); err != nil {
-				ui.Error("Error pushing: %v\n", err)
-				os.Exit(20)
+				return fmt.Errorf("Error pushing: %v\n", err)
 			}
+
+			return nil
 		},
 	}
 
