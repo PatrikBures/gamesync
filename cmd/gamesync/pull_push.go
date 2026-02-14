@@ -1,50 +1,83 @@
 package main
 
 import (
-	"os"
+	"fmt"
 
-	"gamesync/internal/ui"
 	"gamesync/internal/syncer"
 
 	"github.com/spf13/cobra"
 )
 
-var pullPushForce bool
 
-var pullCmd = &cobra.Command{
+
+type pullCmd struct {
+	cmd *cobra.Command
+	opts pullOpts
+}
+
+type pullOpts struct {
+	force bool
+}
+
+func newPullCmd() *pullCmd {
+	root := pullCmd{}
+
+	cmd := &cobra.Command{
 	Use: "pull GAME_ID",
-	Short: "Pull the save if remote is newer",
-	Example: "gamesync pull openttd",
-	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		gameID := args[0]
+		Short: "Pull the save if remote is newer",
+		Example: "gamesync pull openttd",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			gameID := args[0]
 
-		if err := syncer.HandleSync(current, gameID, syncer.ModePull, pullPushForce); err != nil {
-			ui.Error("Error pulling: %v\n", err)
-			os.Exit(20)
-		}
-	},
+			if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.force); err != nil {
+				return fmt.Errorf("error pulling: %v", err)
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVarP(&root.opts.force, "force", "f", false, "Overwrite local save with remote")
+
+	root.cmd = cmd
+
+	return &root
 }
 
-var pushCmd = &cobra.Command{
-	Use: "push GAME_ID",
-	Short: "Push the save if remote is older",
-	Example: "gamesync push openttd",
-	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		gameID := args[0]
 
-		if err := syncer.HandleSync(current, gameID, syncer.ModePush, pullPushForce); err != nil {
-			ui.Error("Error pushing: %v\n", err)
-			os.Exit(20)
-		}
-	},
+
+type pushCmd struct {
+	cmd *cobra.Command
+	opts pushOpts
 }
 
-func init() {
-	rootCmd.AddCommand(pullCmd)
-	pullCmd.Flags().BoolVarP(&pullPushForce, "force", "f", false, "Overwrite local save with remote")
+type pushOpts struct {
+	force bool
+}
 
-	rootCmd.AddCommand(pushCmd)
-	pushCmd.Flags().BoolVarP(&pullPushForce, "force", "f", false, "Overwrite remote save with local")
+func newPushCmd() *pushCmd {
+	root := pushCmd{}
+
+	cmd := &cobra.Command{
+		Use: "push GAME_ID",
+		Short: "Push the save if remote is older",
+		Example: "gamesync push openttd",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			gameID := args[0]
+
+			if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.force); err != nil {
+				return fmt.Errorf("error pushing: %v", err)
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVarP(&root.opts.force, "force", "f", false, "Overwrite remote save with local")
+
+	root.cmd = cmd
+
+	return &root
 }
