@@ -11,6 +11,9 @@ variables:
   CLIENT_TEST_IMAGE_NAME: gamesync-client-test
 
   ALPINE_VERSION: 3.23
+  GOLANG_VERSION: 1.26
+
+  GOLANG_IMAGE: "golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION}"
   
   GOPATH: $CI_PROJECT_DIR/.go
   GOCACHE: $CI_PROJECT_DIR/.go-build

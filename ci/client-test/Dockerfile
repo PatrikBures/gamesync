@@ -1,6 +1,6 @@
-ARG ALPINE_VERSION="3.23"
+ARG GOLANG_IMAGE=""
 
-FROM golang:1.26-alpine${ALPINE_VERSION}
+FROM ${GOLANG_IMAGE}
 
 RUN apk add --no-cache \
     rsync \

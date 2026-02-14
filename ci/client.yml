@@ -45,7 +45,7 @@ lint-golang:
 
 build-test-client:
   stage: test
-  image: golang:1.25-alpine
+  image: $GOLANG_IMAGE
   extends: 
     - .golang-before-merge
     - .gocache
@@ -59,7 +59,7 @@ build-test-client:
       - ci/client-test/gamesync
     expire_in: 15 min
 
-build-test-client-image:
+build-test-client-container:
   stage: test
   extends:
     - .golang-before-merge
@@ -78,7 +78,7 @@ build-test-client-image:
 
     - |
       buildah build \
-      --build-arg ALPINE_VERSION=${ALPINE_VERSION} \
+      --build-arg GOLANG_IMAGE=${GOLANG_IMAGE} \
       --layers \
       --cache-from "$CLIENT_TEST_IMAGE" \
       -t "$CLIENT_TEST_IMAGE:latest" \
@@ -89,7 +89,7 @@ build-test-client-image:
 
 test-golang:
   stage: test
-  image: golang:1.25-alpine
+  image: $GOLANG_IMAGE
   extends:
     - .golang-before-merge
     - .gocache
@@ -98,7 +98,7 @@ test-golang:
 
 build-client:
   stage: build
-  image: golang:1.25-alpine
+  image: $GOLANG_IMAGE
   extends: 
     - .golang-deploy
     - .builds

@@ -16,7 +16,7 @@
 
 build-server-binary:
   stage: build
-  image: golang:1.25-alpine
+  image: $GOLANG_IMAGE
   extends: 
     - .container
     - .arch
