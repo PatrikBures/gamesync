@@ -21,7 +21,7 @@ func newSyncCmd() *syncCmd {
 		Run: func(cmd *cobra.Command, args []string) {
 			gameID := args[0]
 			if err := syncer.HandleSync(current, gameID, syncer.ModeAuto, false); err != nil {
-				ui.Error("Error syncing game: %v\n", err)
+				ui.Error("urror syncing game: %v", err)
 			}
 		},
 	}

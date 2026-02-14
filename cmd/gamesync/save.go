@@ -57,12 +57,12 @@ func newSaveAddCmd() *saveAddCmd {
 
 			savePath, err := filepath.Abs(args[1])
 			if err != nil {
-				return fmt.Errorf("Error getting absolute path: %v\n", err)
+				return fmt.Errorf("error getting absolute path: %v", err)
 			}
 
 			
 			if err := config.AddSave(&current, gameID, savePath, root.opts.update); err != nil {
-				return fmt.Errorf("Error adding save: %v\n", err)
+				return fmt.Errorf("error adding save: %v", err)
 			}
 
 			return nil
@@ -107,12 +107,12 @@ func newSaveLsCmd() *saveLsCmd {
 				}
 
 				if err != nil {
-					return fmt.Errorf("Error printing: %v\n", err)
+					return fmt.Errorf("error printing: %v", err)
 				}
 			}
 
 			if err := w.Flush(); err != nil {
-				return fmt.Errorf("Error flushing: %v\n", err)
+				return fmt.Errorf("error flushing: %v", err)
 			}
 
 			return nil
@@ -143,7 +143,7 @@ func newSaveRmCmd() *saveRmCmd {
 			err := config.RemoveGames(&current, args)
 
 			if err != nil {
-				return fmt.Errorf("Error removing games: %v\n", err)
+				return fmt.Errorf("error removing games: %v", err)
 			}
 
 			return nil
