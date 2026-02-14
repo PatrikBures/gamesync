@@ -30,12 +30,17 @@ func GetLevel() Level {
 
 func Printf(l Level, format string, args ...any) {
 	if currentLevel <= l {
+		var err error
 		if l == LevelError {
-			fmt.Fprintf(ErrWriter, format, args...)
+			_, err = fmt.Fprintf(ErrWriter, format, args...)
 			return
 		}
 
-		fmt.Fprintf(OutWriter, format, args...)
+		_, err = fmt.Fprintf(OutWriter, format, args...)
+
+		if err != nil {
+			panic("Error printing")
+		}
 	}
 }
 
