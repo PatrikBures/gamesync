@@ -31,7 +31,7 @@ func newPullCmd() *pullCmd {
 			gameID := args[0]
 
 			if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.force); err != nil {
-				return fmt.Errorf("error pulling: %v\n", err)
+				return fmt.Errorf("error pulling: %v", err)
 			}
 
 			return nil
@@ -68,7 +68,7 @@ func newPushCmd() *pushCmd {
 			gameID := args[0]
 
 			if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.force); err != nil {
-				return fmt.Errorf("error pushing: %v\n", err)
+				return fmt.Errorf("error pushing: %v", err)
 			}
 
 			return nil

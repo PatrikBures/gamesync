@@ -34,7 +34,7 @@ func newGenDocCmd() *genDocCmd {
 			}
 
 			if err := doc.GenManTree(rootCmd, header, dir); err != nil {
-				return fmt.Errorf("error generating man-pages: %v\n", err)
+				return fmt.Errorf("error generating man-pages: %v", err)
 			}
 
 			return nil
