@@ -41,6 +41,7 @@ func setupTest(t *testing.T) {
 
 	setupTestStateDir(t)
 	setupTestConfigFile(t)
+	populateConfigFile(t)
 }
 
 
