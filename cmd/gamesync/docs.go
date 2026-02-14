@@ -24,7 +24,7 @@ func newGenDocCmd() *genDocCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dir := "./manpages"
 			if _, err := os.Stat(dir); os.IsNotExist(err) {
-				return fmt.Errorf("Error dir does not exist: %s", dir)
+				return fmt.Errorf("error dir does not exist: %s", dir)
 			}
 
 			header := &doc.GenManHeader{
@@ -34,7 +34,7 @@ func newGenDocCmd() *genDocCmd {
 			}
 
 			if err := doc.GenManTree(rootCmd, header, dir); err != nil {
-				return fmt.Errorf("Error generating man-pages: %v\n", err)
+				return fmt.Errorf("error generating man-pages: %v\n", err)
 			}
 
 			return nil
