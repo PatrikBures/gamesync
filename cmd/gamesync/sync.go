@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"gamesync/internal/syncer"
-	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -18,11 +18,14 @@ func newSyncCmd() *syncCmd {
 		Use: "sync GAME_ID",
 		Short: "Either pushes or pulls save for GAME_ID",
 		Args: cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			gameID := args[0]
+
 			if err := syncer.HandleSync(current, gameID, syncer.ModeAuto, false); err != nil {
-				ui.Error("urror syncing game: %v", err)
+				return fmt.Errorf("error syncing game: %v", err)
 			}
+
+			return nil
 		},
 	}
 
