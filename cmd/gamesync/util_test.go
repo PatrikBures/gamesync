@@ -92,6 +92,7 @@ func setupTestConfigFile(t *testing.T) {
 		}
 	})
 
+	current.ConfigPath = f.Name()
 	t.Setenv("GAMESYNC_CONFIG", f.Name())
 }
 
