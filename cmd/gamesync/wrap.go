@@ -19,12 +19,12 @@ type wrapCmd struct {
 type wrapOpts struct {
 	createSnapshot bool
 	createSnapshotUnchanged bool
-	notify		bool
-	noPull		bool
-	forcePull	bool
-	noPush		bool
-	forcePush	bool
-
+	notify			bool
+	noPull			bool
+	forcePull		bool
+	noPush			bool
+	forcePush		bool
+	exitOnError 	bool
 }
 
 func newWrapCmd() *wrapCmd {
@@ -59,6 +59,7 @@ func newWrapCmd() *wrapCmd {
 				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.forcePull); err != nil {
 					ui.Info("WARNING: Pulling save failed: %v\n", err)
 					if root.opts.notify { ui.Notify("error", "pulling save") }
+					if root.opts.exitOnError { return err }
 				} else {
 					ui.Info("Pulled game\n")
 					if root.opts.notify { ui.Notify("sucess", "pulling save") }
@@ -78,6 +79,7 @@ func newWrapCmd() *wrapCmd {
 					exitCode = exitError.ExitCode()
 				} else {
 					ui.Error("Error running game: %v\n", err)
+					if root.opts.exitOnError { return err }
 					exitCode = 1
 				}
 			}
@@ -87,6 +89,7 @@ func newWrapCmd() *wrapCmd {
 				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.forcePush); err != nil {
 					ui.Info("WARNING: Pushing save failed: %v\n", err)
 					if root.opts.notify { ui.Notify("error", "pushing save") }
+					if root.opts.exitOnError { return err }
 				} else {
 					ui.Info("Pushed game\n")
 					if root.opts.notify { ui.Notify("sucess", "pushing save") }
@@ -98,6 +101,7 @@ func newWrapCmd() *wrapCmd {
 				if err := syncer.CreateSnapshot(current, gameID, root.opts.createSnapshotUnchanged); err != nil {
 					ui.Error("Failed creating snapshot: %v\n", err)
 					if root.opts.notify { ui.Notify("error", "creating snapshot") }
+					if root.opts.exitOnError { return err }
 				} else {
 					ui.Info("Snapshot created\n")
 					if root.opts.notify { ui.Notify("sucess", "creating snapshot") }
@@ -110,6 +114,7 @@ func newWrapCmd() *wrapCmd {
 		},
 	}
 
+	cmd.Flags().BoolVarP(&root.opts.exitOnError, "exit-on-error", "e", false, "")
 
 	cmd.Flags().BoolVarP(&root.opts.createSnapshot, "snapshot", "s", false, "Creates snapshot on remote after push")
 	cmd.Flags().BoolVarP(&root.opts.createSnapshotUnchanged, "skip-unchanged", "S", false, "Creates snapshot if there were changes from the previous snapshot on remote after push")
