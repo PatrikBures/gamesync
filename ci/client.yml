@@ -49,8 +49,6 @@ build-test-client:
   extends: 
     - .golang-before-merge
     - .gocache
-  needs:
-    - job: test-golang
   script:
     - mkdir -p bin
     - go build -o ci/client-test/gamesync ./cmd/gamesync
