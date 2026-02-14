@@ -87,7 +87,7 @@ build-test-client-container:
 
 test-golang:
   stage: test
-  image: $GOLANG_IMAGE
+  image: $CLIENT_TEST_IMAGE:latest
   extends:
     - .golang-before-merge
     - .gocache
