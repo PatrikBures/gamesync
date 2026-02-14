@@ -2,54 +2,93 @@ package main
 
 import (
 	"fmt"
+
 	"gamesync/internal/syncer"
-	"os"
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
 
-var remoteCmd = &cobra.Command{
-	Use: "remote",
-	Short: "Manage remote saves",
+type remoteCmd struct {
+	cmd *cobra.Command
 }
 
-var remoteLsCmd = &cobra.Command{
-	Use: "ls",
-	Short: "List remote saves",
-	Args: cobra.ExactArgs(0),
-	Run: func(cmd *cobra.Command, args []string) {
-		remoteSaves, err := syncer.RunCmd(current, "list-saves")
+func newRemoteCmd() *remoteCmd {
+	root := remoteCmd{}
 
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error listing remote: %v\n", err)
-			os.Exit(3)
-		}
+	cmd := &cobra.Command{
+		Use: "remote",
+		Short: "Manage remote saves",
+	}
 
-		fmt.Print(remoteSaves)
-	},
+	cmd.AddCommand(newRemoteLsCmd().cmd)
+	cmd.AddCommand(newRemoteRmCmd().cmd)
+
+	root.cmd = cmd
+
+	return &root
 }
 
-var remoteRmCmd = &cobra.Command{
-	Use: "rm GAME_ID",
-	Short: "Remove a remote save for a game",
-	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		gameID := args[0]
 
-		output, err := syncer.RemoveSaveGame(current, gameID)
 
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error removing save: %v\n%s", err, output)
-			os.Exit(3)
-		}
-
-		fmt.Println(gameID)
-	},
+type remoteLsCmd struct {
+	cmd *cobra.Command
 }
 
-func init() {
-	remoteCmd.AddCommand(remoteLsCmd)
-	remoteCmd.AddCommand(remoteRmCmd)
+func newRemoteLsCmd() *remoteLsCmd {
+	root := remoteLsCmd{}
 
-	rootCmd.AddCommand(remoteCmd)
+	cmd := &cobra.Command{
+		Use: "ls",
+		Short: "List remote saves",
+		Args: cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			remoteSaves, err := syncer.RunCmd(current, "list-saves")
+
+			if err != nil {
+				return fmt.Errorf("urror listing remote: %v", err)
+			}
+
+			ui.Info("%s", remoteSaves)
+
+			return nil
+		},
+	}
+
+	root.cmd = cmd
+
+	return &root
+}
+
+
+
+type remoteRmCmd struct {
+	cmd *cobra.Command
+}
+
+func newRemoteRmCmd() *remoteRmCmd {
+	root := remoteRmCmd{}
+
+	cmd := &cobra.Command{
+		Use: "rm GAME_ID",
+		Short: "Remove a remote save for a game",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			gameID := args[0]
+
+			output, err := syncer.RemoveSaveGame(current, gameID)
+
+			if err != nil {
+				return fmt.Errorf("error removing save: %v\n%s", err, output)
+			}
+
+			ui.Info("%s\n", gameID)
+
+			return nil
+		},
+	}
+
+	root.cmd = cmd
+
+	return &root
 }

@@ -2,12 +2,14 @@ package syncer
 
 import (
 	"fmt"
-	"gamesync/internal/config"
-	"gamesync/internal/state"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+
+	"gamesync/internal/config"
+	"gamesync/internal/state"
+	"gamesync/internal/ui"
 )
 
 func SyncGame(current config.Current, game config.GameConfig, pull bool) error {
@@ -33,8 +35,8 @@ func SyncGame(current config.Current, game config.GameConfig, pull bool) error {
 
 	cmd = exec.Command("rsync", "-azhPv", "--delete", "-e", sshCmd, src, dest)
 
-	if current.Verbose {
-		fmt.Printf("running this rsync command:\n%s\n", cmd.String())
+	ui.Debug("running rsync command:\n%s\n", cmd.String())
+	if ui.GetLevel() == ui.LevelDebug {
 		cmd.Stdout = os.Stdout
 	}
 
@@ -80,7 +82,7 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 		return fmt.Errorf("getting remote state: %v", err)
 	}
 
-	compareResult, err := state.Compare(localState, oldLocalState, remoteState, false, current.Verbose)
+	compareResult, err := state.Compare(localState, oldLocalState, remoteState, false)
 	if err != nil {
 		return fmt.Errorf("comparing states: %v", err)
 	}
@@ -89,7 +91,7 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 
 	switch compareResult {
 	case state.SyncStateUnchanged:
-		fmt.Println("Already in sync, nothing to do.")
+		ui.Info("Already in sync, nothing to do.\n")
 		return nil
 	case state.SyncStateError:
 		return fmt.Errorf("error during state comparison: %v", err)
@@ -101,11 +103,11 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 		case state.SyncStateConflict:
 			return fmt.Errorf("conflict, remote and local changes")
 		case state.SyncStatePush:
-			fmt.Println("Pushing...")
+			ui.Info("Pushing...\n")
 			if err := push(current, game); err != nil { return err }
 			newStateToSave = localState
 		case state.SyncStatePull:
-			fmt.Println("Pulling...")
+			ui.Info("Pulling...\n")
 			if err := pull(current, game); err != nil { return err }
 			newStateToSave = remoteState
 		}
@@ -115,14 +117,14 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 			if !force {
 				return fmt.Errorf("conflict, remote and local changes")
 			}
-			fmt.Println("Force pushing over conflict...")
+			ui.Info("Force pushing over conflict...\n")
 		case state.SyncStatePush:
-			fmt.Println("Pushing...")
+			ui.Info("Pushing...\n")
 		case state.SyncStatePull:
 			if !force {
 				return fmt.Errorf("aborted: unsynced remote changes")
 			}
-			fmt.Println("Force pushing, overwriting newer remote changes...")
+			ui.Info("Force pushing, overwriting newer remote changes...\n")
 		}
 		if err := push(current, game); err != nil { return err }
 		newStateToSave = localState
@@ -132,14 +134,14 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 			if !force {
 				return fmt.Errorf("conflict, remote and local changes")
 			}
-			fmt.Println("Force pulling over conflict...")
+			ui.Info("Force pulling over conflict...\n")
 		case state.SyncStatePush:
 			if !force {
 				return fmt.Errorf("aborted: unsynced local changes")
 			}
-			fmt.Println("Force pulling, overwriting newer local changes...")
+			ui.Info("Force pulling, overwriting newer local changes...\n")
 		case state.SyncStatePull:
-			fmt.Println("Pulling...")
+			ui.Info("Pulling...\n")
 		}
 		if err := pull(current, game); err != nil { return err }
 		newStateToSave = remoteState
@@ -150,7 +152,7 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 		if err := state.Write(newStateToSave, stateFile); err != nil {
 			return fmt.Errorf("writing state to file: %s: %v",stateFile, err)
 		}
-		fmt.Println("Updated state file:", stateFile)
+		ui.Info("Updated state file: %s\n", stateFile)
 	}
 	return nil
 }

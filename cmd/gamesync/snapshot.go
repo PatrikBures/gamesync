@@ -2,80 +2,120 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/syncer"
 	"os"
 	"path/filepath"
 	"text/tabwriter"
 	"time"
+
+	"gamesync/internal/syncer"
 
 	"github.com/spf13/cobra"
 )
 
 var snapshotSkipUnchanged bool
 
-var snapshotCmd = &cobra.Command{
-	Use: "snapshot",
-	Short: "manage snapshots made using restic on the remote",
+type snapshotCmd struct {
+	cmd *cobra.Command
 }
 
-var snapshotCreateCmd = &cobra.Command{
-	Use: "create GAME_ID",
-	Short: "Uses restic to create a snapshot of a game save",
-	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		gameID := args[0]
+func newSnapshotCmd() *snapshotCmd {
+	root := snapshotCmd{}
 
-		if err := syncer.CreateSnapshot(current, gameID, snapshotSkipUnchanged); err != nil {
-			fmt.Fprintf(os.Stderr, "Error creating a snapshot: %v\n", err)
-			os.Exit(4)
-		}
-	},
+	cmd := &cobra.Command{
+		Use: "snapshot",
+		Short: "manage snapshots made using restic on the remote",
+	}
+
+	cmd.AddCommand(newSnapshotLsCmd().cmd)
+	cmd.AddCommand(newSnapshotCreateCmd().cmd)
+
+	root.cmd = cmd
+
+	return &root
 }
 
-var snapshotLsCmd = &cobra.Command{
-	Use: "ls [GAME_ID]",
-	Short: "List snapshots of GAME_ID or all",
-	Args: cobra.MaximumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		gameID := ""
-		if len(args) > 0 {
-			gameID = args[0]
-		}
-
-		snapshots, err := syncer.ListSnapshots(current, gameID)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error getting list of snapshots: %v\n", err)
-			os.Exit(4)
-		}
-
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 
 
-		if _, err = fmt.Fprintf(w, "Name:\tHostname:\tTime:\n"); err != nil {
-			fmt.Fprintf(os.Stderr, "Error adding table header to writer: %v\n", err)
-			os.Exit(4)
-		}
+type snapshotCreateCmd struct {
+	cmd *cobra.Command
+	opts snapshotCreateOpts
+}
 
-		for _, snapshot := range snapshots {
-			if _, err = fmt.Fprintf(w, "%s\t%s\t%s\n", filepath.Base(snapshot.Paths[0]), snapshot.Hostname, snapshot.Time.Format(time.DateTime)); err != nil {
-				fmt.Fprintf(os.Stderr, "Error adding row to writer: %v\n", err)
-				os.Exit(4)
+type snapshotCreateOpts struct {
+	skipUnchanged bool
+}
+
+func newSnapshotCreateCmd() *snapshotCreateCmd {
+	root := snapshotCreateCmd{}
+
+	cmd := &cobra.Command{
+		Use: "create GAME_ID",
+		Short: "Uses restic to create a snapshot of a game save",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			gameID := args[0]
+
+			if err := syncer.CreateSnapshot(current, gameID, snapshotSkipUnchanged); err != nil {
+				return fmt.Errorf("error creating a snapshot: %v", err)
 			}
-		}
 
-		if err := w.Flush(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error flushing: %v\n", err)
-			os.Exit(4)
-		}
-	},
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVarP(&root.opts.skipUnchanged, "skip-unchanged", "S", false, "Skips creating snapshot if there were no changes from the last one")
+
+	root.cmd = cmd
+
+	return &root
 }
 
 
-func init() {
-	snapshotCmd.AddCommand(snapshotCreateCmd)
-	snapshotCreateCmd.Flags().BoolVarP(&snapshotSkipUnchanged, "skip-unchanged", "S", false, "Skips creating snapshot if there were no changes from the last one")
 
-	snapshotCmd.AddCommand(snapshotLsCmd)
+type snapshotLsCmd struct {
+	cmd *cobra.Command
+}
 
-	rootCmd.AddCommand(snapshotCmd)
+func newSnapshotLsCmd() *snapshotLsCmd {
+	root := snapshotLsCmd{}
+
+	cmd := &cobra.Command{
+		Use: "ls [GAME_ID]",
+		Short: "List snapshots of GAME_ID or all",
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			gameID := ""
+			if len(args) > 0 {
+				gameID = args[0]
+			}
+
+			snapshots, err := syncer.ListSnapshots(current, gameID)
+			if err != nil {
+				return fmt.Errorf("error getting list of snapshots: %v", err)
+			}
+
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+
+
+			if _, err = fmt.Fprintf(w, "Name:\tHostname:\tTime:\n"); err != nil {
+				return fmt.Errorf("error adding table header to writer: %v", err)
+			}
+
+			for _, snapshot := range snapshots {
+				if _, err = fmt.Fprintf(w, "%s\t%s\t%s\n", filepath.Base(snapshot.Paths[0]), snapshot.Hostname, snapshot.Time.Format(time.DateTime)); err != nil {
+					return fmt.Errorf("error adding row to writer: %v", err)
+				}
+			}
+
+			if err := w.Flush(); err != nil {
+				return fmt.Errorf("error flushing: %v", err)
+			}
+
+			return nil
+		},
+	}
+
+	root.cmd = cmd
+
+	return &root
 }

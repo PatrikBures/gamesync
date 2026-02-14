@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gamesync/internal/config"
 	"gamesync/internal/state"
+	"gamesync/internal/ui"
 	"os/exec"
 	"path"
 )
@@ -41,11 +42,9 @@ func RunCmd(current config.Current, cmds ...string) (string, error) {
 	outStr := stdoutBuf.String()
 	errStr := stderrBuf.String()
 
-	if current.Verbose {
-		fmt.Printf("Ran cmd:\n%s\n", cmd.String())
-		fmt.Printf("output:\n%s\n", outStr)
-		fmt.Printf("error:\n%s\n", errStr)
-	}
+	ui.Debug("Ran cmd:\n%s\n", cmd.String())
+	ui.Debug("output:\n%s\n", outStr)
+	ui.Debug("error:\n%s\n", errStr)
 
 	if err != nil {
 		return errStr, fmt.Errorf("failed to run cmd: %w", err)
