@@ -56,7 +56,7 @@ func createTestGame(t *testing.T, path string) {
 		t.Fatal(err)
 	}
 
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	if _, err := f.WriteString("test"); err != nil {
 		t.Fatal(err)
@@ -83,7 +83,7 @@ func setupTestConfigFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	t.Cleanup(func() {
 		if err := os.RemoveAll(f.Name()); err != nil {
