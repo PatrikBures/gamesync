@@ -46,7 +46,7 @@ go-install:
 
 go-test:
 	@echo "testing..."
-	go test ./internal/...
+	go test -v ./...
 
 
 build-state:
