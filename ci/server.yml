@@ -59,7 +59,7 @@ build-server-container:
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
 
 create-manifest:
-  stage: release
+  stage: prepare-test
   image: quay.io/buildah/stable
   extends:
     - .container
