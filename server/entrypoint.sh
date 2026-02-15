@@ -144,6 +144,7 @@ fi
 
 
 
+mkdir -p /etc/ssh/keys
 # creates host key if it does not exist
 if [ ! -f /etc/ssh/keys/ssh_host_ed25519_key ]; then
     echo "created host key"
