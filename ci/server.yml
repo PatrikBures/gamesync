@@ -104,13 +104,13 @@ build-test-server-container:
     - buildah manifest push --all --format v2s2 ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:${VERSION}
 
 create-manifest-standard:
-  extends: create-manifest-base
+  extends: .create-manifest-base
   needs:
     - job: build-server-container
       artifacts: false
 
 create-manifest-test:
-  extends: create-manifest-base
+  extends: .create-manifest-base
   needs:
     - job: build-test-server-container
       artifacts: false
