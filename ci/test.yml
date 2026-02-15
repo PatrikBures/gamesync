@@ -1,11 +1,11 @@
 test-client-server:
   stage: test
-  image: $CI_REGISTRY_IMAGE:${VERSION}
+  image: $CLIENT_TEST_IMAGE:latest
   extends:
     - .golang-before-merge
     - .gocache
   services:
-    - name: ${CI_REGISTRY_IMAGE}:${VERSION}
+    - name: ${CI_REGISTRY_IMAGE}:test-job
       alias: server
   script:
     - go mod tidy
