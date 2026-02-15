@@ -74,6 +74,10 @@ create_users() {
     for file in "$USERS_DIR"/*; do
         user="$(basename "${file}")"
 
+        if [[ "$user" == '*' ]]; then
+            continue
+        fi
+
         id_file="$USER_IDS_DIR/$user"
 
         if [[ -f "$id_file" ]]; then
