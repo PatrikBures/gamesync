@@ -4,8 +4,6 @@ test-client-server:
   extends:
     - .golang-before-merge
     - .gocache
-  needs: 
-    - job: build-test-client-container
   services:
     - name: ${CI_REGISTRY_IMAGE}:${VERSION}
       alias: server
