@@ -114,4 +114,5 @@ create-manifest-test:
   needs:
     - job: build-test-server-container
       artifacts: false
-  VERSION: test-job
+  variables:
+    VERSION: test-job
