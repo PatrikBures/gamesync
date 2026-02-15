@@ -63,7 +63,7 @@ build-test-client-container:
     - .golang-before-merge
     - .setup-buildah
   needs:
-    - job: build-test-client
+    - job: build-test-client-binary
       artifacts: true
   variables:
     BUILDAH_ISOLATION: chroot
