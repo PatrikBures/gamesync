@@ -15,7 +15,7 @@
       - ARCH: [amd64, arm64]
 
 build-server-binary:
-  stage: build
+  stage: prepare-test
   image: $GOLANG_IMAGE
   extends: 
     - .container
@@ -32,8 +32,8 @@ build-server-binary:
       - bin/
     expire_in: 15 min
 
-build-server:
-  stage: build
+build-server-container:
+  stage: prepare-test
   extends:
     - .container
     - .setup-buildah

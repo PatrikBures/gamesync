@@ -1,5 +1,6 @@
 stages:
   - lint
+  - prepare-test
   - test
   - build
   - release
@@ -62,3 +63,4 @@ workflow:
 include:
   - local: 'ci/client.yml'
   - local: 'ci/server.yml'
+  - local: 'ci/test.yml'
