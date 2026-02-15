@@ -1,6 +1,6 @@
 test-client-server:
   stage: test
-  image: $CLIENT_TEST_IMAGE:latest
+  image: $CI_REGISTRY_IMAGE:${VERSION}
   extends:
     - .golang-before-merge
     - .gocache
