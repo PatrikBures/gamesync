@@ -1,6 +1,6 @@
 .container:
   rules:
-    - if: $DEPLOY
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: 
         - "cmd/gamesync-state/*.go"
         - "server/*"
