@@ -65,7 +65,7 @@ create-manifest:
     - .container
     - .setup-buildah
   needs:
-    - job: build-server
+    - job: build-server-container
       artifacts: false
 
   variables:
