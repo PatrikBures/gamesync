@@ -79,9 +79,17 @@ build-test-server-container:
   variables:
     BUILDAH_ISOLATION: chroot
     VERSION: test-job
+  artifacts:
+    paths:
+      - /ssh
+    expire_in: 15 min
 
   script:
     - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
+
+    - ssh-keygen -q -C "test-client" -f /ssh/key -N ""
+    - echo "COPY /ssh/key.pub /config/users/test-user" >> Dockerfile
+    - echo "RUN chmod 400 /config/users/test-user" >> Dockerfile
 
     - |
       buildah build \

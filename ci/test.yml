@@ -8,5 +8,11 @@ test-client-server:
     - name: ${CI_REGISTRY_IMAGE}:test-job
       alias: server
   script:
+    - mkdir ~/.ssh
+    - cp /ssh/key ~/.ssh/key
+    - chmod 600 ~/.ssh/key
+
+    - ssh -i ~/.ssh/key test-user@server
+
     - go mod tidy
     - go test -v ./...
