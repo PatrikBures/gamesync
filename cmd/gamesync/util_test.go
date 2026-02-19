@@ -19,12 +19,7 @@ func setupTest(t *testing.T) {
 	current.Config.Server.User = "test-user"
 	current.Config.Server.Host = "server"
 	current.Config.Server.Port = "22"
-
-	identityFile, err := filepath.Abs("ssh/key")
-	if err != nil {
-		t.Fatal(err)
-	}
-	current.Config.Server.IdentityFile = identityFile
+	current.Config.Server.IdentityFile = "ssh/key"
 
 	setupTestGames(t)
 	setupTestStateDir(t)
