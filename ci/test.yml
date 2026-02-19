@@ -7,11 +7,11 @@ test-client-server:
   services:
     - name: ${CI_REGISTRY_IMAGE}:test-job
       alias: server
-  script:
+  before_script:
     - mkdir ~/.ssh
-    - cp /ssh/key ~/.ssh/key
+    - cp ssh/key ~/.ssh/key
     - chmod 600 ~/.ssh/key
-
+  script:
     - ssh -i ~/.ssh/key test-user@server
 
     - go mod tidy

@@ -81,16 +81,15 @@ build-test-server-container:
     VERSION: test-job
   artifacts:
     paths:
-      - /ssh
+      - ssh
     expire_in: 15 min
 
   script:
     - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
 
-    - mkdir -p /ssh
-    - ssh-keygen -q -C "test-client" -f /ssh/key -N ""
-    - cp /ssh/key.pub ./
-    - echo "COPY key.pub /config/users/test-user" >> Dockerfile
+    - mkdir -p ssh
+    - ssh-keygen -q -C "test-client" -f ssh/key -N ""
+    - echo "COPY ssh/key.pub /config/users/test-user" >> Dockerfile
     - echo "RUN chmod 400 /config/users/test-user" >> Dockerfile
 
     - |
