@@ -72,6 +72,7 @@ build-server-container-test:
   extends:
     - .container
     - .setup-buildah
+    - .arch
   needs:
     - job: build-server-binary
       artifacts: true
@@ -87,12 +88,13 @@ build-server-container-test:
     - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
 
     - mkdir -p ssh
-    - ssh-keygen -q -C "test-client" -f ssh/key -N ""
+    - if ! [ -f ssh/key ]; then ssh-keygen -q -C "test-client" -f ssh/key -N ""; fi
     - echo "COPY ssh/key.pub /config/users/test-user" >> Dockerfile
     - echo "RUN chmod 400 /config/users/test-user" >> Dockerfile
 
     - |
       buildah build \
+      --arch $ARCH \
       --build-arg GAMESYNC_STATE_PATH=bin/gamesync-state-$ARCH \
       --layers \
       --cache-from "$CI_REGISTRY_IMAGE" \
