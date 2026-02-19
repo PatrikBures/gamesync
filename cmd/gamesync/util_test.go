@@ -13,6 +13,13 @@ import (
 func setupTest(t *testing.T) {
 	t.Helper()
 
+	setupTestGames(t)
+	setupTestStateDir(t)
+	setupTestConfigFile(t)
+	populateConfigFile(t)
+}
+
+func setupTestGames(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "gamesync_test_saves_")
 	if err != nil {
 		t.Fatal(err)
@@ -37,11 +44,6 @@ func setupTest(t *testing.T) {
 
 		createTestGame(t, saveDir)
 	}
-
-
-	setupTestStateDir(t)
-	setupTestConfigFile(t)
-	populateConfigFile(t)
 }
 
 
