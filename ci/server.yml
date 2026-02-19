@@ -93,7 +93,6 @@ build-server-container-test:
 
     - |
       buildah build \
-      --arch $ARCH \
       --build-arg GAMESYNC_STATE_PATH=bin/gamesync-state-$ARCH \
       --layers \
       --cache-from "$CI_REGISTRY_IMAGE" \
