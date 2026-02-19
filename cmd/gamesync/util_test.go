@@ -2,6 +2,7 @@ package main
 
 import (
 	"gamesync/internal/config"
+	"gamesync/internal/syncer"
 	"gamesync/internal/ui"
 	"os"
 	"path/filepath"
@@ -114,10 +115,10 @@ func populateConfigFile(t *testing.T) {
 	}
 }
 
-func testRemoveGame(t *testing.T, gameID string) {
-	cmd := newRemoteRmCmd()
+func cleanupRemoteGame(t *testing.T, gameID string) {
+	output, err := syncer.RemoveSaveGame(current, gameID)
 
-	cmd.cmd.SetArgs([]string{gameID})
-
-	require.NoError(t, cmd.cmd.Execute())
+	if err != nil {
+		ui.Error("Error removing game from remote: %v\n%s\n", err, output)
+	}
 }
