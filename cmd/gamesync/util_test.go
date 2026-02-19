@@ -16,6 +16,16 @@ func setupTest(t *testing.T) {
 
 	ui.SetLevel(ui.LevelDebug)
 
+	current.Config.Server.User = "test-user"
+	current.Config.Server.Host = "server"
+	current.Config.Server.Port = "22"
+
+	identityFile, err := filepath.Abs("ssh/key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	current.Config.Server.IdentityFile = identityFile
+
 	setupTestGames(t)
 	setupTestStateDir(t)
 	setupTestConfigFile(t)
