@@ -12,6 +12,7 @@ test-client-server:
   before_script:
     - mkdir -p ~/.ssh
     - ssh-keyscan -H -t ed25519 server >> ~/.ssh/known_hosts
+    - cp -r ssh /tmp/ssh
   script:
     - ssh -i ssh/key test-user@server ls
 

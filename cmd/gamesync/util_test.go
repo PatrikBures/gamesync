@@ -19,7 +19,7 @@ func setupTest(t *testing.T) {
 	current.Config.Server.User = "test-user"
 	current.Config.Server.Host = "server"
 	current.Config.Server.Port = "22"
-	current.Config.Server.IdentityFile = "ssh/key"
+	current.Config.Server.IdentityFile = "/tmp/ssh/key"
 
 	setupTestGames(t)
 	setupTestStateDir(t)
