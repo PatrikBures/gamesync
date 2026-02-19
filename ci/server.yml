@@ -89,7 +89,8 @@ build-test-server-container:
 
     - mkdir -p /ssh
     - ssh-keygen -q -C "test-client" -f /ssh/key -N ""
-    - echo "COPY /ssh/key.pub /config/users/test-user" >> Dockerfile
+    - cp /ssh/key.pub ./
+    - echo "COPY key.pub /config/users/test-user" >> Dockerfile
     - echo "RUN chmod 400 /config/users/test-user" >> Dockerfile
 
     - |
