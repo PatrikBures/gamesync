@@ -40,7 +40,9 @@ func SyncGame(current config.Current, game config.GameConfig, pull bool) error {
 		cmd.Stdout = os.Stdout
 	}
 
-	cmd.Stderr = os.Stderr
+	if ui.GetLevel() <= ui.LevelError {
+		cmd.Stderr = os.Stderr
+	}
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("error syncing %s, from %s, to %s", game.ID, localPath, remotePath)
