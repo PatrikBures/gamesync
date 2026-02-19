@@ -13,6 +13,8 @@ import (
 func setupTest(t *testing.T) {
 	t.Helper()
 
+	current.Verbose = true
+
 	setupTestGames(t)
 	setupTestStateDir(t)
 	setupTestConfigFile(t)
