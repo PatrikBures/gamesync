@@ -1,15 +1,14 @@
 package main
 
 import (
-	"gamesync/internal/config"
-	"gamesync/internal/syncer"
-	"gamesync/internal/ui"
 	"os"
 	"path/filepath"
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"gamesync/internal/config"
+	"gamesync/internal/syncer"
+	"gamesync/internal/ui"
 )
 
 
