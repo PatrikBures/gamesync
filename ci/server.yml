@@ -72,7 +72,6 @@ build-server-container-test:
   extends:
     - .container
     - .setup-buildah
-    - .arch
   needs:
     - job: build-server-binary
       artifacts: true
