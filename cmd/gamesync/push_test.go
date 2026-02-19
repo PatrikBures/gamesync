@@ -11,6 +11,9 @@ func TestPush(t *testing.T) {
 
 	cmd :=newPushCmd()
 
+	cmd.cmd.SilenceUsage = true
+	cmd.cmd.SilenceErrors = true
+
 	cmd.cmd.SetArgs([]string{"game_1"})
 
 	require.NoError(t, cmd.cmd.Execute())
