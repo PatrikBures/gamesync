@@ -77,6 +77,9 @@ const (
 )
 
 func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, remoteState map[string]FileMeta, loose bool) (SyncState, error) {
+	if len(localState) == 0 && len(remoteState) >  0 { return SyncStatePull, nil }
+	if len(localState) >  0 && len(remoteState) == 0 { return SyncStatePush, nil }
+
 	localChange := true
 	remoteChange := true
 
