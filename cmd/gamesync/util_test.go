@@ -2,6 +2,7 @@ package main
 
 import (
 	"gamesync/internal/config"
+	"gamesync/internal/ui"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -13,7 +14,7 @@ import (
 func setupTest(t *testing.T) {
 	t.Helper()
 
-	current.Verbose = true
+	ui.SetLevel(ui.LevelDebug)
 
 	setupTestGames(t)
 	setupTestStateDir(t)
