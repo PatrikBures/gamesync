@@ -2,6 +2,7 @@ package main
 
 import (
 	"gamesync/internal/config"
+	"gamesync/internal/ui"
 	"os"
 	"testing"
 
@@ -16,6 +17,7 @@ func TestPull(t *testing.T) {
 	game, _, err := config.GetGame(current, "game_1")
 	require.NoError(t, err)
 	require.NoError(t, os.RemoveAll(game.SavePath))
+	ui.Verbose("Removed save path for %s at %s\n", game.ID, game.SavePath)
 
 	cmd :=newPullCmd()
 

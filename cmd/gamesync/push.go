@@ -29,7 +29,7 @@ func newPushCmd() *pushCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			gameID := args[0]
 
-			if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.force); err != nil {
+			if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.force, true); err != nil {
 				return fmt.Errorf("error pushing: %v", err)
 			}
 

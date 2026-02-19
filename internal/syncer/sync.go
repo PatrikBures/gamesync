@@ -58,7 +58,7 @@ const (
 	ModePull
 )
 
-func HandleSync(current config.Current, gameID string, mode SyncMode, force bool) error {
+func HandleSync(current config.Current, gameID string, mode SyncMode, force bool, updateState bool) error {
 	game, _, err := config.GetGame(current, gameID)
 	if err != nil {
 		return fmt.Errorf("getting game: %v", err)
@@ -149,8 +149,8 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 		newStateToSave = remoteState
 	}
 
-	stateFile := filepath.Join(stateDir, game.ID+".json")
-	if newStateToSave != nil {
+	if newStateToSave != nil && updateState {
+		stateFile := filepath.Join(stateDir, game.ID+".json")
 		if err := state.Write(newStateToSave, stateFile); err != nil {
 			return fmt.Errorf("writing state to file: %s: %v",stateFile, err)
 		}

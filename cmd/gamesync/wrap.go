@@ -56,7 +56,7 @@ func newWrapCmd() *wrapCmd {
 
 			// pulls
 			if !root.opts.noPull {
-				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.forcePull); err != nil {
+				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.forcePull, true); err != nil {
 					ui.Info("WARNING: Pulling save failed: %v\n", err)
 					if root.opts.notify { ui.Notify("error", "pulling save") }
 					if root.opts.exitOnError { return err }
@@ -86,7 +86,7 @@ func newWrapCmd() *wrapCmd {
 
 			// pushes
 			if !root.opts.noPush {
-				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.forcePush); err != nil {
+				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.forcePush, true); err != nil {
 					ui.Info("WARNING: Pushing save failed: %v\n", err)
 					if root.opts.notify { ui.Notify("error", "pushing save") }
 					if root.opts.exitOnError { return err }

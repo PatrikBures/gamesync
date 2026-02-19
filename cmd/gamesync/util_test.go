@@ -123,7 +123,7 @@ func cleanupRemoteGame(t *testing.T, gameID string) {
 }
 
 func pushGameRemote(t *testing.T, gameID string) {
-	err := syncer.HandleSync(current, gameID, syncer.ModePush, false)
+	err := syncer.HandleSync(current, gameID, syncer.ModePush, false, false)
 
 	if err != nil {
 		t.Logf("Error pushing game: %v\n", err)
