@@ -11,7 +11,7 @@ func TestPush(t *testing.T) {
 
 	cmd :=newPushCmd()
 
-	cmd.cmd.SetArgs([]string{"game1"})
+	cmd.cmd.SetArgs([]string{"game_1"})
 
 	require.NoError(t, cmd.cmd.Execute())
 }
