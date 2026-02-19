@@ -87,7 +87,7 @@ build-server-container-test:
     - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
 
     - mkdir -p ssh
-    - if ! [ -f ssh/key ]; then ssh-keygen -q -C "test-client" -f ssh/key -N ""; fi
+    - ssh-keygen -q -C "test-client" -f ssh/key -N ""
     - echo "COPY ssh/key.pub /config/users/test-user" >> Dockerfile
     - echo "RUN chmod 400 /config/users/test-user" >> Dockerfile
 
