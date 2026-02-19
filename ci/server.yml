@@ -72,7 +72,6 @@ build-server-container-test:
   extends:
     - .container
     - .setup-buildah
-    - .arch
   needs:
     - job: build-server-binary
       artifacts: true
@@ -94,14 +93,13 @@ build-server-container-test:
 
     - |
       buildah build \
-      --arch $ARCH \
-      --build-arg GAMESYNC_STATE_PATH=bin/gamesync-state-$ARCH \
+      --build-arg GAMESYNC_STATE_PATH=bin/gamesync-state-amd64 \
       --layers \
       --cache-from "$CI_REGISTRY_IMAGE" \
-      -t "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}" \
+      -t "$CI_REGISTRY_IMAGE:${VERSION}" \
       ./
 
-    - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
+    - buildah push "$CI_REGISTRY_IMAGE:${VERSION}"
 
 .create-manifest-base:
   stage: prepare-test
@@ -128,14 +126,3 @@ create-manifest-standard:
   needs:
     - job: build-server-container
       artifacts: false
-
-create-manifest-test:
-  stage: prepare-test
-  extends: 
-    - .create-manifest-base
-    - .container
-  needs:
-    - job: build-server-container-test
-      artifacts: false
-  variables:
-    VERSION: test-job
