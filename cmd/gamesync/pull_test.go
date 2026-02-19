@@ -2,6 +2,7 @@ package main
 
 import (
 	"gamesync/internal/config"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,7 +13,9 @@ func TestPull(t *testing.T) {
 
 	pushGameRemote(t, "game_1")
 
-	require.NoError(t, config.RemoveGames(&current, []string{"game_1"}))
+	game, _, err := config.GetGame(current, "game_1")
+	require.NoError(t, err)
+	require.NoError(t, os.RemoveAll(game.SavePath))
 
 	cmd :=newPullCmd()
 
