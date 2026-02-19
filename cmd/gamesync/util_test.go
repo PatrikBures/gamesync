@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 
@@ -110,4 +112,12 @@ func populateConfigFile(t *testing.T) {
 	if err := config.WriteGlobalConfig(current); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func testRemoveGame(t *testing.T, gameID string) {
+	cmd := newRemoteRmCmd()
+
+	cmd.cmd.SetArgs([]string{gameID})
+
+	require.NoError(t, cmd.cmd.Execute())
 }
