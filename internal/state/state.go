@@ -77,6 +77,9 @@ const (
 )
 
 func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, remoteState map[string]FileMeta, loose bool) (SyncState, error) {
+	if len(localState) == 0 && len(remoteState) >  0 { return SyncStatePull, nil }
+	if len(localState) >  0 && len(remoteState) == 0 { return SyncStatePush, nil }
+
 	localChange := true
 	remoteChange := true
 
@@ -98,6 +101,10 @@ func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, 
 }
 
 func stateEqual(state1 map[string]FileMeta, state2 map[string]FileMeta, loose bool) bool {
+	if len(state1) != len(state2) {
+		ui.Verbose("len of states not same, state1: %d, state2: %d\n", len(state1), len(state2))
+		return false
+	}
 	for path, meta1 := range state1 {
 		meta2, ok := state2[path]
 		if !ok {
