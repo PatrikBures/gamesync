@@ -13,6 +13,7 @@ const (
 	LevelVerbose
 	LevelNormal
 	LevelError 
+	LevelNone
 )
 
 var currentLevel = LevelNormal
