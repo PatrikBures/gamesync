@@ -118,6 +118,6 @@ func cleanupRemoteGame(t *testing.T, gameID string) {
 	output, err := syncer.RemoveSaveGame(current, gameID)
 
 	if err != nil {
-		ui.Error("Error removing game from remote: %v\n%s\n", err, output)
+		t.Logf("Error removing game from remote: %v\n%s\n", err, output)
 	}
 }
