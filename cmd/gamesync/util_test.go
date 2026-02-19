@@ -16,7 +16,7 @@ import (
 func setupTest(t *testing.T) {
 	t.Helper()
 
-	ui.SetLevel(ui.LevelDebug)
+	ui.SetLevel(ui.LevelError)
 
 	current.Config.Server.User = "test-user"
 	current.Config.Server.Host = "server"
