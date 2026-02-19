@@ -67,7 +67,7 @@ build-server-container:
 
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
 
-build-test-server-container:
+build-server-container-test:
   stage: prepare-test
   extends:
     - .container
@@ -135,7 +135,7 @@ create-manifest-test:
     - .create-manifest-base
     - .container
   needs:
-    - job: build-test-server-container
+    - job: build-server-container-test
       artifacts: false
   variables:
     VERSION: test-job

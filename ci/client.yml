@@ -43,7 +43,7 @@ lint-golang:
   script:
     - golangci-lint run
 
-build-test-client-binary:
+build-client-binary-test:
   stage: prepare-test
   image: $GOLANG_IMAGE
   extends: 
@@ -57,13 +57,13 @@ build-test-client-binary:
       - ci/client-test/gamesync
     expire_in: 15 min
 
-build-test-client-container:
+build-client-container-test:
   stage: prepare-test
   extends:
     - .golang-before-merge
     - .setup-buildah
   needs:
-    - job: build-test-client-binary
+    - job: build-client-binary-test
       artifacts: true
   variables:
     BUILDAH_ISOLATION: chroot
