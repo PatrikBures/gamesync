@@ -10,11 +10,10 @@ test-client-server:
     - name: ${CI_REGISTRY_IMAGE}:test-job
       alias: server
   before_script:
-    - mkdir ~/.ssh
-    - cp ssh/key ~/.ssh/key
-    - chmod 600 ~/.ssh/key
+    - mkdir -p ~/.ssh
+    - ssh-keyscan -H -t ed25519 server >> ~/.ssh/known_hosts
   script:
-    - ssh -i ~/.ssh/key test-user@server ls
+    - ssh -i ssh/key test-user@server ls
 
     - go mod tidy
     - go test -v ./...
