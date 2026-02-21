@@ -27,5 +27,6 @@ func TestRemoteLs(t *testing.T) {
 	cmd.cmd.SilenceUsage = true
 	cmd.cmd.SilenceErrors = true
 
+	require.NoError(t, cmd.cmd.Execute())
 	require.Equal(t, "game_1\n", buf.String())
 }
