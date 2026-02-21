@@ -1,7 +1,7 @@
 .container:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: 
+      changes: &server-changes
         - "cmd/gamesync-state/*.go"
         - "server/*"
         - "Dockerfile"
@@ -11,12 +11,7 @@
 .container-deploy:
   rules:
     - if: $DEPLOY
-      changes: 
-        - "cmd/gamesync-state/*.go"
-        - "server/*"
-        - "Dockerfile"
-        - ".gitlab-ci.yml"
-        - "ci/*"
+      changes: *server-changes
 
 .arch:
   parallel:
