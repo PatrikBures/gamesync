@@ -43,13 +43,13 @@ func newRemoteLsCmd() *remoteLsCmd {
 		Short: "List remote saves",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			remoteSaves, err := syncer.RunCmd(current, "list-saves")
+			output, err := syncer.RunCmd(current, "list-saves")
 
 			if err != nil {
-				return fmt.Errorf("urror listing remote: %v", err)
+				return fmt.Errorf("error listing remote: %v\n%s", err, output)
 			}
 
-			ui.Info("%s", remoteSaves)
+			ui.Info("%s", output)
 
 			return nil
 		},

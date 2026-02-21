@@ -2,5 +2,6 @@ test
 testdata
 *.gamesync-pool.yml
 /manpages
-server/gamesync-state
 bin/
+ci/client-test/gamesync
+server/gamesync-state

@@ -1,5 +1,15 @@
 .container:
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: 
+        - "cmd/gamesync-state/*.go"
+        - "server/*"
+        - "Dockerfile"
+        - ".gitlab-ci.yml"
+        - "ci/*"
+
+.container-deploy:
+  rules:
     - if: $DEPLOY
       changes: 
         - "cmd/gamesync-state/*.go"
@@ -8,18 +18,14 @@
         - ".gitlab-ci.yml"
         - "ci/*"
 
-.setup-buildah:
-  before_script:
-    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-
 .arch:
   parallel:
     matrix:
       - ARCH: [amd64, arm64]
 
 build-server-binary:
-  stage: build
-  image: golang:1.25-alpine
+  stage: prepare-test
+  image: $GOLANG_IMAGE
   extends: 
     - .container
     - .arch
@@ -35,19 +41,16 @@ build-server-binary:
       - bin/
     expire_in: 15 min
 
-build-server:
+build-server-container:
   stage: build
-  image: quay.io/buildah/stable
   extends:
-    - .container
+    - .container-deploy
     - .setup-buildah
     - .arch
   needs:
     - job: build-server-binary
       artifacts: true
   variables:
-    STORAGE_DRIVER: vfs
-    BUILDAH_FORMAT: docker
     BUILDAH_ISOLATION: chroot
 
   script:
@@ -64,19 +67,47 @@ build-server:
 
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
 
-create-manifest:
-  stage: release
-  image: quay.io/buildah/stable
+build-server-container-test:
+  stage: prepare-test
   extends:
     - .container
     - .setup-buildah
   needs:
-    - job: build-server
-      artifacts: false
+    - job: build-server-binary
+      artifacts: true
+  variables:
+    BUILDAH_ISOLATION: chroot
+    VERSION: test-job
+  artifacts:
+    paths:
+      - ssh
+    expire_in: 15 min
+
+  script:
+    - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
+
+    - mkdir -p ssh
+    - ssh-keygen -q -C "test-client" -f ssh/key -N ""
+    - echo "COPY ssh/key.pub /config/users/test-user" >> Dockerfile
+    - echo "RUN chmod 400 /config/users/test-user" >> Dockerfile
+
+    - |
+      buildah build \
+      --build-arg GAMESYNC_STATE_PATH=bin/gamesync-state-amd64 \
+      --layers \
+      --cache-from "$CI_REGISTRY_IMAGE" \
+      -t "$CI_REGISTRY_IMAGE:${VERSION}" \
+      ./
+
+    - buildah push "$CI_REGISTRY_IMAGE:${VERSION}"
+
+.create-manifest-base:
+  stage: prepare-test
+  image: quay.io/buildah/stable
+  extends:
+    - .setup-buildah
 
   variables:
-    STORAGE_DRIVER: vfs
-    BUILDAH_FORMAT: docker
     GIT_STRATEGY: none
 
   script:
@@ -86,3 +117,12 @@ create-manifest:
     - buildah manifest add ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:${VERSION}-arm64
 
     - buildah manifest push --all --format v2s2 ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:${VERSION}
+
+create-manifest-standard:
+  stage: release
+  extends: 
+    - .create-manifest-base
+    - .container-deploy
+  needs:
+    - job: build-server-container
+      artifacts: false

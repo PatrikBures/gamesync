@@ -45,6 +45,7 @@ docker run -d \
     --volume "$HOST_KEY_DIR":/etc/ssh/keys \
     --volume "$DATA":/data \
     -e "GAMESYNC_LOOP=10" \
+    -e "GAMESYNC_UNRESTRICTED=true" \
     -p 127.0.0.1:2222:22 \
     --name gamesync-test \
     gamesync:latest

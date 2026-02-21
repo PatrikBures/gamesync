@@ -1,4 +1,6 @@
 stages:
+  - lint
+  - prepare-test
   - test
   - build
   - release
@@ -7,6 +9,14 @@ variables:
   VERSION: latest
   LINUX_AMD64_BINARY: gamesync-linux-amd64-${VERSION}
   PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/gamesync/${VERSION}"
+
+  CLIENT_TEST_IMAGE_NAME: gamesync-client-test
+  CLIENT_TEST_IMAGE: ${CI_REGISTRY_IMAGE}/${CLIENT_TEST_IMAGE_NAME}
+
+  ALPINE_VERSION: 3.23
+  GOLANG_VERSION: 1.26
+
+  GOLANG_IMAGE: "golang:${GOLANG_VERSION}-alpine${ALPINE_VERSION}"
   
   GOPATH: $CI_PROJECT_DIR/.go
   GOCACHE: $CI_PROJECT_DIR/.go-build
@@ -17,11 +27,26 @@ variables:
     key: 
       files:
         - go.sum
-      prefix: lint-client
+      prefix: "go-${CI_JOB_NAME}${CI_NODE_INDEX:+-${CI_NODE_INDEX}}"
+    paths:
+      - .go/pkg/mod
+      - .go-build
+
+.gocache-lint:
+  extends: .gocache
+  cache:
     paths:
       - .go/pkg/mod
       - .go-build
       - .golangci-lint
+
+.setup-buildah:
+  image: quay.io/buildah/stable
+  before_script:
+    - export STORAGE_DRIVER=vfs
+    - export BUILDAH_FORMAT=docker
+    - export CLIENT_TEST_IMAGE=${CLIENT_TEST_IMAGE}
+    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 workflow:
   rules:
@@ -45,3 +70,4 @@ workflow:
 include:
   - local: 'ci/client.yml'
   - local: 'ci/server.yml'
+  - local: 'ci/test.yml'

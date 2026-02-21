@@ -74,6 +74,10 @@ create_users() {
     for file in "$USERS_DIR"/*; do
         user="$(basename "${file}")"
 
+        if [[ "$user" == '*' ]]; then
+            continue
+        fi
+
         id_file="$USER_IDS_DIR/$user"
 
         if [[ -f "$id_file" ]]; then
@@ -133,9 +137,14 @@ create_users_loop() {
 }
 
 
+if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then
+    echo "export GAMESYNC_UNRESTRICTED=true" >> /etc/gamesync.env
+    chmod 664 /etc/gamesync.env
+fi
 
 
 
+mkdir -p /etc/ssh/keys
 # creates host key if it does not exist
 if [ ! -f /etc/ssh/keys/ssh_host_ed25519_key ]; then
     echo "created host key"

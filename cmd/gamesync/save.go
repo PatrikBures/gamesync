@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"text/tabwriter"
 
 	"gamesync/internal/config"
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -95,7 +95,7 @@ func newSaveLsCmd() *saveLsCmd {
 		Short: "List all games in local config",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+			w := tabwriter.NewWriter(ui.OutWriter, 0, 0, 2, ' ', tabwriter.TabIndent)
 
 			for _, game := range current.Config.Games {
 				var err error

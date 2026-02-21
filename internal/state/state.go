@@ -46,6 +46,8 @@ func Get(root string) (map[string]FileMeta, error) {
 		return nil, fmt.Errorf("walking dir: %w", err)
 	}
 
+	ui.Debug("got state of dir: %s\n", root)
+
 	return results, nil
 }
 
@@ -79,6 +81,7 @@ const (
 func Compare(localState map[string]FileMeta, oldLocalState map[string]FileMeta, remoteState map[string]FileMeta, loose bool) (SyncState, error) {
 	if len(localState) == 0 && len(remoteState) >  0 { return SyncStatePull, nil }
 	if len(localState) >  0 && len(remoteState) == 0 { return SyncStatePush, nil }
+	if len(localState) == 0 && len(remoteState) == 0 { return SyncStateError, fmt.Errorf("local and remote empty")}
 
 	localChange := true
 	remoteChange := true
