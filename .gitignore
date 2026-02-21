@@ -4,3 +4,4 @@ testdata
 /manpages
 bin/
 ci/client-test/gamesync
+server/gamesync-state
