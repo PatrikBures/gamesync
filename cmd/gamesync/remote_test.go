@@ -35,3 +35,25 @@ func TestRemoteLs(t *testing.T) {
 	require.NoError(t, cmd.cmd.Execute())
 	require.Equal(t, "game_1\n", buf.String())
 }
+
+
+func TestRemoteRm(t *testing.T) {
+	setupTest(t)
+
+	require.Error(t, testRemoteRmCmd("game_1").cmd.Execute())
+
+	pushGameRemote(t, "game_1")
+
+	require.NoError(t, testRemoteRmCmd("game_1").cmd.Execute())
+}
+
+func testRemoteRmCmd(gameID string) *remoteRmCmd {
+	cmd := newRemoteRmCmd()
+
+	cmd.cmd.SilenceUsage = true
+	cmd.cmd.SilenceErrors = true
+
+	cmd.cmd.SetArgs([]string{gameID})
+
+	return cmd
+}
