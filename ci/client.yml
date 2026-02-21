@@ -44,7 +44,7 @@ lint-golang:
     - golangci-lint run
 
 build-client-binary-test:
-  stage: prepare-test
+  stage: build-bin
   image: $GOLANG_IMAGE
   extends: 
     - .golang-before-merge
@@ -88,7 +88,7 @@ build-client-container-test:
 
 
 build-client:
-  stage: build
+  stage: build-bin
   image: $GOLANG_IMAGE
   extends: 
     - .golang-deploy

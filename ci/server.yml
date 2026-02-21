@@ -1,7 +1,7 @@
 .container:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: 
+      changes: &server-changes
         - "cmd/gamesync-state/*.go"
         - "server/*"
         - "Dockerfile"
@@ -11,12 +11,14 @@
 .container-deploy:
   rules:
     - if: $DEPLOY
-      changes: 
-        - "cmd/gamesync-state/*.go"
-        - "server/*"
-        - "Dockerfile"
-        - ".gitlab-ci.yml"
-        - "ci/*"
+      changes: *server-changes
+
+.build-rule:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *server-changes
+    - if: $DEPLOY
+      changes: *server-changes
 
 .arch:
   parallel:
@@ -24,10 +26,10 @@
       - ARCH: [amd64, arm64]
 
 build-server-binary:
-  stage: prepare-test
+  stage: build-bin
   image: $GOLANG_IMAGE
   extends: 
-    - .container
+    - .build-rule
     - .arch
     - .gocache
   before_script:
@@ -42,7 +44,7 @@ build-server-binary:
     expire_in: 15 min
 
 build-server-container:
-  stage: build
+  stage: build-con
   extends:
     - .container-deploy
     - .setup-buildah
