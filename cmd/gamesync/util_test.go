@@ -42,28 +42,31 @@ func setupTestGames(t *testing.T) {
 		}
 	})
 
-	for i := range 3 {
+	for i := range 2 {
 		saveName := "game_"+strconv.Itoa(i)
-		saveDir := filepath.Join(tmpDir, saveName)
+		savePath := filepath.Join(tmpDir, saveName)
+		odd := i % 2 == 1
 
-		game := config.GameConfig{
-			ID: saveName,
-			SavePath: saveDir,
-		}
-
-		current.Config.Games = append(current.Config.Games, game)
-
-		createTestGame(t, saveDir)
+		createTestGame(t, saveName, savePath, odd)
 	}
 }
 
 
-func createTestGame(t *testing.T, path string) {
-	if err := os.Mkdir(path, 0770); err != nil {
+func createTestGame(t *testing.T, ID, savePath string, appendGame bool) {
+	game := config.GameConfig{
+		ID: ID,
+		SavePath: savePath,
+	}
+
+	if appendGame {
+		current.Config.Games = append(current.Config.Games, game)
+	}
+
+	if err := os.Mkdir(savePath, 0770); err != nil {
 		t.Fatal(err)
 	}
 
-	testFile := filepath.Join(path, "save.txt")
+	testFile := filepath.Join(savePath, "save.txt")
 
 	f, err := os.OpenFile(testFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
