@@ -11,17 +11,12 @@ export RESTIC_PASSWORD_FILE="/config/restic_passwords/$USER"
 
 CMD=$SSH_ORIGINAL_COMMAND
 
-if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then
-    bash -c "$CMD"
-    exit $?
-fi
-
 if [[ -z "$CMD" ]]; then
     exit 0
 fi
 
 forbidden_chars=$'[&;|`$()<>\n\\]'
-if [[ "$CMD" =~ $forbidden_chars ]]; then
+if [[ "$CMD" =~ $forbidden_chars ]] && [[ "$GAMESYNC_UNRESTRICTED" != "true" ]]; then
     echo "Access Denied: Complex commands are not allowed."
     exit 1
 fi
@@ -46,8 +41,13 @@ case "$CMD" in
         ls -1 "$saves_dir"
         ;;
     *)
-        echo "Access Denied: Invalid command."
-        exit 1
+        if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then
+            bash -c "$CMD"
+            exit $?
+        else
+            echo "Access Denied: Invalid command."
+            exit 1
+        fi
         ;;
 esac
 
