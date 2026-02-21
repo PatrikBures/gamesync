@@ -30,7 +30,7 @@ func setupTest(t *testing.T) {
 }
 
 func setupTestGames(t *testing.T) {
-	ui.Verbose("setting up games")
+	ui.Verbose("setting up games\n")
 
 	tmpDir, err := os.MkdirTemp("", "gamesync_test_saves_")
 	if err != nil {

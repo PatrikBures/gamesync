@@ -46,6 +46,8 @@ func Get(root string) (map[string]FileMeta, error) {
 		return nil, fmt.Errorf("walking dir: %w", err)
 	}
 
+	ui.Debug("got state of dir: %s\n", root)
+
 	return results, nil
 }
 
