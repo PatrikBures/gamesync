@@ -26,7 +26,7 @@
       - ARCH: [amd64, arm64]
 
 build-server-binary:
-  stage: prepare-test
+  stage: build-bin
   image: $GOLANG_IMAGE
   extends: 
     - .build-rule
