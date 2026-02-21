@@ -18,6 +18,7 @@ func setupTest(t *testing.T) {
 
 	ui.SetLevel(ui.LevelDebug)
 
+	current.Config = config.Config{}
 	current.Config.Server.User = "test-user"
 	current.Config.Server.Host = "server"
 	current.Config.Server.Port = "22"
