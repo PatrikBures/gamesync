@@ -39,7 +39,7 @@ lint-golang:
   image: golangci/golangci-lint:v2.8-alpine
   extends:
     - .golang-before-merge
-    - .gocache
+    - .gocache-lint
   script:
     - golangci-lint run
 

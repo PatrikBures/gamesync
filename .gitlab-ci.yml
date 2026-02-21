@@ -31,6 +31,13 @@ variables:
     paths:
       - .go/pkg/mod
       - .go-build
+
+.gocache-lint:
+  extends: .gocache
+  cache:
+    paths:
+      - .go/pkg/mod
+      - .go-build
       - .golangci-lint
 
 .setup-buildah:
