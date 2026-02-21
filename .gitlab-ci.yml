@@ -27,7 +27,7 @@ variables:
     key: 
       files:
         - go.sum
-      prefix: lint-client
+      prefix: "go-${CI_JOB_NAME}-${CI_NODE_INDEX}"
     paths:
       - .go/pkg/mod
       - .go-build
