@@ -24,6 +24,7 @@ func TestRemoteLs(t *testing.T) {
 	t.Cleanup(func() {
 		ui.OutWriter = oldOut
 		ui.SetLevel(oldLevel)
+		cleanupRemoteGame(t, "game_1")
 	})
 
 	cmd := newRemoteLsCmd()
