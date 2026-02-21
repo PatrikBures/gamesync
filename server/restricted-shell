@@ -12,7 +12,6 @@ export RESTIC_PASSWORD_FILE="/config/restic_passwords/$USER"
 CMD=$SSH_ORIGINAL_COMMAND
 
 if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then
-    >&2 echo "Running command unrestricted, only use this for testing!"
     bash -c "$CMD"
     exit $?
 fi
