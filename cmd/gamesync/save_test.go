@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"gamesync/internal/config"
 	"gamesync/internal/ui"
 	"testing"
 
@@ -40,4 +41,48 @@ func getExpectedLs() string {
 		out = fmt.Sprintf("%s%s\n", out, game.ID)
 	}
 	return out
+}
+
+
+
+
+func TestSaveAdd(t *testing.T) {
+	setupTest(t)
+
+	var cmd *saveAddCmd
+	var err error
+	var game config.GameConfig
+
+	game, _, err = config.GetGame(current, "game_1")
+	require.NoError(t, err)
+
+	cmd = testSaveAddCmd(game.ID, game.SavePath, false)
+	require.Error(t, cmd.cmd.Execute())
+
+	cmd = testSaveAddCmd(game.ID, game.SavePath, true)
+	require.NoError(t, cmd.cmd.Execute())
+
+
+
+	_, _, err = config.GetGame(current, "game_2")
+	require.Error(t, err)
+
+	cmd = testSaveAddCmd("game_2", game.SavePath, true)
+	require.NoError(t, cmd.cmd.Execute())
+
+	_, _, err = config.GetGame(current, "game_2")
+	require.NoError(t, err)
+}
+
+func testSaveAddCmd(gameID string, savePath string, update bool) *saveAddCmd {
+	cmd := newSaveAddCmd()
+
+	cmd.cmd.SilenceUsage = true
+	cmd.cmd.SilenceErrors = true
+
+	cmd.opts.update = update
+
+	cmd.cmd.SetArgs([]string{gameID, savePath})
+
+	return cmd
 }
