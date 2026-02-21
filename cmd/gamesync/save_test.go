@@ -87,3 +87,28 @@ func testSaveAddCmd(gameID string, savePath string, update bool) *saveAddCmd {
 
 	return cmd
 }
+
+
+
+func TestSaveRm(t *testing.T) {
+	setupTest(t)
+
+	var cmd *saveRmCmd
+
+	cmd = testSaveRmCmd("game_1")
+	require.NoError(t, cmd.cmd.Execute())
+
+	cmd = testSaveRmCmd("game_1")
+	require.Error(t, cmd.cmd.Execute())
+}
+
+func testSaveRmCmd(gameID string) *saveRmCmd {
+	cmd := newSaveRmCmd()
+
+	cmd.cmd.SilenceUsage = true
+	cmd.cmd.SilenceErrors = true
+
+	cmd.cmd.SetArgs([]string{gameID})
+
+	return cmd
+}
