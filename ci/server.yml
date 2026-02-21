@@ -13,6 +13,13 @@
     - if: $DEPLOY
       changes: *server-changes
 
+.build-rule:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *server-changes
+    - if: $DEPLOY
+      changes: *server-changes
+
 .arch:
   parallel:
     matrix:
@@ -22,8 +29,7 @@ build-server-binary:
   stage: prepare-test
   image: $GOLANG_IMAGE
   extends: 
-    - .container
-    - .container-deploy
+    - build-rule
     - .arch
     - .gocache
   before_script:
