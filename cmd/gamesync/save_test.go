@@ -67,6 +67,7 @@ func TestSaveAdd(t *testing.T) {
 	_, _, err = config.GetGame(current, "game_2")
 	require.Error(t, err)
 
+	// using game_1's savepath for testing, there is not a variable currently which stores game_2's save path
 	cmd = testSaveAddCmd("game_2", game.SavePath, true)
 	require.NoError(t, cmd.cmd.Execute())
 
