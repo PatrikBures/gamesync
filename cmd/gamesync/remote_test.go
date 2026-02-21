@@ -18,8 +18,12 @@ func TestRemoteLs(t *testing.T) {
 	oldOut := ui.OutWriter
 	ui.OutWriter = &buf
 
+	oldLevel := ui.GetLevel()
+	ui.SetLevel(ui.LevelNormal)
+
 	t.Cleanup(func() {
 		ui.OutWriter = oldOut
+		ui.SetLevel(oldLevel)
 	})
 
 	cmd := newRemoteLsCmd()
