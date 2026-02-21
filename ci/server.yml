@@ -44,7 +44,7 @@ build-server-binary:
     expire_in: 15 min
 
 build-server-container:
-  stage: build
+  stage: build-con
   extends:
     - .container-deploy
     - .setup-buildah

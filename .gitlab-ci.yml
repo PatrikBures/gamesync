@@ -1,8 +1,9 @@
 stages:
   - lint
+  - build-bin
   - prepare-test
   - test
-  - build
+  - build-con
   - release
 
 variables:
