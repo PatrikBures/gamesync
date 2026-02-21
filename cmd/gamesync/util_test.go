@@ -30,6 +30,8 @@ func setupTest(t *testing.T) {
 }
 
 func setupTestGames(t *testing.T) {
+	ui.Verbose("setting up games")
+
 	tmpDir, err := os.MkdirTemp("", "gamesync_test_saves_")
 	if err != nil {
 		t.Fatal(err)
@@ -74,6 +76,8 @@ func createTestGame(t *testing.T, path string) {
 	if _, err := f.WriteString("test"); err != nil {
 		t.Fatal(err)
 	}
+
+	ui.Verbose("Created test game at %s \n", path)
 }
 
 func setupTestStateDir(t *testing.T) {
