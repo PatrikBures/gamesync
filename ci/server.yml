@@ -23,6 +23,7 @@ build-server-binary:
   image: $GOLANG_IMAGE
   extends: 
     - .container
+    - .container-deploy
     - .arch
     - .gocache
   before_script:
