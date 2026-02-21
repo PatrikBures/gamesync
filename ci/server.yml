@@ -29,7 +29,7 @@ build-server-binary:
   stage: prepare-test
   image: $GOLANG_IMAGE
   extends: 
-    - build-rule
+    - .build-rule
     - .arch
     - .gocache
   before_script:
