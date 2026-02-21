@@ -7,7 +7,6 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-
 func Load(current *Current) error {
 
 	data, err := os.ReadFile(current.ConfigPath)
