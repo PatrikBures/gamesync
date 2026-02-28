@@ -93,8 +93,10 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 
 	switch compareResult {
 	case state.SyncStateUnchanged:
-		ui.Info("Already in sync, nothing to do.\n")
-		return nil
+		if ! force {
+			ui.Info("Already in sync, nothing to do.\n")
+			return nil
+		}
 	case state.SyncStateError:
 		return fmt.Errorf("error during state comparison: %v", err)
 	}
