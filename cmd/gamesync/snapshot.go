@@ -131,7 +131,7 @@ func newSnapshotPasswordCmd() *snapshotPasswordCmd {
 
 	cmd := &cobra.Command{
 		Use: "password [NEW_PASSWORD]",
-		Short: "Replaces restic password. If no password provided, lists current one",
+		Short: "Replaces restic password. If no password provided, lists the current one",
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
