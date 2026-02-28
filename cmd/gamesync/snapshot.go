@@ -135,12 +135,19 @@ func newSnapshotPasswordCmd() *snapshotPasswordCmd {
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			password, err := syncer.GetResticPassword(current)
-			if err != nil {
-				return err
+			if len(args) == 0 {
+				password, err := syncer.GetResticPassword(current)
+				if err != nil {
+					return err
+				}
+
+				ui.Info("%s\n", password)
+			} else {
+				if err := syncer.SetResticPassword(current, args[0]); err != nil {
+					return err
+				}
 			}
 
-			ui.Info("%s\n", password)
 
 			return nil
 		},

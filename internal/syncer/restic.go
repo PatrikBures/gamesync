@@ -88,3 +88,23 @@ func GetResticPassword(current config.Current) (string, error) {
 
 	return output, err
 }
+
+func SetResticPassword(current config.Current, newPassword string) (error) {
+	if newPassword == "" {
+		return fmt.Errorf("password can not be empty")
+	}
+
+	
+	file, err := os.CreateTemp("", "gamesync_secret_")
+	if err != nil {
+		return fmt.Errorf("error creating temp file: %w", err)
+	}
+
+	_, err = file.WriteString(newPassword)
+	if err != nil {
+		return fmt.Errorf("error writing password to temp file: %s", err)
+	}
+
+
+	return nil
+}
