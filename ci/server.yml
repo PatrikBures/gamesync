@@ -74,6 +74,7 @@ build-server-container-test:
   extends:
     - .container
     - .setup-buildah
+    - .golang-before-merge
   needs:
     - job: build-server-binary
       artifacts: true
