@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"gamesync/internal/syncer"
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -28,6 +29,7 @@ func newSnapshotCmd() *snapshotCmd {
 
 	cmd.AddCommand(newSnapshotLsCmd().cmd)
 	cmd.AddCommand(newSnapshotCreateCmd().cmd)
+	cmd.AddCommand(newSnapshotPasswordCmd().cmd)
 
 	root.cmd = cmd
 
@@ -110,6 +112,35 @@ func newSnapshotLsCmd() *snapshotLsCmd {
 			if err := w.Flush(); err != nil {
 				return fmt.Errorf("error flushing: %v", err)
 			}
+
+			return nil
+		},
+	}
+
+	root.cmd = cmd
+
+	return &root
+}
+
+type snapshotPasswordCmd struct {
+	cmd *cobra.Command
+}
+
+func newSnapshotPasswordCmd() *snapshotPasswordCmd {
+	root := snapshotPasswordCmd{}
+
+	cmd := &cobra.Command{
+		Use: "password [NEW_PASSWORD]",
+		Short: "Replaces restic password. If no password provided, lists current one",
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			password, err := syncer.GetResticPassword(current)
+			if err != nil {
+				return err
+			}
+
+			ui.Info("%s\n", password)
 
 			return nil
 		},

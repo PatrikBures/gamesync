@@ -79,3 +79,12 @@ func ListSnapshots(current config.Current, gameID string) ([]Snapshot, error) {
 
 	return snapshots, nil
 }
+
+func GetResticPassword(current config.Current) (string, error) {
+	output, err := RunCmd(current, "get-restic-password")
+	if err != nil {
+		return "", fmt.Errorf("getting restic password: %w", err)
+	}
+
+	return output, err
+}

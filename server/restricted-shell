@@ -40,6 +40,9 @@ case "$CMD" in
     list-saves)
         ls -1 "$saves_dir"
         ;;
+    get-restic-password)
+        cat "$RESTIC_PASSWORD_FILE"
+        ;;
     *)
         if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then
             bash -c "$CMD"
