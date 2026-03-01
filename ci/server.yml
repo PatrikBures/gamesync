@@ -11,14 +11,12 @@
 .container-deploy:
   rules:
     - if: $DEPLOY
-      changes: *server-changes
 
 .build-rule:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *server-changes
     - if: $DEPLOY
-      changes: *server-changes
 
 .arch:
   parallel:
