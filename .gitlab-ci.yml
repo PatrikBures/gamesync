@@ -23,6 +23,8 @@ variables:
   GOCACHE: $CI_PROJECT_DIR/.go-build
   GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.golangci-lint
 
+  CGO_ENABLED: 0
+
 .gocache:
   cache:
     key: 
