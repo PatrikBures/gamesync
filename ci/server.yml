@@ -16,6 +16,11 @@
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *server-changes
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.go"
+        - ".gitlab-ci.yml"
+        - "ci/*"
     - if: $DEPLOY
 
 .arch:
@@ -30,7 +35,6 @@ build-server-binary:
     - .build-rule
     - .arch
     - .gocache
-    - .golang-before-merge
   before_script:
     - export GOOS=linux
     - export GOARCH=$ARCH
