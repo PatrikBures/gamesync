@@ -7,7 +7,7 @@ fi
 saves_dir="/data/saves/$USER"
 
 export RESTIC_REPOSITORY="/data/repos/$USER"
-export RESTIC_PASSWORD_FILE="/config/restic_passwords/$USER"
+export RESTIC_PASSWORD_FILE="/config/restic_passwords/$USER/current"
 
 CMD=$SSH_ORIGINAL_COMMAND
 
@@ -34,11 +34,17 @@ case "$CMD" in
     rm\ *)
         bash -c "$CMD"
         ;;
+    mv\ *)
+        bash -c "$CMD"
+        ;;
     gamesync-state\ *)
         bash -c "$CMD"
         ;;
     list-saves)
         ls -1 "$saves_dir"
+        ;;
+    get-restic-password)
+        cat "$RESTIC_PASSWORD_FILE"
         ;;
     *)
         if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then

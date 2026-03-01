@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"gamesync/internal/syncer"
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -28,6 +30,7 @@ func newSnapshotCmd() *snapshotCmd {
 
 	cmd.AddCommand(newSnapshotLsCmd().cmd)
 	cmd.AddCommand(newSnapshotCreateCmd().cmd)
+	cmd.AddCommand(newSnapshotPasswordCmd().cmd)
 
 	root.cmd = cmd
 
@@ -112,6 +115,89 @@ func newSnapshotLsCmd() *snapshotLsCmd {
 			}
 
 			return nil
+		},
+	}
+
+	root.cmd = cmd
+
+	return &root
+}
+
+type snapshotPasswordCmd struct {
+	cmd *cobra.Command
+}
+func newSnapshotPasswordCmd() *snapshotPasswordCmd {
+	root := snapshotPasswordCmd{}
+
+	cmd := &cobra.Command{
+		Use: "password",
+		Short: "Manage restic password",
+	}
+
+	cmd.AddCommand(newSnapshotPasswordGetCmd().cmd)
+	cmd.AddCommand(newSnapshotPasswordSetCmd().cmd)
+
+	root.cmd = cmd
+
+	return &root
+}
+
+type snapshotPasswordGetCmd struct {
+	cmd *cobra.Command
+}
+func newSnapshotPasswordGetCmd() *snapshotPasswordGetCmd {
+	root := snapshotPasswordGetCmd{}
+
+	cmd := &cobra.Command{
+		Use: "get",
+		Short: "Prints current restic password",
+		Args: cobra.MaximumNArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			password, err := syncer.GetResticPassword(current)
+			if err != nil {
+				return err
+			}
+
+			ui.Info("%s\n", password)
+
+			return nil
+		},
+	}
+
+	root.cmd = cmd
+
+	return &root
+}
+
+type snapshotPasswordSetCmd struct {
+	cmd *cobra.Command
+}
+func newSnapshotPasswordSetCmd() *snapshotPasswordSetCmd {
+	root := snapshotPasswordSetCmd{}
+
+	cmd := &cobra.Command{
+		Use: "set",
+		Short: "Set new restic password",
+		Args: cobra.MaximumNArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			fmt.Printf("Input new password: ")
+
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Scan()
+			newPassword := scanner.Text()
+
+			ui.Info("Updating restic password...\n")
+
+			if err := syncer.SetResticPassword(current, newPassword); err != nil {
+				return err
+			}
+
+			ui.Info("Successfully updated restic password\n")
+
+			return nil
+
 		},
 	}
 
