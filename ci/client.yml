@@ -9,10 +9,6 @@
 .golang-deploy:
   rules:
     - if: $DEPLOY
-      changes: 
-      - "**/*.go"
-      - ".gitlab-ci.yml"
-      - "ci/*"
 
 .builds:
   parallel:
