@@ -129,10 +129,15 @@ func SetResticPassword(current config.Current, newPassword string) (error) {
 		return fmt.Errorf("error copying new password to remote: %w", err)
 	}
 
-	RunCmd(current, "restic", "key", "passwd", "--new-password-file", remoteNewPassFile)
-
-	RunCmd(current, "mv", "-f", remoteCurrentPassFile, remoteOldPassFile)
-	RunCmd(current, "mv", remoteNewPassFile, remoteCurrentPassFile)
+	if _, err := RunCmd(current, "restic", "key", "passwd", "--new-password-file", remoteNewPassFile); err != nil {
+		return fmt.Errorf("changing restic password (password did not change): %w", err)
+	}
+	if _, err := RunCmd(current, "mv", "-f", remoteCurrentPassFile, remoteOldPassFile); err != nil {
+		return fmt.Errorf("moving old password from %s, to %s: %w", remoteCurrentPassFile, remoteOldPassFile, err)
+	}
+	if _, err := RunCmd(current, "mv", remoteNewPassFile, remoteCurrentPassFile); err != nil {
+		return fmt.Errorf("moving new password from %s, to %s: %w", remoteNewPassFile, remoteCurrentPassFile, err)
+	}
 
 	return nil
 }
