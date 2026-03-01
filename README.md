@@ -23,14 +23,14 @@ gamesync push openttd
 gamesync snapshot create openttd
 ```
 
-## Client env vars
+## Client environmental variables
 
 - __GAMESYNC_CONFIG__: sets the config file to use, does not overwrite --config flag
 - __GAMESYNC_STATE__: sets the state dir where sync states are stored
 
 ## Container environmental variables
 
-- GAMESYNC_LOOP
+- __GAMESYNC_LOOP__
     - when set to a number above 0 it will create users that often in seconds
     - if unset or below 1, only creates user on startup
     - useful if you want to add or remove users without restarting container
