@@ -132,7 +132,7 @@ This command can help you find it:
 ```sh
 find /usr -iname '*NAME*.desktop'
 ```
-Replace NAME with the name of the app or game.
+Replace __NAME__ with the name of the app or game.
 
 2. Then copy that file to your users application directory. Usually located at `~/.local/share/applications`
 
@@ -146,19 +146,19 @@ Exec=gamesync wrap GAME_ID -- [whatever was originally here]
 
 ### Useful wrap flags
 
-- __-n__: Sends notification whenever it pushed, pulled or created a snapshot. Notifying you if it succeded or failed.
-- __-S__ Creates snapshot only if there are changes after pushing. 
-- __--no-pull__: Useful if you want to just try out the wrap command or use as a backup without modifying your local save files.
-- __-e__: Exits on error. For example, if the pull failed it exits, preventing the game from launching.
+- `-n`: Sends notification whenever it pushed, pulled or created a snapshot. Notifying you if it succeded or failed.
+- `-S` Creates snapshot only if there are changes after pushing. 
+- `--no-pull`: Useful if you want to just try out the wrap command or use as a backup without modifying your local save files.
+- `-e`: Exits on error. For example, if the pull failed it exits, preventing the game from launching.
 
 ## Client environmental variables
 
-- __GAMESYNC_CONFIG__: sets the config file to use, does not overwrite --config flag
-- __GAMESYNC_STATE__: sets the state dir where sync states are stored
+- `GAMESYNC_CONFIG`: sets the config file to use, does not overwrite --config flag
+- `GAMESYNC_STATE`: sets the state dir where sync states are stored
 
 ## Container environmental variables
 
-- __GAMESYNC_LOOP__
+- `GAMESYNC_LOOP`
     - when set to a number above 0 it will create users that often in seconds
     - if unset or below 1, only creates user on startup
     - useful if you want to add or remove users without restarting container
