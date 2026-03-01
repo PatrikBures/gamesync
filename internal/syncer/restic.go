@@ -97,13 +97,12 @@ func SetResticPassword(current config.Current, newPassword string) (error) {
 		return fmt.Errorf("password can not be empty")
 	}
 
-	
-	file, err := os.CreateTemp("", "gamesync_secret_")
+	tempPassFile, err := os.CreateTemp("", "gamesync_secret_")
 	if err != nil {
 		return fmt.Errorf("error creating temp file: %w", err)
 	}
 
-	_, err = file.WriteString(newPassword)
+	_, err = tempPassFile.WriteString(newPassword)
 	if err != nil {
 		return fmt.Errorf("error writing password to temp file: %s", err)
 	}
@@ -115,7 +114,7 @@ func SetResticPassword(current config.Current, newPassword string) (error) {
 	sshCmd := fmt.Sprintf("ssh -p %s -i %s", current.Config.Server.Port, current.Config.Server.IdentityFile)
 	remotePath := fmt.Sprintf("%s@%s:/%s", current.Config.Server.User, current.Config.Server.Host, remoteNewPassFile)
 
-	cmd := exec.Command("rsync", "-azhPv", "-e", sshCmd, file.Name(), remotePath)
+	cmd := exec.Command("rsync", "-azhPv", "-e", sshCmd, tempPassFile.Name(), remotePath)
 
 	ui.Debug("running rsync command:\n%s\n", cmd.String())
 	if ui.GetLevel() == ui.LevelDebug {
@@ -137,6 +136,10 @@ func SetResticPassword(current config.Current, newPassword string) (error) {
 	}
 	if _, err := RunCmd(current, "mv", remoteNewPassFile, remoteCurrentPassFile); err != nil {
 		return fmt.Errorf("moving new password from %s, to %s: %w", remoteNewPassFile, remoteCurrentPassFile, err)
+	}
+
+	if err := os.RemoveAll(tempPassFile.Name()); err != nil {
+		return fmt.Errorf("removing temp password file: %s: %w", tempPassFile.Name(), err)
 	}
 
 	return nil
