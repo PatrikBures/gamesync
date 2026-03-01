@@ -15,6 +15,12 @@ var current config.Current
 
 type rootCmd struct {
 	cmd *cobra.Command
+	opts rootOpts
+}
+
+type rootOpts struct {
+	verbose bool
+	debug bool
 }
 
 func newRootCmd() *rootCmd {
@@ -46,7 +52,9 @@ func newRootCmd() *rootCmd {
 			if err := config.Load(&current); err != nil {
 				return fmt.Errorf("loading config: %w", err)
 			}
-			if current.Verbose {
+			if root.opts.debug {
+				ui.SetLevel(ui.LevelDebug)
+			} else if root.opts.verbose {
 				ui.SetLevel(ui.LevelVerbose)
 			}
 			return nil
@@ -54,7 +62,8 @@ func newRootCmd() *rootCmd {
 	}
 
 	cmd.PersistentFlags().StringVar(&current.ConfigPath, "config", "", "config file (default ~/.config/gamesync/config.yml)")
-	cmd.PersistentFlags().BoolVarP(&current.Verbose, "verbose", "v", false, "more verbose output")
+	cmd.PersistentFlags().BoolVarP(&root.opts.verbose, "verbose", "v", false, "more verbose output")
+	cmd.PersistentFlags().BoolVarP(&root.opts.debug, "debug", "", false, "debug ouput")
 
 	cmd.AddCommand(
 		newGenDocCmd().cmd,
