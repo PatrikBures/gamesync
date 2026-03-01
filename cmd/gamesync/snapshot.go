@@ -188,11 +188,13 @@ func newSnapshotPasswordSetCmd() *snapshotPasswordSetCmd {
 			scanner.Scan()
 			newPassword := scanner.Text()
 
+			ui.Info("Updating restic password...\n")
+
 			if err := syncer.SetResticPassword(current, newPassword); err != nil {
 				return err
 			}
 
-			ui.Info("Updated restic password")
+			ui.Info("Successfully updated restic password\n")
 
 			return nil
 
