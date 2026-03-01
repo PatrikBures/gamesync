@@ -17,6 +17,8 @@ Snapshots can be created on the remote via the client using restic.
 
 ## Set up config
 
+### Location
+
 the config file is read from
 ```sh
 $XDG_CONFIG_HOME/gamesync/config.yml
@@ -27,14 +29,16 @@ $HOME/.config/gamesync/config.yml
 ```
 based on if __XDG_CONFIG_HOME__ is set
 
-For macs it should be located at
+On a mac, it should be located at
 ```sh
 $HOME/Library/Application/gamesync/config.yml
 ```
 
-when gamesync is ran it will create the dir but not the config.yml which needs to be made manually
+When gamesync is ran it will create the dir but not the config.yml which needs to be made manually
 
-this is the required content of config.yml
+### Configure server
+
+This is the required content of config.yml
 ```yml
 server:
   host: host or ip of the server
@@ -43,13 +47,13 @@ server:
   identity_file: full path to your ssh key
 ```
 
-i would suggest to not write any comments or something as a command will overwrite it. 
+I would suggest to not write any comments as the __save add__ command will overwrite it. 
 
 ## Add games to config
 
 ### Manual way
 
-You can manually type add the games to the config
+You can manually add the games to the config by modifying the config.yml file.
 
 example content of config.yml games:
 
@@ -61,7 +65,7 @@ games:
   save_path: /full path/to/game 2
 ```
 
-the game id is the id you will use in other commands to sync your save files, like the wrap command explained later
+the game id is the id you will use in other commands to sync your save files, like in the wrap command explained later.
 
 ### Using save add command
 
@@ -76,7 +80,8 @@ gamesync save add game_id_1 ~/.local/share/game_1/save
 ```
 _Your shell should convert that into a full path, if not use relative paths or full paths._
 
-And you can also use relative paths
+
+Relative paths can also be used
 ```sh
 cd ~/.local/share
 gamesync save add game_id_1 game_1/save
