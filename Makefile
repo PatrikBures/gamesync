@@ -52,7 +52,7 @@ go-test:
 build-state:
 	@echo "building $(BIN_STATE_NAME)..."
 	mkdir -p bin
-	go build -o bin/$(BIN_STATE_NAME) ./cmd/gamesync-state
+	CGO_ENABLED=0 go build -o bin/$(BIN_STATE_NAME) ./cmd/gamesync-state
 
 build-container: build-state
 	@echo "building container..."
