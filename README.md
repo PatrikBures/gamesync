@@ -28,14 +28,14 @@ gamesync snapshot create openttd
 ### How the wrap command works
 
 The command is formatted like this:
-
+```sh
 gamesync wrap GAME_ID -- COMMAND
+```
 
 Whatever is after "--" will be blindly ran as a command.
 
-All gamesync will do is pull before running the command, and push after the command exited.
-And optionaly create a snapshot using restic with "-s" or "-S" flags.
-_the -S flag does not create a new snapshot if there are no new changes from the previous snapshot, -s always creates a snapshot._
+All that gamesync will do is pull before running the command, and push after the command exited.
+And optionally create a snapshot with restic with "-s" or "-S" flags.
 
 ### Steam
 
@@ -78,11 +78,12 @@ Just in case you regret your modifications.
 Exec=gamesync wrap GAME_ID -- [whatever was originally here]
 ```
 
-### To any of these wrap commands, here are some useful flags
+### Useful wrap flags
 
-- __-n__: Sends notification whenever it pushed, pulled or created a snapshot.
+- __-n__: Sends notification whenever it pushed, pulled or created a snapshot. Notifying you if it succeded or failed.
 - __-S__ Creates snapshot only if there are changes after pushing. 
 - __--no-pull__: Useful if you want to just try out the wrap command or use as a backup without modifying your local save files.
+- __-e__: Exits on error. For example, if the pull failed it exits, preventing the game from launching.
 
 ## Client environmental variables
 
