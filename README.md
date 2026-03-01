@@ -35,7 +35,7 @@ gamesync wrap GAME_ID -- COMMAND
 Whatever is after "--" will be blindly ran as a command.
 
 All that gamesync will do is pull before running the command, and push after the command exited.
-And optionally create a snapshot with restic with "-s" or "-S" flags.
+And optionally create a snapshot using restic with the -s or -S flags.
 
 ### Steam
 
