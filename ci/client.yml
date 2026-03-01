@@ -1,7 +1,7 @@
 .golang-before-merge:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: 
+      changes: &golang-changes
         - "**/*.go"
         - ".gitlab-ci.yml"
         - "ci/*"

@@ -16,6 +16,8 @@
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *server-changes
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *golang-changes
     - if: $DEPLOY
 
 .arch:
@@ -27,11 +29,9 @@ build-server-binary:
   stage: build-bin
   image: $GOLANG_IMAGE
   extends: 
-    - .container-deploy
-    - .container
+    - .build-rule
     - .arch
     - .gocache
-    - .golang-before-merge
   before_script:
     - export GOOS=linux
     - export GOARCH=$ARCH
