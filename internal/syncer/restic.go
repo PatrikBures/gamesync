@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"gamesync/internal/config"
+	"gamesync/internal/ui"
 	"os"
+	"os/exec"
+	"path"
 	"time"
 )
 
@@ -105,6 +108,31 @@ func SetResticPassword(current config.Current, newPassword string) (error) {
 		return fmt.Errorf("error writing password to temp file: %s", err)
 	}
 
+	remoteNewPassFile       := path.Join(config.RemotePasswordsDir, current.Config.Server.User, "new")
+	remoteCurrentPassFile   := path.Join(config.RemotePasswordsDir, current.Config.Server.User, "current")
+	remoteOldPassFile       := path.Join(config.RemotePasswordsDir, current.Config.Server.User, "old")
+
+	sshCmd := fmt.Sprintf("ssh -p %s -i %s", current.Config.Server.Port, current.Config.Server.IdentityFile)
+	remotePath := fmt.Sprintf("%s@%s:/%s", current.Config.Server.User, current.Config.Server.Host, remoteNewPassFile)
+
+	cmd := exec.Command("rsync", "-azhPv", "-e", sshCmd, file.Name(), remotePath)
+
+	ui.Debug("running rsync command:\n%s\n", cmd.String())
+	if ui.GetLevel() == ui.LevelDebug {
+		cmd.Stdout = os.Stdout
+	}
+	if ui.GetLevel() <= ui.LevelError {
+		cmd.Stderr = os.Stderr
+	}
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("error copying new password to remote: %w", err)
+	}
+
+	RunCmd(current, "restic", "key", "passwd", "--new-password-file", remoteNewPassFile)
+
+	RunCmd(current, "mv", "-f", remoteCurrentPassFile, remoteOldPassFile)
+	RunCmd(current, "mv", remoteNewPassFile, remoteCurrentPassFile)
 
 	return nil
 }

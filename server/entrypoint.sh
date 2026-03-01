@@ -53,14 +53,17 @@ create_user() {
 
     echo "created user $user $id"
 
-    RESTIC_PASSWORD_FILE="$RESTIC_PASSWORDS_DIR/${user}"
+    RESTIC_PASSWORD_USER_DIR="$RESTIC_PASSWORDS_DIR/${user}"
+    RESTIC_PASSWORD_FILE="$RESTIC_PASSWORD_USER_DIR/current"
 
     if ! [ -f "$RESTIC_PASSWORD_FILE" ]; then 
-        echo "created restic password for $user at ${RESTIC_PASSWORD_FILE}"
+        mkdir -p "$RESTIC_PASSWORD_USER_DIR"
         random_password > "$RESTIC_PASSWORD_FILE"
+        echo "created restic password for $user at ${RESTIC_PASSWORD_FILE}"
     fi
 
-    chown "$user:$user" "$RESTIC_PASSWORD_FILE"
+    chown "$user:$user" -R "$RESTIC_PASSWORD_USER_DIR"
+    chmod 700 "$RESTIC_PASSWORD_USER_DIR"
     chmod 600 "$RESTIC_PASSWORD_FILE"
 
     id -u "$user" > "$USER_IDS_DIR/$user"
