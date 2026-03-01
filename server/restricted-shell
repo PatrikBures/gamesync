@@ -34,6 +34,9 @@ case "$CMD" in
     rm\ *)
         bash -c "$CMD"
         ;;
+    mv\ *)
+        bash -c "$CMD"
+        ;;
     gamesync-state\ *)
         bash -c "$CMD"
         ;;
