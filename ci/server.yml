@@ -27,7 +27,8 @@ build-server-binary:
   stage: build-bin
   image: $GOLANG_IMAGE
   extends: 
-    - .build-rule
+    - .container-deploy
+    - .container
     - .arch
     - .gocache
     - .golang-before-merge
