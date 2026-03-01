@@ -55,7 +55,7 @@ build-server-container:
       artifacts: true
       parallel:
         matrix:
-          - ARCH: $ARCH
+          - ARCH: ['$[[ matrix.ARCH ]]']
   variables:
     BUILDAH_ISOLATION: chroot
 
@@ -84,7 +84,7 @@ build-server-container-test:
       artifacts: true
       parallel:
         matrix:
-          - ARCH: amd64 
+          - ARCH: ['$[[ matrix.ARCH ]]']
   variables:
     BUILDAH_ISOLATION: chroot
     VERSION: test-job
