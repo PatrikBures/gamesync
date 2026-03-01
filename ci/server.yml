@@ -32,6 +32,7 @@ build-server-binary:
     - .build-rule
     - .arch
     - .gocache
+    - .golang-before-merge
   before_script:
     - export GOOS=linux
     - export GOARCH=$ARCH
