@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -125,31 +126,76 @@ func newSnapshotLsCmd() *snapshotLsCmd {
 type snapshotPasswordCmd struct {
 	cmd *cobra.Command
 }
-
 func newSnapshotPasswordCmd() *snapshotPasswordCmd {
 	root := snapshotPasswordCmd{}
 
 	cmd := &cobra.Command{
-		Use: "password [NEW_PASSWORD]",
-		Short: "Replaces restic password. If no password provided, lists the current one",
-		Args: cobra.MaximumNArgs(1),
+		Use: "password",
+		Short: "Manage restic password",
+	}
+
+	cmd.AddCommand(newSnapshotPasswordGetCmd().cmd)
+	cmd.AddCommand(newSnapshotPasswordSetCmd().cmd)
+
+	root.cmd = cmd
+
+	return &root
+}
+
+type snapshotPasswordGetCmd struct {
+	cmd *cobra.Command
+}
+func newSnapshotPasswordGetCmd() *snapshotPasswordGetCmd {
+	root := snapshotPasswordGetCmd{}
+
+	cmd := &cobra.Command{
+		Use: "get",
+		Short: "Prints current restic password",
+		Args: cobra.MaximumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			if len(args) == 0 {
-				password, err := syncer.GetResticPassword(current)
-				if err != nil {
-					return err
-				}
-
-				ui.Info("%s\n", password)
-			} else {
-				if err := syncer.SetResticPassword(current, args[0]); err != nil {
-					return err
-				}
+			password, err := syncer.GetResticPassword(current)
+			if err != nil {
+				return err
 			}
 
+			ui.Info("%s\n", password)
 
 			return nil
+		},
+	}
+
+	root.cmd = cmd
+
+	return &root
+}
+
+type snapshotPasswordSetCmd struct {
+	cmd *cobra.Command
+}
+func newSnapshotPasswordSetCmd() *snapshotPasswordSetCmd {
+	root := snapshotPasswordSetCmd{}
+
+	cmd := &cobra.Command{
+		Use: "set",
+		Short: "Set new restic password",
+		Args: cobra.MaximumNArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			fmt.Printf("Input new password: ")
+
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Scan()
+			newPassword := scanner.Text()
+
+			if err := syncer.SetResticPassword(current, newPassword); err != nil {
+				return err
+			}
+
+			ui.Info("Updated restic password")
+
+			return nil
+
 		},
 	}
 
