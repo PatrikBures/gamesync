@@ -53,6 +53,9 @@ build-server-container:
   needs:
     - job: build-server-binary
       artifacts: true
+      parallel:
+        matrix:
+          - ARCH: $ARCH
   variables:
     BUILDAH_ISOLATION: chroot
 
@@ -79,6 +82,9 @@ build-server-container-test:
   needs:
     - job: build-server-binary
       artifacts: true
+      parallel:
+        matrix:
+          - ARCH: amd64 
   variables:
     BUILDAH_ISOLATION: chroot
     VERSION: test-job
