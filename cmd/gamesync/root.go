@@ -84,6 +84,7 @@ func newRootCmd() *rootCmd {
 }
 
 func Execute() {
+	ui.DialogConflict("testgame", 98723487, 987234987)
 	if err := newRootCmd().cmd.Execute(); err != nil {
 		os.Exit(1)
 	}

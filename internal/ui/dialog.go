@@ -54,7 +54,7 @@ func DialogConflict(gameID string, dateTimeRemote int64, dateTimeLocal int64) (C
 		}
 	}
 	if pickedType == ConflictError {
-		return ConflictCancel, fmt.Errorf("Invalid conflict option: %s", pickedOpt)
+		return ConflictCancel, fmt.Errorf("invalid conflict option: %s", pickedOpt)
 	}
 
 	Debug("picked: %s, %d\n", pickedOpt, pickedType)
