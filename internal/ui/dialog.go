@@ -22,12 +22,12 @@ type conflict struct {
 	msg string
 }
 
-func DialogConflict(gameID string, dateTimeRemote int64, dateTimeLocal int64) (ConflictType, error) {
+func DialogConflict(gameID string, modTimeRemote int64, modTimeLocal int64) (ConflictType, error) {
 
 	conflicts := []conflict{
 		{ conflictType: ConflictCancel, msg: "Cancel launch" },
-		{ conflictType: ConflictPull,   msg: fmt.Sprintf("Force pull, latest remote %s", time.Unix(dateTimeRemote, 0).Format("2006-01-02 15:04:05")) },
-		{ conflictType: ConflictPush,   msg: fmt.Sprintf("Force push, latest local %s",  time.Unix(dateTimeLocal,  0).Format("2006-01-02 15:04:05")) },
+		{ conflictType: ConflictPull,   msg: fmt.Sprintf("Force pull, latest remote %s", time.Unix(modTimeRemote, 0).Format("2006-01-02 15:04:05")) },
+		{ conflictType: ConflictPush,   msg: fmt.Sprintf("Force push, latest local %s",  time.Unix(modTimeLocal,  0).Format("2006-01-02 15:04:05")) },
 		{ conflictType: ConflictIgnore, msg: "Launch game, ignoring conflict (Not recommended)" },
 	}
 
