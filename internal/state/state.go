@@ -138,3 +138,16 @@ func stateEqual(state1 map[string]FileMeta, state2 map[string]FileMeta, loose bo
 	ui.Verbose("state 1 and 2 were same\n")
 	return true
 }
+
+func LatestModTime(state map[string]FileMeta) int64 {
+	var latestModTime int64
+	latestModTime = 0
+
+	for _, meta := range state {
+		if latestModTime < meta.ModTime {
+			latestModTime = meta.ModTime
+		}
+	}
+
+	return latestModTime
+}
