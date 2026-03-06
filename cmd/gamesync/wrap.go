@@ -67,6 +67,7 @@ func newWrapCmd() *wrapCmd {
 					if root.opts.exitOnError { return err }
 				} else {
 					if root.opts.notify { ui.Notify("sucess", "pulling save") }
+					ui.Info("Synced save for %s\n", gameID)
 				}
 				if pullHandled == syncer.HandledCancel {
 					return fmt.Errorf("cancelled launch of %s", gameID)
@@ -106,6 +107,7 @@ func newWrapCmd() *wrapCmd {
 					if root.opts.exitOnError { return err }
 				} else {
 					if root.opts.notify { ui.Notify("sucess", "pushing save") }
+					ui.Info("Synced save for %s\n", gameID)
 				}
 				if pushHandled == syncer.HandledCancel {
 					return fmt.Errorf("cancelled push")

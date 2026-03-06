@@ -179,16 +179,18 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 		}
 		switch solution {
 		case ui.ConflictPush:
+			ui.Info("Resolved conflict by force pushing\n")
 			if err := push(current, game); err != nil { return HandledResolve, err }
 			newStateToSave = localState
 		case ui.ConflictPull:
+			ui.Info("Resolved conflict by force pulling\n")
 			if err := pull(current, game); err != nil { return HandledResolve, err }
 			newStateToSave = remoteState
 		case ui.ConflictCancel:
-			ui.Verbose("Cancelled")
+			ui.Verbose("Cancelled conflict\n")
 			return HandledCancel, nil
 		case ui.ConflictIgnore:
-			ui.Verbose("Ignored")
+			ui.Verbose("Ignored conflict\n")
 			return HandledIgnore, nil
 		case ui.ConflictError:
 			return HandledError, fmt.Errorf("somehow returned an error from dialog conflict")
