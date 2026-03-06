@@ -55,15 +55,22 @@ func newWrapCmd() *wrapCmd {
 
 			gameID := userArgs[0]
 
+
 			// pulls
+			var pullHandled syncer.HandledChoice
 			if !root.opts.noPull {
-				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.forcePull, true, root.opts.handleConflict); err != nil {
+				var err error
+				pullHandled, err = syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.forcePull, true, root.opts.handleConflict)
+				if err != nil {
 					ui.Info("WARNING: Pulling save failed: %v\n", err)
 					if root.opts.notify { ui.Notify("error", "pulling save") }
 					if root.opts.exitOnError { return err }
 				} else {
 					ui.Info("Pulled game\n")
 					if root.opts.notify { ui.Notify("sucess", "pulling save") }
+				}
+				if pullHandled == syncer.HandledCancel {
+					return fmt.Errorf("Canceled launch of %s", gameID)
 				}
 			}
 
@@ -87,13 +94,23 @@ func newWrapCmd() *wrapCmd {
 
 			// pushes
 			if !root.opts.noPush {
-				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.forcePush, true, root.opts.handleConflict); err != nil {
+
+				pullHandleConflict := root.opts.handleConflict
+				if pullHandled == syncer.HandledIgnore {
+					pullHandleConflict = false
+				}
+
+				pushHandled, err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.forcePush, true, pullHandleConflict)
+				if ; err != nil {
 					ui.Info("WARNING: Pushing save failed: %v\n", err)
 					if root.opts.notify { ui.Notify("error", "pushing save") }
 					if root.opts.exitOnError { return err }
 				} else {
 					ui.Info("Pushed game\n")
 					if root.opts.notify { ui.Notify("sucess", "pushing save") }
+				}
+				if pushHandled == syncer.HandledCancel {
+					return fmt.Errorf("Cancelled push")
 				}
 			}
 

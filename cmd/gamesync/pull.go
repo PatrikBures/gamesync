@@ -29,7 +29,7 @@ func newPullCmd() *pullCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			gameID := args[0]
 
-			if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.force, true, false); err != nil {
+			if _, err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.force, true, false); err != nil {
 				return fmt.Errorf("error pulling: %v", err)
 			}
 

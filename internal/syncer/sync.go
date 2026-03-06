@@ -58,35 +58,43 @@ const (
 	ModePull
 )
 
-func HandleSync(current config.Current, gameID string, mode SyncMode, force bool, updateState bool, handleConflict bool) error {
+type HandledChoice int
+const (
+	HandledIgnore HandledChoice = iota
+	HandledCancel
+	HandledResolve
+	HandledError
+)
+
+func HandleSync(current config.Current, gameID string, mode SyncMode, force bool, updateState bool, handleConflict bool) (HandledChoice, error) {
 	game, _, err := config.GetGame(current, gameID)
 	if err != nil {
-		return fmt.Errorf("getting game: %v", err)
+		return HandledError, fmt.Errorf("getting game: %v", err)
 	}
 
 	stateDir, err := config.GetStateDir()
 	if err != nil {
-		return fmt.Errorf("getting state dir: %v", err)
+		return HandledError, fmt.Errorf("getting state dir: %v", err)
 	}
 
 	localState, err := state.Get(game.SavePath)
 	if err != nil {
-		return fmt.Errorf("getting local state: %v", err)
+		return HandledError, fmt.Errorf("getting local state: %v", err)
 	}
 
 	oldLocalState, err := state.GetOld(current, game.ID)
 	if err != nil {
-		return fmt.Errorf("getting old local state: %v", err)
+		return HandledError, fmt.Errorf("getting old local state: %v", err)
 	}
 
 	remoteState, err := GetRemoteState(current, game.ID)
 	if err != nil {
-		return fmt.Errorf("getting remote state: %v", err)
+		return HandledError, fmt.Errorf("getting remote state: %v", err)
 	}
 
 	compareResult, err := state.Compare(localState, oldLocalState, remoteState, false)
 	if err != nil {
-		return fmt.Errorf("comparing states: %v", err)
+		return HandledError, fmt.Errorf("comparing states: %v", err)
 	}
 
 	var newStateToSave map[string]state.FileMeta = nil
@@ -95,10 +103,10 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 	case state.SyncStateUnchanged:
 		if ! force {
 			ui.Info("Already in sync, nothing to do.\n")
-			return nil
+			return HandledResolve, nil
 		}
 	case state.SyncStateError:
-		return fmt.Errorf("error during state comparison: %v", err)
+		return HandledError, fmt.Errorf("error during state comparison: %v", err)
 	}
 
 	var conflictErr error
@@ -110,11 +118,11 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 			conflictErr = fmt.Errorf("conflict, remote and local changes")
 		case state.SyncStatePush:
 			ui.Info("Pushing...\n")
-			if err := push(current, game); err != nil { return err }
+			if err := push(current, game); err != nil { return HandledError, err }
 			newStateToSave = localState
 		case state.SyncStatePull:
 			ui.Info("Pulling...\n")
-			if err := pull(current, game); err != nil { return err }
+			if err := pull(current, game); err != nil { return HandledError, err }
 			newStateToSave = remoteState
 		}
 	case ModePush:
@@ -129,12 +137,12 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 			ui.Info("Pushing...\n")
 		case state.SyncStatePull:
 			if !force {
-				return fmt.Errorf("aborted: unsynced remote changes")
+				return HandledError, fmt.Errorf("aborted: unsynced remote changes")
 			}
 			ui.Info("Force pushing, overwriting newer remote changes...\n")
 		}
 		if conflictErr == nil {
-			if err := push(current, game); err != nil { return err }
+			if err := push(current, game); err != nil { return HandledError, err }
 			newStateToSave = localState
 		}
 	case ModePull:
@@ -147,54 +155,56 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 			}
 		case state.SyncStatePush:
 			if !force {
-				return fmt.Errorf("aborted: unsynced local changes")
+				return HandledError, fmt.Errorf("aborted: unsynced local changes")
 			}
 			ui.Info("Force pulling, overwriting newer local changes...\n")
 		case state.SyncStatePull:
 			ui.Info("Pulling...\n")
 		}
 		if conflictErr == nil {
-			if err := pull(current, game); err != nil { return err }
+			if err := pull(current, game); err != nil { return HandledError, err }
 			newStateToSave = remoteState
 		}
 	}
 
 	if conflictErr != nil && ! handleConflict {
-		return conflictErr
+		return HandledError, conflictErr
 	} else if conflictErr != nil && handleConflict {
 		latestLocalModTime  := state.LatestModTime(localState)
 		latestRemoteModTime := state.LatestModTime(remoteState)
 
 		solution, err := ui.DialogConflict(gameID, latestLocalModTime, latestRemoteModTime)
 		if err != nil {
-			return err
+			return HandledError, err
 		}
 		switch solution {
 		case ui.ConflictPush:
-			if err := push(current, game); err != nil { return err }
+			if err := push(current, game); err != nil { return HandledResolve, err }
 			newStateToSave = localState
 		case ui.ConflictPull:
-			if err := pull(current, game); err != nil { return err }
+			if err := pull(current, game); err != nil { return HandledResolve, err }
 			newStateToSave = remoteState
 		case ui.ConflictCancel:
 			ui.Verbose("Cancelled")
+			return HandledCancel, nil
 		case ui.ConflictIgnore:
 			ui.Verbose("Ignored")
+			return HandledIgnore, nil
 		case ui.ConflictError:
-			return fmt.Errorf("somehow returned an error from dialog conflict")
+			return HandledError, fmt.Errorf("somehow returned an error from dialog conflict")
 		default:
-			return fmt.Errorf("unhandled Conflict enum")
+			return HandledError, fmt.Errorf("unhandled Conflict enum")
 		}
 	}
 
 	if newStateToSave != nil && updateState {
 		stateFile := filepath.Join(stateDir, game.ID+".json")
 		if err := state.Write(newStateToSave, stateFile); err != nil {
-			return fmt.Errorf("writing state to file: %s: %v",stateFile, err)
+			return HandledError, fmt.Errorf("writing state to file: %s: %v",stateFile, err)
 		}
 		ui.Info("Updated state file: %s\n", stateFile)
 	}
-	return nil
+	return HandledResolve, nil
 }
 
 func pull(current config.Current, game config.GameConfig) error {
