@@ -22,7 +22,7 @@ type conflict struct {
 	msg string
 }
 
-func DialogConflict(gameID string, modTimeRemote int64, modTimeLocal int64) (ConflictType, error) {
+func DialogConflict(gameID string, modTimeLocal int64, modTimeRemote int64) (ConflictType, error) {
 
 	conflicts := []conflict{
 		{ conflictType: ConflictCancel, msg: "Cancel launch" },
