@@ -25,6 +25,7 @@ type wrapOpts struct {
 	noPush			bool
 	forcePush		bool
 	exitOnError 	bool
+	handleConflict  bool
 }
 
 func newWrapCmd() *wrapCmd {
@@ -56,7 +57,7 @@ func newWrapCmd() *wrapCmd {
 
 			// pulls
 			if !root.opts.noPull {
-				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.forcePull, true); err != nil {
+				if err := syncer.HandleSync(current, gameID, syncer.ModePull, root.opts.forcePull, true, root.opts.handleConflict); err != nil {
 					ui.Info("WARNING: Pulling save failed: %v\n", err)
 					if root.opts.notify { ui.Notify("error", "pulling save") }
 					if root.opts.exitOnError { return err }
@@ -86,7 +87,7 @@ func newWrapCmd() *wrapCmd {
 
 			// pushes
 			if !root.opts.noPush {
-				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.forcePush, true); err != nil {
+				if err := syncer.HandleSync(current, gameID, syncer.ModePush, root.opts.forcePush, true, root.opts.handleConflict); err != nil {
 					ui.Info("WARNING: Pushing save failed: %v\n", err)
 					if root.opts.notify { ui.Notify("error", "pushing save") }
 					if root.opts.exitOnError { return err }
@@ -125,6 +126,8 @@ func newWrapCmd() *wrapCmd {
 
 	cmd.Flags().BoolVarP(&root.opts.noPush, "no-push", "", false, "")
 	cmd.Flags().BoolVarP(&root.opts.forcePull, "force-push","" , false, "")
+
+	cmd.Flags().BoolVarP(&root.opts.handleConflict, "handle-conflict", "", false, "Opens a ui to let user pick handle method")
 
 	root.cmd = cmd
 
