@@ -21,7 +21,7 @@ func newSyncCmd() *syncCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			gameID := args[0]
 
-			if err := syncer.HandleSync(current, gameID, syncer.ModeAuto, false, true); err != nil {
+			if _, err := syncer.HandleSync(current, gameID, syncer.ModeAuto, false, true, false); err != nil {
 				return fmt.Errorf("error syncing game: %v", err)
 			}
 
