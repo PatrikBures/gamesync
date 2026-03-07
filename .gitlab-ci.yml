@@ -71,6 +71,7 @@ workflow:
     - when: always
     
 include:
+  - local: 'ci/common.yml'
   - local: 'ci/client.yml'
   - local: 'ci/server.yml'
   - local: 'ci/test.yml'
