@@ -1,0 +1,7 @@
+.glab:
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - export GITLAB_TOKEN=$RELEASE_TOKEN
+    - export GITLAB_REPO=$CI_PROJECT_PATH
+    - export GITLAB_HOST=$CI_SERVER_URL
