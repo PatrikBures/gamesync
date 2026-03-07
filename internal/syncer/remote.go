@@ -13,7 +13,7 @@ import (
 
 func RemoveSaveGame(current config.Current, gameID string) (string, error) {
 	output, err := RunCmd(current.Config.Server, "rm", "-r", 
-		fmt.Sprintf("/data/saves/%s/%s", current.Config.Server.User, gameID))
+		fmt.Sprintf("%s/%s/%s", config.RemoteSavesDir, current.Config.Server.User, gameID))
 
 	if err != nil {
 		return output, err

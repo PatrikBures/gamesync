@@ -32,7 +32,7 @@ func initRepo(current config.Current) error {
 }
 
 func CreateSnapshot(current config.Current, gameID string, skipUnchanged bool) error {
-	saveGame := fmt.Sprintf("/data/saves/%s/%s", current.Config.Server.User, gameID)
+	saveGame := fmt.Sprintf("%s/%s/%s", config.RemoteSavesDir, current.Config.Server.User, gameID)
 
 	host, err := os.Hostname()
 	if err != nil {
@@ -59,7 +59,7 @@ func CreateSnapshot(current config.Current, gameID string, skipUnchanged bool) e
 }
 
 func ListSnapshots(current config.Current, gameID string) ([]Snapshot, error) {
-	saveGame := fmt.Sprintf("/data/saves/%s/%s", current.Config.Server.User, gameID)
+	saveGame := fmt.Sprintf("%s/%s/%s", config.RemoteSavesDir, current.Config.Server.User, gameID)
 
 	args := []string{"restic", "snapshots", "--json"}
 
