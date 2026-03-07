@@ -27,5 +27,5 @@ create-release:
     - |
       glab release create "$VERSION" \
       --ref "$CI_COMMIT_SHA" \
-      --notes "Version release \
+      --notes "Version release" \
       --name "Release $VERSION"
