@@ -22,8 +22,10 @@ create-release:
   extends:
     - .glab
   script:
+    - echo "Creating release for $VERSION"
     - glab release delete $VERSION -y || true
     - |
       glab release create "$VERSION" \
       --ref "$CI_COMMIT_SHA" \
+      --notes "Version release \
       --name "Release $VERSION"
