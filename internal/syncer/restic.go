@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gamesync/internal/config"
-	"gamesync/internal/ui"
 	"os"
-	"os/exec"
 	"path"
 	"time"
 )
@@ -18,13 +16,13 @@ type Snapshot struct {
 }
 
 func initRepo(current config.Current) error {
-	_, err := RunCmd(current, "restic", "cat", "config")
+	_, err := RunCmd(current.Config.Server, "restic", "cat", "config")
 
 	if err == nil {
 		return nil
 	}
 
-	output, err := RunCmd(current, "restic", "init")
+	output, err := RunCmd(current.Config.Server, "restic", "init")
 
 	if err != nil {
 		return fmt.Errorf("%s\n%s", err, output)
@@ -51,7 +49,7 @@ func CreateSnapshot(current config.Current, gameID string, skipUnchanged bool) e
 		args = append(args, "--skip-if-unchanged")
 	}
 
-	output, err := RunCmd(current, args...)
+	output, err := RunCmd(current.Config.Server, args...)
 
 	if err != nil {
 		return fmt.Errorf("%s\n%s", err, output)
@@ -69,7 +67,7 @@ func ListSnapshots(current config.Current, gameID string) ([]Snapshot, error) {
 		args = append(args, "--path", saveGame)
 	}
 
-	output, err := RunCmd(current, args...)
+	output, err := RunCmd(current.Config.Server, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%s\n%s", err, output)
 	}
@@ -84,7 +82,7 @@ func ListSnapshots(current config.Current, gameID string) ([]Snapshot, error) {
 }
 
 func GetResticPassword(current config.Current) (string, error) {
-	output, err := RunCmd(current, "get-restic-password")
+	output, err := RunCmd(current.Config.Server, "get-restic-password")
 	if err != nil {
 		return "", fmt.Errorf("getting restic password: %w", err)
 	}
@@ -111,30 +109,17 @@ func SetResticPassword(current config.Current, newPassword string) (error) {
 	remoteCurrentPassFile   := path.Join(config.RemotePasswordsDir, current.Config.Server.User, "current")
 	remoteOldPassFile       := path.Join(config.RemotePasswordsDir, current.Config.Server.User, "old")
 
-	sshCmd := fmt.Sprintf("ssh -p %s -i %s", current.Config.Server.Port, current.Config.Server.IdentityFile)
-	remotePath := fmt.Sprintf("%s@%s:/%s", current.Config.Server.User, current.Config.Server.Host, remoteNewPassFile)
-
-	cmd := exec.Command("rsync", "-azhPv", "-e", sshCmd, tempPassFile.Name(), remotePath)
-
-	ui.Debug("running rsync command:\n%s\n", cmd.String())
-	if ui.GetLevel() == ui.LevelDebug {
-		cmd.Stdout = os.Stdout
-	}
-	if ui.GetLevel() <= ui.LevelError {
-		cmd.Stderr = os.Stderr
-	}
-
-	if err := cmd.Run(); err != nil {
+	if err := RunRsync(current.Config.Server, tempPassFile.Name(), remoteNewPassFile, true, "-azhPv"); err != nil {
 		return fmt.Errorf("error copying new password to remote: %w", err)
 	}
 
-	if _, err := RunCmd(current, "restic", "key", "passwd", "--new-password-file", remoteNewPassFile); err != nil {
+	if _, err := RunCmd(current.Config.Server, "restic", "key", "passwd", "--new-password-file", remoteNewPassFile); err != nil {
 		return fmt.Errorf("changing restic password (password did not change): %w", err)
 	}
-	if _, err := RunCmd(current, "mv", "-f", remoteCurrentPassFile, remoteOldPassFile); err != nil {
+	if _, err := RunCmd(current.Config.Server, "mv", "-f", remoteCurrentPassFile, remoteOldPassFile); err != nil {
 		return fmt.Errorf("moving old password from %s, to %s: %w", remoteCurrentPassFile, remoteOldPassFile, err)
 	}
-	if _, err := RunCmd(current, "mv", remoteNewPassFile, remoteCurrentPassFile); err != nil {
+	if _, err := RunCmd(current.Config.Server, "mv", remoteNewPassFile, remoteCurrentPassFile); err != nil {
 		return fmt.Errorf("moving new password from %s, to %s: %w", remoteNewPassFile, remoteCurrentPassFile, err)
 	}
 

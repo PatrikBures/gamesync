@@ -12,7 +12,7 @@ import (
 )
 
 func RemoveSaveGame(current config.Current, gameID string) (string, error) {
-	output, err := RunCmd(current, "rm", "-r", 
+	output, err := RunCmd(current.Config.Server, "rm", "-r", 
 		fmt.Sprintf("/data/saves/%s/%s", current.Config.Server.User, gameID))
 
 	if err != nil {
@@ -22,11 +22,17 @@ func RemoveSaveGame(current config.Current, gameID string) (string, error) {
 	return output, nil
 }
 
-func RunCmd(current config.Current, cmds ...string) (string, error) {
-	sshArgs := []string{
-		"-p", current.Config.Server.Port,
-		"-i", current.Config.Server.IdentityFile,
-		fmt.Sprintf("%s@%s", current.Config.Server.User, current.Config.Server.Host),
+func RunCmd(server config.ServerConfig, cmds ...string) (string, error) {
+	var sshArgs []string
+
+	if server.SshHost == "" {
+		sshArgs = []string{
+			"-p", server.Port,
+			"-i", server.IdentityFile,
+			fmt.Sprintf("%s@%s", server.User, server.Host),
+		}
+	} else {
+		sshArgs = []string{server.SshHost}
 	}
 
 	sshArgs = append(sshArgs, cmds...)
@@ -54,7 +60,7 @@ func RunCmd(current config.Current, cmds ...string) (string, error) {
 }
 
 func GetRemoteState(current config.Current, gameID string) (map[string]state.FileMeta, error) {
-	output, err := RunCmd(current, 
+	output, err := RunCmd(current.Config.Server, 
 		"gamesync-state",
 		"/"+path.Join("data", "saves", current.Config.Server.User, gameID))
 	if err != nil {

@@ -12,6 +12,7 @@ type Config struct {
 }
 
 type ServerConfig struct {
+	SshHost         string `yaml:"ssh_host"`
 	Host			string `yaml:"host"`
 	User			string `yaml:"user"`
 	Port			string `yaml:"port"`

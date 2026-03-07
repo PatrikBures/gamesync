@@ -2,8 +2,6 @@ package syncer
 
 import (
 	"fmt"
-	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 
@@ -13,39 +11,20 @@ import (
 )
 
 func SyncGame(current config.Current, game config.GameConfig, pull bool) error {
-	remoteDir := path.Join("data", "saves", current.Config.Server.User, game.ID)
-	remotePath := fmt.Sprintf("%s@%s:/%s", current.Config.Server.User, current.Config.Server.Host, path.Clean(remoteDir))
+	remotePath := "/"+path.Join("data", "saves", current.Config.Server.User, game.ID)
 	localPath := filepath.Clean(game.SavePath)
 
-	sshCmd := fmt.Sprintf("ssh -p %s -i %s", current.Config.Server.Port, current.Config.Server.IdentityFile)
-	var cmd *exec.Cmd
-
-	var src, dest string
-
 	if pull {
-		src = remotePath+"/"
-		dest = localPath
+		remotePath = remotePath+"/"
 	} else {
-		if _, err := RunCmd(current, "mkdir", "-p", "/"+remoteDir); err != nil {
+		if _, err := RunCmd(current.Config.Server, "mkdir", "-p", remotePath); err != nil {
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
-		src = localPath+"/"
-		dest = remotePath
+		localPath = localPath+"/"
 	}
 
-	cmd = exec.Command("rsync", "-azhPv", "--delete", "-e", sshCmd, src, dest)
-
-	ui.Debug("running rsync command:\n%s\n", cmd.String())
-	if ui.GetLevel() == ui.LevelDebug {
-		cmd.Stdout = os.Stdout
-	}
-
-	if ui.GetLevel() <= ui.LevelError {
-		cmd.Stderr = os.Stderr
-	}
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("error syncing %s, from %s, to %s", game.ID, localPath, remotePath)
+	if err := RunRsync(current.Config.Server, localPath, remotePath, !pull, "-azhPv", "--delete"); err != nil {
+		return fmt.Errorf("syncing %s: %w", game.ID, err)
 	}
 
 	return nil
