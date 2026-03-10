@@ -68,7 +68,6 @@ workflow:
       variables:
         DEPLOY: "true"
         VERSION: "$CI_COMMIT_TAG"
-        VERSION_RELEASE: "true"
 
     - when: always
     
