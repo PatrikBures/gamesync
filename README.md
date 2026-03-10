@@ -58,18 +58,34 @@ $HOME/Library/Application/gamesync/config.yml
 
 When gamesync is ran it will create the dir but not the config.yml which needs to be made manually
 
-### Configure server
+### Configure server for client
 
-This is the required content of config.yml
+#### Without ssh config
+
+example config.yml
 ```yml
 server:
-  host: host or ip of the server
-  user: your user name on the server
-  port: the ssh port
-  identity_file: full path to your ssh key
+  host: 192.168.0.10
+  user: user1
+  port: 2828
+  identity_file: /home/user1/.ssh/gamesync
+```
+#### With ssh config (recommended)
+
+example config.yml:
+```yml
+server:
+  ssh_host: gamesync
 ```
 
-I would suggest to not write any comments as the __save add__ command will overwrite it. 
+example ssh config:
+```ssh
+Host gamesync
+  Hostname 192.168.0.10
+  User user1
+  Port 2828
+  IdentityFile ~/.ssh/gamesync
+```
 
 ## Add games to config
 
