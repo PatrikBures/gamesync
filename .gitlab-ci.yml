@@ -50,13 +50,6 @@ variables:
     - export BUILDAH_FORMAT=docker
     - export CLIENT_TEST_IMAGE=${CLIENT_TEST_IMAGE}
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-
-.setup-buildah-docker:
-  image: quay.io/buildah/stable
-  before_script:
-    - export STORAGE_DRIVER=vfs
-    - export BUILDAH_FORMAT=docker
-    - export CLIENT_TEST_IMAGE=${CLIENT_TEST_IMAGE}
     - buildah login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD" $DOCKER_URL
 
 workflow:
