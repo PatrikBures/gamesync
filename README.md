@@ -15,7 +15,29 @@ Snapshots can be created on the remote via the client using restic.
 - Multiple users
 - Snapshots
 
-## Set up config
+## Install server
+
+### Using docker-compose
+
+copy the content of the `docker-compose.yml` to your server and run
+```sh
+docker compose up -d
+```
+optionally change the image version to a newer one or change to the unstable `latest` version
+
+### Set up user on server
+
+- create a file at `config/users/USER` where USER is the new name of your user
+- in that new file add the public ssh keys that user will use
+
+example content of a user file:
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhrZ64KRubJJlHMcJ6ckbQx5XU2yh6/+AdBPTSxvluh user@device1
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIORjJGTNJucZcWfsWdl71LqYE/w2sxv2I3xuVwpFvcHx user@device2
+```
+make sure that the clients use the same USER name
+
+## Set up client config
 
 ### Location
 
