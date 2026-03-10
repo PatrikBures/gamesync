@@ -73,7 +73,10 @@ build-server-container:
       -t "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}" \
       ./
 
+    - buildah tag "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}" "$DOCKER_HUB_IMAGE:${VERSION}-${ARCH}"
+
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
+    - buildah push "$DOCKER_HUB_IMAGE:${VERSION}-${ARCH}"
 
 build-server-container-test:
   stage: prepare-test
@@ -129,38 +132,6 @@ build-server-container-test:
     - buildah manifest add ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:${VERSION}-arm64
 
     - buildah manifest push --all --format v2s2 ${CI_REGISTRY_IMAGE}:${VERSION} docker://${CI_REGISTRY_IMAGE}:${VERSION}
-
-build-server-container-docker:
-  stage: build-con
-  extends:
-    - .container-deploy
-    - .setup-buildah-docker
-    - .arch
-  needs:
-    - job: build-server-binary
-      artifacts: true
-      parallel:
-        matrix:
-          - ARCH: ['$[[ matrix.ARCH ]]']
-  rules:
-    - if: $VERSION_RELEASE
-    
-  variables:
-    BUILDAH_ISOLATION: chroot
-
-  script:
-    - buildah pull "$CI_REGISTRY_IMAGE:latest" || true
-
-    - |
-      buildah build \
-      --arch $ARCH \
-      --build-arg GAMESYNC_STATE_PATH=bin/gamesync-state-$ARCH \
-      --layers \
-      --cache-from "$CI_REGISTRY_IMAGE" \
-      -t "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}" \
-      ./
-
-    - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
 
 create-manifest-standard:
   stage: release
