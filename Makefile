@@ -5,6 +5,7 @@ VERSION ?= latest
 PREFIX ?= /usr/local
 BIN_DIR := $(DESTDIR)$(PREFIX)/bin
 MAN1_DIR := $(DESTDIR)$(PREFIX)/share/man/man1
+LICENSE_DIR := $(DESTDIR)$(PREFIX)/share/licenses/$(BIN_NAME)
 
 all: build man
 
@@ -30,10 +31,14 @@ install: all
 	@echo "Updating man database..."
 	-mandb >/dev/null 2>&1 || true
 
+	@echo "Installing license..."
+	install -Dm644 LICENSE $(LICENSE_DIR)/LICENSE
+
 uninstall:
 	@echo "Removing $(BIN_NAME)..."
 	rm -f $(BIN_DIR)/$(BIN_NAME)
 	rm -f $(MAN1_DIR)/gamesync*.1
+	rm -rf $(LICENSE_DIR)
 
 clean:
 	@echo "Cleaning up..."
