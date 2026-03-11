@@ -16,12 +16,12 @@ build:
 man: build
 	@echo "Generating man pages..."
 	mkdir -p manpages
-	./$(BIN_NAME) gen-man
+	bin/$(BIN_NAME) gen-man
 
 install: all
 	@echo "Installing binary to $(BIN_DIR)..."
 	install -d $(BIN_DIR)
-	install -m 755 $(BIN_NAME) $(BIN_DIR)/$(BIN_NAME)
+	install -m 755 bin/$(BIN_NAME) $(BIN_DIR)/$(BIN_NAME)
 
 	@echo "Installing man pages..."
 	install -d $(MAN1_DIR)
@@ -37,7 +37,7 @@ uninstall:
 
 clean:
 	@echo "Cleaning up..."
-	rm -f $(BIN_NAME)
+	rm -f bin/$(BIN_NAME)
 	rm -rf manpages
 
 go-install:
