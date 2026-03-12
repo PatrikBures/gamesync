@@ -73,8 +73,6 @@ build-server-container:
       -t "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}" \
       ./
 
-    - buildah tag "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}" "$DOCKER_HUB_IMAGE:${VERSION}-${ARCH}"
-
     - buildah push "$CI_REGISTRY_IMAGE:${VERSION}-${ARCH}"
     - buildah push "$DOCKER_HUB_IMAGE:${VERSION}-${ARCH}"
 
