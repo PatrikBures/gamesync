@@ -49,7 +49,7 @@ func newRemoteLsCmd() *remoteLsCmd {
 				return fmt.Errorf("error listing remote: %v\n%s", err, output)
 			}
 
-			ui.Info("%s", output)
+			ui.Info("%s\n", output)
 
 			return nil
 		},
