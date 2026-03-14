@@ -49,15 +49,43 @@ make uninstall PREFIX=$HOME/.local
 
 ## Install server
 
-### Using docker-compose
+### docker-compose with prebuilt image
 
-copy the content of the `docker-compose.yml` to your server and run
+make a docker-compose.yml file with this example content:
+```yml
+services:
+  gamesync:
+    image: patrikbures/gamesync:v2.6.0
+    container_name: gamesync
+    environment:
+      - GAMESYNC_LOOP=20
+    ports:
+      - "2828:22"
+    volumes:
+      - ./config:/config
+      - ./data:/data
+      - gamesync_host_keys/host_keys:/etc/ssh/keys
+      - /etc/localtime:/etc/localtime:ro
+volumes:
+  gamesync_host_keys:
+```
+
+> If there is a new version use that as this example config will probably not be updated for every new version
+
+then run
 ```sh
 docker compose up -d
 ```
-optionally change the image version to a newer one or change to the unstable `latest` version
 
-### Set up user on server
+### build your own image with and run with docker-compose
+
+clone the repo and cd into it and run:
+```sh
+make build-state
+docker compose up -d --build
+```
+
+## Set up user on server
 
 - create a file at `config/users/USER` where USER is the new name of your user
 - in that new file add the public ssh keys that user will use

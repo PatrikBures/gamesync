@@ -1,10 +1,15 @@
 services:
   gamesync:
-    image: registry.pabu.dev/patrikbures/gamesync:latest
+    build: .
     container_name: gamesync
+    environment:
+      - GAMESYNC_LOOP=20
     ports:
-      - "2222:22"
+      - "2828:22"
     volumes:
-      - ./user_public_keys:/config/users:ro
-      - ./host_keys:/etc/ssh/keys
+      - ./config:/config
       - ./data:/data
+      - gamesync_host_keys:/etc/ssh/keys
+      - /etc/localtime:/etc/localtime:ro
+volumes:
+  gamesync_host_keys:
