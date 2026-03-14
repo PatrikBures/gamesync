@@ -31,7 +31,6 @@ func TestSaveLs(t *testing.T) {
 	cmd.opts.quiet = true
 
 	cmd.cmd.SilenceUsage = true
-	cmd.cmd.SilenceErrors = true
 
 	err := cmd.cmd.Execute()
 	require.NoError(t, err)
@@ -83,7 +82,6 @@ func testSaveAddCmd(gameID string, savePath string, update bool) *saveAddCmd {
 	cmd := newSaveAddCmd()
 
 	cmd.cmd.SilenceUsage = true
-	cmd.cmd.SilenceErrors = true
 
 	cmd.opts.update = update
 
@@ -110,7 +108,6 @@ func testSaveRmCmd(gameID string) *saveRmCmd {
 	cmd := newSaveRmCmd()
 
 	cmd.cmd.SilenceUsage = true
-	cmd.cmd.SilenceErrors = true
 
 	cmd.cmd.SetArgs([]string{gameID})
 

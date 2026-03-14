@@ -30,7 +30,6 @@ func TestRemoteLs(t *testing.T) {
 	cmd := newRemoteLsCmd()
 
 	cmd.cmd.SilenceUsage = true
-	cmd.cmd.SilenceErrors = true
 
 	require.NoError(t, cmd.cmd.Execute())
 	require.Equal(t, "game_1\n", buf.String())
@@ -51,7 +50,6 @@ func testRemoteRmCmd(gameID string) *remoteRmCmd {
 	cmd := newRemoteRmCmd()
 
 	cmd.cmd.SilenceUsage = true
-	cmd.cmd.SilenceErrors = true
 
 	cmd.cmd.SetArgs([]string{gameID})
 
