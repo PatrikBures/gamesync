@@ -15,6 +15,38 @@ Snapshots can be created on the remote via the client using restic.
 - Multiple users
 - Snapshots
 
+## Install client
+
+### From the AUR
+with yay:
+```sh
+yay -S gamesync
+```
+
+### Manual
+
+before attempting to install make sure that you have the following dependencies installed:
+- openssh
+- rsync
+- golang
+
+
+then you can download the repo and install gamesync:
+```sh
+git clone https://gitlab.com/PatrikBures/gamesync.git
+cd gamesync
+make install PREFIX=$HOME/.local
+```
+
+> also make sure that `$HOME/.local/bin` is in your `$PATH`
+
+#### Uninstall
+while in the repo run:
+```sh
+make uninstall PREFIX=$HOME/.local
+```
+
+
 ## Install server
 
 ### Using docker-compose
