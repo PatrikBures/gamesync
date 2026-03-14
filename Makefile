@@ -1,7 +1,7 @@
 BIN_NAME := gamesync
 BIN_STATE_NAME := gamesync-state
 CONTAINER_NAME := $(BIN_NAME)
-VERSION ?= latest
+VERSION ?= dev
 PREFIX ?= /usr/local
 BIN_DIR := $(DESTDIR)$(PREFIX)/bin
 MAN1_DIR := $(DESTDIR)$(PREFIX)/share/man/man1
@@ -12,7 +12,7 @@ all: build man
 build:
 	@echo "Building $(BIN_NAME)..."
 	mkdir -p bin
-	go build -o bin/$(BIN_NAME) ./cmd/gamesync
+	go build -ldflags "-X main.version=$(VERSION)" -o bin/$(BIN_NAME) ./cmd/gamesync
 
 man: build
 	@echo "Generating man pages..."
@@ -47,7 +47,7 @@ clean:
 
 go-install:
 	@echo "installing..."
-	go install ./cmd/gamesync
+	go install -ldflags "-X main.version=$(VERSION)" ./cmd/gamesync
 
 go-test:
 	@echo "testing..."
