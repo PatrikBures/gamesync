@@ -17,7 +17,7 @@ func SyncGame(current config.Current, game config.GameConfig, pull bool) error {
 	if pull {
 		remotePath = remotePath+"/"
 	} else {
-		if _, err := RunCmd(current.Config.Server, "mkdir", "-p", remotePath); err != nil {
+		if _, err := RunCmd(current.Config.Server, false, "mkdir", "-p", remotePath); err != nil {
 			return fmt.Errorf("failed to create remote dir: %w", err)
 		}
 		localPath = localPath+"/"
@@ -54,6 +54,10 @@ func HandleSync(current config.Current, gameID string, mode SyncMode, force bool
 	stateDir, err := config.GetStateDir()
 	if err != nil {
 		return HandledError, fmt.Errorf("getting state dir: %v", err)
+	}
+
+	if err := SameApiVersion(current.Config.Server); err != nil {
+		return HandledError, err
 	}
 
 	localState, err := state.Get(game.SavePath)

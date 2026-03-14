@@ -7,7 +7,7 @@ import (
 )
 
 func SameApiVersion(server config.ServerConfig) error {
-	remoteApiVersion, err := RunCmd(server, "api-version")
+	remoteApiVersion, err := RunCmd(server, false, "api-version")
 	if err != nil {
 		return fmt.Errorf("failed getting remote version: %w", err)
 	}
