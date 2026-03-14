@@ -1,16 +1,4 @@
-.golang-before-merge:
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: &golang-changes
-        - "**/*.go"
-        - ".gitlab-ci.yml"
-        - "ci/*"
-
-.golang-deploy:
-  rules:
-    - if: $DEPLOY
-
-.builds:
+.client-builds:
   parallel:
     matrix:
       - OS: linux
@@ -78,8 +66,8 @@ build-client:
   stage: build-bin
   image: $GOLANG_IMAGE
   extends: 
-    - .golang-deploy
-    - .builds
+    - .deploy
+    - .client-builds
     - .gocache
   script:
     - export GOOS=$OS
@@ -95,8 +83,8 @@ upload-client:
   stage: release
   image: curlimages/curl:latest
   extends:
-    - .golang-deploy 
-    - .builds
+    - .deploy 
+    - .client-builds
   needs:
     - job: build-client
       artifacts: true
@@ -113,7 +101,7 @@ release-create-client:
   stage: release
   image: registry.gitlab.com/gitlab-org/cli:latest
   extends:
-    - .golang-deploy 
+    - .deploy 
     - .glab
   needs:
     - job: upload-client
@@ -128,14 +116,14 @@ release-assets-client:
   stage: release
   image: registry.gitlab.com/gitlab-org/cli:latest
   extends:
-    - .golang-deploy 
+    - .deploy 
     - .glab
-    - .builds
+    - .client-builds
   needs:
     - job: release-create-client
   before_script:
     - !reference [.glab, before_script]
-    - !reference [.builds, before_script]
+    - !reference [.client-builds, before_script]
   script:
     - |
       glab api projects/$CI_PROJECT_ID/releases/${VERSION}/assets/links \
