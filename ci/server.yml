@@ -8,7 +8,7 @@
         - ".gitlab-ci.yml"
         - "ci/*"
 
-build-server-rule:
+.build-server-rule:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *server-changes
@@ -28,7 +28,7 @@ build-server-binary:
   stage: build-bin
   image: $GOLANG_IMAGE
   extends: 
-    - build-server-rule
+    - .build-server-rule
     - .arch-server
     - .gocache
   before_script:
