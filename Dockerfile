@@ -12,15 +12,9 @@ RUN apk add --no-cache \
     bash
 
 COPY server/sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
-
-COPY server/entrypoint.sh /entrypoint.sh
-RUN chmod 500 /entrypoint.sh
-
-COPY server/restricted-shell /usr/local/bin/restricted-shell
-RUN chmod 555 /usr/local/bin/restricted-shell
-
-COPY ${GAMESYNC_STATE_PATH} /usr/local/bin/gamesync-state
-RUN chmod 555 /usr/local/bin/gamesync-state
+COPY --chmod=500 server/entrypoint.sh /entrypoint.sh
+COPY --chmod=555 server/restricted-shell /usr/local/bin/restricted-shell
+COPY --chmod=555 ${GAMESYNC_STATE_PATH} /usr/local/bin/gamesync-state
 
 EXPOSE 22
 
