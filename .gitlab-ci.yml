@@ -43,6 +43,14 @@ variables:
       - .go-build
       - .golangci-lint
 
+.golang-before-merge:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - "**/*.go"
+        - ".gitlab-ci.yml"
+        - "ci/*"
+
 .setup-buildah:
   image: quay.io/buildah/stable
   before_script:
@@ -51,6 +59,15 @@ variables:
     - export CLIENT_TEST_IMAGE=${CLIENT_TEST_IMAGE}
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - buildah login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD" $DOCKER_URL
+
+.deploy:
+  rules:
+    - if: $DEPLOY
+
+.arch-server:
+  parallel:
+    matrix:
+      - ARCH: [amd64, arm64]
 
 workflow:
   rules:

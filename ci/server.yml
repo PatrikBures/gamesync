@@ -1,4 +1,4 @@
-.container:
+.container-changes:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: &server-changes
@@ -8,11 +8,7 @@
         - ".gitlab-ci.yml"
         - "ci/*"
 
-.container-deploy:
-  rules:
-    - if: $DEPLOY
-
-.build-rule:
+.build-server-rule:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: *server-changes
@@ -23,7 +19,7 @@
         - "ci/*"
     - if: $DEPLOY
 
-.arch:
+.arch-server:
   parallel:
     matrix:
       - ARCH: [amd64, arm64]
@@ -32,8 +28,8 @@ build-server-binary:
   stage: build-bin
   image: $GOLANG_IMAGE
   extends: 
-    - .build-rule
-    - .arch
+    - .build-server-rule
+    - .arch-server
     - .gocache
   before_script:
     - export GOOS=linux
@@ -49,9 +45,9 @@ build-server-binary:
 build-server-container:
   stage: build-con
   extends:
-    - .container-deploy
+    - .deploy
     - .setup-buildah
-    - .arch
+    - .arch-server
   needs:
     - job: build-server-binary
       artifacts: true
@@ -81,7 +77,7 @@ build-server-container:
 build-server-container-test:
   stage: prepare-test
   extends:
-    - .container
+    - .container-changes
     - .setup-buildah
     - .golang-before-merge
   needs:
@@ -140,7 +136,7 @@ create-manifest-standard:
   stage: release
   extends: 
     - .create-manifest-base
-    - .container-deploy
+    - .deploy
   needs:
     - job: build-server-container
       artifacts: false
