@@ -74,6 +74,7 @@ func newRootCmd() *rootCmd {
 		newRemoteCmd().cmd,
 		newSnapshotCmd().cmd,
 		newWrapCmd().cmd,
+		newVersionCmd().cmd,
 	)
 
 	cmd.DisableAutoGenTag = true
