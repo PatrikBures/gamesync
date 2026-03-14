@@ -26,7 +26,6 @@ func TestPull(t *testing.T) {
 	})
 
 	cmd.cmd.SilenceUsage = true
-	cmd.cmd.SilenceErrors = true
 
 	cmd.cmd.SetArgs([]string{"game_1"})
 

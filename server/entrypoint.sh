@@ -1,5 +1,6 @@
 #!/bin/bash
 
+GAMESYNC_API_VERSION=1
 DATA_DIR=/data
 SAVES_DIR=$DATA_DIR/saves
 REPOS_DIR=$DATA_DIR/repos
@@ -7,6 +8,7 @@ CONFIG_DIR=/config
 USERS_DIR=$CONFIG_DIR/users
 USER_IDS_DIR=$CONFIG_DIR/user_ids
 RESTIC_PASSWORDS_DIR=$CONFIG_DIR/restic_passwords
+ENV_PATH=/etc/gamesync.env
 
 GROUP=client-users
 
@@ -140,9 +142,17 @@ create_users_loop() {
 }
 
 
+
+touch /etc/gamesync.env
+chmod 664 /etc/gamesync.env
+
 if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then
-    echo "export GAMESYNC_UNRESTRICTED=true" >> /etc/gamesync.env
-    chmod 664 /etc/gamesync.env
+    echo "running unrestricted"
+    echo "export GAMESYNC_UNRESTRICTED=true" >> "$ENV_PATH"
+fi
+if [[ -n "$GAMESYNC_API_VERSION" ]]; then
+    echo "api version: $GAMESYNC_API_VERSION"
+    echo "export GAMESYNC_API_VERSION=$GAMESYNC_API_VERSION" >> "$ENV_PATH"
 fi
 
 

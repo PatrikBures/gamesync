@@ -46,6 +46,9 @@ case "$CMD" in
     get-restic-password)
         cat "$RESTIC_PASSWORD_FILE"
         ;;
+    api-version)
+        echo "$GAMESYNC_API_VERSION"
+        ;;
     *)
         if [[ "$GAMESYNC_UNRESTRICTED" == "true" ]]; then
             bash -c "$CMD"
