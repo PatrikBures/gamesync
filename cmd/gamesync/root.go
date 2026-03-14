@@ -21,6 +21,7 @@ type rootCmd struct {
 type rootOpts struct {
 	verbose bool
 	debug bool
+	ignoreApiVersion bool
 }
 
 func newRootCmd() *rootCmd {
@@ -57,6 +58,10 @@ func newRootCmd() *rootCmd {
 			} else if root.opts.verbose {
 				ui.SetLevel(ui.LevelVerbose)
 			}
+			
+			if root.opts.ignoreApiVersion {
+				config.ApiVersion = "0"
+			}
 			return nil
 		},
 	}
@@ -64,6 +69,7 @@ func newRootCmd() *rootCmd {
 	cmd.PersistentFlags().StringVar(&current.ConfigPath, "config", "", "config file (default ~/.config/gamesync/config.yml)")
 	cmd.PersistentFlags().BoolVarP(&root.opts.verbose, "verbose", "v", false, "more verbose output")
 	cmd.PersistentFlags().BoolVarP(&root.opts.debug, "debug", "", false, "debug ouput")
+	cmd.PersistentFlags().BoolVarP(&root.opts.ignoreApiVersion, "ignore-api-version", "", false, "Do not check if remote has same api version. Use with caution!")
 
 	cmd.AddCommand(
 		newGenDocCmd().cmd,
