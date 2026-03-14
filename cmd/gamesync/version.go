@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gamesync/internal/syncer"
 	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
