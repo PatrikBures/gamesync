@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gamesync/internal/config"
 	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
@@ -18,7 +19,8 @@ func newVersionCmd() *versionCmd {
 		Short: "Print current version number",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ui.Info("%s\n", version)
+			ui.Info("gamesync version: %s\n", version)
+			ui.Info("gamesync api version: %s\n", config.ApiVersion)
 
 			return nil
 		},
