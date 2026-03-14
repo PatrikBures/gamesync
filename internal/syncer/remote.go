@@ -9,6 +9,7 @@ import (
 	"gamesync/internal/ui"
 	"os/exec"
 	"path"
+	"strings"
 )
 
 func RemoveSaveGame(current config.Current, gameID string) (string, error) {
@@ -45,8 +46,8 @@ func RunCmd(server config.ServerConfig, cmds ...string) (string, error) {
 
 	err := cmd.Run()
 
-	outStr := stdoutBuf.String()
-	errStr := stderrBuf.String()
+	outStr := strings.TrimSuffix(stdoutBuf.String(), "\n")
+	errStr := strings.TrimSuffix(stderrBuf.String(), "\n")
 
 	ui.Debug("Ran cmd:\n%s\n", cmd.String())
 	ui.Debug("output:\n%s\n", outStr)
