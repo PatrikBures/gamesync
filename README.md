@@ -99,7 +99,37 @@ make sure that the clients use the same USER name
 
 ## Set up client config
 
-### Location
+
+> When gamesync is ran it will create the dir but not the config.yml which needs to be made manually
+
+### Create and configure ssh
+
+You can create an ssh key with this command
+```sh
+ssh-keygen -f ~/.ssh/gamesync -N ''
+```
+
+### Add config for gamesync in ssh
+
+example content of `~/.ssh/config`:
+```
+Host gamesync
+    Hostname 192.168.1.10
+    User username
+    Port 2828
+    IdentityFile ~/.ssh/gamesync
+    ControlMaster auto
+    ControlPath ~/.ssh/sockets/%r@%h-%p
+    ControlPersist 2m
+```
+
+> The __Control__ config options make a persistent connection which lasts for 2 minutes. 
+> This makes commands which run multiple ssh commands one after the other significantly faster speeding up most commands.
+
+
+### Configure client
+
+#### Location of config
 
 the config file is read from
 ```sh
@@ -109,28 +139,16 @@ or
 ```sh
 $HOME/.config/gamesync/config.yml
 ```
-based on if __XDG_CONFIG_HOME__ is set
+depending if `XDG_CONFIG_HOME` is set
 
 On a mac, it should be located at
 ```sh
 $HOME/Library/Application/gamesync/config.yml
 ```
 
-When gamesync is ran it will create the dir but not the config.yml which needs to be made manually
-
-### Configure server for client
-
-#### Without ssh config
-
-example config.yml
-```yml
-server:
-  host: 192.168.0.10
-  user: user1
-  port: 2828
-  identity_file: /home/user1/.ssh/gamesync
-```
 #### With ssh config (recommended)
+
+This is if you set up an ssh config in the previous step
 
 example config.yml:
 ```yml
@@ -138,14 +156,20 @@ server:
   ssh_host: gamesync
 ```
 
-example ssh config:
-```ssh
-Host gamesync
-  Hostname 192.168.0.10
-  User user1
-  Port 2828
-  IdentityFile ~/.ssh/gamesync
+#### Without ssh config
+
+> This might in the future become removed so it is recommended to not use it
+> It also does not have the __Control__ options mentioned earlier.
+
+example config.yml:
+```yml
+server:
+  host: 192.168.0.10
+  user: user1
+  port: 2828
+  identity_file: /home/user1/.ssh/gamesync
 ```
+
 
 ## Add games to config
 
