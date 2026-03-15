@@ -26,9 +26,13 @@ yay -S gamesync
 ### Manual
 
 Before attempting to install, make sure that you have the following dependencies installed:
-- openssh
-- rsync
-- golang
+- build dependencies
+    - git
+    - Go
+    - Make
+- package dependencies
+    - OpenSSH
+    - Rsync
 
 
 #### Download the repo and cd into it:
