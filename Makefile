@@ -1,4 +1,5 @@
 BIN_NAME := gamesync
+BIN_NAME_DEV := $(BIN_NAME)-dev
 BIN_STATE_NAME := gamesync-state
 CONTAINER_NAME := $(BIN_NAME)
 VERSION ?= dev
@@ -47,7 +48,7 @@ clean:
 
 go-install:
 	@echo "installing..."
-	go install -ldflags "-X main.version=$(VERSION)" ./cmd/gamesync
+	go build -ldflags "-X main.version=$(VERSION)" -o $${GOPATH}/bin/$(BIN_NAME_DEV) ./cmd/gamesync
 
 go-test:
 	@echo "testing..."
