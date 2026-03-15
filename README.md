@@ -25,16 +25,35 @@ yay -S gamesync
 
 ### Manual
 
-before attempting to install make sure that you have the following dependencies installed:
+Before attempting to install, make sure that you have the following dependencies installed:
 - openssh
 - rsync
 - golang
 
 
-then you can download the repo and install gamesync:
+#### Download the repo and cd into it:
 ```sh
 git clone https://gitlab.com/PatrikBures/gamesync.git
 cd gamesync
+make install PREFIX=$HOME/.local
+```
+
+#### Checkout to the latest version tag (skip if you want to use the latest unstable version):
+```sh
+git checkout $(git tag -l 'v*.*.*' --sort=-version:refname | head -1)
+```
+
+##### If that by some reason did not work:
+```sh
+git tag -l
+```
+then run the following where VERSION is the latest version from the previous command
+```sh
+git checkout VERSION
+```
+
+#### compile and install:
+```sh
 make install PREFIX=$HOME/.local
 ```
 
