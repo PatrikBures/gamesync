@@ -78,7 +78,6 @@ func newRootCmd() *rootCmd {
 		newSyncCmd().cmd,
 		newSaveCmd().cmd,
 		newRemoteCmd().cmd,
-		newSnapshotCmd().cmd,
 		newWrapCmd().cmd,
 		newVersionCmd().cmd,
 	)
