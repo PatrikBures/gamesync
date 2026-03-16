@@ -39,7 +39,6 @@ Before attempting to install, make sure that you have the following dependencies
 ```sh
 git clone https://gitlab.com/PatrikBures/gamesync.git
 cd gamesync
-make install PREFIX=$HOME/.local
 ```
 
 #### Checkout to the latest version tag (skip if you want to use the latest unstable version):
