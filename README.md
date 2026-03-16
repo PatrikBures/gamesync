@@ -6,14 +6,12 @@ The project is seperated into client and server.
 
 The client is written in golang and syncs to the server using rsync.
 
-Snapshots can be created on the remote via the client using restic. 
 
 ## Features
 
 - Sync game save files with server
 - Multiple devices
 - Multiple users
-- Snapshots
 
 ## Install client
 
@@ -245,7 +243,6 @@ gamesync wrap GAME_ID -- COMMAND
 Whatever is after "--" will be blindly ran as a command.
 
 All that gamesync will do is pull before running the command, and push after the command exited.
-And optionally create a snapshot using restic with the -s or -S flags.
 
 ### Steam
 
@@ -290,8 +287,7 @@ Exec=gamesync wrap GAME_ID -- [whatever was originally here]
 
 ### Useful wrap flags
 
-- `-n`: Sends notification whenever it pushed, pulled or created a snapshot. Notifying you if it succeded or failed.
-- `-S` Creates snapshot only if there are changes after pushing. 
+- `-n`: Sends notification whenever it pushed or pulled. Notifying you if it succeded or failed.
 - `--no-pull`: Useful if you want to just try out the wrap command or use as a backup without modifying your local save files.
 - `-e`: Exits on error. For example, if the pull failed it exits, preventing the game from launching.
 

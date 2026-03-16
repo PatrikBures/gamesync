@@ -17,8 +17,6 @@ type wrapCmd struct {
 }
 
 type wrapOpts struct {
-	createSnapshot bool
-	createSnapshotUnchanged bool
 	notify			bool
 	noPull			bool
 	forcePull		bool
@@ -114,18 +112,6 @@ func newWrapCmd() *wrapCmd {
 				}
 			}
 
-			// snapshot
-			if root.opts.createSnapshot || root.opts.createSnapshotUnchanged {
-				if err := syncer.CreateSnapshot(current, gameID, root.opts.createSnapshotUnchanged); err != nil {
-					ui.Error("Failed creating snapshot: %v\n", err)
-					if root.opts.notify { ui.Notify("error", "creating snapshot") }
-					if root.opts.exitOnError { return err }
-				} else {
-					ui.Info("Snapshot created\n")
-					if root.opts.notify { ui.Notify("sucess", "creating snapshot") }
-				}
-			}
-
 			ui.Info("Game exited with exit code: %d\n", exitCode)
 
 			return nil
@@ -133,10 +119,6 @@ func newWrapCmd() *wrapCmd {
 	}
 
 	cmd.Flags().BoolVarP(&root.opts.exitOnError, "exit-on-error", "e", false, "")
-
-	cmd.Flags().BoolVarP(&root.opts.createSnapshot, "snapshot", "s", false, "Creates snapshot on remote after push")
-	cmd.Flags().BoolVarP(&root.opts.createSnapshotUnchanged, "skip-unchanged", "S", false, "Creates snapshot if there were changes from the previous snapshot on remote after push")
-	cmd.Flags().BoolVarP(&root.opts.notify, "notify", "n", false, "Sends a notification when pulled, pushed and created a snapshot and if succeeded")
 
 	cmd.Flags().BoolVarP(&root.opts.noPull, "no-pull", "", false, "")
 	cmd.Flags().BoolVarP(&root.opts.forcePull, "force-pull", "", false, "")
