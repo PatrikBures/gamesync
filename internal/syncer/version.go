@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"gamesync/internal/config"
 	"gamesync/internal/ui"
+	"gamesync/internal/vars"
 )
 
 func SameApiVersion(server config.ServerConfig) error {
-	if config.ApiVersion == "0" {
+	if vars.ApiVersion == "0" {
 		ui.Debug("ignored checking api version\n")
 		return nil
 	}
@@ -15,9 +16,9 @@ func SameApiVersion(server config.ServerConfig) error {
 	if err != nil {
 		return fmt.Errorf("failed getting remote version: %w", err)
 	}
-	if remoteApiVersion != config.ApiVersion {
-		return fmt.Errorf("api version numbers do not match! client version: '%s', remote version: '%s'", config.ApiVersion, remoteApiVersion)
+	if remoteApiVersion != vars.ApiVersion {
+		return fmt.Errorf("api version numbers do not match! client version: '%s', remote version: '%s'", vars.ApiVersion, remoteApiVersion)
 	}
-	ui.Debug("Client and remote api versions match, client: %s, remote: %s\n", config.ApiVersion, remoteApiVersion)
+	ui.Debug("Client and remote api versions match, client: %s, remote: %s\n", vars.ApiVersion, remoteApiVersion)
 	return nil
 }

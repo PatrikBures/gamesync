@@ -13,7 +13,7 @@ all: build man
 build:
 	@echo "Building $(BIN_NAME)..."
 	mkdir -p bin
-	go build -ldflags "-X main.version=$(VERSION)" -o bin/$(BIN_NAME) ./cmd/gamesync
+	go build -ldflags "-X gamesync/internal/vars.Version=$(VERSION)" -o bin/$(BIN_NAME) ./cmd/gamesync
 
 man: build
 	@echo "Generating man pages..."
@@ -48,7 +48,7 @@ clean:
 
 go-install:
 	@echo "installing..."
-	go build -ldflags "-X main.version=$(VERSION)" -o $${GOPATH}/bin/$(BIN_NAME_DEV) ./cmd/gamesync
+	go build -ldflags "-X gamesync/internal/vars.Version=$(VERSION)" -o $${GOPATH}/bin/$(BIN_NAME_DEV) ./cmd/gamesync
 
 go-test:
 	@echo "testing..."
