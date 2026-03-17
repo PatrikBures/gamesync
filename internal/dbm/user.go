@@ -5,21 +5,21 @@ import (
 	"fmt"
 )
 
-type UserTypes int
+type UserRoles int
 const (
-	UserTypeAdmin UserTypes = iota
-	UserTypeUser
+	UserRoleAdmin UserRoles = iota
+	UserRoleUser
 )
 
-type UserType struct {
+type UserRole struct {
 	ID int
-	UserTypeName string
+	RoleName string
 }
 
 type User struct {
 	ID int
 	UserName string
-	UserTypeId UserTypes
+	UserRoleId UserRoles
 }
 
 func AddUser(db *sql.DB, user User) error {
@@ -27,7 +27,7 @@ func AddUser(db *sql.DB, user User) error {
 		return fmt.Errorf("UserName can not be empty")
 	}
 
-	SQL := `INSERT INTO user (user_name, user_type_id) VALUES (?, ?)`
+	SQL := `INSERT INTO user (user_name, user_role_id) VALUES (?, ?)`
 	_, err := db.Exec(SQL, user.UserName, user.ID)
 	if err != nil {
 		return fmt.Errorf("inserting new user: %v", err)

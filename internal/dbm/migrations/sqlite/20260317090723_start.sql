@@ -1,24 +1,22 @@
 -- +goose Up
-CREATE TABLE user_type
+CREATE TABLE user_role
 (
-    user_type_id INTEGER NOT NULL,
-    user_type_name TEXT NOT NULL,
+    user_role_id INTEGER NOT NULL,
+    role_name TEXT NOT NULL,
 
-    PRIMARY KEY (user_type_id),
-    UNIQUE (user_type_name)
+    PRIMARY KEY (user_role_id),
+    UNIQUE (user_role_id)
 );
-
-INSERT INTO user_type (user_type_name) VALUES ('admin'), ('user');
 
 CREATE TABLE user
 (
     user_id INTEGER NOT NULL,
-    user_type_id INTEGER NOT NULL,
+    user_role_id INTEGER NOT NULL,
     user_name TEXT NOT NULL,
 
     PRIMARY KEY (user_id),
     UNIQUE (user_name),
-    FOREIGN KEY (user_type_id) REFERENCES user_type(user_type_id)
+    FOREIGN KEY (user_role_id) REFERENCES user_role(user_role_id)
 );
 
 CREATE TABLE ssh_key

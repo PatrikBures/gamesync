@@ -44,7 +44,7 @@ func newAddUserCmd() *addUserCmd {
 
 			user := dbm.User{
 				UserName: args[0],
-				UserTypeId: dbm.UserTypeUser,
+				UserRoleId: dbm.UserRoleUser,
 			}
 			
 			if err := dbm.AddUser(db, user); err != nil {
