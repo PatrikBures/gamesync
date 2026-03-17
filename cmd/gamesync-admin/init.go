@@ -1,0 +1,87 @@
+package main
+
+import (
+	"fmt"
+	"gamesync/internal/dbm"
+	"gamesync/internal/vars"
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+type initCmd struct {
+	cmd * cobra.Command
+}
+func newInitCmd() *initCmd {
+	root := initCmd{}
+	cmd := &cobra.Command{
+		Use: "init",
+		Short: "Commands used to initialize the server",
+	}
+	cmd.AddCommand(
+		newInitDirsCmd().cmd,
+		newInitMigrateCmd().cmd,
+	)
+	root.cmd = cmd
+	return &root
+}
+
+
+type initMigrateCmd struct {
+	cmd *cobra.Command
+}
+func newInitMigrateCmd() *initMigrateCmd {
+	root := initMigrateCmd{}
+	cmd := &cobra.Command{
+		Use: "migrate",
+		Short: "Migrates db to newer schema, initializes if it doesn't exist",
+		Args: cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := dbm.Migrate(); err != nil {
+				return fmt.Errorf("migrating: %v", err)
+			}
+			return nil
+		},
+	}
+	root.cmd = cmd
+	return &root
+}
+
+
+type initDirsCmd struct {
+	cmd *cobra.Command
+}
+func newInitDirsCmd() *initDirsCmd {
+	root := initDirsCmd{}
+	cmd := &cobra.Command{
+		Use: "dirs",
+		Short: "Creates the necessary dirs for the server, moves old paths",
+		Args: cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			for _, path := range vars.RemoteSaveDirOld {
+				f, err := os.Stat(path)
+				if err != nil || !f.IsDir(){
+					continue
+				}
+				os.Rename(path, vars.RemoteSaveDir)
+				fmt.Printf("moved save dir from %s to %s\n", path, vars.RemoteSaveDir)
+				break
+			}
+
+			dirs := []string{
+				vars.RemoteSaveDir,
+				vars.RemoteBackupDir,
+				vars.RemoteDbDir,
+			}
+			for _, dir := range dirs {
+				if err := os.MkdirAll(dir, 0775); err != nil {
+					return err
+				}
+				fmt.Println("Ensured dir exists:", dir)
+			}
+			return nil
+		},
+	}
+	root.cmd = cmd
+	return &root
+}

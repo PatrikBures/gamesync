@@ -8,8 +8,8 @@ if [ ! -f /etc/ssh/keys/ssh_host_ed25519_key ]; then
     mv /etc/ssh/ssh_host_*key* /etc/ssh/keys/
 fi
 
-gamesync-admin init-dirs
-gamesync-admin migrate
+gamesync-admin init dirs
+gamesync-admin init migrate
 
 # exec replaces the shell with the process sshd so that pid 1 is sshd and docker can stop it cleanly
 # -D do not detach

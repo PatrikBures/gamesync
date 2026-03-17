@@ -3,7 +3,6 @@ package dbm
 import (
 	"database/sql"
 	"fmt"
-	_ "modernc.org/sqlite"
 )
 
 type UserTypes int
