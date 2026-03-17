@@ -5,3 +5,5 @@ testdata
 bin/
 ci/client-test/gamesync
 server/gamesync-state
+**/*.db
+**/*.sqlite
