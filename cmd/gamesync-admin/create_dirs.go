@@ -32,6 +32,7 @@ func newCreateDirsCmd() *createDirsCmd {
 			dirs := []string{
 				vars.RemoteSaveDir,
 				vars.RemoteBackupDir,
+				vars.RemoteDbDir,
 			}
 
 			for _, dir := range dirs {

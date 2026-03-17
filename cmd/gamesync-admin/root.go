@@ -17,6 +17,11 @@ func newRootCmd() *rootCmd {
 		Short: "Manage the gamesync server",
 	}
 	cmd.DisableAutoGenTag = true
+	cmd.SilenceUsage = true
+	cmd.AddCommand(
+		newCreateDirsCmd().cmd,
+		newMigrateCmd().cmd,
+	)
 	root.cmd = cmd
 	return &root
 }
