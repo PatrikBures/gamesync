@@ -19,9 +19,14 @@ func newRootCmd() *rootCmd {
 	cmd.DisableAutoGenTag = true
 	cmd.SilenceUsage = true
 	cmd.AddCommand(
-		newInitCmd().cmd,
 		newAddCmd().cmd,
 	)
+
+	// uid is 0 if ran by root
+	// cmds are only available when ran directly from the container
+	if os.Getuid() == 0 {
+		cmd.AddCommand(newInitCmd().cmd)
+	}
 	root.cmd = cmd
 	return &root
 }
