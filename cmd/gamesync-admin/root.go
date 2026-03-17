@@ -21,6 +21,7 @@ func newRootCmd() *rootCmd {
 	cmd.AddCommand(
 		newCreateDirsCmd().cmd,
 		newMigrateCmd().cmd,
+		newAddCmd().cmd,
 	)
 	root.cmd = cmd
 	return &root

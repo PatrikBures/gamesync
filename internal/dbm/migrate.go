@@ -1,22 +1,21 @@
-package db
+package dbm
 
 import (
-	"database/sql"
 	"embed"
 	"fmt"
 
 	"github.com/pressly/goose/v3"
-	_ "modernc.org/sqlite"
 )
 
 //go:embed migrations/sqlite/*sql
 var embedSQLiteMigrations embed.FS
 
 func Migrate() error {
-	db, err := sql.Open("sqlite", "gamesync.db")
+	db, err := OpenSQLite()
 	if err != nil {
-		return fmt.Errorf("opening db: %v", err)
+		return err
 	}
+	defer CloseDB(db, &err)
 
 	goose.SetBaseFS(embedSQLiteMigrations)
 
@@ -24,7 +23,7 @@ func Migrate() error {
 		return fmt.Errorf("setting goose dialect: %v", err)
 	}
 	if err := goose.Up(db, "migrations/sqlite"); err != nil {
-		return fmt.Errorf("migrating: %v", err)
+		return err
 	}
 	return nil
 }

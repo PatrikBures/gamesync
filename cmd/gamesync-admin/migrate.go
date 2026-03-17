@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/db"
+	"gamesync/internal/dbm"
 
 	"github.com/spf13/cobra"
 )
@@ -18,7 +18,7 @@ func newMigrateCmd() *migrateCmd {
 		Short: "migrates db to newer schema, initializes if it doesn't exist",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := db.Migrate(); err != nil {
+			if err := dbm.Migrate(); err != nil {
 				return fmt.Errorf("migrating: %v", err)
 			}
 
