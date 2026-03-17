@@ -1,3 +1,5 @@
 package vars
 
-const RemoteSavesDir = "/data/saves"
+var RemoteSaveDirOld = []string{"/data/saves"}
+const RemoteSaveDir = "/data/save"
+const RemoteBackupDir = "/data/backup"
