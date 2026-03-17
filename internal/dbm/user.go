@@ -24,14 +24,35 @@ type User struct {
 
 func AddUser(db *sql.DB, user User) error {
 	if user.UserName == "" {
-		return fmt.Errorf("UserName can not be empty")
+		return fmt.Errorf("user name can not be empty")
 	}
-
 	SQL := `INSERT INTO user (user_name, user_role_id) VALUES (?, ?)`
-	_, err := db.Exec(SQL, user.UserName, user.ID)
-	if err != nil {
+	if _, err := db.Exec(SQL, user.UserName, user.ID); err != nil {
 		return fmt.Errorf("inserting new user: %v", err)
 	}
+	return nil
+}
 
+func AddUserSimple(user User) error {
+	db, err := OpenSQLite()
+	if err != nil {
+		return err
+	}
+	defer CloseDB(db, &err)
+
+	if err := AddUser(db, user); err != nil {
+		return fmt.Errorf("creating user: %v", err)
+	}
+	return nil
+}
+
+func AddUserRole(db *sql.DB, role UserRole) error {
+	if role.RoleName == "" {
+		return fmt.Errorf("role name can not be empty")
+	}
+	SQL := `INSERT INTO user_role (user_role_id, role_name) VALUES (?, ?)`
+	if _, err := db.Exec(SQL, role.ID, role.RoleName); err != nil {
+		return fmt.Errorf("inserting new role: %v", err)
+	}
 	return nil
 }

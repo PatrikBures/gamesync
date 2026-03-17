@@ -10,7 +10,6 @@ import (
 type addCmd struct {
 	cmd *cobra.Command
 }
-
 func newAddCmd() *addCmd {
 	root := addCmd{}
 	cmd := &cobra.Command{
@@ -28,7 +27,6 @@ func newAddCmd() *addCmd {
 type addUserCmd struct {
 	cmd *cobra.Command
 }
-
 func newAddUserCmd() *addUserCmd {
 	root := addUserCmd{}
 	cmd := &cobra.Command{
@@ -36,21 +34,35 @@ func newAddUserCmd() *addUserCmd {
 		Short: "Add a new user",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil {
-				return err
-			}
-			defer dbm.CloseDB(db, &err)
-
-			user := dbm.User{
-				UserName: args[0],
+			if err := dbm.AddUserSimple(dbm.User{
+				UserName: args[0], 
 				UserRoleId: dbm.UserRoleUser,
+			}); err != nil {
+				return fmt.Errorf("adding new user: %v", err)
 			}
-			
-			if err := dbm.AddUser(db, user); err != nil {
-				return fmt.Errorf("creating user: %v", err)
-			}
+			return nil
+		},
+	}
+	root.cmd = cmd
+	return &root
+}
 
+type addAdminCmd struct {
+	cmd *cobra.Command
+}
+func newAddAdminCmd() *addAdminCmd {
+	root := addAdminCmd{}
+	cmd := &cobra.Command{
+		Use: "admin USERNAME",
+		Short: "Add a new admin user which can not syns. Used only for admin commands",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := dbm.AddUserSimple(dbm.User{
+				UserName: args[0], 
+				UserRoleId: dbm.UserRoleAdmin,
+			}); err != nil {
+				return fmt.Errorf("adding new admin: %v", err)
+			}
 			return nil
 		},
 	}
