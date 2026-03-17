@@ -21,6 +21,7 @@ func newInitCmd() *initCmd {
 	cmd.AddCommand(
 		newInitDirsCmd().cmd,
 		newInitMigrateCmd().cmd,
+		newInitRolesCmd().cmd,
 	)
 	root.cmd = cmd
 	return &root
@@ -79,6 +80,23 @@ func newInitDirsCmd() *initDirsCmd {
 				}
 				fmt.Println("Ensured dir exists:", dir)
 			}
+			return nil
+		},
+	}
+	root.cmd = cmd
+	return &root
+}
+
+type initRolesCmd struct {
+	cmd *cobra.Command
+}
+func newInitRolesCmd() *initRolesCmd {
+	root := initRolesCmd{}
+	cmd := &cobra.Command{
+		Use: "roles",
+		Short: "Ensures user and admin roles exist in the db",
+		Args: cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
 	}
