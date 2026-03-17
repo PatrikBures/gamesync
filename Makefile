@@ -1,6 +1,7 @@
 BIN_NAME := gamesync
 BIN_NAME_DEV := $(BIN_NAME)-dev
 BIN_STATE_NAME := gamesync-state
+BIN_ADMIN_NAME := $(BIN_NAME)-admin
 CONTAINER_NAME := $(BIN_NAME)
 VERSION ?= dev
 PREFIX ?= /usr/local
@@ -59,6 +60,11 @@ build-state:
 	@echo "building $(BIN_STATE_NAME)..."
 	mkdir -p bin
 	CGO_ENABLED=0 go build -o bin/$(BIN_STATE_NAME) ./cmd/gamesync-state
+
+build-admin:
+	@echo "building "
+	mkdir -p bin
+	CGO_ENABLED=0 go build -o bin/$(BIN_ADMIN_NAME) ./cmd/gamesync-admin
 
 build-container: build-state
 	@echo "building container..."
