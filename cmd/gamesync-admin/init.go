@@ -22,6 +22,7 @@ func newInitCmd() *initCmd {
 		newInitDirsCmd().cmd,
 		newInitMigrateCmd().cmd,
 		newInitRolesCmd().cmd,
+		newInitPermsCmd().cmd,
 	)
 	root.cmd = cmd
 	return &root
@@ -64,7 +65,9 @@ func newInitDirsCmd() *initDirsCmd {
 				if err != nil || !f.IsDir(){
 					continue
 				}
-				os.Rename(path, vars.RemoteSaveDir)
+				if err := os.Rename(path, vars.RemoteSaveDir); err != nil {
+					return fmt.Errorf("moving %s to %s: %w", path, vars.RemoteSaveDir, err)
+				}
 				fmt.Printf("moved save dir from %s to %s\n", path, vars.RemoteSaveDir)
 				break
 			}
@@ -87,6 +90,26 @@ func newInitDirsCmd() *initDirsCmd {
 	return &root
 }
 
+type initPermsCmd struct {
+	cmd *cobra.Command
+}
+func newInitPermsCmd() *initPermsCmd {
+	root := initPermsCmd{}
+	cmd := &cobra.Command{
+		Use: "perms",
+		Short: "Ensures all permissions exist",
+		Args: cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := dbm.PermsSet(); err != nil {
+				return fmt.Errorf("setting perms: %w", err)
+			}
+			return nil
+		},
+	}
+	root.cmd = cmd
+	return &root
+}
+
 type initRolesCmd struct {
 	cmd *cobra.Command
 }
@@ -97,6 +120,31 @@ func newInitRolesCmd() *initRolesCmd {
 		Short: "Ensures user and admin roles exist in the db",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			db, err := dbm.OpenSQLite()
+			if err != nil {
+				return err
+			}
+			defer dbm.CloseDB(db, &err)
+
+			roles := []dbm.Role{
+				{
+					ID: 0,
+					Name: "none",
+					Permissions: dbm.RoleAllPerms(false),
+				},
+				{
+					ID: 1,
+					Name: "admin", 
+					Permissions: dbm.RoleAllPerms(true),
+				},
+			}
+			for _, role := range roles {
+				if err := dbm.RoleAddWithPerms(db, role); err != nil {
+					return fmt.Errorf("adding role with perms: %w", err)
+				}
+				fmt.Println("added role:", role.Name)
+			}
+			
 			return nil
 		},
 	}
