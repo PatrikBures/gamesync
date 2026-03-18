@@ -83,3 +83,32 @@ func RoleAllPerms(enabled bool) map[Permission]bool {
 	}
 	return perms
 }
+
+func RoleGetWithPerms(db *sql.DB, roleID int) (Role, error) {
+	role := Role{ID: roleID}
+
+	const selectPermsSQL = `SELECT permission_id FROM role_permission WHERE role_id = ?`
+	rows, err := db.Query(selectPermsSQL, roleID)
+	if err != nil {
+		return role, fmt.Errorf("selecting permissions: %w", err)
+	}
+	role.Permissions = make(map[Permission]bool)
+	for rows.Next() {
+		var id Permission
+		if err := rows.Scan(&id); err != nil {
+			return role, fmt.Errorf("scanning row: %w", err)
+		}
+		role.Permissions[id] = true
+	}
+
+	const selectRoleNameSQL = `SELECT role_name FROM role WHERE role_id = ?`
+	row := db.QueryRow(selectRoleNameSQL, roleID)
+	if row.Err() != nil {
+		return role, fmt.Errorf("selecting role name: %w", err)
+	}
+	if err := row.Scan(&role.Name); err != nil {
+		return role, fmt.Errorf("scanning row: %w", err)
+	}
+	
+	return role, nil
+}

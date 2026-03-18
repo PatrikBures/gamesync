@@ -37,7 +37,7 @@ func newUserAddCmd() *userAddCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := dbm.UserAddSimple(dbm.User{
 				Name: args[0], 
-				RoleID: 1,
+				RoleID: 0,
 			}); err != nil {
 				return fmt.Errorf("adding new user: %v", err)
 			}
