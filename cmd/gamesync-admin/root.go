@@ -20,6 +20,7 @@ func newRootCmd() *rootCmd {
 	cmd.SilenceUsage = true
 	cmd.AddCommand(
 		newUserCmd().cmd,
+		newRoleCmd().cmd,
 	)
 
 	// uid is 0 if ran by root

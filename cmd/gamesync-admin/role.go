@@ -1,0 +1,49 @@
+package main
+
+import (
+	"gamesync/internal/dbm"
+
+	"github.com/spf13/cobra"
+)
+
+type roleCmd struct {
+	cmd *cobra.Command
+}
+func newRoleCmd() *roleCmd {
+	root := roleCmd{}
+	cmd := &cobra.Command{
+		Use: "role",
+		Short: "Manage roles",
+	}
+	cmd.AddCommand(
+		newAddRoleCmd().cmd,
+	)
+	root.cmd = cmd
+	return &root
+}
+
+type roleAddCmd struct {
+	cmd *cobra.Command
+}
+func newAddRoleCmd() *roleAddCmd {
+	root := roleAddCmd{}
+	cmd := &cobra.Command{
+		Use: "add ROLENAME",
+		Short: "Add a role",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			db, err := dbm.OpenSQLite()
+			if err != nil {
+				return err
+			}
+			defer dbm.CloseDB(db, &err)
+
+			if err := dbm.RoleAdd(db, args[0]); err != nil {
+				return err
+			}
+			return nil
+		},
+	}
+	root.cmd = cmd
+	return &root
+}

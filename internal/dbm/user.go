@@ -89,12 +89,12 @@ func UserAddSimple(user User) error {
 	return nil
 }
 
-func RoleAdd(db *sql.DB, role Role) error {
-	if role.Name == "" {
+func RoleAdd(db *sql.DB, name string) error {
+	if name == "" {
 		return fmt.Errorf("role name can not be empty")
 	}
-	SQL := `INSERT INTO user_role (user_role_id, role_name) VALUES (?, ?)`
-	if _, err := db.Exec(SQL, role.ID, role.Name); err != nil {
+	SQL := `INSERT INTO role (role_name) VALUES (?)`
+	if _, err := db.Exec(SQL, name); err != nil {
 		return fmt.Errorf("inserting new role: %v", err)
 	}
 	return nil
