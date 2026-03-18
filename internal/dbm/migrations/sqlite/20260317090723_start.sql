@@ -1,27 +1,33 @@
 -- +goose Up
+
+CREATE TABLE permission
+(
+    permission_id INTEGER NOT NULL,
+    permission_name TEXT NOT NULL,
+
+    PRIMARY KEY (permission_id),
+    UNIQUE (permission_name)
+);
+
 CREATE TABLE role
 (
     role_id INTEGER NOT NULL,
     role_name TEXT NOT NULL,
 
-    perm_game_delete        BOOLEAN CHECK(perm_game_delete          IN(0, 1)) DEFAULT 0,
-    perm_game_delete_own    BOOLEAN CHECK(perm_game_delete_own      IN(0, 1)) DEFAULT 0,
-    perm_game_rename        BOOLEAN CHECK(perm_game_rename          IN(0, 1)) DEFAULT 0,
-    perm_game_rename_own    BOOLEAN CHECK(perm_game_rename_own      IN(0, 1)) DEFAULT 0,
-    perm_game_add           BOOLEAN CHECK(perm_game_add             IN(0, 1)) DEFAULT 0,
-    perm_user_add           BOOLEAN CHECK(perm_user_add             IN(0, 1)) DEFAULT 0,
-    perm_user_delete        BOOLEAN CHECK(perm_user_delete          IN(0, 1)) DEFAULT 0,
-    perm_user_rename        BOOLEAN CHECK(perm_user_rename          IN(0, 1)) DEFAULT 0,
-    perm_user_rename_own    BOOLEAN CHECK(perm_user_rename_own      IN(0, 1)) DEFAULT 0,
-    perm_user_change_role   BOOLEAN CHECK(perm_user_change_role     IN(0, 1)) DEFAULT 0,
-    perm_user_list          BOOLEAN CHECK(perm_user_list            IN(0, 1)) DEFAULT 0,
-    perm_role_create        BOOLEAN CHECK(perm_role_create          IN(0, 1)) DEFAULT 0,
-    perm_role_remove        BOOLEAN CHECK(perm_role_remove          IN(0, 1)) DEFAULT 0,
-    perm_role_change_perms  BOOLEAN CHECK(perm_role_change_perms    IN(0, 1)) DEFAULT 0,
-    perm_sync               BOOLEAN CHECK(perm_sync                 IN(0, 1)) DEFAULT 0,
-
     PRIMARY KEY (role_id),
     UNIQUE (role_name)
+);
+
+CREATE TABLE role_permission
+(
+    role_permission_id INTEGER NOT NULL,
+    permission_id INTEGER NOT NULL,
+    role_id INTEGER NOT NULL,
+
+    PRIMARY KEY (role_permission_id),
+    UNIQUE (role_id, permission_id),
+    FOREIGN KEY (permission_id) REFERENCES permission(permission_id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES role(role_id) ON DELETE CASCADE
 );
 
 CREATE TABLE user
