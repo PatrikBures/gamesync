@@ -19,7 +19,7 @@ func newRootCmd() *rootCmd {
 	cmd.DisableAutoGenTag = true
 	cmd.SilenceUsage = true
 	cmd.AddCommand(
-		newAddCmd().cmd,
+		newUserCmd().cmd,
 	)
 
 	// uid is 0 if ran by root

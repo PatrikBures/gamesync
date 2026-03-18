@@ -1,22 +1,38 @@
 -- +goose Up
-CREATE TABLE user_role
+CREATE TABLE role
 (
-    user_role_id INTEGER NOT NULL,
+    role_id INTEGER NOT NULL,
     role_name TEXT NOT NULL,
 
-    PRIMARY KEY (user_role_id),
-    UNIQUE (user_role_id)
+    perm_game_delete        BOOLEAN CHECK(perm_game_delete          IN(0, 1)) DEFAULT 0,
+    perm_game_delete_own    BOOLEAN CHECK(perm_game_delete_own      IN(0, 1)) DEFAULT 0,
+    perm_game_rename        BOOLEAN CHECK(perm_game_rename          IN(0, 1)) DEFAULT 0,
+    perm_game_rename_own    BOOLEAN CHECK(perm_game_rename_own      IN(0, 1)) DEFAULT 0,
+    perm_game_add           BOOLEAN CHECK(perm_game_add             IN(0, 1)) DEFAULT 0,
+    perm_user_add           BOOLEAN CHECK(perm_user_add             IN(0, 1)) DEFAULT 0,
+    perm_user_delete        BOOLEAN CHECK(perm_user_delete          IN(0, 1)) DEFAULT 0,
+    perm_user_rename        BOOLEAN CHECK(perm_user_rename          IN(0, 1)) DEFAULT 0,
+    perm_user_rename_own    BOOLEAN CHECK(perm_user_rename_own      IN(0, 1)) DEFAULT 0,
+    perm_user_change_role   BOOLEAN CHECK(perm_user_change_role     IN(0, 1)) DEFAULT 0,
+    perm_user_list          BOOLEAN CHECK(perm_user_list            IN(0, 1)) DEFAULT 0,
+    perm_role_create        BOOLEAN CHECK(perm_role_create          IN(0, 1)) DEFAULT 0,
+    perm_role_remove        BOOLEAN CHECK(perm_role_remove          IN(0, 1)) DEFAULT 0,
+    perm_role_change_perms  BOOLEAN CHECK(perm_role_change_perms    IN(0, 1)) DEFAULT 0,
+    perm_sync               BOOLEAN CHECK(perm_sync                 IN(0, 1)) DEFAULT 0,
+
+    PRIMARY KEY (role_id),
+    UNIQUE (role_name)
 );
 
 CREATE TABLE user
 (
     user_id INTEGER NOT NULL,
-    user_role_id INTEGER NOT NULL,
+    role_id INTEGER NOT NULL,
     user_name TEXT NOT NULL,
 
     PRIMARY KEY (user_id),
     UNIQUE (user_name),
-    FOREIGN KEY (user_role_id) REFERENCES user_role(user_role_id)
+    FOREIGN KEY (role_id) REFERENCES role(role_id)
 );
 
 CREATE TABLE ssh_key
