@@ -53,7 +53,7 @@ func PermsSet() error {
 	for _, p := range updatePerms{
 		valueStrings = append(valueStrings, "(?, ?)")
 		valueArgs = append(valueArgs, p, permissionNames[p])
-		fmt.Printf("added perm:  %d, %s\n", p, permissionNames[p])
+		fmt.Println("added perm:", p,)
 	}
 	stmt := fmt.Sprintf("INSERT INTO permission (permission_id, permission_name) VALUES %s", strings.Join(valueStrings, ","))
 	if _, err := tx.Exec(stmt, valueArgs...); err != nil {
