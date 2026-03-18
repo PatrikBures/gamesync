@@ -10,6 +10,8 @@ fi
 
 gamesync-admin init dirs
 gamesync-admin init migrate
+gamesync-admin init perms
+gamesync-admin init roles
 
 # exec replaces the shell with the process sshd so that pid 1 is sshd and docker can stop it cleanly
 # -D do not detach

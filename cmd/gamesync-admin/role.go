@@ -38,7 +38,7 @@ func newAddRoleCmd() *roleAddCmd {
 			}
 			defer dbm.CloseDB(db, &err)
 
-			if err := dbm.RoleAdd(db, args[0]); err != nil {
+			if err := dbm.RoleAddSimple(db, args[0]); err != nil {
 				return err
 			}
 			return nil
