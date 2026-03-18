@@ -222,10 +222,7 @@ func PermsSet() error {
 	if err != nil {
 		return fmt.Errorf("selecting current perms: %w", err)
 	}
-	for {
-		if !rows.Next() {
-			break
-		}
+	for rows.Next() {
 		var p Permission
 		var name string
 		if err := rows.Scan(&p, &name); err != nil {
