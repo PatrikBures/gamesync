@@ -69,7 +69,7 @@ func UserAdd(db *sql.DB, user User) error {
 	if user.Name == "" {
 		return fmt.Errorf("user name can not be empty")
 	}
-	SQL := `INSERT INTO user (user_name, user_role_id) VALUES (?, ?)`
+	SQL := `INSERT INTO user (user_name, role_id) VALUES (?, ?)`
 	if _, err := db.Exec(SQL, user.Name, user.ID); err != nil {
 		return fmt.Errorf("inserting new user: %v", err)
 	}

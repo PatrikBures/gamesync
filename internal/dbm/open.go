@@ -12,6 +12,7 @@ func OpenSQLite() (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening SQLite db: %v", err)
 	}
+	db.Exec("PRAGMA foreign_keys = ON")
 	return db, nil
 }
 

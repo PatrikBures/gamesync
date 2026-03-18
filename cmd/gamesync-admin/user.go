@@ -13,7 +13,7 @@ type userCmd struct {
 func newUserCmd() *userCmd {
 	root := userCmd{}
 	cmd := &cobra.Command{
-		Use: "add",
+		Use: "user",
 		Short: "Add stuff to server",
 	}
 	cmd.AddCommand(
