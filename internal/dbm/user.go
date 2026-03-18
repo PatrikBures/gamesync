@@ -61,8 +61,8 @@ func (r *Role) HasPermission(perm Permission) bool {
 
 type User struct {
 	ID int
-	Name string
 	RoleID int
+	Name string
 }
 
 func UserAdd(db *sql.DB, user User) error {
@@ -70,7 +70,7 @@ func UserAdd(db *sql.DB, user User) error {
 		return fmt.Errorf("user name can not be empty")
 	}
 	SQL := `INSERT INTO user (user_name, role_id) VALUES (?, ?)`
-	if _, err := db.Exec(SQL, user.Name, user.ID); err != nil {
+	if _, err := db.Exec(SQL, user.Name, user.RoleID); err != nil {
 		return fmt.Errorf("inserting new user: %v", err)
 	}
 	return nil
@@ -97,5 +97,58 @@ func RoleAdd(db *sql.DB, name string) error {
 	if _, err := db.Exec(SQL, name); err != nil {
 		return fmt.Errorf("inserting new role: %v", err)
 	}
+	return nil
+}
+
+func UserGet(db *sql.DB, name string) (*User, error) {
+	SQL := `SELECT user_id, role_id, user_name FROM user WHERE user_name = ?`
+	row := db.QueryRow(SQL, name)
+	if row.Err() != nil {
+		return nil, row.Err()
+	}
+	user := User{}
+	row.Scan(&user.ID, &user.RoleID, &user.Name)
+	return &user, nil
+}
+
+func RoleGetID(db *sql.DB, name string) (int, error) {
+	SQL := `SELECT role_id FROM role WHERE role_name = ?`
+	row := db.QueryRow(SQL, name)
+	if row.Err() != nil {
+		return -1, row.Err()
+	}
+	var id int
+	row.Scan(&id)
+	return id, nil
+}
+
+func UserChangeRole(db *sql.DB, userID int, roleID int) error {
+	SQL := `UPDATE OR FAIL user SET role_id = ? WHERE user_id = ?`
+	if _, err := db.Exec(SQL, roleID, userID); err != nil {
+		return err
+	}
+	return nil
+}
+func UserChangeRoleSimple(userName string, roleName string) error {
+	db, err := OpenSQLite()
+	if err != nil {
+		return err
+	}
+	defer CloseDB(db, &err)
+
+	user, err := UserGet(db, userName)
+	if err != nil {
+		return fmt.Errorf("getting user: %w", err)
+	}
+
+	roleID, err := RoleGetID(db, roleName)
+	if err != nil {
+		return fmt.Errorf("getting role id: %w", err)
+	}
+
+	if err := UserChangeRole(db, user.ID, roleID); err != nil {
+		return fmt.Errorf("changing role for user: %w", err)
+	}
+
 	return nil
 }
