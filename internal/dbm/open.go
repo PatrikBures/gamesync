@@ -10,9 +10,11 @@ import (
 func OpenSQLite() (*sql.DB, error) {
 	db, err := sql.Open("sqlite", "file:"+vars.RemoteSQLiteDb)
 	if err != nil {
-		return nil, fmt.Errorf("opening SQLite db: %v", err)
+		return nil, fmt.Errorf("opening SQLite db: %w", err)
 	}
-	db.Exec("PRAGMA foreign_keys = ON")
+	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return nil, fmt.Errorf("enabling foreign keys: %w", err)
+	}
 	return db, nil
 }
 

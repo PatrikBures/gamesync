@@ -97,7 +97,9 @@ func UserGet(db *sql.DB, name string) (*User, error) {
 		return nil, row.Err()
 	}
 	user := User{}
-	row.Scan(&user.ID, &user.RoleID, &user.Name)
+	if err := row.Scan(&user.ID, &user.RoleID, &user.Name); err != nil {
+		return nil, fmt.Errorf("scanning row: %w", err)
+	}
 	return &user, nil
 }
 
@@ -140,7 +142,9 @@ func RoleGetID(db *sql.DB, name string) (int, error) {
 		return -1, row.Err()
 	}
 	var id int
-	row.Scan(&id)
+	if err := row.Scan(&id); err != nil {
+		return -1, fmt.Errorf("scannig row: %w", err)
+	}
 	return id, nil
 }
 
@@ -186,7 +190,9 @@ func RoleAddWithPerms(db *sql.DB, role Role) error {
 			}
 		}
 	}
-	tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commiting to db: %w", err)
+	}
 	return nil
 }
 
@@ -216,7 +222,7 @@ func PermsSet() error {
 	if err != nil {
 		return fmt.Errorf("selecting current perms: %w", err)
 	}
-	for true {
+	for {
 		if !rows.Next() {
 			break
 		}

@@ -65,7 +65,9 @@ func newInitDirsCmd() *initDirsCmd {
 				if err != nil || !f.IsDir(){
 					continue
 				}
-				os.Rename(path, vars.RemoteSaveDir)
+				if err := os.Rename(path, vars.RemoteSaveDir); err != nil {
+					return fmt.Errorf("moving %s to %s: %w", path, vars.RemoteSaveDir, err)
+				}
 				fmt.Printf("moved save dir from %s to %s\n", path, vars.RemoteSaveDir)
 				break
 			}
