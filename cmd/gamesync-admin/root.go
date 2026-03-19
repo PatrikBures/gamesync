@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbm"
-	"gamesync/internal/ui"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -54,6 +53,7 @@ func newRootCmd(user *dbm.UserWithRole) *rootCmd {
 
 	if user.Role.HasPermission(dbm.PermUserAdd)           { cmd.AddCommand(newUserCmd(user).cmd) }
 	if user.Role.HasPermission(dbm.PermRoleChangePerms)   { cmd.AddCommand(newRoleCmd(user).cmd) }
+	if user.Role.HasPermission(dbm.PermKeyAddSelf)        { cmd.AddCommand(newKeyCmd(user).cmd) }
 
 	// uid is 0 if ran by root
 	// cmds are only available when ran directly from the container
@@ -67,11 +67,9 @@ func newRootCmd(user *dbm.UserWithRole) *rootCmd {
 func Execute() {
 	user, err := loadUserRole()
 	if err != nil {
-		ui.Error("%s\n", err)
 		os.Exit(2)
 	}
 	if err := newRootCmd(user).cmd.Execute(); err != nil {
-		ui.Error("%s\n", err)
 		os.Exit(1)
 	}
 }

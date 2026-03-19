@@ -45,11 +45,13 @@ CREATE TABLE ssh_key
 (
     key_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
-    hash TEXT NOT NULL,
-    data TEXT NOT NULL,
+    fingerprint TEXT NOT NULL,
+    pk BLOB NOT NULL,
+    type TEXT NOT NULL,
+    comment TEXT NOT NULL,
 
     PRIMARY KEY (key_id),
-    UNIQUE (hash),
+    UNIQUE (fingerprint),
     FOREIGN KEY (user_id) REFERENCES user(user_id)
 );
 
