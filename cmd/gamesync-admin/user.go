@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbm"
+	"gamesync/internal/ui"
 	"os"
 	"text/tabwriter"
 
@@ -93,11 +94,11 @@ func newUserLsCmd() *userLsCmd {
 				return fmt.Errorf("getting list of all users: %w", err)
 			}
 			if len(users) == 0 {
-				fmt.Println("Found no users in database")
+				ui.Info("Found no users in database\n")
 				return nil
 			}
 
-			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+			w := tabwriter.NewWriter(ui.OutWriter, 0, 0, 2, ' ', tabwriter.TabIndent)
 			if _, err := fmt.Fprintln(w, "Username:\tRole:"); err != nil {
 				return fmt.Errorf("printing header: %w", err)
 			}
@@ -110,7 +111,7 @@ func newUserLsCmd() *userLsCmd {
 				return fmt.Errorf("flushing: %w", err)
 			}
 
-			fmt.Printf("%d users found.\n", len(users))
+			ui.Info("%d users found.\n", len(users))
 			return nil
 		},
 	}

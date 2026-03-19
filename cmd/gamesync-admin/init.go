@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbm"
+	"gamesync/internal/ui"
 	"gamesync/internal/vars"
 	"os"
 
@@ -68,7 +69,7 @@ func newInitDirsCmd() *initDirsCmd {
 				if err := os.Rename(path, vars.RemoteSaveDir); err != nil {
 					return fmt.Errorf("moving %s to %s: %w", path, vars.RemoteSaveDir, err)
 				}
-				fmt.Printf("moved save dir from %s to %s\n", path, vars.RemoteSaveDir)
+				ui.Info("moved save dir from %s to %s\n", path, vars.RemoteSaveDir)
 				break
 			}
 
@@ -81,7 +82,7 @@ func newInitDirsCmd() *initDirsCmd {
 				if err := os.MkdirAll(dir, 0775); err != nil {
 					return err
 				}
-				fmt.Println("Ensured dir exists:", dir)
+				ui.Info("Ensured dir exists:\n", dir)
 			}
 			return nil
 		},
@@ -142,7 +143,7 @@ func newInitRolesCmd() *initRolesCmd {
 				if err := dbm.RoleAddWithPerms(db, role); err != nil {
 					return fmt.Errorf("adding role with perms: %w", err)
 				}
-				fmt.Println("added role:", role.Name)
+				ui.Info("added role: %s\n", role.Name)
 			}
 			
 			return nil

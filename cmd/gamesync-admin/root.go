@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbm"
+	"gamesync/internal/ui"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -67,11 +68,11 @@ func newRootCmd(role *dbm.Role) *rootCmd {
 func Execute() {
 	role, err := loadUserRole()
 	if err != nil {
-		fmt.Println(err)
+		ui.Error("%w\n", err)
 		os.Exit(2)
 	}
 	if err := newRootCmd(role).cmd.Execute(); err != nil {
-		fmt.Println(err)
+		ui.Error("%w\n", err)
 		os.Exit(1)
 	}
 }
