@@ -18,6 +18,7 @@ func newUserCmd(role *dbm.Role) *userCmd {
 	}
 	if role.HasPermission(dbm.PermUserAdd)        { cmd.AddCommand(newUserAddCmd().cmd) }
 	if role.HasPermission(dbm.PermUserChangeRole) { cmd.AddCommand(newUserChangeRoleCmd().cmd) }
+	if role.HasPermission(dbm.PermUserList)       { cmd.AddCommand(newUserLsCmd().cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -66,5 +67,40 @@ func newUserChangeRoleCmd() *userChangeRoleCmd {
 		},
 	}
 	root.cmd = cmd
+	return &root
+}
+
+type userLsCmd struct {
+	cmd *cobra.Command
+}
+func newUserLsCmd() *userLsCmd {
+	root := userLsCmd{}
+	cmd := &cobra.Command{
+		Use: "ls",
+		Short: "Lists all users",
+		Args: cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			db, err := dbm.OpenSQLite()
+			if err != nil {
+				return err
+			}
+			defer dbm.CloseDB(db, &err)
+
+			users, err := dbm.UserGetAll(db)
+			if err != nil {
+				return fmt.Errorf("getting list of all users: %w", err)
+			}
+			if len(users) == 0 {
+				fmt.Println("Found no users in database")
+				return nil
+			}
+			for _, user := range users {
+				fmt.Println(user.Name)
+			}
+			fmt.Printf("Found %d users\n", len(users))
+			return nil
+		},
+	}
+	root.cmd  = cmd
 	return &root
 }

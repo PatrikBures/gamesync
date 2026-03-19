@@ -80,3 +80,20 @@ func UserChangeRoleSimple(userName string, roleName string) error {
 	return nil
 }
 
+func UserGetAll(db *sql.DB) ([]User, error) {
+	const SQL = `SELECT user_id, role_id, user_name FROM user`
+	rows, err := db.Query(SQL)
+	if err != nil {
+		return nil, fmt.Errorf("selecting all users: %w", err)
+	}
+	var users []User
+	for rows.Next() {
+		user := User{}
+		if err := rows.Scan(&user.ID, &user.RoleID, &user.Name); err != nil {
+			return nil, fmt.Errorf("scanning row: %w", err)
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
