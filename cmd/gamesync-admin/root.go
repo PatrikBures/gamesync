@@ -9,16 +9,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func loadUserRole() (*dbm.Role, error) {
+func loadUserRole() (*dbm.UserWithRole, error) {
 	userName := os.Getenv("GAMESYNC_USER")
 
 	if userName == "" {
-		role := dbm.Role{
-			ID: -1,
+		u := dbm.UserWithRole{
 			Name: "root",
-			Permissions: dbm.RoleAllPerms(true),
+			ID: -1,
+			Role: dbm.Role{
+				ID: -1,
+				Name: "root",
+				Permissions: dbm.RoleAllPerms(true),
+			},
 		}
-		return &role, nil
+		return &u, nil
 	}
 	fmt.Println("running as user:", userName)
 
@@ -28,23 +32,18 @@ func loadUserRole() (*dbm.Role, error) {
 	}
 	defer dbm.CloseDB(db, &err)
 
-	user, err := dbm.UserGet(db, userName)
+	userWithRole, err := dbm.UserGetWithRole(db, userName)
 	if err != nil {
-		return nil, fmt.Errorf("getting user %s: %w", userName, err)
+		return nil, fmt.Errorf("getting user with their role: %w", err)
 	}
-
-	role, err := dbm.RoleGetWithPerms(db, user.RoleID)
-	if err != nil {
-		return nil, fmt.Errorf("getting role for user: %s: %w", user.Name, err)
-	}
-	return &role, nil
+	return userWithRole, nil
 }
 
 type rootCmd struct {
 	cmd *cobra.Command
 }
 
-func newRootCmd(role *dbm.Role) *rootCmd {
+func newRootCmd(user *dbm.UserWithRole) *rootCmd {
 	root := rootCmd{}
 	cmd := &cobra.Command{
 		Use: "gamesync-admin",
@@ -53,8 +52,8 @@ func newRootCmd(role *dbm.Role) *rootCmd {
 	cmd.DisableAutoGenTag = true
 	cmd.SilenceUsage = true
 
-	if role.HasPermission(dbm.PermUserAdd)           { cmd.AddCommand(newUserCmd(role).cmd) }
-	if role.HasPermission(dbm.PermRoleChangePerms)   { cmd.AddCommand(newRoleCmd(role).cmd) }
+	if user.Role.HasPermission(dbm.PermUserAdd)           { cmd.AddCommand(newUserCmd(user).cmd) }
+	if user.Role.HasPermission(dbm.PermRoleChangePerms)   { cmd.AddCommand(newRoleCmd(user).cmd) }
 
 	// uid is 0 if ran by root
 	// cmds are only available when ran directly from the container
@@ -66,13 +65,13 @@ func newRootCmd(role *dbm.Role) *rootCmd {
 }
 
 func Execute() {
-	role, err := loadUserRole()
+	user, err := loadUserRole()
 	if err != nil {
-		ui.Error("%w\n", err)
+		ui.Error("%s\n", err)
 		os.Exit(2)
 	}
-	if err := newRootCmd(role).cmd.Execute(); err != nil {
-		ui.Error("%w\n", err)
+	if err := newRootCmd(user).cmd.Execute(); err != nil {
+		ui.Error("%s\n", err)
 		os.Exit(1)
 	}
 }

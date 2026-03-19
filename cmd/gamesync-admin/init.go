@@ -82,7 +82,7 @@ func newInitDirsCmd() *initDirsCmd {
 				if err := os.MkdirAll(dir, 0775); err != nil {
 					return err
 				}
-				ui.Info("Ensured dir exists:\n", dir)
+				ui.Info("Ensured dir exists: %s\n", dir)
 			}
 			return nil
 		},

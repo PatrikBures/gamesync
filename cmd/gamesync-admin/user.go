@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"gamesync/internal/dbm"
 	"gamesync/internal/ui"
-	"os"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
@@ -13,15 +12,15 @@ import (
 type userCmd struct {
 	cmd *cobra.Command
 }
-func newUserCmd(role *dbm.Role) *userCmd {
+func newUserCmd(user *dbm.UserWithRole) *userCmd {
 	root := userCmd{}
 	cmd := &cobra.Command{
 		Use: "user",
 		Short: "Add stuff to server",
 	}
-	if role.HasPermission(dbm.PermUserAdd)        { cmd.AddCommand(newUserAddCmd().cmd) }
-	if role.HasPermission(dbm.PermUserChangeRole) { cmd.AddCommand(newUserChangeRoleCmd().cmd) }
-	if role.HasPermission(dbm.PermUserList)       { cmd.AddCommand(newUserLsCmd().cmd) }
+	if user.Role.HasPermission(dbm.PermUserAdd)        { cmd.AddCommand(newUserAddCmd().cmd) }
+	if user.Role.HasPermission(dbm.PermUserChangeRole) { cmd.AddCommand(newUserChangeRoleCmd().cmd) }
+	if user.Role.HasPermission(dbm.PermUserList)       { cmd.AddCommand(newUserLsCmd().cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -37,7 +36,13 @@ func newUserAddCmd() *userAddCmd {
 		Short: "Add a new user",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := dbm.UserAddSimple(dbm.User{
+			db, err := dbm.OpenSQLite()
+			if err != nil {
+				return err
+			}
+			defer dbm.CloseDB(db, &err)
+
+			if err := dbm.UserAdd(db, dbm.User{
 				Name: args[0], 
 				RoleID: 0,
 			}); err != nil {

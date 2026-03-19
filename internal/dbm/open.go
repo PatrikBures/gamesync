@@ -8,12 +8,15 @@ import (
 )
 
 func OpenSQLite() (*sql.DB, error) {
-	db, err := sql.Open("sqlite", "file:"+vars.RemoteSQLiteDb)
+	db, err := sql.Open("sqlite", "file:"+vars.RemoteSQLiteDb+"?_busy_timeout=1000")
 	if err != nil {
 		return nil, fmt.Errorf("opening SQLite db: %w", err)
 	}
 	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		return nil, fmt.Errorf("enabling foreign keys: %w", err)
+	}
+	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
+		return nil, fmt.Errorf("enabling WAL: %w", err)
 	}
 	return db, nil
 }

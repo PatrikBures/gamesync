@@ -16,6 +16,11 @@ type UserWithRoleName struct {
 	RoleName string
 	Name string
 }
+type UserWithRole struct {
+	ID int
+	Name string
+	Role Role
+}
 
 func UserAdd(db *sql.DB, user User) error {
 	if user.Name == "" {
@@ -24,19 +29,6 @@ func UserAdd(db *sql.DB, user User) error {
 	SQL := `INSERT INTO user (user_name, role_id) VALUES (?, ?)`
 	if _, err := db.Exec(SQL, user.Name, user.RoleID); err != nil {
 		return fmt.Errorf("inserting new user: %v", err)
-	}
-	return nil
-}
-
-func UserAddSimple(user User) error {
-	db, err := OpenSQLite()
-	if err != nil {
-		return err
-	}
-	defer CloseDB(db, &err)
-
-	if err := UserAdd(db, user); err != nil {
-		return fmt.Errorf("creating user: %v", err)
 	}
 	return nil
 }
@@ -54,7 +46,24 @@ func UserGet(db *sql.DB, name string) (*User, error) {
 	}
 	return &user, nil
 }
+func UserGetWithRole(db *sql.DB, name string) (*UserWithRole, error) {
+	user, err := UserGet(db, name)
+	if err != nil {
+		return nil, fmt.Errorf("getting user %s: %w", name, err)
+	}
 
+	role, err := RoleGetWithPerms(db, user.RoleID)
+	if err != nil {
+		return nil, fmt.Errorf("getting role for user: %s: %w", user.Name, err)
+	}
+
+	userWithRole := UserWithRole{
+		Name: user.Name,
+		ID: user.ID,
+		Role: role,
+	}
+	return &userWithRole, nil
+}
 func UserChangeRole(db *sql.DB, userID int, roleID int) error {
 	SQL := `UPDATE OR FAIL user SET role_id = ? WHERE user_id = ?`
 	if _, err := db.Exec(SQL, roleID, userID); err != nil {

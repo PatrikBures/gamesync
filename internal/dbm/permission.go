@@ -22,6 +22,8 @@ const (
 	PermRoleAdd
 	PermRoleRemove
 	PermRoleChangePerms
+	PermKeyAdd
+	PermKeyAddSelf
 )
 
 var permissionNames = map[Permission]string{
@@ -40,6 +42,8 @@ var permissionNames = map[Permission]string{
 	PermRoleAdd:           "role_add",
 	PermRoleRemove:        "role_remove",
 	PermRoleChangePerms:   "role_change_perms",
+	PermKeyAdd:            "key_add",
+	PermKeyAddSelf:        "key_add_self",
 }
 
 func (p Permission) String() string {
