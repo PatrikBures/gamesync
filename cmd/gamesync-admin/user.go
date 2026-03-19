@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbm"
+	"os"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
@@ -94,10 +96,21 @@ func newUserLsCmd() *userLsCmd {
 				fmt.Println("Found no users in database")
 				return nil
 			}
-			for _, user := range users {
-				fmt.Println(user.Name)
+
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+			if _, err := fmt.Fprintln(w, "Username:\tRole:"); err != nil {
+				return fmt.Errorf("printing header: %w", err)
 			}
-			fmt.Printf("Found %d users\n", len(users))
+			for _, user := range users {
+				if _, err := fmt.Fprintf(w, "%s\t%s\n", user.Name, user.RoleName); err != nil {
+					return fmt.Errorf("adding user to writer: %w", err)
+				}
+			}
+			if err := w.Flush(); err != nil {
+				return fmt.Errorf("flushing: %w", err)
+			}
+
+			fmt.Printf("%d users found.\n", len(users))
 			return nil
 		},
 	}

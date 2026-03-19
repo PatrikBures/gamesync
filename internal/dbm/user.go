@@ -10,6 +10,12 @@ type User struct {
 	RoleID int
 	Name string
 }
+type UserWithRoleName struct {
+	ID int
+	RoleID int
+	RoleName string
+	Name string
+}
 
 func UserAdd(db *sql.DB, user User) error {
 	if user.Name == "" {
@@ -80,16 +86,16 @@ func UserChangeRoleSimple(userName string, roleName string) error {
 	return nil
 }
 
-func UserGetAll(db *sql.DB) ([]User, error) {
-	const SQL = `SELECT user_id, role_id, user_name FROM user`
+func UserGetAll(db *sql.DB) ([]UserWithRoleName, error) {
+	const SQL = `SELECT user_id, role_id, role_name, user_name FROM user JOIN role USING (role_id)`
 	rows, err := db.Query(SQL)
 	if err != nil {
 		return nil, fmt.Errorf("selecting all users: %w", err)
 	}
-	var users []User
+	var users []UserWithRoleName
 	for rows.Next() {
-		user := User{}
-		if err := rows.Scan(&user.ID, &user.RoleID, &user.Name); err != nil {
+		user := UserWithRoleName{}
+		if err := rows.Scan(&user.ID, &user.RoleID, &user.RoleName, &user.Name); err != nil {
 			return nil, fmt.Errorf("scanning row: %w", err)
 		}
 		users = append(users, user)
