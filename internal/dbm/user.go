@@ -5,50 +5,6 @@ import (
 	"fmt"
 )
 
-
-type Permission int
-const (
-	PermSync Permission = iota
-	PermGameDelete
-	PermGameDeleteOwn
-	PermGameRename
-	PermGameRenameOwn
-	PermGameAdd
-	PermUserAdd
-	PermUserDelete
-	PermUserRename
-	PermUserRenameSelf
-	PermUserChangeRole
-	PermUserList
-	PermRoleAdd
-	PermRoleRemove
-	PermRoleChangePerms
-)
-
-var permissionNames = map[Permission]string{
-	PermSync:              "sync",
-	PermGameDelete:        "game_delete",
-	PermGameDeleteOwn:     "game_delete_own",
-	PermGameRename:        "game_rename",
-	PermGameRenameOwn:     "game_rename_own",
-	PermGameAdd:           "game_add",
-	PermUserAdd:           "user_add",
-	PermUserDelete:        "user_delete",
-	PermUserRename:        "user_rename",
-	PermUserRenameSelf:    "user_rename_self",
-	PermUserChangeRole:    "user_change_role",
-	PermUserList:          "user_list",
-	PermRoleAdd:           "role_add",
-	PermRoleRemove:        "role_remove",
-	PermRoleChangePerms:   "role_change_perms",
-}
-func (p Permission) String() string {
-	if name, ok := permissionNames[p]; ok {
-		return name
-	}
-	panic(fmt.Errorf("permission with id %d not mapped", p))
-}
-
 type User struct {
 	ID int
 	RoleID int
