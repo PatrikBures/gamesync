@@ -10,16 +10,14 @@ import (
 type userCmd struct {
 	cmd *cobra.Command
 }
-func newUserCmd() *userCmd {
+func newUserCmd(role *dbm.Role) *userCmd {
 	root := userCmd{}
 	cmd := &cobra.Command{
 		Use: "user",
 		Short: "Add stuff to server",
 	}
-	cmd.AddCommand(
-		newUserAddCmd().cmd,
-		newUserChangeRoleCmd().cmd,
-	)
+	if role.HasPermission(dbm.PermUserAdd)        { cmd.AddCommand(newUserAddCmd().cmd) }
+	if role.HasPermission(dbm.PermUserChangeRole) { cmd.AddCommand(newUserChangeRoleCmd().cmd) }
 	root.cmd = cmd
 	return &root
 }

@@ -20,7 +20,7 @@ const (
 	PermUserRenameSelf
 	PermUserChangeRole
 	PermUserList
-	PermRoleCreate
+	PermRoleAdd
 	PermRoleRemove
 	PermRoleChangePerms
 )
@@ -38,7 +38,7 @@ var permissionNames = map[Permission]string{
 	PermUserRenameSelf:    "user_rename_self",
 	PermUserChangeRole:    "user_change_role",
 	PermUserList:          "user_list",
-	PermRoleCreate:        "role_create",
+	PermRoleAdd:           "role_add",
 	PermRoleRemove:        "role_remove",
 	PermRoleChangePerms:   "role_change_perms",
 }

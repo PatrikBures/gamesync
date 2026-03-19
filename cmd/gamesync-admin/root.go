@@ -52,12 +52,8 @@ func newRootCmd(role *dbm.Role) *rootCmd {
 	cmd.DisableAutoGenTag = true
 	cmd.SilenceUsage = true
 
-	if role.HasPermission(dbm.PermUserAdd) {
-		cmd.AddCommand(newUserCmd().cmd)
-	}
-	cmd.AddCommand(
-		newRoleCmd().cmd,
-	)
+	if role.HasPermission(dbm.PermUserAdd)           { cmd.AddCommand(newUserCmd(role).cmd) }
+	if role.HasPermission(dbm.PermRoleChangePerms)   { cmd.AddCommand(newRoleCmd(role).cmd) }
 
 	// uid is 0 if ran by root
 	// cmds are only available when ran directly from the container
