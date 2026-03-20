@@ -26,7 +26,7 @@ type keyAddCmd struct {
 	opts keyAddOpts
 }
 type keyAddOpts struct {
-	userName string
+	username string
 }
 func newKeyAddCmd(user *dbm.UserWithRole) *keyAddCmd {
 	root := keyAddCmd{}
@@ -40,16 +40,16 @@ func newKeyAddCmd(user *dbm.UserWithRole) *keyAddCmd {
 			defer dbm.CloseDB(db, &err)
 
 			u := dbm.User{}
-			if root.opts.userName == "" {
+			if root.opts.username == "" {
 				if user.ID >= 0 {
 					return fmt.Errorf("not running as a logged in user")
 				}
 				u.Name = user.Name
 				u.ID = user.ID
 			} else {
-				s, err := dbm.UserGet(db, root.opts.userName)
+				s, err := dbm.UserGet(db, root.opts.username)
 				if err != nil {
-					return fmt.Errorf("getting user %s: %w", root.opts.userName, err)
+					return fmt.Errorf("getting user %s: %w", root.opts.username, err)
 				}
 				u = *s
 			}
@@ -63,7 +63,7 @@ func newKeyAddCmd(user *dbm.UserWithRole) *keyAddCmd {
 		},
 	}
 	if user.Role.HasPermission(dbm.PermKeyAdd) {
-		cmd.Flags().StringVarP(&root.opts.userName, "user", "u", "", "Add key to specific user, otherwise add to yourself")
+		cmd.Flags().StringVarP(&root.opts.username, "user", "u", "", "Add key to specific user, otherwise add to yourself")
 	}
 	root.cmd = cmd
 	return &root

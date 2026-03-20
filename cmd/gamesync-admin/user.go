@@ -66,10 +66,10 @@ func newUserChangeRoleCmd() *userChangeRoleCmd {
 		Short: "Changes role of a user",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			userName := args[0]
+			username := args[0]
 			roleName := args[1]
-			if err := dbm.UserChangeRoleSimple(userName, roleName); err != nil {
-				return fmt.Errorf("chaning role for %s to %s: %w", userName, roleName, err)
+			if err := dbm.UserChangeRoleSimple(username, roleName); err != nil {
+				return fmt.Errorf("chaning role for %s to %s: %w", username, roleName, err)
 			}
 			return nil
 		},

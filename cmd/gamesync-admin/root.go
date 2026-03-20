@@ -9,9 +9,9 @@ import (
 )
 
 func loadUserRole() (*dbm.UserWithRole, error) {
-	userName := os.Getenv("GAMESYNC_USER")
+	username := os.Getenv("GAMESYNC_USER")
 
-	if userName == "" {
+	if username == "" {
 		u := dbm.UserWithRole{
 			Name: "root",
 			ID: -1,
@@ -30,7 +30,7 @@ func loadUserRole() (*dbm.UserWithRole, error) {
 	}
 	defer dbm.CloseDB(db, &err)
 
-	userWithRole, err := dbm.UserGetWithRole(db, userName)
+	userWithRole, err := dbm.UserGetWithRole(db, username)
 	if err != nil {
 		return nil, fmt.Errorf("getting user with their role: %w", err)
 	}

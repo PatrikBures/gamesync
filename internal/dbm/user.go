@@ -71,14 +71,14 @@ func UserChangeRole(db *sql.DB, userID int, roleID int) error {
 	}
 	return nil
 }
-func UserChangeRoleSimple(userName string, roleName string) error {
+func UserChangeRoleSimple(username string, roleName string) error {
 	db, err := OpenSQLite()
 	if err != nil {
 		return err
 	}
 	defer CloseDB(db, &err)
 
-	user, err := UserGet(db, userName)
+	user, err := UserGet(db, username)
 	if err != nil {
 		return fmt.Errorf("getting user: %w", err)
 	}
