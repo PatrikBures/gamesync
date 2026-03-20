@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbm"
+	"gamesync/internal/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -16,7 +17,8 @@ func newKeyCmd(user *dbm.UserWithRole) *keyCmd {
 		Use: "key",
 		Short: "Manage ssh keys",
 	}
-	if user.Role.HasPermission(dbm.PermKeyAdd) || user.Role.HasPermission(dbm.PermKeyAddSelf) { cmd.AddCommand(newKeyAddCmd(user).cmd) }
+	if user.Role.HasPermission(dbm.PermKeyAdd)  || user.Role.HasPermission(dbm.PermKeyAddSelf) { cmd.AddCommand(newKeyAddCmd(user).cmd) }
+	if user.Role.HasPermission(dbm.PermKeyList) || user.Role.HasPermission(dbm.PermKeyListOwn) { cmd.AddCommand(newKeyListPublicCmd(user).cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -64,6 +66,64 @@ func newKeyAddCmd(user *dbm.UserWithRole) *keyAddCmd {
 	}
 	if user.Role.HasPermission(dbm.PermKeyAdd) {
 		cmd.Flags().StringVarP(&root.opts.username, "user", "u", "", "Add key to specific user, otherwise add to yourself")
+	}
+	root.cmd = cmd
+	return &root
+}
+
+type keyListPublicCmd struct {
+	cmd *cobra.Command
+}
+func newKeyListPublicCmd(user *dbm.UserWithRole) *keyListPublicCmd {
+	root := keyListPublicCmd{}
+	cmd := &cobra.Command{
+		Use: "ls USERNAME",
+		Short: "List all public keys owned by USERNAME seperated by new line",
+		Args: cobra.RangeArgs(0, 1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			db, err := dbm.OpenSQLite()
+			if err != nil { return err }
+			defer dbm.CloseDB(db, &err)
+
+			u := dbm.User{}
+
+			if len(args) == 1 {
+				username := args[0]
+				newUser, err := dbm.UserGet(db, username)
+				if err != nil {
+					return fmt.Errorf("getting user '%s': %w", username, err)
+				}
+				u = *newUser
+
+			} else {
+				if user.ID < 0 {
+					return fmt.Errorf("not running as a logged in user: %w", err)
+				}
+				u.ID = user.ID
+				u.Name = user.Name
+			}
+
+			keys, err := dbm.KeyGetKeysForUserID(db, u.ID)
+			if err != nil  {
+				return fmt.Errorf("getting for for user '%s': %w", u.Name, err)
+			}
+			if len(keys) == 0 {
+				ui.Info("User '%s' has no keys\n", u.Name)
+				return nil
+			}
+			for _, k := range keys {
+				fmt.Println("UserID:", k.UserID)
+				fmt.Println("ID:", k.ID)
+				fmt.Println("Fingerprint:", k.Fingerprint)
+				fmt.Println("Key length:", len(k.PK))
+				fmt.Println("Comment:", k.Comment)
+				fmt.Println("Type:", k.Type)
+				fmt.Println()
+			}
+
+
+			return nil
+		},
 	}
 	root.cmd = cmd
 	return &root
