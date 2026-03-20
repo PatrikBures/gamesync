@@ -23,7 +23,6 @@ func loadUserRole() (*dbm.UserWithRole, error) {
 		}
 		return &u, nil
 	}
-	fmt.Println("running as user:", userName)
 
 	db, err := dbm.OpenSQLite()
 	if err != nil {
