@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"gamesync/internal/dbm"
 	"gamesync/internal/ui"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
 )
 
 type keyCmd struct {
@@ -73,6 +75,10 @@ func newKeyAddCmd(user *dbm.UserWithRole) *keyAddCmd {
 
 type keyListPublicCmd struct {
 	cmd *cobra.Command
+	opts keyListPublicOpts
+}
+type keyListPublicOpts struct {
+	includeComment bool
 }
 func newKeyListPublicCmd(user *dbm.UserWithRole) *keyListPublicCmd {
 	root := keyListPublicCmd{}
@@ -112,19 +118,23 @@ func newKeyListPublicCmd(user *dbm.UserWithRole) *keyListPublicCmd {
 				return nil
 			}
 			for _, k := range keys {
-				fmt.Println("UserID:", k.UserID)
-				fmt.Println("ID:", k.ID)
-				fmt.Println("Fingerprint:", k.Fingerprint)
-				fmt.Println("Key length:", len(k.PK))
-				fmt.Println("Comment:", k.Comment)
-				fmt.Println("Type:", k.Type)
-				fmt.Println()
+				t, err := ssh.ParsePublicKey(k.PK)
+				if err != nil {
+					return fmt.Errorf("parsing public key: %w", err)
+				}
+				key := ssh.MarshalAuthorizedKey(t)
+				if root.opts.includeComment {
+				keyWithoutNewLine, _ := strings.CutSuffix(string(key), "\n")
+					fmt.Printf("%s %s\n", keyWithoutNewLine, k.Comment, )
+				} else {
+					fmt.Print(string(key))
+				}
 			}
-
 
 			return nil
 		},
 	}
+	cmd.Flags().BoolVarP(&root.opts.includeComment, "comment", "c", false, "Include key comment")
 	root.cmd = cmd
 	return &root
 }
