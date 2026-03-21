@@ -20,8 +20,9 @@ gamesync-admin init migrate
 gamesync-admin init perms
 gamesync-admin init roles
 
-chown :db /data/db
+chown -R :db /data/db
 chmod 770 /data/db
+chmod 660 /data/db/*
 
 # exec replaces the shell with the process sshd so that pid 1 is sshd and docker can stop it cleanly
 # -D do not detach

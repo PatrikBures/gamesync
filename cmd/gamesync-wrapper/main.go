@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"gamesync/internal/dbm"
+	"gamesync/internal/util"
 	"log"
 	"os"
 	"strconv"
@@ -27,7 +28,14 @@ func m() error {
 	}
 
 	cmd := os.Getenv("SSH_ORIGINAL_COMMAND")
-	if err := syscall.Exec("/usr/local/bin/gamesync-admin", []string{"/usr/local/bin/gamesync-admin", cmd}, os.Environ()); err != nil {
+
+	cmdParsed := util.ParseArgs(cmd)
+
+	cmdCombinded := make([]string, 0, len(cmdParsed)+1)
+	cmdCombinded = append(cmdCombinded, "/usr/local/bin/gamesync-admin")
+	cmdCombinded = append(cmdCombinded, cmdParsed...)
+
+	if err := syscall.Exec("/usr/local/bin/gamesync-admin", cmdCombinded, os.Environ()); err != nil {
 		return err
 	}
 	return nil
