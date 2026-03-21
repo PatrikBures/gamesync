@@ -79,6 +79,7 @@ type keyListPublicCmd struct {
 }
 type keyListPublicOpts struct {
 	includeComment bool
+	includeFingerprint bool
 }
 func newKeyListPublicCmd(user *dbm.UserWithRole) *keyListPublicCmd {
 	root := keyListPublicCmd{}
@@ -123,18 +124,23 @@ func newKeyListPublicCmd(user *dbm.UserWithRole) *keyListPublicCmd {
 					return fmt.Errorf("parsing public key: %w", err)
 				}
 				key := ssh.MarshalAuthorizedKey(t)
-				if root.opts.includeComment {
-					keyWithoutNewLine, _ := strings.CutSuffix(string(key), "\n")
-					ui.Info("%s %s\n", keyWithoutNewLine, k.Comment)
-				} else {
-					ui.Info("%s\n", string(key))
+
+				keyWithoutNewLine, _ := strings.CutSuffix(string(key), "\n")
+				p := []string{keyWithoutNewLine}
+				if root.opts.includeComment     { p = append(p, k.Comment) }
+				if root.opts.includeFingerprint { p = append(p, k.Fingerprint) }
+
+				for _, s := range p {
+					ui.Info("%s ", s)
 				}
+				ui.Info("\n")
 			}
 
 			return nil
 		},
 	}
 	cmd.Flags().BoolVarP(&root.opts.includeComment, "comment", "c", false, "Include key comment")
+	cmd.Flags().BoolVarP(&root.opts.includeFingerprint, "fingerprint", "f", false, "Include key fingerprint")
 	root.cmd = cmd
 	return &root
 }
