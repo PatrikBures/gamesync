@@ -65,13 +65,13 @@ build-state: mkbin
 	CGO_ENABLED=0 go build -o bin/$(BIN_STATE_NAME) ./cmd/gamesync-state
 build-admin: mkbin
 	@echo "building $(BIN_ADMIN_NAME)..."
-	CGO_ENABLED=0 go build -o bin/$(BIN_ADMIN_NAME) ./cmd/gamesync-admin
+	CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o bin/$(BIN_ADMIN_NAME) ./cmd/gamesync-admin
 build-auth: mkbin
 	@echo "building $(BIN_AUTH_NAME)..."
-	CGO_ENABLED=0 go build -o bin/$(BIN_AUTH_NAME) ./cmd/gamesync-auth
+	CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o bin/$(BIN_AUTH_NAME) ./cmd/gamesync-auth
 build-wrapper: mkbin
 	@echo "building $(BIN_WRAPPER_NAME)..."
-	CGO_ENABLED=0 go build -o bin/$(BIN_WRAPPER_NAME) ./cmd/gamesync-wrapper
+	CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o bin/$(BIN_WRAPPER_NAME) ./cmd/gamesync-wrapper
 
 build-container: build-state
 	@echo "building container..."
