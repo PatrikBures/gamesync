@@ -3,6 +3,7 @@ BIN_NAME_DEV := $(BIN_NAME)-dev
 BIN_STATE_NAME := gamesync-state
 BIN_ADMIN_NAME := $(BIN_NAME)-admin
 BIN_AUTH_NAME := $(BIN_NAME)-auth
+BIN_WRAPPER_NAME := $(BIN_NAME)-wrapper
 CONTAINER_NAME := $(BIN_NAME)
 VERSION ?= dev
 PREFIX ?= /usr/local
@@ -56,21 +57,21 @@ go-test:
 	@echo "testing..."
 	go test -v ./...
 
+mkbin:
+	mkdir -p bin
 
-build-state:
+build-state: mkbin
 	@echo "building $(BIN_STATE_NAME)..."
-	mkdir -p bin
 	CGO_ENABLED=0 go build -o bin/$(BIN_STATE_NAME) ./cmd/gamesync-state
-
-build-admin:
+build-admin: mkbin
 	@echo "building $(BIN_ADMIN_NAME)..."
-	mkdir -p bin
 	CGO_ENABLED=0 go build -o bin/$(BIN_ADMIN_NAME) ./cmd/gamesync-admin
-
-build-auth:
+build-auth: mkbin
 	@echo "building $(BIN_AUTH_NAME)..."
-	mkdir -p bin
 	CGO_ENABLED=0 go build -o bin/$(BIN_AUTH_NAME) ./cmd/gamesync-auth
+build-wrapper: mkbin
+	@echo "building $(BIN_WRAPPER_NAME)..."
+	CGO_ENABLED=0 go build -o bin/$(BIN_WRAPPER_NAME) ./cmd/gamesync-wrapper
 
 build-container: build-state
 	@echo "building container..."

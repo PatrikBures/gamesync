@@ -33,9 +33,10 @@ mkdir -p "$HOST_KEY_DIR"
 docker container stop ${CONTAINER_NAME}
 docker container rm ${CONTAINER_NAME}
 
-make build-admin || exit
-make build-state || exit 
-make build-auth  || exit 
+make build-admin    || exit
+make build-state    || exit 
+make build-auth     || exit 
+make build-wrapper  || exit
 
 docker build ./ -t gamesync:latest  || exit
 

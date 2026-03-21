@@ -5,6 +5,7 @@ FROM alpine:${ALPINE_VERSION}
 ARG GAMESYNC_STATE_PATH="bin/gamesync-state"
 ARG GAMESYNC_ADMIN_PATH="bin/gamesync-admin"
 ARG GAMESYNC_AUTH_PATH="bin/gamesync-auth"
+ARG GAMESYNC_WRAPPER_PATH="bin/gamesync-wrapper"
 
 RUN apk add --no-cache \
     restic \
@@ -13,12 +14,13 @@ RUN apk add --no-cache \
     tzdata \
     bash
 
+COPY --chmod=555 ${GAMESYNC_STATE_PATH}     /usr/local/bin/gamesync-state
+COPY --chmod=555 ${GAMESYNC_ADMIN_PATH}     /usr/local/bin/gamesync-admin
+COPY --chmod=555 ${GAMESYNC_AUTH_PATH}      /usr/local/bin/gamesync-auth
+COPY --chmod=555 ${GAMESYNC_WRAPPER_PATH}   /usr/local/bin/gamesync-wrapper
+
 COPY server/sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
 COPY --chmod=500 server/entrypoint.sh /entrypoint.sh
-COPY --chmod=555 server/restricted-shell /usr/local/bin/restricted-shell
-COPY --chmod=555 ${GAMESYNC_STATE_PATH} /usr/local/bin/gamesync-state
-COPY --chmod=555 ${GAMESYNC_ADMIN_PATH} /usr/local/bin/gamesync-admin
-COPY --chmod=555 ${GAMESYNC_AUTH_PATH} /usr/local/bin/gamesync-auth
 
 EXPOSE 22
 

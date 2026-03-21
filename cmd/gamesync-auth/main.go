@@ -23,12 +23,16 @@ func printKey() error {
 	if err != nil { return err }
 	defer dbm.CloseDB(db, &err)
 
-	keys, err := dbm.KeyGetKeysByFingerprint(db, fingerprint)
+	keys, userID, err := dbm.KeyGetKeysByFingerprint(db, fingerprint)
 	if err != nil {
 		return fmt.Errorf("getting keys: %w", err)
 	}
+	user, err := dbm.UserGetFromID(db, userID)
+	if err != nil {
+		return fmt.Errorf("getting user: %w", err)
+	}
 	for _, k := range keys {
-		fmt.Print(k)
+		fmt.Printf(`command="/usr/local/bin/gamesync-wrapper -username %s -userid %d" %s`, user.Name, user.ID, k)
 	}
 
 	return nil

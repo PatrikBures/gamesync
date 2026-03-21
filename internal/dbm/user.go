@@ -64,6 +64,16 @@ func UserGetWithRole(db *sql.DB, name string) (*UserWithRole, error) {
 	}
 	return &userWithRole, nil
 }
+
+func UserGetFromID(db *sql.DB, id int) (*User, error) {
+	const SQL = `SELECT user_id, role_id, user_name FROM user WHERE user_id = ?`
+	row := db.QueryRow(SQL, id)
+	user := User{}
+	if err := row.Scan(&user.ID, &user.RoleID, &user.Name); err != nil {
+		return nil, fmt.Errorf("scanning row: %w", err)
+	}
+	return &user, nil
+}
 func UserChangeRole(db *sql.DB, userID int, roleID int) error {
 	SQL := `UPDATE OR FAIL user SET role_id = ? WHERE user_id = ?`
 	if _, err := db.Exec(SQL, roleID, userID); err != nil {
