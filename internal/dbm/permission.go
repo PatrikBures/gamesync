@@ -22,6 +22,8 @@ const (
 	PermRoleAdd
 	PermRoleRemove
 	PermRoleChangePerms
+	PermRoleListPerms
+	PermRoleListPermsOwn
 	PermKeyAdd
 	PermKeyAddSelf
 	PermKeyList
@@ -44,6 +46,8 @@ var permissionNames = map[Permission]string{
 	PermRoleAdd:           "role_add",
 	PermRoleRemove:        "role_remove",
 	PermRoleChangePerms:   "role_change_perms",
+	PermRoleListPerms:     "role_list_perms",
+	PermRoleListPermsOwn:  "role_list_perms_own",
 	PermKeyAdd:            "key_add",
 	PermKeyAddSelf:        "key_add_self",
 	PermKeyList:           "key_list",
