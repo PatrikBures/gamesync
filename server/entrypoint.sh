@@ -8,10 +8,20 @@ if [ ! -f /etc/ssh/keys/ssh_host_ed25519_key ]; then
     mv /etc/ssh/ssh_host_*key* /etc/ssh/keys/
 fi
 
+if ! id -u gamesync &> /dev/null; then
+    adduser gamesync -D -s /bin/sh
+    passwd -u gamesync
+fi
+addgroup db
+adduser gamesync db
+
 gamesync-admin init dirs
 gamesync-admin init migrate
 gamesync-admin init perms
 gamesync-admin init roles
+
+chown :db /data/db
+chmod 770 /data/db
 
 # exec replaces the shell with the process sshd so that pid 1 is sshd and docker can stop it cleanly
 # -D do not detach

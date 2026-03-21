@@ -46,3 +46,25 @@ func KeyGetKeysForUserID(db *sql.DB, userID int) ([]Key, error) {
 
 	return keys, nil
 }
+
+func KeyGetKeysByFingerprint(db *sql.DB, fp string) ([]string, error) {
+	const SQL = `SELECT pk FROM ssh_key where user_id = (SELECT user_id comment FROM ssh_key WHERE fingerprint = ? LIMIT 1)`
+	rows, err := db.Query(SQL, fp)
+	if err != nil {
+		return nil, fmt.Errorf("selecting keys: %w", err)
+	}
+	var keys []string
+	for rows.Next() {
+		var k []byte
+		if err := rows.Scan(&k); err != nil {
+			return nil, fmt.Errorf("scanning row: %w", err)
+		}
+		pk, err := ssh.ParsePublicKey(k)
+		if err != nil {
+			return nil, fmt.Errorf("parsing public key: %w", err)
+		}
+		key := ssh.MarshalAuthorizedKey(pk)
+		keys = append(keys, string(key))
+	}
+	return keys, nil
+}
