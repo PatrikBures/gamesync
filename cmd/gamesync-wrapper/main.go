@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"gamesync/internal/dbm"
 	"log"
 	"os"
@@ -18,8 +19,12 @@ func main() {
 func m() error {
 	user := parseUser()
 
-	os.Setenv("GAMESYNC_USER", user.Name)
-	os.Setenv("GAMESYNC_USER_ID", strconv.Itoa(user.ID))
+	if err := os.Setenv("GAMESYNC_USER", user.Name); err != nil {
+		return fmt.Errorf("setting GAMESYNC_USER: %w", err)
+	}
+	if err := os.Setenv("GAMESYNC_USER_ID", strconv.Itoa(user.ID)); err != nil {
+		return fmt.Errorf("setting GAMESYNC_USER_ID: %w", err)
+	}
 
 	cmd := os.Getenv("SSH_ORIGINAL_COMMAND")
 
