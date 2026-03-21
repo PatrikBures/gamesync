@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbm"
+	"gamesync/internal/ui"
 	"slices"
 
 	"github.com/spf13/cobra"
@@ -78,6 +79,10 @@ func newRoleListPermsCmd(user *dbm.UserWithRole) *roleListPermsCmd {
 				}
 			}
 
+			if len(role.Permissions) == 0 {
+				ui.Info("Role '%s' has no permissions\n", role.Name)
+			}
+
 			permSlice := make([]dbm.Permission, 0, len(role.Permissions))
 			for perm, enabled := range role.Permissions {
 				if !enabled { continue }
@@ -85,7 +90,7 @@ func newRoleListPermsCmd(user *dbm.UserWithRole) *roleListPermsCmd {
 			}
 			slices.Sort(permSlice)
 			for _, perm := range permSlice {
-				fmt.Printf("%s\n", perm)
+				ui.Info("%s\n", perm)
 			}
 
 			return nil
