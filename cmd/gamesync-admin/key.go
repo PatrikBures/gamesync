@@ -124,10 +124,10 @@ func newKeyListPublicCmd(user *dbm.UserWithRole) *keyListPublicCmd {
 				}
 				key := ssh.MarshalAuthorizedKey(t)
 				if root.opts.includeComment {
-				keyWithoutNewLine, _ := strings.CutSuffix(string(key), "\n")
-					fmt.Printf("%s %s\n", keyWithoutNewLine, k.Comment, )
+					keyWithoutNewLine, _ := strings.CutSuffix(string(key), "\n")
+					ui.Info("%s %s\n", keyWithoutNewLine, k.Comment)
 				} else {
-					fmt.Print(string(key))
+					ui.Info("%s\n", string(key))
 				}
 			}
 
