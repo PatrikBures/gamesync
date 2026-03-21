@@ -32,7 +32,7 @@ type userAddCmd struct {
 func newUserAddCmd() *userAddCmd {
 	root := userAddCmd{}
 	cmd := &cobra.Command{
-		Use: "add USERNAME ROLENAME",
+		Use: "add USERNAME",
 		Short: "Add a new user",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -62,14 +62,14 @@ type userChangeRoleCmd struct {
 func newUserChangeRoleCmd() *userChangeRoleCmd {
 	root := userChangeRoleCmd{}
 	cmd := &cobra.Command{
-		Use: "change-role USERNAME ROLENAME",
-		Short: "Changes role of a user",
+		Use: "role USERNAME ROLENAME",
+		Short: "Change role of a user",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			username := args[0]
 			roleName := args[1]
 			if err := dbm.UserChangeRoleSimple(username, roleName); err != nil {
-				return fmt.Errorf("chaning role for %s to %s: %w", username, roleName, err)
+				return fmt.Errorf("changing role for %s to %s: %w", username, roleName, err)
 			}
 			return nil
 		},
