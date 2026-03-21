@@ -27,11 +27,9 @@ func m() error {
 	}
 
 	cmd := os.Getenv("SSH_ORIGINAL_COMMAND")
-
-	if err := syscall.Exec("/usr/local/bin/gamesync-admin", []string{cmd}, os.Environ()); err != nil {
-		return nil
+	if err := syscall.Exec("/usr/local/bin/gamesync-admin", []string{"/usr/local/bin/gamesync-admin", cmd}, os.Environ()); err != nil {
+		return err
 	}
-
 	return nil
 }
 
