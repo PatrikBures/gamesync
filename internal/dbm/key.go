@@ -15,6 +15,10 @@ type Key struct {
 	Comment string
 }
 
+/*
+Adds new public key to a specific user.
+public key is formated as found in authorized_keys
+*/
 func KeyAdd(db *sql.DB, pubKeyS string, user User) error {
 	pk, comment, _, _, err := ssh.ParseAuthorizedKey([]byte(pubKeyS))
 	if err != nil {
@@ -29,6 +33,9 @@ func KeyAdd(db *sql.DB, pubKeyS string, user User) error {
 	return nil
 }
 
+/*
+Gets all key owned by userID
+*/
 func KeyGetKeysForUserID(db *sql.DB, userID int) ([]Key, error) {
 	const SQL = `SELECT key_id, user_id, fingerprint, pk, comment FROM ssh_key WHERE user_id = ?`
 	rows, err := db.Query(SQL, userID)
@@ -47,6 +54,12 @@ func KeyGetKeysForUserID(db *sql.DB, userID int) ([]Key, error) {
 	return keys, nil
 }
 
+/*
+Gets all keys owned by a user who has the key with the provided fingerprint.
+Keys are formated as authorized_keys and also returns the user id who owns them.
+
+NOTE: Why not just return that one key? It is not really needed to return all keys as the fingerprint already tells which key to return.
+*/
 func KeyGetKeysByFingerprint(db *sql.DB, fp string) ([]string, int, error) {
 	const userIdSQL = `SELECT user_id FROM ssh_key WHERE fingerprint = ? LIMIT 1`
 

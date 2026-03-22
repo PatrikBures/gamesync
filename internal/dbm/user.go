@@ -22,6 +22,9 @@ type UserWithRole struct {
 	Role Role
 }
 
+/*
+Add new user, needs role id and name
+*/
 func UserAdd(db *sql.DB, user User) error {
 	if user.Name == "" {
 		return fmt.Errorf("user name can not be empty")
@@ -33,7 +36,9 @@ func UserAdd(db *sql.DB, user User) error {
 	return nil
 }
 
-
+/*
+Gets user id, name, and role id from name.
+*/
 func UserGet(db *sql.DB, name string) (*User, error) {
 	SQL := `SELECT user_id, role_id, user_name FROM user WHERE user_name = ?`
 	row := db.QueryRow(SQL, name)
@@ -46,6 +51,10 @@ func UserGet(db *sql.DB, name string) (*User, error) {
 	}
 	return &user, nil
 }
+/*
+Gets user using their name. 
+Returns user with their role and perms.
+*/
 func UserGetWithRole(db *sql.DB, name string) (*UserWithRole, error) {
 	user, err := UserGet(db, name)
 	if err != nil {
@@ -65,6 +74,9 @@ func UserGetWithRole(db *sql.DB, name string) (*UserWithRole, error) {
 	return &userWithRole, nil
 }
 
+/*
+Gets user using an id. Includes id, name and role id.
+*/
 func UserGetFromID(db *sql.DB, id int) (*User, error) {
 	const SQL = `SELECT user_id, role_id, user_name FROM user WHERE user_id = ?`
 	row := db.QueryRow(SQL, id)
@@ -74,6 +86,9 @@ func UserGetFromID(db *sql.DB, id int) (*User, error) {
 	}
 	return &user, nil
 }
+/*
+Sets role for a user by their ids
+*/
 func UserChangeRole(db *sql.DB, userID int, roleID int) error {
 	SQL := `UPDATE OR FAIL user SET role_id = ? WHERE user_id = ?`
 	if _, err := db.Exec(SQL, roleID, userID); err != nil {
@@ -81,6 +96,9 @@ func UserChangeRole(db *sql.DB, userID int, roleID int) error {
 	}
 	return nil
 }
+/*
+Sets role for user, takes in the users name and the new role name.
+*/
 func UserChangeRoleSimple(username string, roleName string) error {
 	db, err := OpenSQLite()
 	if err != nil {
@@ -105,6 +123,9 @@ func UserChangeRoleSimple(username string, roleName string) error {
 	return nil
 }
 
+/*
+Returns all users with their id, name, role_id and role_name
+*/
 func UserGetAll(db *sql.DB) ([]UserWithRoleName, error) {
 	const SQL = `SELECT user_id, role_id, role_name, user_name FROM user JOIN role USING (role_id)`
 	rows, err := db.Query(SQL)
