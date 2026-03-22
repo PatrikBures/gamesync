@@ -87,30 +87,36 @@ func RoleAllPerms(enabled bool) map[Permission]bool {
 func RoleGetWithPerms(db *sql.DB, roleID int) (Role, error) {
 	role := Role{ID: roleID}
 
-	const selectPermsSQL = `SELECT permission_id FROM role_permission WHERE role_id = ?`
-	rows, err := db.Query(selectPermsSQL, roleID)
+	p, err := RoleGetPerms(db, roleID)
 	if err != nil {
-		return role, fmt.Errorf("selecting permissions: %w", err)
+		return role, fmt.Errorf("getting perms for role with id %d: %w", roleID, err)
 	}
-	role.Permissions = make(map[Permission]bool)
-	for rows.Next() {
-		var id Permission
-		if err := rows.Scan(&id); err != nil {
-			return role, fmt.Errorf("scanning row: %w", err)
-		}
-		role.Permissions[id] = true
-	}
+	role.Permissions = p
 
 	const selectRoleNameSQL = `SELECT role_name FROM role WHERE role_id = ?`
 	row := db.QueryRow(selectRoleNameSQL, roleID)
-	if row.Err() != nil {
-		return role, fmt.Errorf("selecting role name: %w", err)
-	}
 	if err := row.Scan(&role.Name); err != nil {
 		return role, fmt.Errorf("scanning row: %w", err)
 	}
 	
 	return role, nil
+}
+
+func RoleGetPerms(db *sql.DB, roleID int) (map[Permission]bool, error) {
+	const SQL = `SELECT permission_id FROM role_permission WHERE role_id = ?`
+	rows, err := db.Query(SQL, roleID)
+	if err != nil {
+		return nil, fmt.Errorf("selecting permissions: %w", err)
+	}
+	perms := make(map[Permission]bool)
+	for rows.Next() {
+		var id Permission
+		if err := rows.Scan(&id); err != nil {
+			return nil, fmt.Errorf("scanning row: %w", err)
+		}
+		perms[id] = true
+	}
+	return perms, nil
 }
 
 func RoleGetAll(db *sql.DB) ([]Role, error) {
