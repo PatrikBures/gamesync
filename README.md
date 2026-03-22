@@ -1,17 +1,6 @@
-# gamesync
+# Gamesync
 
-gamesync is used to sync game save files to a server.
-
-The project is seperated into client and server. 
-
-The client is written in golang and syncs to the server using rsync.
-
-
-## Features
-
-- Sync game save files with server
-- Multiple devices
-- Multiple users
+Gamesync is a CLI used to sync game saves with server. It aims to make it simple and seamless to have the same saves on all your devices. 
 
 ## Install client
 
