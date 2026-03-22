@@ -48,7 +48,7 @@ sleep 0.2
 docker logs ${CONTAINER_NAME}
 
 echo "test server with:
-docker exec -it ${CONTAINER_NAME} bash
+docker exec -it ${CONTAINER_NAME} sh
 "
 echo "test ssh with:
 ssh -i ./test/keys_private/bob_test1 -p 2222 gamesync@localhost

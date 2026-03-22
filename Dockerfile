@@ -19,9 +19,7 @@ FROM alpine:${ALPINE_VERSION}
 
 RUN apk add --no-cache \
     rsync \
-    openssh-server \
-    tzdata \
-    bash
+    openssh-server
 
 COPY --from=build --chmod=555 /bin/gamesync-admin     /usr/local/bin/gamesync-admin
 COPY --from=build --chmod=555 /bin/gamesync-auth      /usr/local/bin/gamesync-auth

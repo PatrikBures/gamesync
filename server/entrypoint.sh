@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 mkdir -p /etc/ssh/keys
 # creates host key if it does not exist
@@ -8,8 +8,8 @@ if [ ! -f /etc/ssh/keys/ssh_host_ed25519_key ]; then
     mv /etc/ssh/ssh_host_*key* /etc/ssh/keys/
 fi
 
-if ! id -u gamesync &> /dev/null; then
-    adduser gamesync -D -s /bin/sh
+if ! id -u gamesync > /dev/null 2>&1; then
+    adduser -D -s /bin/sh gamesync
     passwd -u gamesync
 fi
 addgroup db
