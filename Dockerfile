@@ -1,10 +1,21 @@
 ARG ALPINE_VERSION="3.23"
 
-FROM alpine:${ALPINE_VERSION}
+FROM golang:1.26-alpine AS build
+WORKDIR /src
 
-ARG GAMESYNC_ADMIN_PATH="bin/gamesync-admin"
-ARG GAMESYNC_AUTH_PATH="bin/gamesync-auth"
-ARG GAMESYNC_WRAPPER_PATH="bin/gamesync-wrapper"
+ENV GOCACHE=/cache/go
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+COPY . .
+ENV CGO_ENABLED="0"
+RUN --mount=type=cache,target="/cache/go" go build -ldflags="-s -w" -trimpath -o /bin/gamesync-admin   ./cmd/gamesync-admin
+RUN --mount=type=cache,target="/cache/go" go build -ldflags="-s -w" -trimpath -o /bin/gamesync-auth    ./cmd/gamesync-auth
+RUN --mount=type=cache,target="/cache/go" go build -ldflags="-s -w" -trimpath -o /bin/gamesync-wrapper ./cmd/gamesync-wrapper
+
+
+FROM alpine:${ALPINE_VERSION}
 
 RUN apk add --no-cache \
     rsync \
@@ -12,9 +23,9 @@ RUN apk add --no-cache \
     tzdata \
     bash
 
-COPY --chmod=555 ${GAMESYNC_ADMIN_PATH}     /usr/local/bin/gamesync-admin
-COPY --chmod=555 ${GAMESYNC_AUTH_PATH}      /usr/local/bin/gamesync-auth
-COPY --chmod=555 ${GAMESYNC_WRAPPER_PATH}   /usr/local/bin/gamesync-wrapper
+COPY --from=build --chmod=555 /bin/gamesync-admin     /usr/local/bin/gamesync-admin
+COPY --from=build --chmod=555 /bin/gamesync-auth      /usr/local/bin/gamesync-auth
+COPY --from=build --chmod=555 /bin/gamesync-wrapper   /usr/local/bin/gamesync-wrapper
 
 COPY server/sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
 COPY --chmod=500 server/entrypoint.sh /entrypoint.sh
