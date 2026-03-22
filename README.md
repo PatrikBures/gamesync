@@ -1,3 +1,5 @@
+> Currently the server is being rewritten on the `remake-server` branch. 
+
 # Gamesync
 
 Gamesync is a CLI used to sync game saves with server. It aims to make it simple and seamless to have the same saves on all your devices. 
