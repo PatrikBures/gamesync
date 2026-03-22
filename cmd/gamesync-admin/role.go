@@ -109,6 +109,7 @@ func newRoleListCmd() *roleListCmd {
 	root := roleListCmd{}
 	cmd := &cobra.Command{
 		Use: "ls",
+		Aliases: []string{"list"},
 		Short: "List all roles",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {

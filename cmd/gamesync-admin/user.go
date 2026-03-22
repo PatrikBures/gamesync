@@ -20,7 +20,7 @@ func newUserCmd(user *dbm.UserWithRole) *userCmd {
 	}
 	if user.Role.HasPermission(dbm.PermUserAdd)        { cmd.AddCommand(newUserAddCmd().cmd) }
 	if user.Role.HasPermission(dbm.PermUserChangeRole) { cmd.AddCommand(newUserChangeRoleCmd().cmd) }
-	if user.Role.HasPermission(dbm.PermUserList)       { cmd.AddCommand(newUserLsCmd().cmd) }
+	if user.Role.HasPermission(dbm.PermUserList)       { cmd.AddCommand(newUserListCmd().cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -78,13 +78,14 @@ func newUserChangeRoleCmd() *userChangeRoleCmd {
 	return &root
 }
 
-type userLsCmd struct {
+type userListCmd struct {
 	cmd *cobra.Command
 }
-func newUserLsCmd() *userLsCmd {
-	root := userLsCmd{}
+func newUserListCmd() *userListCmd {
+	root := userListCmd{}
 	cmd := &cobra.Command{
 		Use: "ls",
+		Aliases: []string{"list"},
 		Short: "Lists all users",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
