@@ -21,6 +21,7 @@ func newUserCmd(user *dbm.UserWithRole) *userCmd {
 	if user.Role.HasPermission(dbm.PermUserAdd)        { cmd.AddCommand(newUserAddCmd().cmd) }
 	if user.Role.HasPermission(dbm.PermUserChangeRole) { cmd.AddCommand(newUserChangeRoleCmd().cmd) }
 	if user.Role.HasPermission(dbm.PermUserList)       { cmd.AddCommand(newUserListCmd().cmd) }
+	if user.Role.HasPermission(dbm.PermUserDelete)     { cmd.AddCommand(newUserDeleteCmd().cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -122,5 +123,35 @@ func newUserListCmd() *userListCmd {
 		},
 	}
 	root.cmd  = cmd
+	return &root
+}
+
+
+type userDeleteCmd struct {
+	cmd *cobra.Command
+}
+func newUserDeleteCmd() *userDeleteCmd {
+	root := userDeleteCmd{}
+	cmd := &cobra.Command{
+		Use: "delete USER",
+		Short: "Delete a user and ALL of it's files",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			db, err := dbm.OpenSQLite()
+			if err != nil { return err }
+			defer dbm.CloseDB(db, &err)
+
+			username := args[0]
+			user, err := dbm.UserGet(db, username)
+			if err != nil {
+				return fmt.Errorf("getting user with name %s: %w", username, err)
+			}
+			if err := dbm.UserDelete(db, user.ID); err != nil {
+				return fmt.Errorf("deleting user %s with id %d: %w", user.Name, user.ID, err)
+			}
+			return nil
+		},
+	}
+	root.cmd = cmd
 	return &root
 }

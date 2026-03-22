@@ -159,3 +159,10 @@ func UserDeleteAllInRole(db *sql.DB, roleID int) (int, error) {
 	}
 	return qty, nil
 }
+
+func UserDelete(db *sql.DB, userID int) error {
+	if _, err := db.Exec(`DELETE FROM user WHERE user_id = ?`, userID); err != nil {
+		return fmt.Errorf("deleting user with id %d: %w", userID, err)
+	}
+	return nil
+}

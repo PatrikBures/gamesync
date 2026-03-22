@@ -51,7 +51,7 @@ CREATE TABLE ssh_key
 
     PRIMARY KEY (key_id),
     UNIQUE (fingerprint),
-    FOREIGN KEY (user_id) REFERENCES user(user_id)
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE game
@@ -73,7 +73,7 @@ CREATE TABLE user_game
 
     PRIMARY KEY (user_id, game_id),
     UNIQUE (alias),
-    FOREIGN KEY (user_id) REFERENCES user(user_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
     FOREIGN KEY (game_id) REFERENCES game(game_id)
 );
 -- +goose Down
