@@ -7,7 +7,7 @@ import (
 func ParseArgs(s string) []string {
 	var args []string
 
-	var quotedDoube bool
+	var quotedDouble bool
 	var quotedSingle bool
 
 	var buffer bytes.Buffer
@@ -16,15 +16,15 @@ func ParseArgs(s string) []string {
 		case '"':
 			if quotedSingle {
 				buffer.WriteString(string(c))
-			} else if !quotedDoube {
-				quotedDoube = true
+			} else if !quotedDouble {
+				quotedDouble = true
 			} else {
-				quotedDoube = false
+				quotedDouble = false
 				args = append(args, buffer.String())
 				buffer.Reset()
 			}
 		case '\'':
-			if quotedDoube {
+			if quotedDouble {
 				buffer.WriteString(string(c))
 			} else if !quotedSingle {
 				quotedSingle = true
@@ -34,7 +34,7 @@ func ParseArgs(s string) []string {
 				buffer.Reset()
 			}
 		case ' ', '\t', '\n':
-			if quotedDoube || quotedSingle {
+			if quotedDouble || quotedSingle {
 				buffer.WriteString(string(c))
 			} else if buffer.Len() > 0 {
 				args = append(args, buffer.String())
