@@ -122,3 +122,19 @@ func UserGetAll(db *sql.DB) ([]UserWithRoleName, error) {
 	return users, nil
 }
 
+
+/*
+Deletes all users with a specific roleID and returns the amount of users deleted.
+*/
+func UserDeleteAllInRole(db *sql.DB, roleID int) (int, error) {
+	var qty int
+	row := db.QueryRow(`SELECT COUNT(*) FROM user WHERE role_id = ?`, roleID)
+	if err := row.Scan(&qty); err != nil {
+		return 0, fmt.Errorf("getting use count of users with role: %w", err)
+	}
+
+	if _, err := db.Exec(`DELETE FROM user where role_id = ?`, roleID); err != nil {
+		return 0, err
+	}
+	return qty, nil
+}

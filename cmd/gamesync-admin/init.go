@@ -140,6 +140,7 @@ func newInitRolesCmd() *initRolesCmd {
 				},
 			}
 			for _, role := range roles {
+				_ = dbm.RoleDeleteWithID(db, role.ID)
 				if err := dbm.RoleAddWithPerms(db, role); err != nil {
 					return fmt.Errorf("adding role with perms: %w", err)
 				}

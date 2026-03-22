@@ -112,3 +112,34 @@ func RoleGetWithPerms(db *sql.DB, roleID int) (Role, error) {
 	
 	return role, nil
 }
+
+func RoleGetAll(db *sql.DB) ([]Role, error) {
+	rows, err := db.Query(`SELECT role_id FROM role`)
+	if err != nil {
+		return nil, fmt.Errorf("selecting all roles: %w", err)
+	}
+
+	var roles []Role
+	for rows.Next() {
+		var roleID int
+		if err := rows.Scan(&roleID); err != nil {
+			return nil, fmt.Errorf("scanning row: %w", err)
+		}
+
+		role, err := RoleGetWithPerms(db, roleID)
+		if err != nil {
+			return nil, fmt.Errorf("getting perms for role with ID %d: %w", roleID, err)
+		}
+		roles = append(roles, role)
+	}
+
+	return roles, nil
+}
+
+func RoleDeleteWithID(db *sql.DB, roleID int) error {
+	const SQL = `DELETE FROM role WHERE role_id = ?`
+	if _, err := db.Exec(SQL, roleID); err != nil {
+		return err
+	}
+	return nil
+}

@@ -20,8 +20,9 @@ const (
 	PermUserChangeRole
 	PermUserList
 	PermRoleAdd
-	PermRoleRemove
+	PermRoleDelete
 	PermRoleChangePerms
+	PermRoleList
 	PermRoleListPerms
 	PermRoleListPermsOwn
 	PermKeyAdd
@@ -44,8 +45,9 @@ var permissionNames = map[Permission]string{
 	PermUserChangeRole:    "user_change_role",
 	PermUserList:          "user_list",
 	PermRoleAdd:           "role_add",
-	PermRoleRemove:        "role_remove",
+	PermRoleDelete:        "role_delete",
 	PermRoleChangePerms:   "role_change_perms",
+	PermRoleList:          "role_list",
 	PermRoleListPerms:     "role_list_perms",
 	PermRoleListPermsOwn:  "role_list_perms_own",
 	PermKeyAdd:            "key_add",
