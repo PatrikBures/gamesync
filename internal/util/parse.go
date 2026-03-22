@@ -33,7 +33,7 @@ func ParseArgs(s string) []string {
 				args = append(args, buffer.String())
 				buffer.Reset()
 			}
-		case ' ':
+		case ' ', '\t', '\n':
 			if quotedDoube || quotedSingle {
 				buffer.WriteString(string(c))
 			} else if buffer.Len() > 0 {
