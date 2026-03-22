@@ -33,7 +33,7 @@ mkdir -p "$HOST_KEY_DIR"
 docker container stop ${CONTAINER_NAME}
 docker container rm ${CONTAINER_NAME}
 
-docker build ./ -t gamesync:latest  || exit
+docker build ./ -t gamesync:latest || exit
 
 docker run -d \
     --volume "$HOST_KEY_DIR":/etc/ssh/keys \
@@ -46,6 +46,13 @@ docker run -d \
 
 sleep 0.2
 docker logs ${CONTAINER_NAME}
+
+
+echo "adding test user"
+docker exec ${CONTAINER_NAME} gamesync-admin user delete bob
+docker exec ${CONTAINER_NAME} gamesync-admin user add bob
+docker exec ${CONTAINER_NAME} gamesync-admin key add -u bob "$(cat ./test/keys_public/bob | head -1)"
+docker exec ${CONTAINER_NAME} gamesync-admin user role bob admin
 
 echo "test server with:
 docker exec -it ${CONTAINER_NAME} sh
