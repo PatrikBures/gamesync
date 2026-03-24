@@ -20,6 +20,6 @@ func main() {
 		log.Fatalf("'%s' is not a valid command", base)
 	}
 	if err := cmds[base](); err != nil {
-		log.Fatalln(err)
+		log.Fatalf("%s: %s", base, err)
 	}
 }
