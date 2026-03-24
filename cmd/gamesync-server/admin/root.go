@@ -1,4 +1,4 @@
-package main
+package cmdAdmin
 
 import (
 	"fmt"
@@ -63,12 +63,13 @@ func newRootCmd(user *dbm.UserWithRole) *rootCmd {
 	return &root
 }
 
-func Execute() {
+func Execute() error {
 	user, err := loadUserRole()
 	if err != nil {
-		os.Exit(2)
+		return err
 	}
 	if err := newRootCmd(user).cmd.Execute(); err != nil {
-		os.Exit(1)
+		return err
 	}
+	return nil
 }

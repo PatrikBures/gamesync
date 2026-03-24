@@ -1,16 +1,13 @@
-package main
+package cmdAuth
 
 import (
 	"fmt"
 	"gamesync/internal/dbm"
-	"log"
 	"os"
 )
 
-func main() {
-	if err := printKey(); err != nil {
-		log.Fatalln(err)
-	}
+func Execute() error {
+	return printKey()
 }
 
 func printKey() error {

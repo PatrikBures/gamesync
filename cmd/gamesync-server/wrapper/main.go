@@ -1,22 +1,18 @@
-package main
+package cmdWrapper
 
 import (
 	"flag"
 	"fmt"
 	"gamesync/internal/dbm"
 	"gamesync/internal/util"
-	"log"
 	"os"
 	"strconv"
 	"syscall"
 )
 
-func main() {
-	if err := m(); err != nil {
-		log.Fatalln(err)
-	}
+func Execute() error {
+	return m()
 }
-
 func m() error {
 	user := parseUser()
 
