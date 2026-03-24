@@ -55,10 +55,8 @@ func KeyGetKeysForUserID(db *sql.DB, userID int) ([]Key, error) {
 }
 
 /*
-Gets all keys owned by a user who has the key with the provided fingerprint.
-Keys are formated as authorized_keys and also returns the user id who owns them.
-
-NOTE: Why not just return that one key? It is not really needed to return all keys as the fingerprint already tells which key to return.
+Gets key and the user id of the owner of the key. 
+Key is formated as in authorized_keys.
 */
 func KeyGetByFingerprint(db *sql.DB, fp string) (string, int, error) {
 	const userIdSQL = `SELECT user_id, pk FROM ssh_key WHERE fingerprint = ? LIMIT 1`
