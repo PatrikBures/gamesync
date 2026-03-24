@@ -60,32 +60,18 @@ Keys are formated as authorized_keys and also returns the user id who owns them.
 
 NOTE: Why not just return that one key? It is not really needed to return all keys as the fingerprint already tells which key to return.
 */
-func KeyGetKeysByFingerprint(db *sql.DB, fp string) ([]string, int, error) {
-	const userIdSQL = `SELECT user_id FROM ssh_key WHERE fingerprint = ? LIMIT 1`
-
+func KeyGetByFingerprint(db *sql.DB, fp string) (string, int, error) {
+	const userIdSQL = `SELECT user_id, pk FROM ssh_key WHERE fingerprint = ? LIMIT 1`
 	var userID int
+	var k []byte
 	row := db.QueryRow(userIdSQL, fp)
-	if err := row.Scan(&userID); err != nil {
-		return nil, -1, fmt.Errorf("selecting user id using fingerprint: %w", err)
+	if err := row.Scan(&userID, &k); err != nil {
+		return "", -1, fmt.Errorf("selecting user id using fingerprint: %w", err)
 	}
-
-	const SQL = `SELECT pk FROM ssh_key where user_id = ?`
-	rows, err := db.Query(SQL, userID)
+	pk, err := ssh.ParsePublicKey(k)
 	if err != nil {
-		return nil, -1, fmt.Errorf("selecting keys: %w", err)
+		return "", -1, fmt.Errorf("parsing public key: %w", err)
 	}
-	var keys []string
-	for rows.Next() {
-		var k []byte
-		if err := rows.Scan(&k); err != nil {
-			return nil, -1, fmt.Errorf("scanning row: %w", err)
-		}
-		pk, err := ssh.ParsePublicKey(k)
-		if err != nil {
-			return nil, -1, fmt.Errorf("parsing public key: %w", err)
-		}
-		key := ssh.MarshalAuthorizedKey(pk)
-		keys = append(keys, string(key))
-	}
-	return keys, userID, nil
+	key := string(ssh.MarshalAuthorizedKey(pk))
+	return key, userID, nil
 }
