@@ -89,7 +89,7 @@ func validOpts(opts []string) error {
 			hasD = true
 		}
 	}
-	if hasD == false && hasDD == false {
+	if !hasD || !hasDD {
 		return fmt.Errorf("does not have - or --")
 	}
 	return nil
