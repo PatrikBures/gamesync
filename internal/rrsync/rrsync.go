@@ -16,9 +16,9 @@ func Run(restrictedDir string, rsyncArgs []string) error {
 		return fmt.Errorf("restricted dir is not a dir: %s", restrictedDir)
 	}
 
-	syncDir := getSyncDir(rsyncArgs)
-	if syncDir == "" {
-		return fmt.Errorf("could not get rsync dir")
+	syncDir, err := getSyncDir(rsyncArgs)
+	if err != nil {
+		return err
 	}
 	if err := validateSyncDir(syncDir); err != nil {
 		return err
@@ -34,18 +34,23 @@ func Run(restrictedDir string, rsyncArgs []string) error {
 	return nil
 }
 
-func getSyncDir(args []string) string {
+func getSyncDir(args []string) (string, error) {
 	var syncDir string
 	nextIsDir := false
 	for _, arg := range args {
+		if syncDir != "" {
+			return "", fmt.Errorf("found multiple dirs, only one is allowed")
+		}
 		if nextIsDir {
 			syncDir = arg
-		}
-		if arg == "." {
+		} else if arg == "." {
 			nextIsDir = true
 		}
 	}
-	return syncDir
+	if syncDir == "" {
+		return "", fmt.Errorf("could not find sync dir")
+	}
+	return syncDir, nil
 }
 
 func validateSyncDir(dir string) error {
