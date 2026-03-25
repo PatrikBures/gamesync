@@ -43,6 +43,9 @@ func newInitMigrateCmd() *initMigrateCmd {
 			if err := dbm.Migrate(); err != nil {
 				return fmt.Errorf("migrating: %v", err)
 			}
+			if err := os.Chown(vars.RemoteSQLiteDb, vars.RemoteUID, -1); err != nil {
+				return fmt.Errorf("changing owner of db: %w", err)
+			}
 			return nil
 		},
 	}
@@ -80,6 +83,9 @@ func newInitDirsCmd() *initDirsCmd {
 			}
 			for _, dir := range dirs {
 				if err := os.MkdirAll(dir, 0775); err != nil {
+					return err
+				}
+				if err := os.Chown(dir, 1000, -1); err != nil {
 					return err
 				}
 				ui.Info("Ensured dir exists: %s\n", dir)

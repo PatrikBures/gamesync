@@ -3,6 +3,10 @@ package dbm
 import (
 	"database/sql"
 	"fmt"
+	"gamesync/internal/vars"
+	"os"
+	"path"
+	"strconv"
 )
 
 type User struct {
@@ -29,9 +33,19 @@ func UserAdd(db *sql.DB, user User) error {
 	if user.Name == "" {
 		return fmt.Errorf("user name can not be empty")
 	}
-	SQL := `INSERT INTO user (user_name, role_id) VALUES (?, ?)`
-	if _, err := db.Exec(SQL, user.Name, user.RoleID); err != nil {
+	const SQL = `INSERT INTO user (user_name, role_id) VALUES (?, ?) RETURNING user_id`
+	var userID int
+	err := db.QueryRow(SQL, user.Name, user.RoleID).Scan(&userID)
+	if err != nil {
 		return fmt.Errorf("inserting new user: %v", err)
+	}
+	
+	d := path.Join(vars.RemoteSaveDir, strconv.Itoa(userID))
+	if err := os.Mkdir(d, 0775); err != nil {
+		return fmt.Errorf("creating user save dir: %w", err)
+	}
+	if err := os.Chown(d, vars.RemoteUID, -1); err != nil {
+		return fmt.Errorf("chaning owner of user save dir: %w", err)
 	}
 	return nil
 }

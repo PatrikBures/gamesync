@@ -4,8 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"gamesync/internal/dbm"
+	"gamesync/internal/rrsync"
 	"gamesync/internal/util"
+	"gamesync/internal/vars"
 	"os"
+	"path"
 	"strconv"
 	"syscall"
 )
@@ -27,13 +30,30 @@ func m() error {
 
 	cmdParsed := util.ParseArgs(cmd)
 
-	cmdCombinded := make([]string, 0, len(cmdParsed)+1)
-	cmdCombinded = append(cmdCombinded, "/usr/local/bin/gamesync-admin")
-	cmdCombinded = append(cmdCombinded, cmdParsed...)
-
-	if err := syscall.Exec("/usr/local/bin/gamesync-admin", cmdCombinded, os.Environ()); err != nil {
+	cmdParsed, err := parseClientApiVersion(cmdParsed)
+	if err != nil {
 		return err
 	}
+	if len(cmdParsed) == 0 {
+		return fmt.Errorf("no commands to pass")
+	}
+	switch cmdParsed[0] {
+	case "rsync":
+		rDir := path.Join(vars.RemoteSaveDir, strconv.Itoa(user.ID))
+		rrsync.Run(rDir, cmdParsed[1:])
+		return nil
+	case "admin":
+		cmdCombinded := make([]string, 0, len(cmdParsed))
+		cmdCombinded = append(cmdCombinded, "/usr/local/bin/gamesync-admin")
+		cmdCombinded = append(cmdCombinded, cmdParsed[1:]...)
+
+		if err := syscall.Exec("/usr/local/bin/gamesync-admin", cmdCombinded, os.Environ()); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("invalid option cmd '%s'", cmdParsed[0])
+	}
+
 	return nil
 }
 
@@ -47,3 +67,16 @@ func parseUser() *dbm.User {
 	return &user
 }
 
+func parseClientApiVersion(args []string) ([]string, error) {
+	if len(args) < 2 {
+		return args, nil
+	}
+	if args[0] != "--client-api-version" {
+		return args, nil
+	}
+	clientApiVersion := args[1]
+	if vars.ApiVersion != clientApiVersion {
+		return nil, fmt.Errorf("client and server api versions do not match, client: %s, server: %s", clientApiVersion, vars.ApiVersion)
+	}
+	return args[2:], nil
+}
