@@ -4,8 +4,17 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"slices"
+	"strings"
 	"syscall"
 )
+
+var allowedOptsLong = []string {
+	"--server",
+	"--sender",
+	"--delete",
+}
+const allowedOptsShortBeforeDot = "logDtprze"
 
 func Run(restrictedDir string, rsyncArgs []string) error {
 	rDirStat, err := os.Stat(restrictedDir)
@@ -30,6 +39,9 @@ func Run(restrictedDir string, rsyncArgs []string) error {
 		return fmt.Errorf("more that one dirs after '.'")
 	}
 
+	if err := validOpts(rsyncArgs[:dotIdx]); err != nil {
+		return err
+	}
 	syncDir := rsyncArgs[dotIdx+1]
 	if err := validSyncDir(syncDir); err != nil {
 		return err
@@ -52,6 +64,33 @@ func validSyncDir(dir string) error {
 	}
 	if !matched {
 		return fmt.Errorf("dir is not valid: %s", dir)
+	}
+	return nil
+}
+
+func validOpts(opts []string) error {
+	hasD := false
+	hasDD := false
+	for _, opt := range opts {
+		if strings.HasPrefix(opt, "--") {
+			if !slices.Contains(allowedOptsLong, opt) {
+				return fmt.Errorf("used opt which is not allowed: %s", opt)
+			}
+			hasDD = true
+		} else if strings.HasPrefix(opt, "-") {
+			for _, o := range opt[1:] {
+				if o == '.' {
+					break
+				}
+				if !strings.ContainsRune(allowedOptsShortBeforeDot, o) {
+					return fmt.Errorf("used a short opt which is not allowed: %c", o)
+				}
+			}
+			hasD = true
+		}
+	}
+	if hasD == false && hasDD == false {
+		return fmt.Errorf("does not have - or --")
 	}
 	return nil
 }
