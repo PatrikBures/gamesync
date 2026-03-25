@@ -14,7 +14,7 @@ var allowedOptsLong = []string {
 	"--sender",
 	"--delete",
 }
-const allowedOptsShortBeforeDot = "logDtprze"
+const allowedOptsShortBeforeDot = "vlogDtprze"
 
 func Run(restrictedDir string, rsyncArgs []string) error {
 	rDirStat, err := os.Stat(restrictedDir)
