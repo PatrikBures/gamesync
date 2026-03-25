@@ -49,7 +49,7 @@ func getSyncDir(args []string) string {
 }
 
 func validateSyncDir(dir string) error {
-	matched, err := regexp.MatchString("^[A-Za-z0-9]+$", dir)
+	matched, err := regexp.MatchString("^[A-Za-z0-9]+/?$", dir)
 	if err != nil {
 		return err
 	}
