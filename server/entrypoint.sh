@@ -12,17 +12,11 @@ if ! id -u gamesync > /dev/null 2>&1; then
     adduser -H -D -u 1000 -h /data/save -s /bin/sh gamesync
     passwd -u gamesync
 fi
-addgroup db
-adduser gamesync db
 
 gamesync-admin init dirs
 gamesync-admin init migrate
 gamesync-admin init perms
 gamesync-admin init roles
-
-chown -R :db /data/db
-chmod 770 /data/db
-chmod 660 /data/db/*
 
 # exec replaces the shell with the process sshd so that pid 1 is sshd and docker can stop it cleanly
 # -D do not detach
