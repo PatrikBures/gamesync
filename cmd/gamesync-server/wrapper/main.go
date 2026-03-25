@@ -40,7 +40,9 @@ func m() error {
 	switch cmdParsed[0] {
 	case "rsync":
 		rDir := path.Join(vars.RemoteSaveDir, strconv.Itoa(user.ID))
-		rrsync.Run(rDir, cmdParsed[1:])
+		if err := rrsync.Run(rDir, cmdParsed[1:]); err != nil {
+			return fmt.Errorf("rsync: %w", err)
+		}
 		return nil
 	case "admin":
 		cmdCombinded := make([]string, 0, len(cmdParsed))
