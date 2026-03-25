@@ -31,7 +31,7 @@ func Run(restrictedDir string, rsyncArgs []string) error {
 	}
 
 	syncDir := rsyncArgs[dotIdx+1]
-	if err := validateSyncDir(syncDir); err != nil {
+	if err := validSyncDir(syncDir); err != nil {
 		return err
 	}
 
@@ -45,7 +45,7 @@ func Run(restrictedDir string, rsyncArgs []string) error {
 	return nil
 }
 
-func validateSyncDir(dir string) error {
+func validSyncDir(dir string) error {
 	matched, err := regexp.MatchString("^[A-Za-z0-9]+/?$", dir)
 	if err != nil {
 		return err
