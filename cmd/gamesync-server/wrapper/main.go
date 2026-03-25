@@ -30,6 +30,13 @@ func m() error {
 
 	cmdParsed := util.ParseArgs(cmd)
 
+	cmdParsed, err := parseClientApiVersion(cmdParsed)
+	if err != nil {
+		return err
+	}
+	if len(cmdParsed) == 0 {
+		return fmt.Errorf("no commands to pass")
+	}
 	switch cmdParsed[0] {
 	case "rsync":
 		rDir := path.Join(vars.RemoteSaveDir, strconv.Itoa(user.ID))
@@ -60,3 +67,16 @@ func parseUser() *dbm.User {
 	return &user
 }
 
+func parseClientApiVersion(args []string) ([]string, error) {
+	if len(args) < 2 {
+		return args, nil
+	}
+	if args[0] != "--client-api-version" {
+		return args, nil
+	}
+	clientApiVersion := args[1]
+	if vars.ApiVersion != clientApiVersion {
+		return nil, fmt.Errorf("client and server api versions do not match, client: %s, server: %s", clientApiVersion, vars.ApiVersion)
+	}
+	return args[2:], nil
+}
