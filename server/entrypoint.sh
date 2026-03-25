@@ -9,7 +9,7 @@ if [ ! -f /etc/ssh/keys/ssh_host_ed25519_key ]; then
 fi
 
 if ! id -u gamesync > /dev/null 2>&1; then
-    adduser -H -D -h /data/save -s /bin/sh gamesync
+    adduser -H -D -u 1000 -h /data/save -s /bin/sh gamesync
     passwd -u gamesync
 fi
 addgroup db
