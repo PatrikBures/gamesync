@@ -82,7 +82,10 @@ func newInitDirsCmd() *initDirsCmd {
 				vars.RemoteDbDir,
 			}
 			for _, dir := range dirs {
-				if err := os.MkdirAll(dir, 0775); err != nil {
+				if err := os.MkdirAll(dir, 0755); err != nil {
+					return err
+				}
+				if err := os.Chmod(dir, 0775); err != nil {
 					return err
 				}
 				if err := os.Chown(dir, 1000, -1); err != nil {
