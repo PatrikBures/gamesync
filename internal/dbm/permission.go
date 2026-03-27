@@ -1,6 +1,7 @@
 package dbm
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 )
@@ -125,4 +126,29 @@ func PermsSet() error {
 	}
 
 	return nil
+}
+
+func PermNamesToIDs(db *sql.DB, perms []string) ([]int, error) {
+	placeholders := strings.Repeat("?,", len(perms)-1) + "?"
+	items := "(" + placeholders + ")"
+	SQL := `SELECT permission_id FROM permission WHERE permission_name IN` + items
+
+	args := make([]any, len(perms)+1)
+	for i, p := range perms {
+		args[i] = p
+	}
+	rows, err := db.Query(SQL, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	permIDs := make([]int, 0, len(perms))
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		permIDs = append(permIDs, id)
+	}
+	return permIDs, nil
 }

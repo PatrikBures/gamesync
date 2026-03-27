@@ -62,6 +62,7 @@ func newRolePermCmd(user *dbm.UserWithRole) *rolePermCmd {
 		Short: "Manage permissions for roles",
 	}
 	if user.Role.HasPermission(dbm.PermRolePermListOwn) { cmd.AddCommand(newRolePermListCmd(user).cmd) }
+	if user.Role.HasPermission(dbm.PermRolePermMod)     { cmd.AddCommand(newRolePermAddCmd().cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -115,6 +116,38 @@ func newRolePermListCmd(user *dbm.UserWithRole) *rolePermListCmd {
 	root.cmd = cmd
 	return &root
 }
+
+type rolePermAddCmd struct {
+	cmd *cobra.Command
+}
+func newRolePermAddCmd() *rolePermAddCmd {
+	root := rolePermAddCmd{}
+	cmd := &cobra.Command{
+		Use: "add ROLE PERMS...",
+		Short: "Add permissions to ROLE",
+		Args: cobra.MinimumNArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			rolename := args[0]
+			perms := args[1:]
+
+			db, err := dbm.OpenSQLite()
+			if err != nil { return err }
+			defer dbm.CloseDB(db, &err)
+
+			roleID, err := dbm.RoleGetID(db, rolename)
+			if err != nil {
+				return err
+			}
+			if err := dbm.RoleAddPerms(db, roleID, perms); err != nil {
+				return err
+			}
+			return nil
+		},
+	}
+	root.cmd = cmd
+	return &root
+}
+
 
 type roleListCmd struct {
 	cmd *cobra.Command
