@@ -19,9 +19,9 @@ func newRoleCmd(user *dbm.UserWithRole) *roleCmd {
 		Short: "Manage roles",
 	}
 	if user.Role.HasPermission(dbm.PermRoleAdd)             { cmd.AddCommand(newRoleAddCmd().cmd) }
-	if user.Role.HasPermission(dbm.PermRoleListPermsOwn)    { cmd.AddCommand(newRoleListPermsCmd(user).cmd) }
 	if user.Role.HasPermission(dbm.PermRoleDelete)          { cmd.AddCommand(newRoleDeleteCmd().cmd) }
 	if user.Role.HasPermission(dbm.PermRoleList)            { cmd.AddCommand(newRoleListCmd().cmd) }
+	if user.Role.HasPermission(dbm.PermRolePermListOwn)     { cmd.AddCommand(newRolePermCmd(user).cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -52,13 +52,27 @@ func newRoleAddCmd() *roleAddCmd {
 	return &root
 }
 
-type roleListPermsCmd struct {
+type rolePermCmd struct {
 	cmd *cobra.Command
 }
-func newRoleListPermsCmd(user *dbm.UserWithRole) *roleListPermsCmd {
-	root := roleListPermsCmd{}
+func newRolePermCmd(user *dbm.UserWithRole) *rolePermCmd {
+	root := rolePermCmd{}
 	cmd := &cobra.Command{
-		Use: "perms [ROLE]",
+		Use: "perm",
+		Short: "Manage permissions for roles",
+	}
+	if user.Role.HasPermission(dbm.PermRolePermListOwn) { cmd.AddCommand(newRolePermListCmd(user).cmd) }
+	root.cmd = cmd
+	return &root
+}
+
+type rolePermListCmd struct {
+	cmd *cobra.Command
+}
+func newRolePermListCmd(user *dbm.UserWithRole) *rolePermListCmd {
+	root := rolePermListCmd{}
+	cmd := &cobra.Command{
+		Use: "ls [ROLE]",
 		Short: "List permissions for a role, if no ROLE present, use current user role",
 		Args: cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
