@@ -129,9 +129,7 @@ func PermsSet() error {
 }
 
 func PermNamesToIDs(db *sql.DB, perms []string) ([]int, error) {
-	placeholders := strings.Repeat("?,", len(perms)-1) + "?"
-	items := "(" + placeholders + ")"
-	SQL := `SELECT permission_id FROM permission WHERE permission_name IN` + items
+	SQL := `SELECT permission_id FROM permission WHERE permission_name IN ` + listSQL(len(perms))
 
 	args := make([]any, len(perms)+1)
 	for i, p := range perms {
