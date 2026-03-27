@@ -68,7 +68,7 @@ CREATE TABLE game
 CREATE TABLE user_game
 (
     user_id INTEGER NOT NULL,
-    game_id INTEGER NOT NULL,
+    game_id INTEGER NULL,
     alias INTEGER NOT NULL,
 
     PRIMARY KEY (user_id, game_id),
