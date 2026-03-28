@@ -19,7 +19,10 @@ func newPermCmd(udb userDB) *permCmd {
 		Short: "Manage permissions",
 	}
 	if udb.user.Role.HasPermission(dbm.PermRolePermListOwn) { cmd.AddCommand(newPermListCmd(udb).cmd) }
-	if udb.user.Role.HasPermission(dbm.PermRolePermMod)     { cmd.AddCommand(newPermAddCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRolePermMod) {
+		cmd.AddCommand(newPermAddCmd(udb).cmd)
+		cmd.AddCommand(newPermRemoveCmd(udb).cmd)
+	}
 
 	root.cmd = cmd
 	return &root
@@ -90,6 +93,32 @@ func newPermAddCmd(udb userDB) *permAddCmd {
 			}
 			if err := dbm.RoleAddPerms(udb.db, roleID, perms); err != nil {
 				return err
+			}
+			return nil
+		},
+	}
+	root.cmd = cmd
+	return &root
+}
+
+type permRemoveCmd struct {
+	cmd *cobra.Command
+}
+func newPermRemoveCmd(udb userDB) *permRemoveCmd {
+	root := permRemoveCmd{}
+	cmd := &cobra.Command{
+		Use: "rm ROLE PERMS...",
+		Args: cobra.MinimumNArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			rolename := args[0]
+			perms := args[1:]
+
+			roleID, err := dbm.RoleGetID(udb.db, rolename)
+			if err != nil {
+				return err
+			}
+			if err := dbm.RoleRemovePerms(udb.db, roleID, perms); err != nil {
+				return fmt.Errorf("removing perms from role: %w", err)
 			}
 			return nil
 		},

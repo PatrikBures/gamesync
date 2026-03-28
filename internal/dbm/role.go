@@ -142,6 +142,31 @@ func RoleAddPerms(db *sql.DB, roleID int, perms []string) error {
 	return nil
 }
 
+func RoleRemovePerms(db *sql.DB, roleID int, perms []string) error {
+	if len(perms) == 0 {
+		return fmt.Errorf("no perm names provided")
+	}
+	permIDs, err := PermNamesToIDs(db, perms)
+	if err != nil {
+		return fmt.Errorf("converting perm names to ids: %w", err)
+	}
+	if len(permIDs) != len(perms) {
+		return fmt.Errorf("not all perms provided exist, make sure you provided the correct names and that there are no dublicates. Provided %d, returned %d", len(perms), len(permIDs))
+	}
+	argPlaceholders := "(" + strings.Repeat("?,", len(permIDs)-1) + "?)"
+	SQL := "DELETE FROM role_permission WHERE role_id = ? AND permission_id IN " + argPlaceholders
+	
+	args := make([]any, 0, len(permIDs)+1)
+	args = append(args, roleID)
+	flattenedPermIDs := FlattenArgs(permIDs)
+	args = append(args, flattenedPermIDs...)
+	if _, err := db.Exec(SQL, args...); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func RoleGetAll(db *sql.DB) ([]Role, error) {
 	rows, err := db.Query(`SELECT role_id FROM role`)
 	if err != nil {
