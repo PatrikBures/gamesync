@@ -2,6 +2,7 @@ package cmdAdmin
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"gamesync/internal/dbm"
 	"os"
@@ -64,17 +65,23 @@ func newRootCmd(udb userDB) *rootCmd {
 	return &root
 }
 
-func Execute() error {
+func Execute() (err error) {
 	db, err := dbm.OpenSQLite()
-	if err != nil { return err }
-	defer dbm.CloseDB(db, &err)
+	if err != nil {
+		return err
+	}
+	defer func(){
+		if cerr := db.Close(); cerr != nil {
+			errors.Join(err, cerr)
+		}
+	}()
 
 	user, err := loadUserRole(db)
 	if err != nil {
 		return err
 	}
 	udb := userDB{user: user, db: db}
-	if err := newRootCmd(udb).cmd.Execute(); err != nil {
+	if err = newRootCmd(udb).cmd.Execute(); err != nil {
 		return err
 	}
 	return nil

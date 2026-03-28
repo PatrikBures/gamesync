@@ -1,6 +1,7 @@
 package cmdAuth
 
 import (
+	"errors"
 	"fmt"
 	"gamesync/internal/dbm"
 	"os"
@@ -10,15 +11,21 @@ func Execute() error {
 	return printKey()
 }
 
-func printKey() error {
+func printKey() (err error) {
 	if len(os.Args) != 2 {
 		return fmt.Errorf("wrong number of args, wants only 1")
 	}
 	fingerprint := os.Args[1]
 
 	db, err := dbm.OpenSQLite()
-	if err != nil { return err }
-	defer dbm.CloseDB(db, &err)
+	if err != nil {
+		return err
+	}
+	defer func(){
+		if cerr := db.Close(); cerr != nil {
+			errors.Join(err, cerr)
+		}
+	}()
 
 	key, userID, err := dbm.KeyGetByFingerprint(db, fingerprint)
 	if err != nil {

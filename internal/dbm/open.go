@@ -2,7 +2,6 @@ package dbm
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"gamesync/internal/vars"
 
@@ -21,10 +20,4 @@ func OpenSQLite() (*sql.DB, error) {
 		return nil, fmt.Errorf("enabling WAL: %w", err)
 	}
 	return db, nil
-}
-
-func CloseDB(db *sql.DB, err *error) {
-	if cerr := db.Close(); cerr != nil {
-		*err = errors.Join(*err, cerr)
-	}
 }
