@@ -113,13 +113,7 @@ func UserChangeRole(db *sql.DB, userID int, roleID int) error {
 /*
 Sets role for user, takes in the users name and the new role name.
 */
-func UserChangeRoleSimple(username string, roleName string) error {
-	db, err := OpenSQLite()
-	if err != nil {
-		return err
-	}
-	defer CloseDB(db, &err)
-
+func UserChangeRoleSimple(db *sql.DB, username string, roleName string) error {
 	user, err := UserGet(db, username)
 	if err != nil {
 		return fmt.Errorf("getting user: %w", err)

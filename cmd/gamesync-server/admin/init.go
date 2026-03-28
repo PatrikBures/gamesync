@@ -13,7 +13,7 @@ import (
 type initCmd struct {
 	cmd * cobra.Command
 }
-func newInitCmd() *initCmd {
+func newInitCmd(udb userDB) *initCmd {
 	root := initCmd{}
 	cmd := &cobra.Command{
 		Use: "init",
@@ -22,7 +22,7 @@ func newInitCmd() *initCmd {
 	cmd.AddCommand(
 		newInitDirsCmd().cmd,
 		newInitMigrateCmd().cmd,
-		newInitRolesCmd().cmd,
+		newInitRolesCmd(udb).cmd,
 		newInitPermsCmd().cmd,
 	)
 	root.cmd = cmd
@@ -123,19 +123,13 @@ func newInitPermsCmd() *initPermsCmd {
 type initRolesCmd struct {
 	cmd *cobra.Command
 }
-func newInitRolesCmd() *initRolesCmd {
+func newInitRolesCmd(udb userDB) *initRolesCmd {
 	root := initRolesCmd{}
 	cmd := &cobra.Command{
 		Use: "roles",
 		Short: "Ensures user and admin roles exist in the db",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil {
-				return err
-			}
-			defer dbm.CloseDB(db, &err)
-
 			roles := []dbm.Role{
 				{
 					ID: 0,
@@ -149,8 +143,8 @@ func newInitRolesCmd() *initRolesCmd {
 				},
 			}
 			for _, role := range roles {
-				_ = dbm.RoleDeleteWithID(db, role.ID)
-				if err := dbm.RoleAddWithPerms(db, role); err != nil {
+				_ = dbm.RoleDeleteWithID(udb.db, role.ID)
+				if err := dbm.RoleAddWithPerms(udb.db, role); err != nil {
 					return fmt.Errorf("adding role with perms: %w", err)
 				}
 				ui.Info("added role: %s\n", role.Name)

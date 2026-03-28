@@ -1,6 +1,7 @@
 package cmdAdmin
 
 import (
+	"database/sql"
 	"fmt"
 	"gamesync/internal/dbm"
 	"os"
@@ -8,7 +9,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func loadUserRole() (*dbm.UserWithRole, error) {
+type userDB struct {
+	user *dbm.UserWithRole
+	db *sql.DB
+}
+
+func loadUserRole(db *sql.DB) (*dbm.UserWithRole, error) {
 	username := os.Getenv("GAMESYNC_USER")
 
 	if username == "" {
@@ -24,12 +30,6 @@ func loadUserRole() (*dbm.UserWithRole, error) {
 		return &u, nil
 	}
 
-	db, err := dbm.OpenSQLite()
-	if err != nil {
-		return nil, err
-	}
-	defer dbm.CloseDB(db, &err)
-
 	userWithRole, err := dbm.UserGetWithRole(db, username)
 	if err != nil {
 		return nil, fmt.Errorf("getting user with their role: %w", err)
@@ -41,7 +41,7 @@ type rootCmd struct {
 	cmd *cobra.Command
 }
 
-func newRootCmd(user *dbm.UserWithRole) *rootCmd {
+func newRootCmd(udb userDB) *rootCmd {
 	root := rootCmd{}
 	cmd := &cobra.Command{
 		Use: "gamesync-admin",
@@ -51,25 +51,30 @@ func newRootCmd(user *dbm.UserWithRole) *rootCmd {
 	cmd.SilenceUsage = true
 	cmd.SilenceErrors = true
 
-	if user.Role.HasPermission(dbm.PermUserAdd)           { cmd.AddCommand(newUserCmd(user).cmd) }
-	if user.Role.HasPermission(dbm.PermRoleChangePerms)   { cmd.AddCommand(newRoleCmd(user).cmd) }
-	if user.Role.HasPermission(dbm.PermKeyAddSelf)        { cmd.AddCommand(newKeyCmd(user).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermUserAdd)           { cmd.AddCommand(newUserCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRoleChangePerms)   { cmd.AddCommand(newRoleCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermKeyAddSelf)        { cmd.AddCommand(newKeyCmd(udb).cmd) }
 
 	// uid is 0 if ran by root
 	// cmds are only available when ran directly from the container
 	if os.Getuid() == 0 {
-		cmd.AddCommand(newInitCmd().cmd)
+		cmd.AddCommand(newInitCmd(udb).cmd)
 	}
 	root.cmd = cmd
 	return &root
 }
 
 func Execute() error {
-	user, err := loadUserRole()
+	db, err := dbm.OpenSQLite()
+	if err != nil { return err }
+	defer dbm.CloseDB(db, &err)
+
+	user, err := loadUserRole(db)
 	if err != nil {
 		return err
 	}
-	if err := newRootCmd(user).cmd.Execute(); err != nil {
+	udb := userDB{user: user, db: db}
+	if err := newRootCmd(udb).cmd.Execute(); err != nil {
 		return err
 	}
 	return nil

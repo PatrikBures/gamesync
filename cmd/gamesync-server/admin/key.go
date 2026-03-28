@@ -13,14 +13,14 @@ import (
 type keyCmd struct {
 	cmd *cobra.Command
 }
-func newKeyCmd(user *dbm.UserWithRole) *keyCmd {
+func newKeyCmd(udb userDB) *keyCmd {
 	root := keyCmd{}
 	cmd := &cobra.Command{
 		Use: "key",
 		Short: "Manage ssh keys",
 	}
-	if user.Role.HasPermission(dbm.PermKeyAdd)  || user.Role.HasPermission(dbm.PermKeyAddSelf) { cmd.AddCommand(newKeyAddCmd(user).cmd) }
-	if user.Role.HasPermission(dbm.PermKeyList) || user.Role.HasPermission(dbm.PermKeyListOwn) { cmd.AddCommand(newKeyListPublicCmd(user).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermKeyAdd)  || udb.user.Role.HasPermission(dbm.PermKeyAddSelf) { cmd.AddCommand(newKeyAddCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermKeyList) || udb.user.Role.HasPermission(dbm.PermKeyListOwn) { cmd.AddCommand(newKeyListPublicCmd(udb).cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -32,26 +32,22 @@ type keyAddCmd struct {
 type keyAddOpts struct {
 	username string
 }
-func newKeyAddCmd(user *dbm.UserWithRole) *keyAddCmd {
+func newKeyAddCmd(udb userDB) *keyAddCmd {
 	root := keyAddCmd{}
 	cmd := &cobra.Command{
 		Use: "add PUBLIC_KEY",
 		Short: "Add public ssh key to user (default self)",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil { return err }
-			defer dbm.CloseDB(db, &err)
-
 			u := dbm.User{}
 			if root.opts.username == "" {
-				if user.ID >= 0 {
+				if udb.user.ID >= 0 {
 					return fmt.Errorf("not running as a logged in user")
 				}
-				u.Name = user.Name
-				u.ID = user.ID
+				u.Name = udb.user.Name
+				u.ID = udb.user.ID
 			} else {
-				s, err := dbm.UserGet(db, root.opts.username)
+				s, err := dbm.UserGet(udb.db, root.opts.username)
 				if err != nil {
 					return fmt.Errorf("getting user %s: %w", root.opts.username, err)
 				}
@@ -60,13 +56,13 @@ func newKeyAddCmd(user *dbm.UserWithRole) *keyAddCmd {
 
 			pubKey := args[0]
 
-			if err := dbm.KeyAdd(db, pubKey, u); err != nil {
+			if err := dbm.KeyAdd(udb.db, pubKey, u); err != nil {
 				return fmt.Errorf("adding pub key: %w", err)
 			}
 			return nil
 		},
 	}
-	if user.Role.HasPermission(dbm.PermKeyAdd) {
+	if udb.user.Role.HasPermission(dbm.PermKeyAdd) {
 		cmd.Flags().StringVarP(&root.opts.username, "user", "u", "", "Add key to specific user, otherwise add to yourself")
 	}
 	root.cmd = cmd
@@ -81,36 +77,32 @@ type keyListPublicOpts struct {
 	includeComment bool
 	includeFingerprint bool
 }
-func newKeyListPublicCmd(user *dbm.UserWithRole) *keyListPublicCmd {
+func newKeyListPublicCmd(udb userDB) *keyListPublicCmd {
 	root := keyListPublicCmd{}
 	cmd := &cobra.Command{
 		Use: "ls USERNAME",
 		Short: "List all public keys owned by USERNAME seperated by new line",
 		Args: cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil { return err }
-			defer dbm.CloseDB(db, &err)
-
 			u := dbm.User{}
 
 			if len(args) == 1 {
 				username := args[0]
-				newUser, err := dbm.UserGet(db, username)
+				newUser, err := dbm.UserGet(udb.db, username)
 				if err != nil {
 					return fmt.Errorf("getting user '%s': %w", username, err)
 				}
 				u = *newUser
 
 			} else {
-				if user.ID < 0 {
-					return fmt.Errorf("not running as a logged in user: %w", err)
+				if udb.user.ID < 0 {
+					return fmt.Errorf("not running as a logged in user, used id %d", udb.user.ID)
 				}
-				u.ID = user.ID
-				u.Name = user.Name
+				u.ID = udb.user.ID
+				u.Name = udb.user.Name
 			}
 
-			keys, err := dbm.KeyGetKeysForUserID(db, u.ID)
+			keys, err := dbm.KeyGetKeysForUserID(udb.db, u.ID)
 			if err != nil  {
 				return fmt.Errorf("getting for for user '%s': %w", u.Name, err)
 			}

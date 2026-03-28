@@ -12,16 +12,16 @@ import (
 type userCmd struct {
 	cmd *cobra.Command
 }
-func newUserCmd(user *dbm.UserWithRole) *userCmd {
+func newUserCmd(udb userDB) *userCmd {
 	root := userCmd{}
 	cmd := &cobra.Command{
 		Use: "user",
 		Short: "Add stuff to server",
 	}
-	if user.Role.HasPermission(dbm.PermUserAdd)        { cmd.AddCommand(newUserAddCmd().cmd) }
-	if user.Role.HasPermission(dbm.PermUserChangeRole) { cmd.AddCommand(newUserChangeRoleCmd().cmd) }
-	if user.Role.HasPermission(dbm.PermUserList)       { cmd.AddCommand(newUserListCmd().cmd) }
-	if user.Role.HasPermission(dbm.PermUserDelete)     { cmd.AddCommand(newUserDeleteCmd().cmd) }
+	if udb.user.Role.HasPermission(dbm.PermUserAdd)        { cmd.AddCommand(newUserAddCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermUserChangeRole) { cmd.AddCommand(newUserChangeRoleCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermUserList)       { cmd.AddCommand(newUserListCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermUserDelete)     { cmd.AddCommand(newUserDeleteCmd(udb).cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -30,20 +30,14 @@ func newUserCmd(user *dbm.UserWithRole) *userCmd {
 type userAddCmd struct {
 	cmd *cobra.Command
 }
-func newUserAddCmd() *userAddCmd {
+func newUserAddCmd(udb userDB) *userAddCmd {
 	root := userAddCmd{}
 	cmd := &cobra.Command{
 		Use: "add USERNAME",
 		Short: "Add a new user",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil {
-				return err
-			}
-			defer dbm.CloseDB(db, &err)
-
-			if err := dbm.UserAdd(db, dbm.User{
+			if err := dbm.UserAdd(udb.db, dbm.User{
 				Name: args[0], 
 				RoleID: 0,
 			}); err != nil {
@@ -60,7 +54,7 @@ func newUserAddCmd() *userAddCmd {
 type userChangeRoleCmd struct {
 	cmd *cobra.Command
 }
-func newUserChangeRoleCmd() *userChangeRoleCmd {
+func newUserChangeRoleCmd(udb userDB) *userChangeRoleCmd {
 	root := userChangeRoleCmd{}
 	cmd := &cobra.Command{
 		Use: "role USERNAME ROLENAME",
@@ -69,7 +63,7 @@ func newUserChangeRoleCmd() *userChangeRoleCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			username := args[0]
 			roleName := args[1]
-			if err := dbm.UserChangeRoleSimple(username, roleName); err != nil {
+			if err := dbm.UserChangeRoleSimple(udb.db, username, roleName); err != nil {
 				return fmt.Errorf("changing role for %s to %s: %w", username, roleName, err)
 			}
 			return nil
@@ -82,7 +76,7 @@ func newUserChangeRoleCmd() *userChangeRoleCmd {
 type userListCmd struct {
 	cmd *cobra.Command
 }
-func newUserListCmd() *userListCmd {
+func newUserListCmd(udb userDB) *userListCmd {
 	root := userListCmd{}
 	cmd := &cobra.Command{
 		Use: "ls",
@@ -90,13 +84,7 @@ func newUserListCmd() *userListCmd {
 		Short: "Lists all users",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil {
-				return err
-			}
-			defer dbm.CloseDB(db, &err)
-
-			users, err := dbm.UserGetAll(db)
+			users, err := dbm.UserGetAll(udb.db)
 			if err != nil {
 				return fmt.Errorf("getting list of all users: %w", err)
 			}
@@ -130,23 +118,19 @@ func newUserListCmd() *userListCmd {
 type userDeleteCmd struct {
 	cmd *cobra.Command
 }
-func newUserDeleteCmd() *userDeleteCmd {
+func newUserDeleteCmd(udb userDB) *userDeleteCmd {
 	root := userDeleteCmd{}
 	cmd := &cobra.Command{
 		Use: "delete USER",
 		Short: "Delete a user and ALL of it's files",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil { return err }
-			defer dbm.CloseDB(db, &err)
-
 			username := args[0]
-			user, err := dbm.UserGet(db, username)
+			user, err := dbm.UserGet(udb.db, username)
 			if err != nil {
 				return fmt.Errorf("getting user with name %s: %w", username, err)
 			}
-			if err := dbm.UserDelete(db, user.ID); err != nil {
+			if err := dbm.UserDelete(udb.db, user.ID); err != nil {
 				return fmt.Errorf("deleting user %s with id %d: %w", user.Name, user.ID, err)
 			}
 			return nil

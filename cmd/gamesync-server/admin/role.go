@@ -12,16 +12,16 @@ import (
 type roleCmd struct {
 	cmd *cobra.Command
 }
-func newRoleCmd(user *dbm.UserWithRole) *roleCmd {
+func newRoleCmd(udb userDB) *roleCmd {
 	root := roleCmd{}
 	cmd := &cobra.Command{
 		Use: "role",
 		Short: "Manage roles",
 	}
-	if user.Role.HasPermission(dbm.PermRoleAdd)             { cmd.AddCommand(newRoleAddCmd().cmd) }
-	if user.Role.HasPermission(dbm.PermRoleDelete)          { cmd.AddCommand(newRoleDeleteCmd().cmd) }
-	if user.Role.HasPermission(dbm.PermRoleList)            { cmd.AddCommand(newRoleListCmd().cmd) }
-	if user.Role.HasPermission(dbm.PermRolePermListOwn)     { cmd.AddCommand(newRolePermCmd(user).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRoleAdd)             { cmd.AddCommand(newRoleAddCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRoleDelete)          { cmd.AddCommand(newRoleDeleteCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRoleList)            { cmd.AddCommand(newRoleListCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRolePermListOwn)     { cmd.AddCommand(newRolePermCmd(udb).cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -29,20 +29,14 @@ func newRoleCmd(user *dbm.UserWithRole) *roleCmd {
 type roleAddCmd struct {
 	cmd *cobra.Command
 }
-func newRoleAddCmd() *roleAddCmd {
+func newRoleAddCmd(udb userDB) *roleAddCmd {
 	root := roleAddCmd{}
 	cmd := &cobra.Command{
 		Use: "add ROLENAME",
 		Short: "Add a role",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil {
-				return err
-			}
-			defer dbm.CloseDB(db, &err)
-
-			if err := dbm.RoleAddSimple(db, args[0]); err != nil {
+			if err := dbm.RoleAddSimple(udb.db, args[0]); err != nil {
 				return err
 			}
 			return nil
@@ -55,14 +49,14 @@ func newRoleAddCmd() *roleAddCmd {
 type rolePermCmd struct {
 	cmd *cobra.Command
 }
-func newRolePermCmd(user *dbm.UserWithRole) *rolePermCmd {
+func newRolePermCmd(udb userDB) *rolePermCmd {
 	root := rolePermCmd{}
 	cmd := &cobra.Command{
 		Use: "perm",
 		Short: "Manage permissions for roles",
 	}
-	if user.Role.HasPermission(dbm.PermRolePermListOwn) { cmd.AddCommand(newRolePermListCmd(user).cmd) }
-	if user.Role.HasPermission(dbm.PermRolePermMod)     { cmd.AddCommand(newRolePermAddCmd().cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRolePermListOwn) { cmd.AddCommand(newRolePermListCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRolePermMod)     { cmd.AddCommand(newRolePermAddCmd(udb).cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -70,27 +64,23 @@ func newRolePermCmd(user *dbm.UserWithRole) *rolePermCmd {
 type rolePermListCmd struct {
 	cmd *cobra.Command
 }
-func newRolePermListCmd(user *dbm.UserWithRole) *rolePermListCmd {
+func newRolePermListCmd(udb userDB) *rolePermListCmd {
 	root := rolePermListCmd{}
 	cmd := &cobra.Command{
 		Use: "ls [ROLE]",
 		Short: "List permissions for a role, if no ROLE present, use current user role",
 		Args: cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil { return err }
-			defer dbm.CloseDB(db, &err)
-
 			var role dbm.Role
 			if len(args) == 0 {
-				role = user.Role
+				role = udb.user.Role
 			} else {
 				roleName := args[0]
-				roleID, err := dbm.RoleGetID(db, roleName)
+				roleID, err := dbm.RoleGetID(udb.db, roleName)
 				if err != nil {
 					return fmt.Errorf("could not get id for role with name %s: %w", roleName, err)
 				}
-				role, err = dbm.RoleGetWithPerms(db, roleID)
+				role, err = dbm.RoleGetWithPerms(udb.db, roleID)
 				if err != nil {
 					return fmt.Errorf("getting role with id %d: %w", roleID, err)
 				}
@@ -120,7 +110,7 @@ func newRolePermListCmd(user *dbm.UserWithRole) *rolePermListCmd {
 type rolePermAddCmd struct {
 	cmd *cobra.Command
 }
-func newRolePermAddCmd() *rolePermAddCmd {
+func newRolePermAddCmd(udb userDB) *rolePermAddCmd {
 	root := rolePermAddCmd{}
 	cmd := &cobra.Command{
 		Use: "add ROLE PERMS...",
@@ -130,15 +120,11 @@ func newRolePermAddCmd() *rolePermAddCmd {
 			rolename := args[0]
 			perms := args[1:]
 
-			db, err := dbm.OpenSQLite()
-			if err != nil { return err }
-			defer dbm.CloseDB(db, &err)
-
-			roleID, err := dbm.RoleGetID(db, rolename)
+			roleID, err := dbm.RoleGetID(udb.db, rolename)
 			if err != nil {
 				return err
 			}
-			if err := dbm.RoleAddPerms(db, roleID, perms); err != nil {
+			if err := dbm.RoleAddPerms(udb.db, roleID, perms); err != nil {
 				return err
 			}
 			return nil
@@ -152,7 +138,7 @@ func newRolePermAddCmd() *rolePermAddCmd {
 type roleListCmd struct {
 	cmd *cobra.Command
 }
-func newRoleListCmd() *roleListCmd {
+func newRoleListCmd(udb userDB) *roleListCmd {
 	root := roleListCmd{}
 	cmd := &cobra.Command{
 		Use: "ls",
@@ -160,11 +146,7 @@ func newRoleListCmd() *roleListCmd {
 		Short: "List all roles",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil { return err }
-			defer dbm.CloseDB(db, &err)
-
-			roles, err := dbm.RoleGetAll(db)
+			roles, err := dbm.RoleGetAll(udb.db)
 			if err != nil {
 				return fmt.Errorf("getting all roles: %w", err)
 			}
@@ -191,30 +173,26 @@ type roleDeleteCmd struct {
 type roleDeleteOpts struct {
 	removeUsers bool
 }
-func newRoleDeleteCmd() *roleDeleteCmd {
+func newRoleDeleteCmd(udb userDB) *roleDeleteCmd {
 	root := roleDeleteCmd{}
 	cmd := &cobra.Command{
 		Use: "delete ROLE",
 		Short: "Delete a role with no users",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db, err := dbm.OpenSQLite()
-			if err != nil { return err }
-			defer dbm.CloseDB(db, &err)
-
 			rolename := args[0]
-			roleID, err := dbm.RoleGetID(db, rolename)
+			roleID, err := dbm.RoleGetID(udb.db, rolename)
 			if err != nil {
 				return fmt.Errorf("getting role id: %w", err)
 			}
 			if root.opts.removeUsers {
-				amountDeleted, err := dbm.UserDeleteAllInRole(db, roleID)
+				amountDeleted, err := dbm.UserDeleteAllInRole(udb.db, roleID)
 				if err != nil {
 					return fmt.Errorf("removing all users with role %s and id %d: %w", rolename, roleID, err)
 				}
 				ui.Info("Deleted %d users in role %s\n", amountDeleted, rolename)
 			}
-			if err := dbm.RoleDeleteWithID(db, roleID); err != nil {
+			if err := dbm.RoleDeleteWithID(udb.db, roleID); err != nil {
 				return fmt.Errorf("removing role %s with ID %d: %w", rolename, roleID, err)
 			}
 			return nil
