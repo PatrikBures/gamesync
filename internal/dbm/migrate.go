@@ -1,6 +1,7 @@
 package dbm
 
 import (
+	"database/sql"
 	"embed"
 	"fmt"
 
@@ -10,13 +11,7 @@ import (
 //go:embed migrations/sqlite/*sql
 var embedSQLiteMigrations embed.FS
 
-func Migrate() error {
-	db, err := OpenSQLite()
-	if err != nil {
-		return err
-	}
-	defer CloseDB(db, &err)
-
+func Migrate(db *sql.DB) error {
 	goose.SetBaseFS(embedSQLiteMigrations)
 
 	if err := goose.SetDialect("sqlite"); err != nil {

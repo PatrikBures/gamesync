@@ -21,9 +21,9 @@ func newInitCmd(udb userDB) *initCmd {
 	}
 	cmd.AddCommand(
 		newInitDirsCmd().cmd,
-		newInitMigrateCmd().cmd,
+		newInitMigrateCmd(udb).cmd,
 		newInitRolesCmd(udb).cmd,
-		newInitPermsCmd().cmd,
+		newInitPermsCmd(udb).cmd,
 	)
 	root.cmd = cmd
 	return &root
@@ -33,14 +33,14 @@ func newInitCmd(udb userDB) *initCmd {
 type initMigrateCmd struct {
 	cmd *cobra.Command
 }
-func newInitMigrateCmd() *initMigrateCmd {
+func newInitMigrateCmd(udb userDB) *initMigrateCmd {
 	root := initMigrateCmd{}
 	cmd := &cobra.Command{
 		Use: "migrate",
 		Short: "Migrates db to newer schema, initializes if it doesn't exist",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := dbm.Migrate(); err != nil {
+			if err := dbm.Migrate(udb.db); err != nil {
 				return fmt.Errorf("migrating: %v", err)
 			}
 			if err := os.Chown(vars.RemoteSQLiteDb, vars.RemoteUID, -1); err != nil {
@@ -103,14 +103,14 @@ func newInitDirsCmd() *initDirsCmd {
 type initPermsCmd struct {
 	cmd *cobra.Command
 }
-func newInitPermsCmd() *initPermsCmd {
+func newInitPermsCmd(udb userDB) *initPermsCmd {
 	root := initPermsCmd{}
 	cmd := &cobra.Command{
 		Use: "perms",
 		Short: "Ensures all permissions exist",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := dbm.PermsSet(); err != nil {
+			if err := dbm.PermsSet(udb.db); err != nil {
 				return fmt.Errorf("setting perms: %w", err)
 			}
 			return nil

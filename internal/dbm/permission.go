@@ -67,17 +67,7 @@ func (p Permission) String() string {
 	panic(fmt.Errorf("permission with id %d not mapped", p))
 }
 
-func PermsSet() error {
-	db, err := OpenSQLite()
-	if err != nil {
-		return err
-	}
-	defer CloseDB(db, &err)
-
-	if err != nil {
-		return err
-	}
-
+func PermsSet(db *sql.DB) error {
 	currentPerms := make(map[Permission]string, len(permissionNames))
 
 	const getRolesSQL = `SELECT permission_id, permission_name FROM permission`
