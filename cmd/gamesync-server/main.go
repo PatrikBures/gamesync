@@ -3,6 +3,7 @@ package main
 import (
 	cmdAdmin "gamesync/cmd/gamesync-server/admin"
 	cmdAuth "gamesync/cmd/gamesync-server/auth"
+	cmdInit "gamesync/cmd/gamesync-server/init"
 	cmdWrapper "gamesync/cmd/gamesync-server/wrapper"
 	"log"
 	"os"
@@ -13,6 +14,7 @@ var cmds = map[string]func() error {
 	"gamesync-admin":    cmdAdmin.Execute,
 	"gamesync-auth":     cmdAuth.Execute,
 	"gamesync-wrapper":  cmdWrapper.Execute,
+	"gamesync-init":     cmdInit.Execute,
 }
 func main() {
 	base := filepath.Base(os.Args[0])

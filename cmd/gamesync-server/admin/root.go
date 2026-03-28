@@ -57,11 +57,6 @@ func newRootCmd(udb userDB) *rootCmd {
 	if udb.user.Role.HasPermission(dbm.PermKeyAddSelf)        { cmd.AddCommand(newKeyCmd(udb).cmd) }
 	if udb.user.Role.HasPermission(dbm.PermRolePermListOwn)   { cmd.AddCommand(newPermCmd(udb).cmd) }
 
-	// uid is 0 if ran by root
-	// cmds are only available when ran directly from the container
-	if os.Getuid() == 0 {
-		cmd.AddCommand(newInitCmd(udb).cmd)
-	}
 	root.cmd = cmd
 	return &root
 }

@@ -13,10 +13,7 @@ if ! id -u gamesync > /dev/null 2>&1; then
     passwd -u gamesync || return $?
 fi
 
-gamesync-admin init dirs    || return 20
-gamesync-admin init migrate || return 21
-gamesync-admin init perms   || return 22
-gamesync-admin init roles   || return 23
+gamesync-init || return 20
 
 # exec replaces the shell with the process sshd so that pid 1 is sshd and docker can stop it cleanly
 # -D do not detach

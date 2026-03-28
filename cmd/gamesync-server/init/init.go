@@ -1,0 +1,98 @@
+package cmdInit
+
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+	"gamesync/internal/dbm"
+	"gamesync/internal/vars"
+	"os"
+)
+
+func Execute() error {
+	if err := dirs(); err != nil {
+		return fmt.Errorf("dirs: %w", err)
+	}
+
+	db, err := dbm.OpenSQLite()
+	if err != nil {
+		return err
+	}
+	defer func(){
+		if cerr := db.Close(); cerr != nil {
+			errors.Join(err, cerr)
+		}
+	}()
+
+	if err := migrate(db); err != nil {
+		return fmt.Errorf("migrating schema: %w", err)
+	}
+	if err := permissions(db); err != nil {
+		return fmt.Errorf("permissions: %w", err)
+	}
+	if err := roles(db); err != nil {
+		return fmt.Errorf("roles: %w", err)
+	}
+
+	return nil
+}
+
+func dirs() error {
+	dirs := []string{
+		vars.RemoteSaveDir,
+		vars.RemoteBackupDir,
+		vars.RemoteDbDir,
+	}
+	for _, dir := range dirs {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+		if err := os.Chmod(dir, 0775); err != nil {
+			return err
+		}
+		if err := os.Chown(dir, vars.RemoteUID, -1); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func migrate(db *sql.DB) error {
+	if err := dbm.Migrate(db); err != nil {
+		return fmt.Errorf("migrating: %v", err)
+	}
+	if err := os.Chown(vars.RemoteSQLiteDb, vars.RemoteUID, -1); err != nil {
+		return fmt.Errorf("changing owner of db: %w", err)
+	}
+	return nil
+}
+
+func permissions(db *sql.DB) error {
+	if err := dbm.PermsSet(db); err != nil {
+		return fmt.Errorf("setting perms: %w", err)
+	}
+	return nil
+}
+
+func roles(db *sql.DB) error {
+	roles := []dbm.Role{
+		{
+			ID: 0,
+			Name: "none",
+			Permissions: dbm.RoleAllPerms(false),
+		},
+		{
+			ID: 1,
+			Name: "admin", 
+			Permissions: dbm.RoleAllPerms(true),
+		},
+	}
+	for _, role := range roles {
+		_ = dbm.RoleDeleteWithID(db, role.ID)
+		if err := dbm.RoleAddWithPerms(db, role); err != nil {
+			return fmt.Errorf("adding role with perms: %w", err)
+		}
+	}
+	
+	return nil
+}
