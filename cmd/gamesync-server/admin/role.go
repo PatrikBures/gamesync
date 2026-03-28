@@ -19,9 +19,9 @@ func newRoleCmd(user *dbm.UserWithRole) *roleCmd {
 		Short: "Manage roles",
 	}
 	if user.Role.HasPermission(dbm.PermRoleAdd)             { cmd.AddCommand(newRoleAddCmd().cmd) }
-	if user.Role.HasPermission(dbm.PermRoleListPermsOwn)    { cmd.AddCommand(newRoleListPermsCmd(user).cmd) }
 	if user.Role.HasPermission(dbm.PermRoleDelete)          { cmd.AddCommand(newRoleDeleteCmd().cmd) }
 	if user.Role.HasPermission(dbm.PermRoleList)            { cmd.AddCommand(newRoleListCmd().cmd) }
+	if user.Role.HasPermission(dbm.PermRolePermListOwn)     { cmd.AddCommand(newRolePermCmd(user).cmd) }
 	root.cmd = cmd
 	return &root
 }
@@ -52,13 +52,28 @@ func newRoleAddCmd() *roleAddCmd {
 	return &root
 }
 
-type roleListPermsCmd struct {
+type rolePermCmd struct {
 	cmd *cobra.Command
 }
-func newRoleListPermsCmd(user *dbm.UserWithRole) *roleListPermsCmd {
-	root := roleListPermsCmd{}
+func newRolePermCmd(user *dbm.UserWithRole) *rolePermCmd {
+	root := rolePermCmd{}
 	cmd := &cobra.Command{
-		Use: "perms [ROLE]",
+		Use: "perm",
+		Short: "Manage permissions for roles",
+	}
+	if user.Role.HasPermission(dbm.PermRolePermListOwn) { cmd.AddCommand(newRolePermListCmd(user).cmd) }
+	if user.Role.HasPermission(dbm.PermRolePermMod)     { cmd.AddCommand(newRolePermAddCmd().cmd) }
+	root.cmd = cmd
+	return &root
+}
+
+type rolePermListCmd struct {
+	cmd *cobra.Command
+}
+func newRolePermListCmd(user *dbm.UserWithRole) *rolePermListCmd {
+	root := rolePermListCmd{}
+	cmd := &cobra.Command{
+		Use: "ls [ROLE]",
 		Short: "List permissions for a role, if no ROLE present, use current user role",
 		Args: cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -101,6 +116,38 @@ func newRoleListPermsCmd(user *dbm.UserWithRole) *roleListPermsCmd {
 	root.cmd = cmd
 	return &root
 }
+
+type rolePermAddCmd struct {
+	cmd *cobra.Command
+}
+func newRolePermAddCmd() *rolePermAddCmd {
+	root := rolePermAddCmd{}
+	cmd := &cobra.Command{
+		Use: "add ROLE PERMS...",
+		Short: "Add permissions to ROLE",
+		Args: cobra.MinimumNArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			rolename := args[0]
+			perms := args[1:]
+
+			db, err := dbm.OpenSQLite()
+			if err != nil { return err }
+			defer dbm.CloseDB(db, &err)
+
+			roleID, err := dbm.RoleGetID(db, rolename)
+			if err != nil {
+				return err
+			}
+			if err := dbm.RoleAddPerms(db, roleID, perms); err != nil {
+				return err
+			}
+			return nil
+		},
+	}
+	root.cmd = cmd
+	return &root
+}
+
 
 type roleListCmd struct {
 	cmd *cobra.Command

@@ -119,6 +119,29 @@ func RoleGetPerms(db *sql.DB, roleID int) (map[Permission]bool, error) {
 	return perms, nil
 }
 
+func RoleAddPerms(db *sql.DB, roleID int, perms []string) error {
+	if len(perms) == 0 {
+		return fmt.Errorf("no perm names provided")
+	}
+	permIDs, err := PermNamesToIDs(db, perms)
+	if err != nil {
+		return fmt.Errorf("converting perm names to ids: %w", err)
+	}
+	if len(permIDs) != len(perms) {
+		return fmt.Errorf("not all perms provided exist, make sure you provided the correct names and that there are no dublicates. Provided %d, returned %d", len(perms), len(permIDs))
+	}
+	args := strings.Repeat(`(?,?),`, len(permIDs)-1) + `(?,?)`
+	SQL := "INSERT INTO role_permission (permission_id, role_id) VALUES " + args + " ON CONFLICT (role_id, permission_id) DO NOTHING"
+	roleIDs := make([]int, 0, len(permIDs))
+	for range len(permIDs) {
+		roleIDs = append(roleIDs, roleID)
+	}
+	if _, err := db.Exec(SQL, FlattenArgs(permIDs, roleIDs)...); err != nil {
+		return err
+	}
+	return nil
+}
+
 func RoleGetAll(db *sql.DB) ([]Role, error) {
 	rows, err := db.Query(`SELECT role_id FROM role`)
 	if err != nil {

@@ -1,6 +1,8 @@
 package dbm
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -23,8 +25,9 @@ const (
 	PermRoleDelete
 	PermRoleChangePerms
 	PermRoleList
-	PermRoleListPerms
-	PermRoleListPermsOwn
+	PermRolePermList
+	PermRolePermListOwn
+	PermRolePermMod
 	PermKeyAdd
 	PermKeyAddSelf
 	PermKeyList
@@ -48,8 +51,9 @@ var permissionNames = map[Permission]string{
 	PermRoleDelete:        "role_delete",
 	PermRoleChangePerms:   "role_change_perms",
 	PermRoleList:          "role_list",
-	PermRoleListPerms:     "role_list_perms",
-	PermRoleListPermsOwn:  "role_list_perms_own",
+	PermRolePermList:      "role_perm_list",
+	PermRolePermListOwn:   "role_perm_list_own",
+	PermRolePermMod:       "role_perm_mod",
 	PermKeyAdd:            "key_add",
 	PermKeyAddSelf:        "key_add_self",
 	PermKeyList:           "key_list",
@@ -123,4 +127,37 @@ func PermsSet() error {
 	}
 
 	return nil
+}
+
+func PermNamesToIDs(db *sql.DB, perms []string) (permIDs []int, err error) {
+	SQL := `SELECT permission_id FROM permission WHERE permission_name IN ` + listSQL(len(perms))
+
+	args := make([]any, len(perms))
+	for i, p := range perms {
+		args[i] = p
+	}
+
+	rows, err := db.Query(SQL, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if cerr := rows.Close(); cerr != nil {
+			err = errors.Join(err, cerr)
+		}
+	}()
+
+	permIDs = make([]int, 0, len(perms))
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		permIDs = append(permIDs, id)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return permIDs, nil
 }

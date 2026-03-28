@@ -49,6 +49,7 @@ func newRootCmd(user *dbm.UserWithRole) *rootCmd {
 	}
 	cmd.DisableAutoGenTag = true
 	cmd.SilenceUsage = true
+	cmd.SilenceErrors = true
 
 	if user.Role.HasPermission(dbm.PermUserAdd)           { cmd.AddCommand(newUserCmd(user).cmd) }
 	if user.Role.HasPermission(dbm.PermRoleChangePerms)   { cmd.AddCommand(newRoleCmd(user).cmd) }
