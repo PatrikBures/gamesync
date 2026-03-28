@@ -99,6 +99,9 @@ func PermsSet(db *sql.DB) error {
 	}
 
 	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
 
 	valueStrings := make([]string, 0, len(updatePerms))
 	valueArgs := make([]any, 0, len(updatePerms)*2)
