@@ -9,8 +9,8 @@ import (
 	"os"
 )
 
-func Execute() error {
-	if err := dirs(); err != nil {
+func Execute() (err error) {
+	if err = dirs(); err != nil {
 		return fmt.Errorf("dirs: %w", err)
 	}
 
@@ -20,17 +20,17 @@ func Execute() error {
 	}
 	defer func(){
 		if cerr := db.Close(); cerr != nil {
-			errors.Join(err, cerr)
+			err = errors.Join(err, cerr)
 		}
 	}()
 
-	if err := migrate(db); err != nil {
+	if err = migrate(db); err != nil {
 		return fmt.Errorf("migrating schema: %w", err)
 	}
-	if err := permissions(db); err != nil {
+	if err = permissions(db); err != nil {
 		return fmt.Errorf("permissions: %w", err)
 	}
-	if err := roles(db); err != nil {
+	if err = roles(db); err != nil {
 		return fmt.Errorf("roles: %w", err)
 	}
 

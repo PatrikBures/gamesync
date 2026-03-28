@@ -68,7 +68,7 @@ func Execute() (err error) {
 	}
 	defer func(){
 		if cerr := db.Close(); cerr != nil {
-			errors.Join(err, cerr)
+			err = errors.Join(err, cerr)
 		}
 	}()
 
