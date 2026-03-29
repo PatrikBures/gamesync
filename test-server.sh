@@ -4,13 +4,12 @@ TESTDIR="./test"
 
 USERS=(bob bertil bamse)
 DEVICES=(test1 test2)
+HOST_KEY_DIR="$TESTDIR/keys_host"
 PRIVATE_KEY_DIR="$TESTDIR/keys_private"
 PUBLIC_KEY_DIR="$TESTDIR/keys_public"
-HOST_KEY_DIR="$TESTDIR/keys_host"
-USER_IDS_DIR="$TESTDIR/user_ids"
-RESTIC_PASSWORDS_DIR="$TESTDIR/restic_passwords"
 DATA="$TESTDIR/data"
 
+CONTAINER_NAME="gamesync-test"
 
 if ! [ -d "$PRIVATE_KEY_DIR" ] || ! [ -d "$PUBLIC_KEY_DIR" ]; then
     mkdir -p "$PRIVATE_KEY_DIR"
@@ -24,34 +23,40 @@ if ! [ -d "$PRIVATE_KEY_DIR" ] || ! [ -d "$PUBLIC_KEY_DIR" ]; then
             cat "${file}.pub" >> "${PUBLIC_KEY_DIR}/${user}"
             rm "${file}.pub"
 
-            echo "created keyfor $user for device $device"
+            echo "created key for $user for device $device"
         done
     done
 fi
 
 mkdir -p "$HOST_KEY_DIR"
 
-docker container stop gamesync-test
-docker container rm gamesync-test
+docker container stop ${CONTAINER_NAME}
+docker container rm ${CONTAINER_NAME}
 
-make build-state
-
-docker build ./ -t gamesync:latest 
+docker build ./ -t gamesync:latest || exit
 
 docker run -d \
-    --volume "$USER_IDS_DIR":/config/user_ids \
-    --volume "$PUBLIC_KEY_DIR":/config/users \
-    --volume "$RESTIC_PASSWORDS_DIR":/config/restic_passwords \
     --volume "$HOST_KEY_DIR":/etc/ssh/keys \
     --volume "$DATA":/data \
     -e "GAMESYNC_LOOP=10" \
     -e "GAMESYNC_UNRESTRICTED=true" \
     -p 127.0.0.1:2222:22 \
-    --name gamesync-test \
+    --name ${CONTAINER_NAME} \
     gamesync:latest
 
 sleep 0.2
-docker logs gamesync-test
+docker logs ${CONTAINER_NAME}
 
-echo "try ssh with:"
-echo "ssh -i $PRIVATE_KEY_DIR/${USERS[0]}_${DEVICES[0]} -p 2222 ${USERS[0]}@localhost"
+
+echo "adding test user"
+docker exec ${CONTAINER_NAME} gamesync-admin user delete bob
+docker exec ${CONTAINER_NAME} gamesync-admin user add bob
+docker exec ${CONTAINER_NAME} gamesync-admin key add -u bob "$(cat ./test/keys_public/bob | head -1)"
+docker exec ${CONTAINER_NAME} gamesync-admin user role bob admin
+
+echo "test server with:
+docker exec -it ${CONTAINER_NAME} sh
+"
+echo "test ssh with:
+ssh -i ./test/keys_private/bob_test1 -p 2222 gamesync@localhost
+"

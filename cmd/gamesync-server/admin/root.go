@@ -1,0 +1,84 @@
+package cmdAdmin
+
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+	"gamesync/internal/dbm"
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+type userDB struct {
+	user *dbm.UserWithRole
+	db *sql.DB
+}
+
+func loadUserRole(db *sql.DB) (*dbm.UserWithRole, error) {
+	username := os.Getenv("GAMESYNC_USER")
+
+	if username == "" {
+		u := dbm.UserWithRole{
+			Name: "root",
+			ID: -1,
+			Role: dbm.Role{
+				ID: -1,
+				Name: "root",
+				Permissions: dbm.RoleAllPerms(),
+			},
+		}
+		return &u, nil
+	}
+
+	userWithRole, err := dbm.UserGetWithRole(db, username)
+	if err != nil {
+		return nil, fmt.Errorf("getting user with their role: %w", err)
+	}
+	return userWithRole, nil
+}
+
+type rootCmd struct {
+	cmd *cobra.Command
+}
+
+func newRootCmd(udb userDB) *rootCmd {
+	root := rootCmd{}
+	cmd := &cobra.Command{
+		Use: "gamesync-admin",
+		Short: "Manage the gamesync server",
+	}
+	cmd.DisableAutoGenTag = true
+	cmd.SilenceUsage = true
+	cmd.SilenceErrors = true
+
+	if udb.user.Role.HasPermission(dbm.PermUserAdd)           { cmd.AddCommand(newUserCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRoleChangePerms)   { cmd.AddCommand(newRoleCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermKeyAddSelf)        { cmd.AddCommand(newKeyCmd(udb).cmd) }
+	if udb.user.Role.HasPermission(dbm.PermRolePermListOwn)   { cmd.AddCommand(newPermCmd(udb).cmd) }
+
+	root.cmd = cmd
+	return &root
+}
+
+func Execute() (err error) {
+	db, err := dbm.OpenSQLite()
+	if err != nil {
+		return err
+	}
+	defer func(){
+		if cerr := db.Close(); cerr != nil {
+			err = errors.Join(err, cerr)
+		}
+	}()
+
+	user, err := loadUserRole(db)
+	if err != nil {
+		return err
+	}
+	udb := userDB{user: user, db: db}
+	if err = newRootCmd(udb).cmd.Execute(); err != nil {
+		return err
+	}
+	return nil
+}

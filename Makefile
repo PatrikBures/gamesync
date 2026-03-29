@@ -1,6 +1,7 @@
 BIN_NAME := gamesync
 BIN_NAME_DEV := $(BIN_NAME)-dev
 BIN_STATE_NAME := gamesync-state
+BIN_SERVER_NAME := $(BIN_NAME)-server
 CONTAINER_NAME := $(BIN_NAME)
 VERSION ?= dev
 PREFIX ?= /usr/local
@@ -13,7 +14,7 @@ all: build man
 build:
 	@echo "Building $(BIN_NAME)..."
 	mkdir -p bin
-	go build -ldflags "-X main.version=$(VERSION)" -o bin/$(BIN_NAME) ./cmd/gamesync
+	go build -ldflags "-X gamesync/internal/vars.Version=$(VERSION)" -o bin/$(BIN_NAME) ./cmd/gamesync
 
 man: build
 	@echo "Generating man pages..."
@@ -48,17 +49,21 @@ clean:
 
 go-install:
 	@echo "installing..."
-	go build -ldflags "-X main.version=$(VERSION)" -o $${GOPATH}/bin/$(BIN_NAME_DEV) ./cmd/gamesync
+	go build -ldflags "-X gamesync/internal/vars.Version=$(VERSION)" -o $${GOPATH}/bin/$(BIN_NAME_DEV) ./cmd/gamesync
 
 go-test:
 	@echo "testing..."
 	go test -v ./...
 
-
-build-state:
-	@echo "building $(BIN_STATE_NAME)..."
+mkbin:
 	mkdir -p bin
+
+build-state: mkbin
+	@echo "building $(BIN_STATE_NAME)..."
 	CGO_ENABLED=0 go build -o bin/$(BIN_STATE_NAME) ./cmd/gamesync-state
+build-server: mkbin
+	@echo "building $(BIN_WRAPPER_NAME)..."
+	CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o bin/$(BIN_SERVER_NAME) ./cmd/gamesync-server
 
 build-container: build-state
 	@echo "building container..."

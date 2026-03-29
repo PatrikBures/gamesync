@@ -7,6 +7,7 @@ import (
 
 	"gamesync/internal/config"
 	"gamesync/internal/ui"
+	"gamesync/internal/vars"
 
 	"github.com/spf13/cobra"
 )
@@ -60,7 +61,7 @@ func newRootCmd() *rootCmd {
 			}
 			
 			if root.opts.ignoreApiVersion {
-				config.ApiVersion = "0"
+				vars.ApiVersion = "0"
 			}
 			return nil
 		},
