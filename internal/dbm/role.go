@@ -3,16 +3,17 @@ package dbm
 import (
 	"database/sql"
 	"fmt"
+	"slices"
 	"strings"
 )
 
 type Role struct {
 	ID int
 	Name string
-	Permissions map[Permission]bool
+	Permissions []Permission
 }
 func (r *Role) HasPermission(perm Permission) bool {
-	return r.Permissions[perm]
+	return slices.Contains(r.Permissions, perm)
 }
 
 func RoleGetID(db *sql.DB, name string) (int, error) {
@@ -28,6 +29,17 @@ func RoleGetID(db *sql.DB, name string) (int, error) {
 	return id, nil
 }
 
+func RoleSetWithID(db *sql.DB, id int, name string) error {
+	if name == "" {
+		return fmt.Errorf("role name can not be empty")
+	}
+	const SQL = `INSERT INTO role (role_id, role_name) VALUES (?,?) ON CONFLICT (role_id) DO UPDATE SET role_name = EXCLUDED.role_name`
+	if _, err := db.Exec(SQL, id, name); err != nil {
+		return fmt.Errorf("inserting new role: %v", err)
+	}
+	return nil
+}
+
 func RoleAddSimple(db *sql.DB, name string) error {
 	if name == "" {
 		return fmt.Errorf("role name can not be empty")
@@ -39,47 +51,10 @@ func RoleAddSimple(db *sql.DB, name string) error {
 	return nil
 }
 
-func RoleAddWithPerms(db *sql.DB, role Role) error {
-	if role.Name == "" {
-		return fmt.Errorf("role name can not be empty")
-	}
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-
-	const addRoleSQL = `INSERT INTO role (role_id, role_name) VALUES (?, ?)`
-	if _, err := tx.Exec(addRoleSQL, role.ID, role.Name); err != nil {
-		return fmt.Errorf("inserting new role: %v", err)
-	}
-
-	if len(role.Permissions) > 0 {
-		valueStrings := make([]string, 0, len(role.Permissions))
-		valueArgs := make([]any, 0, len(role.Permissions)*2)
-		for p, enabled := range role.Permissions {
-			if !enabled {
-				continue
-			}
-			valueStrings = append(valueStrings, "(?, ?)")
-			valueArgs = append(valueArgs, p, role.ID)
-		}
-		if len(valueArgs) > 0 {
-			stmt := fmt.Sprintf("INSERT INTO role_permission (permission_id, role_id) VALUES %s", strings.Join(valueStrings, ","))
-			if _, err := tx.Exec(stmt, valueArgs...); err != nil {
-				return fmt.Errorf("inserting roles: %s: %w", stmt, err)
-			}
-		}
-	}
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commiting to db: %w", err)
-	}
-	return nil
-}
-
-func RoleAllPerms(enabled bool) map[Permission]bool {
-	perms := make(map[Permission]bool, len(permissionNames))
+func RoleAllPerms() []Permission {
+	perms := make([]Permission, 0, len(permissionNames))
 	for perm := range permissionNames {
-		perms[perm] = enabled
+		perms = append(perms, perm)
 	}
 	return perms
 }
@@ -102,23 +77,40 @@ func RoleGetWithPerms(db *sql.DB, roleID int) (Role, error) {
 	return role, nil
 }
 
-func RoleGetPerms(db *sql.DB, roleID int) (map[Permission]bool, error) {
+func RoleGetPerms(db *sql.DB, roleID int) ([]Permission, error) {
 	const SQL = `SELECT permission_id FROM role_permission WHERE role_id = ?`
 	rows, err := db.Query(SQL, roleID)
 	if err != nil {
 		return nil, fmt.Errorf("selecting permissions: %w", err)
 	}
-	perms := make(map[Permission]bool)
+	var perms []Permission
 	for rows.Next() {
 		var id Permission
 		if err := rows.Scan(&id); err != nil {
 			return nil, fmt.Errorf("scanning row: %w", err)
 		}
-		perms[id] = true
+		perms = append(perms, id)
 	}
 	return perms, nil
 }
 
+func RoleAddPermsWithIDs(db *sql.DB, roleID int, permIDs []Permission) error {
+	if len(permIDs) == 0 {
+		return nil
+	}
+	args := strings.Repeat(`(?,?),`, len(permIDs)-1) + `(?,?)`
+	SQL := "INSERT INTO role_permission (permission_id, role_id) VALUES " + args + " ON CONFLICT (role_id, permission_id) DO NOTHING"
+	roleIDs := make([]int, 0, len(permIDs))
+	permIDsInt := make([]int, 0, len(permIDs))
+	for i := range len(permIDs) {
+		roleIDs = append(roleIDs, roleID)
+		permIDsInt = append(permIDsInt, int(permIDs[i]))
+	}
+	if _, err := db.Exec(SQL, FlattenArgs(permIDsInt, roleIDs)...); err != nil {
+		return err
+	}
+	return nil
+}
 func RoleAddPerms(db *sql.DB, roleID int, perms []string) error {
 	if len(perms) == 0 {
 		return fmt.Errorf("no perm names provided")

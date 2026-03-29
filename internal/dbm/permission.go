@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -68,7 +69,9 @@ func (p Permission) String() string {
 }
 
 func PermsSet(db *sql.DB) error {
-	currentPerms := make(map[Permission]string, len(permissionNames))
+	currentPerms := make([]Permission, 0, len(permissionNames))
+	currentNames := make([]string, 0, len(permissionNames))
+	addPerms := make([]Permission, 0, len(permissionNames))
 
 	const getRolesSQL = `SELECT permission_id, permission_name FROM permission`
 	rows, err := db.Query(getRolesSQL)
@@ -81,20 +84,19 @@ func PermsSet(db *sql.DB) error {
 		if err := rows.Scan(&p, &name); err != nil {
 			return fmt.Errorf("scanning current perms: %w", err)
 		}
-		currentPerms[p] = name
+		currentPerms = append(currentPerms, p)
+		currentNames = append(currentNames, name)
 	}
-
-	updatePerms := make([]Permission, 0, len(permissionNames))
 
 	for p, expectedName := range permissionNames {
-		currentName, ok := currentPerms[p]
-		if ok && currentName == expectedName {
+		idx := slices.Index(currentPerms, p)
+		if idx != -1 && currentNames[idx] == expectedName {
 			continue
 		}
-		updatePerms = append(updatePerms, p)
+		addPerms = append(addPerms, p)
 	}
 
-	if len(updatePerms) == 0 {
+	if len(addPerms) == 0 {
 		return nil
 	}
 
@@ -103,9 +105,9 @@ func PermsSet(db *sql.DB) error {
 		return err
 	}
 
-	valueStrings := make([]string, 0, len(updatePerms))
-	valueArgs := make([]any, 0, len(updatePerms)*2)
-	for _, p := range updatePerms{
+	valueStrings := make([]string, 0, len(addPerms))
+	valueArgs := make([]any, 0, len(addPerms)*2)
+	for _, p := range addPerms {
 		valueStrings = append(valueStrings, "(?, ?)")
 		valueArgs = append(valueArgs, p, permissionNames[p])
 		fmt.Println("added perm:", p,)

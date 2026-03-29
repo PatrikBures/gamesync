@@ -79,20 +79,21 @@ func roles(db *sql.DB) error {
 		{
 			ID: 0,
 			Name: "none",
-			Permissions: dbm.RoleAllPerms(false),
+			Permissions: []dbm.Permission{},
 		},
 		{
 			ID: 1,
 			Name: "admin", 
-			Permissions: dbm.RoleAllPerms(true),
+			Permissions: dbm.RoleAllPerms(),
 		},
 	}
 	for _, role := range roles {
-		_ = dbm.RoleDeleteWithID(db, role.ID)
-		if err := dbm.RoleAddWithPerms(db, role); err != nil {
-			return fmt.Errorf("adding role with perms: %w", err)
+		if err := dbm.RoleSetWithID(db, role.ID, role.Name); err != nil {
+			return fmt.Errorf("adding default role %s: %w", role.Name, err)
+		}
+		if err := dbm.RoleAddPermsWithIDs(db, role.ID, role.Permissions); err != nil {
+			return fmt.Errorf("setting perms for default role %s: %w", role.Name, err)
 		}
 	}
-	
 	return nil
 }

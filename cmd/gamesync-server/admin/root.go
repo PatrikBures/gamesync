@@ -25,7 +25,7 @@ func loadUserRole(db *sql.DB) (*dbm.UserWithRole, error) {
 			Role: dbm.Role{
 				ID: -1,
 				Name: "root",
-				Permissions: dbm.RoleAllPerms(true),
+				Permissions: dbm.RoleAllPerms(),
 			},
 		}
 		return &u, nil
