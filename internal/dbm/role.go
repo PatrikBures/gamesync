@@ -29,11 +29,11 @@ func RoleGetID(db *sql.DB, name string) (int, error) {
 	return id, nil
 }
 
-func RoleAddWithID(db *sql.DB, id int, name string) error {
+func RoleSetWithID(db *sql.DB, id int, name string) error {
 	if name == "" {
 		return fmt.Errorf("role name can not be empty")
 	}
-	const SQL = `INSERT INTO role (role_id, role_name) VALUES (?,?)`
+	const SQL = `INSERT INTO role (role_id, role_name) VALUES (?,?) ON CONFLICT (role_id) DO UPDATE SET role_name = EXCLUDED.role_name`
 	if _, err := db.Exec(SQL, id, name); err != nil {
 		return fmt.Errorf("inserting new role: %v", err)
 	}

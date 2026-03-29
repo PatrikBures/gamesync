@@ -88,9 +88,12 @@ func roles(db *sql.DB) error {
 		},
 	}
 	for _, role := range roles {
-		dbm.RoleAddWithID(db, role.ID, role.Name)
-		dbm.RoleAddPermsWithIDs(db, role.ID, role.Permissions)
+		if err := dbm.RoleSetWithID(db, role.ID, role.Name); err != nil {
+			return fmt.Errorf("adding default role %s: %w", role.Name, err)
+		}
+		if err := dbm.RoleAddPermsWithIDs(db, role.ID, role.Permissions); err != nil {
+			return fmt.Errorf("setting perms for default role %s: %w", role.Name, err)
+		}
 	}
-	
 	return nil
 }
