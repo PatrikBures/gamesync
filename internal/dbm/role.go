@@ -51,40 +51,6 @@ func RoleAddSimple(db *sql.DB, name string) error {
 	return nil
 }
 
-func RoleAddWithPerms(db *sql.DB, role Role) error {
-	if role.Name == "" {
-		return fmt.Errorf("role name can not be empty")
-	}
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-
-	const addRoleSQL = `INSERT INTO role (role_id, role_name) VALUES (?, ?)`
-	if _, err := tx.Exec(addRoleSQL, role.ID, role.Name); err != nil {
-		return fmt.Errorf("inserting new role: %v", err)
-	}
-
-	if len(role.Permissions) > 0 {
-		valueStrings := make([]string, 0, len(role.Permissions))
-		valueArgs := make([]any, 0, len(role.Permissions)*2)
-		for _, p := range role.Permissions {
-			valueStrings = append(valueStrings, "(?, ?)")
-			valueArgs = append(valueArgs, p, role.ID)
-		}
-		if len(valueArgs) > 0 {
-			stmt := fmt.Sprintf("INSERT INTO role_permission (permission_id, role_id) VALUES %s", strings.Join(valueStrings, ","))
-			if _, err := tx.Exec(stmt, valueArgs...); err != nil {
-				return fmt.Errorf("inserting roles: %s: %w", stmt, err)
-			}
-		}
-	}
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commiting to db: %w", err)
-	}
-	return nil
-}
-
 func RoleAllPerms() []Permission {
 	perms := make([]Permission, 0, len(permissionNames))
 	for perm := range permissionNames {
