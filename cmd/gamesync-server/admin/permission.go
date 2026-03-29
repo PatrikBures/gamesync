@@ -58,8 +58,7 @@ func newPermListCmd(udb userDB) *permListCmd {
 			}
 
 			permSlice := make([]dbm.Permission, 0, len(role.Permissions))
-			for perm, enabled := range role.Permissions {
-				if !enabled { continue }
+			for _, perm := range role.Permissions {
 				permSlice = append(permSlice, perm)
 			}
 			slices.Sort(permSlice)
