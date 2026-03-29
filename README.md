@@ -1,4 +1,4 @@
-> Currently the server is being rewritten on the `remake-server` branch. 
+> Currently a rewrite is ongoing on the `main` branch
 
 # Gamesync
 
