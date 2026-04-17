@@ -21,14 +21,6 @@ RUN apk add --no-cache \
 
 COPY --from=build --chmod=555 /bin/gamesync-server /usr/local/bin/gamesync-server
 
-RUN ln -s /usr/local/bin/gamesync-server /usr/local/bin/gamesync-admin && \
-    ln -s /usr/local/bin/gamesync-server /usr/local/bin/gamesync-auth && \
-    ln -s /usr/local/bin/gamesync-server /usr/local/bin/gamesync-wrapper && \
-    ln -s /usr/local/bin/gamesync-server /usr/local/bin/gamesync-init
-
-COPY server/sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
-COPY --chmod=500 server/entrypoint.sh /entrypoint.sh
-
 EXPOSE 22
 
-CMD ["/entrypoint.sh"]
+CMD ["/usr/local/bin/gamesync-server"]
