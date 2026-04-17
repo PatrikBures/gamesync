@@ -16,11 +16,12 @@ RUN --mount=type=cache,target="/cache/go" go build -ldflags="-s -w" -trimpath -o
 FROM alpine:${ALPINE_VERSION}
 
 RUN apk add --no-cache \
-    rsync \
-    openssh-server
+    curl
 
 COPY --from=build --chmod=555 /bin/gamesync-server /usr/local/bin/gamesync-server
 
-EXPOSE 22
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --start-interval=0.5s --retries=1 CMD ["curl", "-f", "http://localhost:8080/health"]
+
+EXPOSE 8080
 
 CMD ["/usr/local/bin/gamesync-server"]
