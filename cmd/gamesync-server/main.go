@@ -1,27 +1,12 @@
 package main
 
 import (
-	cmdAdmin "gamesync/cmd/gamesync-server/admin"
-	cmdAuth "gamesync/cmd/gamesync-server/auth"
-	cmdInit "gamesync/cmd/gamesync-server/init"
-	cmdWrapper "gamesync/cmd/gamesync-server/wrapper"
+	"gamesync/internal/api"
 	"log"
-	"os"
-	"path/filepath"
 )
 
-var cmds = map[string]func() error {
-	"gamesync-admin":    cmdAdmin.Execute,
-	"gamesync-auth":     cmdAuth.Execute,
-	"gamesync-wrapper":  cmdWrapper.Execute,
-	"gamesync-init":     cmdInit.Execute,
-}
 func main() {
-	base := filepath.Base(os.Args[0])
-	if _, ok := cmds[base]; !ok {
-		log.Fatalf("'%s' is not a valid command", base)
-	}
-	if err := cmds[base](); err != nil {
-		log.Fatalf("%s: %s", base, err)
+	if err := api.Serve(); err != nil {
+		log.Fatal(err)
 	}
 }

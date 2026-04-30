@@ -16,19 +16,12 @@ RUN --mount=type=cache,target="/cache/go" go build -ldflags="-s -w" -trimpath -o
 FROM alpine:${ALPINE_VERSION}
 
 RUN apk add --no-cache \
-    rsync \
-    openssh-server
+    curl
 
 COPY --from=build --chmod=555 /bin/gamesync-server /usr/local/bin/gamesync-server
 
-RUN ln -s /usr/local/bin/gamesync-server /usr/local/bin/gamesync-admin && \
-    ln -s /usr/local/bin/gamesync-server /usr/local/bin/gamesync-auth && \
-    ln -s /usr/local/bin/gamesync-server /usr/local/bin/gamesync-wrapper && \
-    ln -s /usr/local/bin/gamesync-server /usr/local/bin/gamesync-init
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --start-interval=0.5s --retries=1 CMD ["curl", "-f", "http://localhost:8080/health"]
 
-COPY server/sshd.conf /etc/ssh/sshd_config.d/50-game-sync.conf
-COPY --chmod=500 server/entrypoint.sh /entrypoint.sh
+EXPOSE 8080
 
-EXPOSE 22
-
-CMD ["/entrypoint.sh"]
+CMD ["/usr/local/bin/gamesync-server"]
