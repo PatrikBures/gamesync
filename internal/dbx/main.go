@@ -9,6 +9,8 @@ import (
 	"xorm.io/xorm"
 )
 
+const defaultSQLitePath = "/db.sqlite"
+
 type User struct {
 	Id int64
 	Name string `xorm:"varchar 25 not null unique 'usr_name"`
@@ -16,19 +18,18 @@ type User struct {
 
 func ConnectDb() (*xorm.Engine, error) {
 	dbType := os.Getenv("GAMESYNC_DB_TYPE")
-	var dbPath string
+	dbUrl := os.Getenv("GAMESYNC_DB_URL")
 
 	if dbType == "" || dbType == "sqlite" {
 		dbType = "sqlite"
-		dbPath = "./db.sqlite"
-	} else {
-		dbPath = os.Getenv("GAMESYNC_DB_HOST")
-		if !slices.Contains([]string{"postgres"}, dbType) {
-			return nil, fmt.Errorf("invalid database type '%s'", dbType)
+		if dbUrl == "" {
+			dbUrl = defaultSQLitePath
 		}
+	} else if !slices.Contains([]string{"postgres"}, dbType) {
+		return nil, fmt.Errorf("invalid database type '%s'", dbType)
 	}
 
-	engine, err := xorm.NewEngine(dbType, dbPath)
+	engine, err := xorm.NewEngine(dbType, dbUrl)
 	if err != nil {
 		return nil, err
 	}
