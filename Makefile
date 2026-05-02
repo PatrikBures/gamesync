@@ -58,9 +58,6 @@ go-test:
 mkbin:
 	mkdir -p bin
 
-build-state: mkbin
-	@echo "building $(BIN_STATE_NAME)..."
-	CGO_ENABLED=0 go build -o bin/$(BIN_STATE_NAME) ./cmd/gamesync-state
 build-server: mkbin
 	@echo "building $(BIN_WRAPPER_NAME)..."
 	CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o bin/$(BIN_SERVER_NAME) ./cmd/gamesync-server
