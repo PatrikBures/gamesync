@@ -44,6 +44,6 @@ func (h *Handler) Serve() error {
 	return server.ListenAndServe()
 }
 
-func (h *Handler) getHealth(rw http.ResponseWriter, r *http.Request) {
-	rw.WriteHeader(http.StatusOK)
+func (h *Handler) getHealth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
