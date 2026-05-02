@@ -20,7 +20,7 @@ RUN apk add --no-cache \
 
 COPY --from=build --chmod=555 /bin/gamesync-server /usr/local/bin/gamesync-server
 
-HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --start-interval=0.5s --retries=1 CMD ["curl", "-f", "http://localhost:8080/health"]
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --start-interval=0.5s --retries=1 CMD ["curl", "-f", "http://localhost:8080/api/v1/health"]
 
 EXPOSE 8080
 
