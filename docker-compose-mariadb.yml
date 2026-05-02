@@ -5,20 +5,19 @@ services:
     ports:
       - "8080:8080"
     environment:
-      GAMESYNC_DB_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}"
-      GAMESYNC_DB_TYPE: postgres
+      GAMESYNC_DB_URL: "root:${DB_PASSWORD}@tcp(db:3306)/${DB_NAME}"
+      GAMESYNC_DB_TYPE: mysql
       GAMESYNC_LOGGING: true
     depends_on:
       db:
         condition: service_healthy
   db:
-    image: postgres:18-alpine
+    image: mariadb:12
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
       start_interval: 1s
       interval: 5s

@@ -4,19 +4,19 @@ import (
 	"gamesync/internal/server/middleware"
 	"net/http"
 
-	"xorm.io/xorm"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
-	engine *xorm.Engine
+	db *gorm.DB
 	opts HandlerOpts
 }
 type HandlerOpts struct {
 	Logging bool
 }
-func NewHandler(opts HandlerOpts, engine *xorm.Engine) *Handler {
+func NewHandler(opts HandlerOpts, db *gorm.DB) *Handler {
 	return &Handler{
-		engine: engine,
+		db: db,
 		opts: opts,
 	}
 }

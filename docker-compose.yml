@@ -4,3 +4,7 @@ services:
     container_name: gamesync
     ports:
       - "8080:8080"
+    environment:
+      GAMESYNC_LOGGING: true
+    volumes:
+      - ./data/sqlite_db:/srv/gamesync/sqlite_db

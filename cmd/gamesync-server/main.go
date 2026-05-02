@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbx"
+	"gamesync/internal/server"
 	"gamesync/internal/server/api"
 	"log"
-	"log/slog"
 	"os"
 )
 
@@ -16,22 +16,29 @@ func main() {
 }
 
 func start() error {
-	engine, err := dbx.ConnectDb()
+	if err := server.CreateDirs(); err != nil {
+		return fmt.Errorf("could not initialize dirs: %v", err)
+	}
+
+	dbType := os.Getenv("GAMESYNC_DB_TYPE")
+	if dbType == "" {
+		dbType = "sqlite"
+	}
+	dbUrl := os.Getenv("GAMESYNC_DB_URL")
+	if dbUrl == "" {
+		dbUrl = server.DefaultSQLitePath
+	}
+
+	db, err := dbx.ConnectDb(dbType, dbUrl)
 	if err != nil {
 		return err
 	}
-	defer engine.Close()
 
-	slog.Info("created database", "driverName", engine.DriverName())
-	if err := engine.Ping(); err != nil {
-		return fmt.Errorf("database not reachable: %v", err)
-	}
-	
 	handlerOpts := api.HandlerOpts{
 		Logging: false,
 	}
 	if os.Getenv("GAMESYNC_LOGGING") == "true" {
 		handlerOpts.Logging = true
 	}
-	return api.NewHandler(handlerOpts, engine).Serve()
+	return api.NewHandler(handlerOpts, db).Serve()
 }
