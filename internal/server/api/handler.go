@@ -1,6 +1,7 @@
 package api
 
 import (
+	"gamesync/internal/server/middleware"
 	"net/http"
 
 	"xorm.io/xorm"
@@ -8,11 +9,15 @@ import (
 
 type Handler struct {
 	engine *xorm.Engine
+	opts HandlerOpts
 }
-
-func NewHandler(engine *xorm.Engine) *Handler {
+type HandlerOpts struct {
+	Logging bool
+}
+func NewHandler(opts HandlerOpts, engine *xorm.Engine) *Handler {
 	return &Handler{
 		engine: engine,
+		opts: opts,
 	}
 }
 
@@ -29,8 +34,13 @@ func (h *Handler) Serve() error {
 
 	server := http.Server{
 		Addr: ":8080",
-		Handler: api,
 	}
+	if h.opts.Logging {
+		server.Handler = middleware.Logging(api)
+	} else {
+		server.Handler = api
+	}
+
 	return server.ListenAndServe()
 }
 

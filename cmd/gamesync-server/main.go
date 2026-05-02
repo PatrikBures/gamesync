@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"gamesync/internal/api"
 	"gamesync/internal/dbx"
+	"gamesync/internal/server/api"
 	"log"
 	"log/slog"
+	"os"
 )
 
 func main() {
@@ -26,5 +27,11 @@ func start() error {
 		return fmt.Errorf("database not reachable: %v", err)
 	}
 	
-	return api.NewHandler(engine).Serve()
+	handlerOpts := api.HandlerOpts{
+		Logging: false,
+	}
+	if os.Getenv("GAMESYNC_LOGGING") == "true" {
+		handlerOpts.Logging = true
+	}
+	return api.NewHandler(handlerOpts, engine).Serve()
 }
