@@ -2,20 +2,32 @@ package api
 
 import (
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
-func Serve() error {
-	router := gin.Default()
-	router.GET("/health", getHealth)
-	
-	if err := router.Run("0.0.0.0:8080"); err != nil {
-		return err
-	}
-	return nil
+type Handler struct {}
+
+func NewHandler() *Handler {
+	return &Handler{}
 }
 
-func getHealth(c *gin.Context) {
-	c.JSON(http.StatusOK, "ok")
+func (h *Handler) Serve() error {
+	router := http.NewServeMux()
+
+	router.HandleFunc("GET /health", h.getHealth)
+
+	v1 := http.NewServeMux()
+	v1.Handle("/v1/", http.StripPrefix("/v1", router))
+
+	api := http.NewServeMux()
+	api.Handle("/api/", http.StripPrefix("/api", v1))
+
+	server := http.Server{
+		Addr: ":8080",
+		Handler: api,
+	}
+	return server.ListenAndServe()
+}
+
+func (h *Handler) getHealth(rw http.ResponseWriter, r *http.Request) {
+	rw.WriteHeader(http.StatusOK)
 }
