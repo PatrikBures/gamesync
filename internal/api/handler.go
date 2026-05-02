@@ -2,12 +2,18 @@ package api
 
 import (
 	"net/http"
+
+	"xorm.io/xorm"
 )
 
-type Handler struct {}
+type Handler struct {
+	engine *xorm.Engine
+}
 
-func NewHandler() *Handler {
-	return &Handler{}
+func NewHandler(engine *xorm.Engine) *Handler {
+	return &Handler{
+		engine: engine,
+	}
 }
 
 func (h *Handler) Serve() error {

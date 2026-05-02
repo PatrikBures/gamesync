@@ -26,5 +26,5 @@ func start() error {
 		return fmt.Errorf("database not reachable: %v", err)
 	}
 	
-	return api.NewHandler().Serve()
+	return api.NewHandler(engine).Serve()
 }
