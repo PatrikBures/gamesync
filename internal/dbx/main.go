@@ -3,9 +3,9 @@ package dbx
 import (
 	"fmt"
 	"os"
-	"slices"
 
 	_ "modernc.org/sqlite"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"xorm.io/xorm"
 )
 
@@ -20,12 +20,15 @@ func ConnectDb() (*xorm.Engine, error) {
 	dbType := os.Getenv("GAMESYNC_DB_TYPE")
 	dbUrl := os.Getenv("GAMESYNC_DB_URL")
 
-	if dbType == "" || dbType == "sqlite" {
+	switch dbType{
+	case "", "sqlite":
 		dbType = "sqlite"
 		if dbUrl == "" {
 			dbUrl = defaultSQLitePath
 		}
-	} else if !slices.Contains([]string{"postgres"}, dbType) {
+	case "postgres":
+		dbType = "pgx"
+	default:
 		return nil, fmt.Errorf("invalid database type '%s'", dbType)
 	}
 
