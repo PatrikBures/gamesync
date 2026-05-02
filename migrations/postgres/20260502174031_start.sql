@@ -11,7 +11,7 @@ CREATE TABLE roles
 
 CREATE TABLE users
 (
-    user_id SERIAL NOT NULL,
+    user_id BIGSERIAL NOT NULL,
     user_name VARCHAR(25) NOT NULL,
     role_id INTEGER NOT NULL,
 

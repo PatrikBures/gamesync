@@ -1,22 +1,23 @@
 package api
 
 import (
+	"gamesync/internal/model"
+	"gamesync/internal/query"
 	"gamesync/internal/server/middleware"
+	"log/slog"
 	"net/http"
-
-	"gorm.io/gorm"
 )
 
 type Handler struct {
-	db *gorm.DB
+	q *query.Query
 	opts HandlerOpts
 }
 type HandlerOpts struct {
 	Logging bool
 }
-func NewHandler(opts HandlerOpts, db *gorm.DB) *Handler {
+func NewHandler(opts HandlerOpts, query *query.Query) *Handler {
 	return &Handler{
-		db: db,
+		q: query,
 		opts: opts,
 	}
 }
@@ -25,6 +26,7 @@ func (h *Handler) Serve() error {
 	router := http.NewServeMux()
 
 	router.HandleFunc("GET /health", h.getHealth)
+	router.HandleFunc("GET /users", h.getUsers)
 
 	v1 := http.NewServeMux()
 	v1.Handle("/v1/", http.StripPrefix("/v1", router))
@@ -46,4 +48,14 @@ func (h *Handler) Serve() error {
 
 func (h *Handler) getHealth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) getUsers(w http.ResponseWriter, r *http.Request) {
+	if err := h.q.User.WithContext(r.Context()).Create(&model.User{UserName: "test", RoleID: 1}); err != nil {
+		slog.Error("creating user", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		slog.Info("created user")
+		w.WriteHeader(http.StatusOK)
+	}
 }

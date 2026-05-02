@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbx"
+	"gamesync/internal/query"
 	"gamesync/internal/server"
 	"gamesync/internal/server/api"
 	"log"
@@ -33,6 +34,10 @@ func start() error {
 	if err != nil {
 		return err
 	}
+	if dbType == "sqlite" {
+		db.Exec("PRAGMA foreign_keys = ON")
+	}
+	q := query.Use(db)
 
 	handlerOpts := api.HandlerOpts{
 		Logging: false,
@@ -40,5 +45,5 @@ func start() error {
 	if os.Getenv("GAMESYNC_LOGGING") == "true" {
 		handlerOpts.Logging = true
 	}
-	return api.NewHandler(handlerOpts, db).Serve()
+	return api.NewHandler(handlerOpts, q).Serve()
 }

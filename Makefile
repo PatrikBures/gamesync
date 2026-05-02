@@ -1,3 +1,8 @@
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 BIN_NAME := gamesync
 BIN_NAME_DEV := $(BIN_NAME)-dev
 BIN_STATE_NAME := gamesync-state
@@ -65,5 +70,10 @@ build-server: mkbin
 build-container: build-state
 	@echo "building container..."
 	docker build ./ -t $(CONTAINER_NAME):$(VERSION)
+
+gen-pg:
+	GAMESYNC_DB_TYPE=postgres GAMESYNC_DB_URL=postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:5432/$(DB_NAME) go run ./cmd/gen/main.go
+gen-sqlite:
+	GAMESYNC_DB_TYPE=sqlite GAMESYNC_DB_URL=./data/sqlite_db/gamesync.sqlite go run ./cmd/gen/main.go
 
 .PHONY: all build man install uninstall clean
