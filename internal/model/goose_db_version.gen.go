@@ -12,10 +12,10 @@ const TableNameGooseDbVersion = "goose_db_version"
 
 // GooseDbVersion mapped from table <goose_db_version>
 type GooseDbVersion struct {
-	ID        int32     `gorm:"column:id;primaryKey" json:"id"`
-	VersionID int32     `gorm:"column:version_id;not null" json:"version_id"`
-	IsApplied int32     `gorm:"column:is_applied;not null" json:"is_applied"`
-	Tstamp    time.Time `gorm:"column:tstamp;default:datetime('now'))" json:"tstamp"`
+	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	VersionID int64     `gorm:"column:version_id;not null" json:"version_id"`
+	IsApplied bool      `gorm:"column:is_applied;not null" json:"is_applied"`
+	Tstamp    time.Time `gorm:"column:tstamp;not null;default:now()" json:"tstamp"`
 }
 
 // TableName GooseDbVersion's table name

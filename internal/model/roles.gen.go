@@ -8,7 +8,7 @@ const TableNameRole = "roles"
 
 // Role mapped from table <roles>
 type Role struct {
-	RoleID   int32  `gorm:"column:role_id;primaryKey" json:"role_id"`
+	RoleID   int32  `gorm:"column:role_id;primaryKey;autoIncrement:true" json:"role_id"`
 	RoleName string `gorm:"column:role_name;not null" json:"role_name"`
 }
 

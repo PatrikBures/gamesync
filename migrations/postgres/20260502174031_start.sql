@@ -5,6 +5,7 @@ CREATE TABLE roles
     role_id SERIAL NOT NULL,
     role_name VARCHAR(25) NOT NULL,
 
+    PRIMARY KEY (role_id),
     UNIQUE (role_id),
     UNIQUE (role_name)
 );
@@ -15,6 +16,7 @@ CREATE TABLE users
     user_name VARCHAR(25) NOT NULL,
     role_id INTEGER NOT NULL,
 
+    PRIMARY KEY (user_id),
     UNIQUE (user_id),
     UNIQUE (user_name),
     UNIQUE (role_id),

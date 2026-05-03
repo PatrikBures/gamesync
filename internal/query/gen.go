@@ -19,7 +19,6 @@ var (
 	Q              = new(Query)
 	GooseDbVersion *gooseDbVersion
 	Role           *role
-	SqliteSequence *sqliteSequence
 	User           *user
 )
 
@@ -27,7 +26,6 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	GooseDbVersion = &Q.GooseDbVersion
 	Role = &Q.Role
-	SqliteSequence = &Q.SqliteSequence
 	User = &Q.User
 }
 
@@ -36,7 +34,6 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		db:             db,
 		GooseDbVersion: newGooseDbVersion(db, opts...),
 		Role:           newRole(db, opts...),
-		SqliteSequence: newSqliteSequence(db, opts...),
 		User:           newUser(db, opts...),
 	}
 }
@@ -46,7 +43,6 @@ type Query struct {
 
 	GooseDbVersion gooseDbVersion
 	Role           role
-	SqliteSequence sqliteSequence
 	User           user
 }
 
@@ -57,7 +53,6 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		db:             db,
 		GooseDbVersion: q.GooseDbVersion.clone(db),
 		Role:           q.Role.clone(db),
-		SqliteSequence: q.SqliteSequence.clone(db),
 		User:           q.User.clone(db),
 	}
 }
@@ -75,7 +70,6 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		db:             db,
 		GooseDbVersion: q.GooseDbVersion.replaceDB(db),
 		Role:           q.Role.replaceDB(db),
-		SqliteSequence: q.SqliteSequence.replaceDB(db),
 		User:           q.User.replaceDB(db),
 	}
 }
@@ -83,7 +77,6 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 type queryCtx struct {
 	GooseDbVersion IGooseDbVersionDo
 	Role           IRoleDo
-	SqliteSequence ISqliteSequenceDo
 	User           IUserDo
 }
 
@@ -91,7 +84,6 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		GooseDbVersion: q.GooseDbVersion.WithContext(ctx),
 		Role:           q.Role.WithContext(ctx),
-		SqliteSequence: q.SqliteSequence.WithContext(ctx),
 		User:           q.User.WithContext(ctx),
 	}
 }

@@ -29,8 +29,8 @@ func newGooseDbVersion(db *gorm.DB, opts ...gen.DOOption) gooseDbVersion {
 	tableName := _gooseDbVersion.gooseDbVersionDo.TableName()
 	_gooseDbVersion.ALL = field.NewAsterisk(tableName)
 	_gooseDbVersion.ID = field.NewInt32(tableName, "id")
-	_gooseDbVersion.VersionID = field.NewInt32(tableName, "version_id")
-	_gooseDbVersion.IsApplied = field.NewInt32(tableName, "is_applied")
+	_gooseDbVersion.VersionID = field.NewInt64(tableName, "version_id")
+	_gooseDbVersion.IsApplied = field.NewBool(tableName, "is_applied")
 	_gooseDbVersion.Tstamp = field.NewTime(tableName, "tstamp")
 
 	_gooseDbVersion.fillFieldMap()
@@ -43,8 +43,8 @@ type gooseDbVersion struct {
 
 	ALL       field.Asterisk
 	ID        field.Int32
-	VersionID field.Int32
-	IsApplied field.Int32
+	VersionID field.Int64
+	IsApplied field.Bool
 	Tstamp    field.Time
 
 	fieldMap map[string]field.Expr
@@ -63,8 +63,8 @@ func (g gooseDbVersion) As(alias string) *gooseDbVersion {
 func (g *gooseDbVersion) updateTableName(table string) *gooseDbVersion {
 	g.ALL = field.NewAsterisk(table)
 	g.ID = field.NewInt32(table, "id")
-	g.VersionID = field.NewInt32(table, "version_id")
-	g.IsApplied = field.NewInt32(table, "is_applied")
+	g.VersionID = field.NewInt64(table, "version_id")
+	g.IsApplied = field.NewBool(table, "is_applied")
 	g.Tstamp = field.NewTime(table, "tstamp")
 
 	g.fillFieldMap()
