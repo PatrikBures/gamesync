@@ -4,3 +4,17 @@ services:
     container_name: gamesync
     ports:
       - "8080:8080"
+    environment:
+      GAMESYNC_LOGGING: true
+    volumes:
+      - ./data/sqlite_db:/srv/gamesync/sqlite_db
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  migrate:
+    build:
+      dockerfile: docker/goose_sqlite.Dockerfile
+      context: .
+    volumes:
+      - ./data/sqlite_db/:/db
+    command: ["goose", "up"]

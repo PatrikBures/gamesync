@@ -1,3 +1,8 @@
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 BIN_NAME := gamesync
 BIN_NAME_DEV := $(BIN_NAME)-dev
 BIN_STATE_NAME := gamesync-state
@@ -58,15 +63,23 @@ go-test:
 mkbin:
 	mkdir -p bin
 
-build-state: mkbin
-	@echo "building $(BIN_STATE_NAME)..."
-	CGO_ENABLED=0 go build -o bin/$(BIN_STATE_NAME) ./cmd/gamesync-state
-build-server: mkbin
-	@echo "building $(BIN_WRAPPER_NAME)..."
-	CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o bin/$(BIN_SERVER_NAME) ./cmd/gamesync-server
-
 build-container: build-state
 	@echo "building container..."
 	docker build ./ -t $(CONTAINER_NAME):$(VERSION)
+
+up-pg:
+	docker compose -f ./docker-compose-pg.yml up --build --remove-orphans -d
+down-pg:
+	docker compose -f ./docker-compose-pg.yml down -v
+
+up:
+	docker compose up --build --remove-orphans -d
+down:
+	docker compose down -v
+
+gen-pg: start-pg
+	GAMESYNC_DB_TYPE=postgres GAMESYNC_DB_URL=postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:5432/$(DB_NAME) go run ./cmd/gen/main.go
+gen-sqlite: up
+	GAMESYNC_DB_TYPE=sqlite GAMESYNC_DB_URL=./data/sqlite_db/gamesync.sqlite go run ./cmd/gen/main.go
 
 .PHONY: all build man install uninstall clean
