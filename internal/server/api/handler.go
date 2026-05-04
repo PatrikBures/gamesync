@@ -1,10 +1,8 @@
 package api
 
 import (
-	"gamesync/internal/model"
 	"gamesync/internal/query"
 	"gamesync/internal/server/middleware"
-	"log/slog"
 	"net/http"
 )
 
@@ -27,6 +25,7 @@ func (h *Handler) Serve() error {
 
 	router.HandleFunc("GET /health", h.getHealth)
 	router.HandleFunc("GET /users", h.getUsers)
+	router.HandleFunc("POST /roles", h.createRole)
 
 	v1 := http.NewServeMux()
 	v1.Handle("/v1/", http.StripPrefix("/v1", router))
