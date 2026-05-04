@@ -25,6 +25,7 @@ func (h *Handler) Serve() error {
 
 	router.HandleFunc("GET /health", h.getHealth)
 	router.HandleFunc("GET /users", h.getUsers)
+	router.HandleFunc("POST /users", h.createUser)
 	router.HandleFunc("POST /roles", h.createRole)
 
 	v1 := http.NewServeMux()

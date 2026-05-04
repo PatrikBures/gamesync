@@ -7,12 +7,12 @@ import (
 	"net/http"
 )
 
-
-type roleCreator struct {
+type userCreator struct {
 	Name string `json:"name"`
+	RoleID int32 `json:"role_id"`
 }
-func (h *Handler) createRole(w http.ResponseWriter, r *http.Request) {
-	c := roleCreator{}
+func (h *Handler) createUser(w http.ResponseWriter, r *http.Request) {
+	c := userCreator{}
 	decoder := json.NewDecoder(r.Body)
 	if decoder == nil {
 		w.WriteHeader(http.StatusNotAcceptable)
@@ -23,11 +23,12 @@ func (h *Handler) createRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	modelRole := model.Role{
-		RoleName: c.Name,
+	modelUser := model.User{
+		UserName: c.Name,
+		RoleID: c.RoleID,
 	}
-	if err := h.q.Role.WithContext(r.Context()).Create(&modelRole); err != nil {
-		slog.Error("creating role", "error", err)
+	if err := h.q.User.WithContext(r.Context()).Create(&modelUser); err != nil {
+		slog.Error("creating user", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
