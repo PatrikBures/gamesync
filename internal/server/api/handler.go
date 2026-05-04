@@ -51,18 +51,4 @@ func (h *Handler) getHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getUsers(w http.ResponseWriter, r *http.Request) {
-	if err := h.q.Role.WithContext(r.Context()).Create(&model.Role{RoleName: "admin"}); err != nil {
-		slog.Error("creating role", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-	} else {
-		slog.Info("created role")
-		w.WriteHeader(http.StatusOK)
-	}
-	if err := h.q.User.WithContext(r.Context()).Create(&model.User{UserName: "test", RoleID: 1}); err != nil {
-		slog.Error("creating user", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-	} else {
-		slog.Info("created user")
-		w.WriteHeader(http.StatusOK)
-	}
 }
