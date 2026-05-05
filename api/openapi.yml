@@ -1,0 +1,86 @@
+openapi: 3.2.0
+info:
+  title: gamesync
+  version: v1
+paths:
+  /health:
+    get:
+      summary: Get health of server
+      responses:
+        "200":
+          description: OK
+  /users:
+    get:
+      summary: Get all users
+      responses:
+        "200":
+          description: OK
+          content: 
+            application/json:
+              schema:
+                type: array
+        "406": 
+          description: Bad data
+        "500": 
+          description: Server problem
+    post:
+      summary: Create new user
+      parameters:
+        - name: create
+          in: querystring
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_name:
+                    type: string
+                    required: true
+                  role_id:
+                    type: integer
+                    required: true
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+                  user_name:
+                    type: string
+                  role_id:
+                    type: integer
+                  token:
+                    type: string
+        "406":
+          description: Bad data
+        "500":
+          description: Server problem
+  /users/{user_id}:
+    get:
+      summary: Get info about user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        "200":
+          description: OK
+
+  /roles:
+    get:
+      summary: Get all roles
+      responses:
+        "200":
+          description: OK
+        "406":
+          description: Bad data
+        "500":
+          description: Server problem
+
