@@ -9,3 +9,24 @@ lint api:
     - changes: 
       - api/*
       - .gitlab-ci.yml
+
+lint go:
+  stage: lint
+  image: golangci/golangci-lint
+  script: golangci-lint run
+  cache:
+    key: "$CI_COMMIT_BRANCH"
+    fallback_keys:
+      - main
+    paths:
+      - /cache/go-build
+      - /cache/mod
+      - /cache/golangci-lint
+  variables:
+    GOCACHE: /cache/go-build
+    GOMODCACHE: /cache/mod
+    GOLANGCI_LINT_CACHE: /cache/golangci-lint
+  rules:
+    - changes: 
+      - "**/*.go"
+      - .gitlab-ci.yml
