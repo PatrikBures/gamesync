@@ -1,0 +1,7 @@
+stages:
+  - lint
+
+lint api:
+  image: dshanley/vacuum
+  script:
+    - lint api
