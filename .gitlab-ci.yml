@@ -2,6 +2,7 @@ stages:
   - lint
 
 lint api:
+  stage: lint
   image: dshanley/vacuum
   script:
     - lint api
