@@ -5,3 +5,7 @@ lint api:
   stage: lint
   image: dshanley/vacuum
   script: vacuum --ext-refs lint -abdq --min-score 80 api/*
+  rules:
+    - changes: 
+      - api/*
+      - .gitlab-ci.yml
