@@ -5,4 +5,4 @@ lint api:
   stage: lint
   image: dshanley/vacuum
   script:
-    - vacuum lint api/*
+    - vacuum --ext-refs lint -abdq api/*
