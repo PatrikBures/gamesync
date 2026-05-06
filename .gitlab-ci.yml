@@ -13,19 +13,22 @@ lint api:
 lint go:
   stage: lint
   image: golangci/golangci-lint
-  script: golangci-lint run
+  script: 
+    - mkdir -p .cache/{go-build,mod,golangci-lint}
+    - golangci-lint run
   cache:
     key: "$CI_COMMIT_BRANCH"
     fallback_keys:
       - main
     paths:
-      - /cache/go-build
-      - /cache/mod
-      - /cache/golangci-lint
+      - .cache/go-build
+      - .cache/mod
+      - .cache/golangci-lint
+    when: always
   variables:
-    GOCACHE: /cache/go-build
-    GOMODCACHE: /cache/mod
-    GOLANGCI_LINT_CACHE: /cache/golangci-lint
+    GOCACHE: "$CI_PROJECT_DIR/.cache/go-build"
+    GOMODCACHE: "$CI_PROJECT_DIR/.cache/mod"
+    GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint"
   rules:
     - changes: 
       - "**/*.go"
