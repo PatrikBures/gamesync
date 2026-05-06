@@ -18,7 +18,10 @@ lint go:
     - ls -1 .cache
     - golangci-lint run
   cache:
-    key: "$CI_COMMIT_BRANCH"
+    key:
+      files:
+        - go.mod
+        - go.sum
     fallback_keys:
       - main
     paths:
