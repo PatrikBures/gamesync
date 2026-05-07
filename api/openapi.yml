@@ -4,6 +4,8 @@ info:
   version: v1
   description: |
     Api spec for interacting with the Gamesync server
+servers:
+  - url: api/v1
 components:
   parameters:
     user_id:

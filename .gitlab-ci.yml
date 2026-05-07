@@ -1,0 +1,43 @@
+stages:
+  - lint
+
+variables:
+  GOCACHE: "$CI_PROJECT_DIR/.cache/go-build"
+  GOMODCACHE: "$CI_PROJECT_DIR/.cache/mod"
+  GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint"
+
+lint api:
+  stage: lint
+  image: dshanley/vacuum
+  script: vacuum --ext-refs lint -abdq --min-score 80 api/*
+  rules:
+    - changes: 
+      - api/*
+      - .gitlab-ci.yml
+
+lint go:
+  stage: lint
+  image: golangci/golangci-lint
+  script: 
+    - go env GOCACHE
+    - go env GOMODCACHE
+    - go env GOLANGCI_LINT_CACHE
+    - echo $GOLANGCI_LINT_CACHE
+    - golangci-lint cache status
+    - mkdir -p .cache/{go-build,mod,golangci-lint}
+    - ls -1 .cache
+    - golangci-lint run
+    - golangci-lint cache status
+  cache:
+    key:
+      files:
+        - go.sum
+    paths:
+      - .cache/go-build
+      - .cache/mod
+      - .cache/golangci-lint
+    when: always
+  rules:
+    - changes: 
+      - "**/*.go"
+      - .gitlab-ci.yml
