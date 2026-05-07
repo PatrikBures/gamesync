@@ -15,7 +15,7 @@ import (
 )
 
 func (s *Server) decodePostRolesRequest(r *http.Request) (
-	req OptRole,
+	req OptRoleNew,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -65,7 +65,7 @@ func (s *Server) decodePostRolesRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request OptRole
+		var request OptRoleNew
 		if err := func() error {
 			request.Reset()
 			if err := request.Decode(d); err != nil {

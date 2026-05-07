@@ -115,7 +115,7 @@ func decodePostRolesResponse(resp *http.Response) (res PostRolesRes, _ error) {
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response RoleNew
+			var response Role
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -139,6 +139,9 @@ func decodePostRolesResponse(resp *http.Response) (res PostRolesRes, _ error) {
 	case 406:
 		// Code 406.
 		return &PostRolesNotAcceptable{}, nil
+	case 409:
+		// Code 409.
+		return &PostRolesConflict{}, nil
 	case 500:
 		// Code 500.
 		return &PostRolesInternalServerError{}, nil

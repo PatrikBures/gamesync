@@ -54,7 +54,7 @@ func (UnimplementedHandler) GetUsers(ctx context.Context) (r GetUsersRes, _ erro
 // Create new role.
 //
 // POST /roles
-func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRole) (r PostRolesRes, _ error) {
+func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRoleNew) (r PostRolesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

@@ -11,7 +11,7 @@ import (
 )
 
 func encodePostRolesRequest(
-	req OptRole,
+	req OptRoleNew,
 	r *http.Request,
 ) error {
 	const contentType = "application/json"

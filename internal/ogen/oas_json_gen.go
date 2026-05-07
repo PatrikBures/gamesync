@@ -100,18 +100,18 @@ func (s *OptInt) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
-// Encode encodes Role as json.
-func (o OptRole) Encode(e *jx.Encoder) {
+// Encode encodes RoleNew as json.
+func (o OptRoleNew) Encode(e *jx.Encoder) {
 	if !o.Set {
 		return
 	}
 	o.Value.Encode(e)
 }
 
-// Decode decodes Role from json.
-func (o *OptRole) Decode(d *jx.Decoder) error {
+// Decode decodes RoleNew from json.
+func (o *OptRoleNew) Decode(d *jx.Decoder) error {
 	if o == nil {
-		return errors.New("invalid: unable to decode OptRole to nil")
+		return errors.New("invalid: unable to decode OptRoleNew to nil")
 	}
 	o.Set = true
 	if err := o.Value.Decode(d); err != nil {
@@ -121,14 +121,14 @@ func (o *OptRole) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s OptRole) MarshalJSON() ([]byte, error) {
+func (s OptRoleNew) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptRole) UnmarshalJSON(data []byte) error {
+func (s *OptRoleNew) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -214,10 +214,15 @@ func (s *Role) encodeFields(e *jx.Encoder) {
 		e.FieldStart("roleName")
 		e.Str(s.RoleName)
 	}
+	{
+		e.FieldStart("roleId")
+		e.Int(s.RoleId)
+	}
 }
 
-var jsonFieldsNameOfRole = [1]string{
+var jsonFieldsNameOfRole = [2]string{
 	0: "roleName",
+	1: "roleId",
 }
 
 // Decode decodes Role from json.
@@ -241,6 +246,18 @@ func (s *Role) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"roleName\"")
 			}
+		case "roleId":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Int()
+				s.RoleId = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"roleId\"")
+			}
 		default:
 			return d.Skip()
 		}
@@ -251,7 +268,7 @@ func (s *Role) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

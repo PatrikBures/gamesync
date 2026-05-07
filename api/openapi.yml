@@ -51,8 +51,11 @@ components:
       properties:
         roleName:
           type: string
+        roleId:
+          type: integer
       required:
         - roleName
+        - roleId
 
 
 paths:
@@ -125,13 +128,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RoleNew"
+                $ref: "#/components/schemas/Role"
         "406":
           description: Bad data
+        "409":
+          description: Role already exists
         "500":
           description: Server problem
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Role"
+              $ref: "#/components/schemas/RoleNew"

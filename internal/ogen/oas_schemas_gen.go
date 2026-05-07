@@ -82,38 +82,38 @@ func (o OptInt) Or(d int) int {
 	return d
 }
 
-// NewOptRole returns new OptRole with value set to v.
-func NewOptRole(v Role) OptRole {
-	return OptRole{
+// NewOptRoleNew returns new OptRoleNew with value set to v.
+func NewOptRoleNew(v RoleNew) OptRoleNew {
+	return OptRoleNew{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptRole is optional Role.
-type OptRole struct {
-	Value Role
+// OptRoleNew is optional RoleNew.
+type OptRoleNew struct {
+	Value RoleNew
 	Set   bool
 }
 
-// IsSet returns true if OptRole was set.
-func (o OptRole) IsSet() bool { return o.Set }
+// IsSet returns true if OptRoleNew was set.
+func (o OptRoleNew) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptRole) Reset() {
-	var v Role
+func (o *OptRoleNew) Reset() {
+	var v RoleNew
 	o.Value = v
 	o.Set = false
 }
 
 // SetTo sets value to v.
-func (o *OptRole) SetTo(v Role) {
+func (o *OptRoleNew) SetTo(v RoleNew) {
 	o.Set = true
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptRole) Get() (v Role, ok bool) {
+func (o OptRoleNew) Get() (v RoleNew, ok bool) {
 	if !o.Set {
 		return v, false
 	}
@@ -121,7 +121,7 @@ func (o OptRole) Get() (v Role, ok bool) {
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptRole) Or(d Role) Role {
+func (o OptRoleNew) Or(d RoleNew) RoleNew {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -220,6 +220,11 @@ func (o OptUserNew) Or(d UserNew) UserNew {
 	return d
 }
 
+// PostRolesConflict is response for PostRoles operation.
+type PostRolesConflict struct{}
+
+func (*PostRolesConflict) postRolesRes() {}
+
 // PostRolesInternalServerError is response for PostRoles operation.
 type PostRolesInternalServerError struct{}
 
@@ -243,6 +248,7 @@ func (*PostUsersNotAcceptable) postUsersRes() {}
 // Ref: #/components/schemas/Role
 type Role struct {
 	RoleName string `json:"roleName"`
+	RoleId   int    `json:"roleId"`
 }
 
 // GetRoleName returns the value of RoleName.
@@ -250,10 +256,22 @@ func (s *Role) GetRoleName() string {
 	return s.RoleName
 }
 
+// GetRoleId returns the value of RoleId.
+func (s *Role) GetRoleId() int {
+	return s.RoleId
+}
+
 // SetRoleName sets the value of RoleName.
 func (s *Role) SetRoleName(val string) {
 	s.RoleName = val
 }
+
+// SetRoleId sets the value of RoleId.
+func (s *Role) SetRoleId(val int) {
+	s.RoleId = val
+}
+
+func (*Role) postRolesRes() {}
 
 // Ref: #/components/schemas/RoleNew
 type RoleNew struct {
@@ -269,8 +287,6 @@ func (s *RoleNew) GetRoleName() string {
 func (s *RoleNew) SetRoleName(val string) {
 	s.RoleName = val
 }
-
-func (*RoleNew) postRolesRes() {}
 
 // Ref: #/components/schemas/User
 type User struct {

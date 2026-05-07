@@ -656,7 +656,7 @@ func (s *Server) handlePostRolesRequest(args [0]string, argsEscaped bool, w http
 		}
 
 		type (
-			Request  = OptRole
+			Request  = OptRoleNew
 			Params   = struct{}
 			Response = PostRolesRes
 		)
