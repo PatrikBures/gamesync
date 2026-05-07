@@ -22,10 +22,12 @@ components:
       properties:
         userName:
           type: string
-          required: true
         roleId:
           type: integer
-          required: false
+      required:
+        - userName
+        - roleId
+
     User:
       type: object
       properties:
@@ -42,13 +44,15 @@ components:
       properties:
         roleName:
           type: string
-          required: true
+      required:
+        - roleName
     Role:
       type: object
       properties:
         roleName:
           type: string
-          required: true
+      required:
+        - roleName
 
 
 paths:
