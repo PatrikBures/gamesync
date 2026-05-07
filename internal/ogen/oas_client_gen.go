@@ -309,7 +309,7 @@ func (c *Client) sendGetUserID(ctx context.Context, params GetUserIDParams) (res
 			Explode: false,
 		})
 		if err := func() error {
-			return e.EncodeValue(conv.IntToString(params.UserID))
+			return e.EncodeValue(conv.Int64ToString(params.UserID))
 		}(); err != nil {
 			return res, errors.Wrap(err, "encode path")
 		}

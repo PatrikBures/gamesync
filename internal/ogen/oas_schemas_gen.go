@@ -36,52 +36,6 @@ type GetUsersOKApplicationJSON []jx.Raw
 
 func (*GetUsersOKApplicationJSON) getUsersRes() {}
 
-// NewOptInt returns new OptInt with value set to v.
-func NewOptInt(v int) OptInt {
-	return OptInt{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptInt is optional int.
-type OptInt struct {
-	Value int
-	Set   bool
-}
-
-// IsSet returns true if OptInt was set.
-func (o OptInt) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptInt) Reset() {
-	var v int
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptInt) SetTo(v int) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptInt) Get() (v int, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptInt) Or(d int) int {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptRoleNew returns new OptRoleNew with value set to v.
 func NewOptRoleNew(v RoleNew) OptRoleNew {
 	return OptRoleNew{
@@ -122,52 +76,6 @@ func (o OptRoleNew) Get() (v RoleNew, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptRoleNew) Or(d RoleNew) RoleNew {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptString returns new OptString with value set to v.
-func NewOptString(v string) OptString {
-	return OptString{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptString is optional string.
-type OptString struct {
-	Value string
-	Set   bool
-}
-
-// IsSet returns true if OptString was set.
-func (o OptString) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptString) Reset() {
-	var v string
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptString) SetTo(v string) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptString) Get() (v string, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptString) Or(d string) string {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -235,6 +143,11 @@ type PostRolesNotAcceptable struct{}
 
 func (*PostRolesNotAcceptable) postRolesRes() {}
 
+// PostUsersConflict is response for PostUsers operation.
+type PostUsersConflict struct{}
+
+func (*PostUsersConflict) postUsersRes() {}
+
 // PostUsersInternalServerError is response for PostUsers operation.
 type PostUsersInternalServerError struct{}
 
@@ -248,7 +161,7 @@ func (*PostUsersNotAcceptable) postUsersRes() {}
 // Ref: #/components/schemas/Role
 type Role struct {
 	RoleName string `json:"roleName"`
-	RoleId   int    `json:"roleId"`
+	RoleId   int32  `json:"roleId"`
 }
 
 // GetRoleName returns the value of RoleName.
@@ -257,7 +170,7 @@ func (s *Role) GetRoleName() string {
 }
 
 // GetRoleId returns the value of RoleId.
-func (s *Role) GetRoleId() int {
+func (s *Role) GetRoleId() int32 {
 	return s.RoleId
 }
 
@@ -267,7 +180,7 @@ func (s *Role) SetRoleName(val string) {
 }
 
 // SetRoleId sets the value of RoleId.
-func (s *Role) SetRoleId(val int) {
+func (s *Role) SetRoleId(val int32) {
 	s.RoleId = val
 }
 
@@ -288,60 +201,10 @@ func (s *RoleNew) SetRoleName(val string) {
 	s.RoleName = val
 }
 
-// Ref: #/components/schemas/User
-type User struct {
-	UserId   OptInt    `json:"userId"`
-	UserName OptString `json:"userName"`
-	RoleId   OptInt    `json:"roleId"`
-	Token    OptString `json:"token"`
-}
-
-// GetUserId returns the value of UserId.
-func (s *User) GetUserId() OptInt {
-	return s.UserId
-}
-
-// GetUserName returns the value of UserName.
-func (s *User) GetUserName() OptString {
-	return s.UserName
-}
-
-// GetRoleId returns the value of RoleId.
-func (s *User) GetRoleId() OptInt {
-	return s.RoleId
-}
-
-// GetToken returns the value of Token.
-func (s *User) GetToken() OptString {
-	return s.Token
-}
-
-// SetUserId sets the value of UserId.
-func (s *User) SetUserId(val OptInt) {
-	s.UserId = val
-}
-
-// SetUserName sets the value of UserName.
-func (s *User) SetUserName(val OptString) {
-	s.UserName = val
-}
-
-// SetRoleId sets the value of RoleId.
-func (s *User) SetRoleId(val OptInt) {
-	s.RoleId = val
-}
-
-// SetToken sets the value of Token.
-func (s *User) SetToken(val OptString) {
-	s.Token = val
-}
-
-func (*User) postUsersRes() {}
-
 // Ref: #/components/schemas/UserNew
 type UserNew struct {
 	UserName string `json:"userName"`
-	RoleId   int    `json:"roleId"`
+	RoleId   int32  `json:"roleId"`
 }
 
 // GetUserName returns the value of UserName.
@@ -350,7 +213,7 @@ func (s *UserNew) GetUserName() string {
 }
 
 // GetRoleId returns the value of RoleId.
-func (s *UserNew) GetRoleId() int {
+func (s *UserNew) GetRoleId() int32 {
 	return s.RoleId
 }
 
@@ -360,6 +223,56 @@ func (s *UserNew) SetUserName(val string) {
 }
 
 // SetRoleId sets the value of RoleId.
-func (s *UserNew) SetRoleId(val int) {
+func (s *UserNew) SetRoleId(val int32) {
 	s.RoleId = val
 }
+
+// Ref: #/components/schemas/UserNewReturn
+type UserNewReturn struct {
+	UserId   int64  `json:"userId"`
+	UserName string `json:"userName"`
+	RoleId   int32  `json:"roleId"`
+	Token    string `json:"token"`
+}
+
+// GetUserId returns the value of UserId.
+func (s *UserNewReturn) GetUserId() int64 {
+	return s.UserId
+}
+
+// GetUserName returns the value of UserName.
+func (s *UserNewReturn) GetUserName() string {
+	return s.UserName
+}
+
+// GetRoleId returns the value of RoleId.
+func (s *UserNewReturn) GetRoleId() int32 {
+	return s.RoleId
+}
+
+// GetToken returns the value of Token.
+func (s *UserNewReturn) GetToken() string {
+	return s.Token
+}
+
+// SetUserId sets the value of UserId.
+func (s *UserNewReturn) SetUserId(val int64) {
+	s.UserId = val
+}
+
+// SetUserName sets the value of UserName.
+func (s *UserNewReturn) SetUserName(val string) {
+	s.UserName = val
+}
+
+// SetRoleId sets the value of RoleId.
+func (s *UserNewReturn) SetRoleId(val int32) {
+	s.RoleId = val
+}
+
+// SetToken sets the value of Token.
+func (s *UserNewReturn) SetToken(val string) {
+	s.Token = val
+}
+
+func (*UserNewReturn) postUsersRes() {}

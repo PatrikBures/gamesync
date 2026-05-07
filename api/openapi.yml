@@ -15,6 +15,7 @@ components:
       required: true
       schema:
         type: integer
+        format: int64
         minimum: 0
   schemas:
     UserNew:
@@ -24,21 +25,28 @@ components:
           type: string
         roleId:
           type: integer
+          format: int32
       required:
         - userName
         - roleId
-
-    User:
+    UserNewReturn:
       type: object
       properties:
         userId:
           type: integer
+          format: int64
         userName:
           type: string
         roleId:
           type: integer
+          format: int32
         token:
           type: string
+      required:
+        - userId
+        - userName
+        - roleId
+        - token
     RoleNew:
       type: object
       properties:
@@ -53,6 +61,7 @@ components:
           type: string
         roleId:
           type: integer
+          format: int32
       required:
         - roleName
         - roleId
@@ -93,9 +102,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserNewReturn"
         "406":
           description: Bad data
+        "409":
+          description: User already exists
         "500":
           description: Server problem
   /users/{user_id}:

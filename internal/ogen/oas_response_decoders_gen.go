@@ -165,7 +165,7 @@ func decodePostUsersResponse(resp *http.Response) (res PostUsersRes, _ error) {
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response User
+			var response UserNewReturn
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -189,6 +189,9 @@ func decodePostUsersResponse(resp *http.Response) (res PostUsersRes, _ error) {
 	case 406:
 		// Code 406.
 		return &PostUsersNotAcceptable{}, nil
+	case 409:
+		// Code 409.
+		return &PostUsersConflict{}, nil
 	case 500:
 		// Code 500.
 		return &PostUsersInternalServerError{}, nil

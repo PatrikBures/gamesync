@@ -42,9 +42,27 @@ func (s *Service) PostRoles(ctx context.Context, req api.OptRoleNew) (api.PostRo
 		}
 		return &api.PostRolesInternalServerError{}, ErrDatabase
 	}
-	return &api.Role{RoleId: int(role.RoleID), RoleName: req.Value.RoleName}, nil
+	return &api.Role{RoleId: role.RoleID, RoleName: req.Value.RoleName}, nil
 }
 func (s *Service) PostUsers(ctx context.Context, req api.OptUserNew) (api.PostUsersRes, error) {
-	return nil, nil
+	if !req.Set {
+		return &api.PostUsersNotAcceptable{}, ErrMissingBody
+	}
+	user := model.User{
+		UserName: req.Value.UserName,
+		RoleID: req.Value.RoleId,
+	}
+	if err := s.q.User.WithContext(ctx).Create(&user); err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return &api.PostUsersConflict{}, ErrDuplicateKey
+		}
+		return &api.PostUsersInternalServerError{}, ErrDatabase
+	}
+	return &api.UserNewReturn{
+		UserId: user.UserID,
+		UserName: user.UserName,
+		RoleId: user.RoleID,
+		Token: "asdf",
+	}, nil
 }
 

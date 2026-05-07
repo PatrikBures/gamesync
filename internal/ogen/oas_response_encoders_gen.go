@@ -116,7 +116,7 @@ func encodePostRolesResponse(response PostRolesRes, w http.ResponseWriter, span 
 
 func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
-	case *User:
+	case *UserNewReturn:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(201)
 		span.SetStatus(codes.Ok, http.StatusText(201))
@@ -132,6 +132,12 @@ func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span 
 	case *PostUsersNotAcceptable:
 		w.WriteHeader(406)
 		span.SetStatus(codes.Error, http.StatusText(406))
+
+		return nil
+
+	case *PostUsersConflict:
+		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		return nil
 
