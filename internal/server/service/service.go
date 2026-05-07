@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/query"
@@ -34,14 +33,14 @@ func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
 }
 func (s *Service) PostRoles(ctx context.Context, req api.OptRoleNew) (api.PostRolesRes, error) {
 	if !req.Set {
-		return &api.PostRolesNotAcceptable{}, fmt.Errorf("request body is required")
+		return &api.PostRolesNotAcceptable{}, ErrMissingBody
 	}
 	role := model.Role{RoleName: req.Value.RoleName}
 	if err := s.q.Role.WithContext(ctx).Create(&role); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return &api.PostRolesConflict{}, fmt.Errorf("role name already exists") 
+			return &api.PostRolesConflict{}, ErrDuplicateKey
 		}
-		return &api.PostRolesInternalServerError{}, fmt.Errorf("Database error")
+		return &api.PostRolesInternalServerError{}, ErrDatabase
 	}
 	return &api.Role{RoleId: int(role.RoleID), RoleName: req.Value.RoleName}, nil
 }
