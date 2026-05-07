@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"gamesync/internal/dbx"
+	api "gamesync/internal/ogen"
 	"gamesync/internal/query"
 	"gamesync/internal/server"
-	"gamesync/internal/server/api"
+	"gamesync/internal/server/service"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -17,8 +19,15 @@ func main() {
 }
 
 func start() error {
-	if err := server.CreateDirs(); err != nil {
-		return fmt.Errorf("could not initialize dirs: %v", err)
+	appDir := os.Getenv("GAMESYNC_APP_DIR")
+	if appDir == "" {
+		appDir = server.AppDir
+	}
+
+	for _, dir := range []string{appDir} {
+		if err := os.MkdirAll(dir, 0775); err != nil {
+			return fmt.Errorf("could not initialize dirs: %v", err)
+		}
 	}
 
 	dbType := os.Getenv("GAMESYNC_DB_TYPE")
@@ -39,11 +48,12 @@ func start() error {
 	}
 	q := query.Use(db)
 
-	handlerOpts := api.HandlerOpts{
-		Logging: false,
+	s := service.NewService(q)
+
+	srv, err := api.NewServer(s, api.WithPathPrefix("/api/v1"))
+	if err != nil {
+		return fmt.Errorf("creating server: %v", err)
 	}
-	if os.Getenv("GAMESYNC_LOGGING") == "true" {
-		handlerOpts.Logging = true
-	}
-	return api.NewHandler(handlerOpts, q).Serve()
+
+	return http.ListenAndServe(":8080", srv)
 }

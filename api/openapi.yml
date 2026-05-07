@@ -5,7 +5,7 @@ info:
   description: |
     Api spec for interacting with the Gamesync server
 servers:
-  - url: api/v1
+  - url: /api/v1
 components:
   parameters:
     user_id:
