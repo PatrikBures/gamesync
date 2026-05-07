@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/query"
@@ -55,6 +56,8 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserNew) (api.PostUs
 	if err := s.q.User.WithContext(ctx).Create(&user); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return &api.PostUsersConflict{}, ErrDuplicateKey
+		} else if errors.Is(err, gorm.ErrForeignKeyViolated) {
+			return &api.PostUsersNotAcceptable{}, fmt.Errorf("invalid role")
 		}
 		return &api.PostUsersInternalServerError{}, ErrDatabase
 	}
