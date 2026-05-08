@@ -37,7 +37,7 @@ func NewService(query *query.Query) *Service {
 	}
 }
 func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.OperationName, t api.BearerAuth) (context.Context, error) {
-	tokenRaw := make([]byte, tokenLen, tokenLen)
+	tokenRaw := make([]byte, tokenLen)
 	if _, err := base64.URLEncoding.Decode(tokenRaw, []byte(t.Token)); err != nil {
 		return ctx, ErrToken
 	}
@@ -57,7 +57,7 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 		return ctx, ErrNotAuthorized
 	}
 	ctx = context.WithValue(ctx, userContextKey, user)
-	return nil, nil
+	return ctx, nil
 }
 func (s *Service) GetHealth(ctx context.Context) error {
 	return nil
