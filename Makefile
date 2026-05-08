@@ -80,6 +80,9 @@ up-pg:
 down-pg:
 	docker compose -f ./docker-compose-pg.yml down -v
 
+psql:
+	docker compose exec -it db psql $(DB_NAME) $(DB_USER) 
+
 up:
 	docker compose up --build --remove-orphans -d
 down:

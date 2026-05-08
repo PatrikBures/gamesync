@@ -51,7 +51,7 @@ func start() error {
 
 	s := service.NewService(q)
 
-	srv, err := api.NewServer(s, api.WithPathPrefix("/api/v1"))
+	srv, err := api.NewServer(s, s, api.WithPathPrefix("/api/v1"))
 	if err != nil {
 		return fmt.Errorf("creating server: %v", err)
 	}

@@ -19,11 +19,21 @@ CREATE TABLE users
     PRIMARY KEY (user_id),
     UNIQUE (user_id),
     UNIQUE (user_name),
-    UNIQUE (role_id),
+    UNIQUE (user_id, role_id),
 
     FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
 
+CREATE TABLE tokens
+(
+    user_id BIGINT PRIMARY KEY,
+    token_hash BYTEA NOT NULL,
+
+    UNIQUE (token_hash),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
 -- +goose Down
 DELETE users;
-DELETE roles
+DELETE roles;
+DELETE tokens;

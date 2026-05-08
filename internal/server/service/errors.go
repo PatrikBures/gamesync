@@ -7,4 +7,7 @@ var (
 	ErrDatabase         = errors.New("database error")
 	ErrDuplicateKey     = errors.New("unique constraint failed")
 	ErrNotFound         = errors.New("resource not found")
+	ErrToken            = errors.New("token error")
+	ErrAuth             = errors.New("authentication error")
+	ErrNotAuthorized    = errors.New("not authorized")
 )

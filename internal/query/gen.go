@@ -19,6 +19,7 @@ var (
 	Q              = new(Query)
 	GooseDbVersion *gooseDbVersion
 	Role           *role
+	Token          *token
 	User           *user
 )
 
@@ -26,6 +27,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	GooseDbVersion = &Q.GooseDbVersion
 	Role = &Q.Role
+	Token = &Q.Token
 	User = &Q.User
 }
 
@@ -34,6 +36,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		db:             db,
 		GooseDbVersion: newGooseDbVersion(db, opts...),
 		Role:           newRole(db, opts...),
+		Token:          newToken(db, opts...),
 		User:           newUser(db, opts...),
 	}
 }
@@ -43,6 +46,7 @@ type Query struct {
 
 	GooseDbVersion gooseDbVersion
 	Role           role
+	Token          token
 	User           user
 }
 
@@ -53,6 +57,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		db:             db,
 		GooseDbVersion: q.GooseDbVersion.clone(db),
 		Role:           q.Role.clone(db),
+		Token:          q.Token.clone(db),
 		User:           q.User.clone(db),
 	}
 }
@@ -70,6 +75,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		db:             db,
 		GooseDbVersion: q.GooseDbVersion.replaceDB(db),
 		Role:           q.Role.replaceDB(db),
+		Token:          q.Token.replaceDB(db),
 		User:           q.User.replaceDB(db),
 	}
 }
@@ -77,6 +83,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 type queryCtx struct {
 	GooseDbVersion IGooseDbVersionDo
 	Role           IRoleDo
+	Token          ITokenDo
 	User           IUserDo
 }
 
@@ -84,6 +91,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		GooseDbVersion: q.GooseDbVersion.WithContext(ctx),
 		Role:           q.Role.WithContext(ctx),
+		Token:          q.Token.WithContext(ctx),
 		User:           q.User.WithContext(ctx),
 	}
 }

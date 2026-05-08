@@ -15,11 +15,20 @@ CREATE TABLE users
     role_id INTEGER NOT NULL,
 
     UNIQUE (user_name),
-    UNIQUE (role_id),
+    UNIQUE (user_id, role_id),
 
     FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
 
+CREATE TABLE tokens
+(
+    user_id INTEGER PRIMARY KEY,
+    token_hash BLOB NOT NULL,
+
+    UNIQUE (token_hash),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
 -- +goose Down
 DELETE users;
-DELETE roles
+DELETE roles;

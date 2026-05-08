@@ -2,6 +2,10 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"database/sql/driver"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"gamesync/internal/model"
@@ -9,6 +13,19 @@ import (
 	"gamesync/internal/query"
 
 	"gorm.io/gorm"
+)
+
+const tokenLen = 33
+
+// This type is requred as the gorm driver does not support inserting bytes
+type HashBytes []byte
+func (h HashBytes) Value() (driver.Value, error) {
+	return []byte(h), nil
+}
+
+type contextKey int
+const (
+	userContextKey contextKey = iota
 )
 
 type Service struct {
@@ -19,7 +36,29 @@ func NewService(query *query.Query) *Service {
 		q: query,
 	}
 }
+func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.OperationName, t api.BearerAuth) (context.Context, error) {
+	tokenRaw := make([]byte, tokenLen, tokenLen)
+	if _, err := base64.URLEncoding.Decode(tokenRaw, []byte(t.Token)); err != nil {
+		return ctx, ErrToken
+	}
+	if len(tokenRaw) != tokenLen {
+		return ctx, ErrToken
+	}
 
+	tokenHash := sha256.Sum256(tokenRaw)
+	tokenHashSlice := tokenHash[:]
+
+	tokenRecord, err := s.q.Token.WithContext(ctx).Where(s.q.Token.TokenHash.Eq(HashBytes(tokenHashSlice))).First()
+	if err != nil {
+		return ctx, ErrNotAuthorized
+	}
+	user, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(tokenRecord.UserID)).First()
+	if err != nil {
+		return ctx, ErrNotAuthorized
+	}
+	ctx = context.WithValue(ctx, userContextKey, user)
+	return nil, nil
+}
 func (s *Service) GetHealth(ctx context.Context) error {
 	return nil
 }
@@ -61,11 +100,37 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserNew) (api.PostUs
 		}
 		return &api.PostUsersInternalServerError{}, ErrDatabase
 	}
+
+
+	token, err := generateToken()
+	if err != nil {
+		return &api.PostUsersInternalServerError{}, ErrToken
+	}
+	token64 := base64.URLEncoding.EncodeToString(token)
+	tokenHash := sha256.Sum256(token)
+
+	t := model.Token{
+		UserID: user.UserID,
+		TokenHash: tokenHash[:],
+	}
+	if err := s.q.Token.WithContext(ctx).Create(&t); err != nil {
+		return &api.PostUsersInternalServerError{}, ErrDatabase
+	}
+
 	return &api.UserNewReturn{
 		UserId: user.UserID,
 		UserName: user.UserName,
 		RoleId: user.RoleID,
-		Token: "asdf",
+		Token: token64,
 	}, nil
 }
 
+
+func generateToken() ([]byte, error) {
+	b := make([]byte, 33)
+	_, err := rand.Read(b)
+	if err != nil {
+		return []byte{}, err
+	}
+	return b, nil
+}
