@@ -8,13 +8,6 @@ import (
 
 type rootCmd struct {
 	cmd *cobra.Command
-	opts rootOpts
-}
-
-type rootOpts struct {
-	verbose bool
-	debug bool
-	ignoreApiVersion bool
 }
 
 func newRootCmd() *rootCmd {
