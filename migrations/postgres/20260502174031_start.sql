@@ -27,9 +27,9 @@ CREATE TABLE users
 CREATE TABLE tokens
 (
     user_id BIGINT PRIMARY KEY,
-    token BYTEA NOT NULL,
+    token_hash BYTEA NOT NULL,
 
-    UNIQUE (token),
+    UNIQUE (token_hash),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 

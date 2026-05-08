@@ -23,9 +23,9 @@ CREATE TABLE users
 CREATE TABLE tokens
 (
     user_id INTEGER PRIMARY KEY,
-    token BLOB NOT NULL,
+    token_hash BLOB NOT NULL,
 
-    UNIQUE (token),
+    UNIQUE (token_hash),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
