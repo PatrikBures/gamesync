@@ -11,6 +11,7 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+    command: ["/usr/local/bin/gamesync-server", "-db-url", "asdf"]
   db:
     image: postgres:18-alpine
     environment:

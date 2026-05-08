@@ -1,11 +1,13 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"gamesync/internal/dbx"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/query"
 	"gamesync/internal/server"
+	serverConfig "gamesync/internal/server/config"
 	"gamesync/internal/server/service"
 	"log"
 	"net/http"
@@ -18,32 +20,31 @@ func main() {
 	}
 }
 
-func start() error {
-	appDir := os.Getenv("GAMESYNC_APP_DIR")
-	if appDir == "" {
-		appDir = server.AppDir
-	}
+type config struct {
+	appDir   string
+	dbType   string
+	dbUrl    string
+}
 
-	for _, dir := range []string{appDir} {
+func start() error {
+	c := config{}
+	serverConfig.AddStringVar(&c.appDir, "app-dir", server.AppDir, "Path where files will be kept like the SQLite database")
+	serverConfig.AddStringVar(&c.dbType, "db-type", "sqlite", "Either 'postgres' or 'sqlite'")
+	serverConfig.AddStringVar(&c.dbUrl, "db-url", server.DefaultSQLitePath, "Url to postgres db or path to SQLite db-file")
+
+	flag.Parse()
+
+	for _, dir := range []string{c.appDir} {
 		if err := os.MkdirAll(dir, 0775); err != nil {
 			return fmt.Errorf("could not initialize dirs: %v", err)
 		}
 	}
 
-	dbType := os.Getenv("GAMESYNC_DB_TYPE")
-	if dbType == "" {
-		dbType = "sqlite"
-	}
-	dbUrl := os.Getenv("GAMESYNC_DB_URL")
-	if dbUrl == "" {
-		dbUrl = server.DefaultSQLitePath
-	}
-
-	db, err := dbx.ConnectDb(dbType, dbUrl)
+	db, err := dbx.ConnectDb(c.dbType, c.dbUrl)
 	if err != nil {
 		return err
 	}
-	if dbType == "sqlite" {
+	if c.dbType == "sqlite" {
 		db.Exec("PRAGMA foreign_keys = ON")
 	}
 	q := query.Use(db)
