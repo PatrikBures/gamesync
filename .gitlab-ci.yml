@@ -1,10 +1,20 @@
 stages:
+  - check
   - lint
 
 variables:
   GOCACHE: "$CI_PROJECT_DIR/.cache/go-build"
   GOMODCACHE: "$CI_PROJECT_DIR/.cache/mod"
   GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint"
+
+check gitignore:
+  stage: check
+  image: alpine:latest
+  script:
+    - apk add --no-cache git
+    - ./scripts/git-verify-ignore.sh
+  rules:
+    - when: always
 
 lint api:
   stage: lint
