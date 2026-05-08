@@ -16,16 +16,23 @@ LICENSE_DIR := $(DESTDIR)$(PREFIX)/share/licenses/$(BIN_NAME)
 
 all: build man
 
-build:
+### build
+build: mkbin
 	@echo "Building $(BIN_NAME)..."
-	mkdir -p bin
 	go build -ldflags "-X gamesync/internal/vars.Version=$(VERSION)" -o bin/$(BIN_NAME) ./cmd/gamesync
 
+build-server: mkbin
+	@echo "Building $(BIN_SERVER_NAME)..."
+	go build -ldflags="-s -w" -trimpath -o bin/$(BIN_SERVER_NAME) ./cmd/gamesync-server
+
+
+### docs
 man: build
 	@echo "Generating man pages..."
 	mkdir -p manpages
 	bin/$(BIN_NAME) gen-man
 
+### install client
 install: all
 	@echo "Installing binary to $(BIN_DIR)..."
 	install -d $(BIN_DIR)
@@ -56,13 +63,14 @@ go-install:
 	@echo "installing..."
 	go build -ldflags "-X gamesync/internal/vars.Version=$(VERSION)" -o $${GOPATH}/bin/$(BIN_NAME_DEV) ./cmd/gamesync
 
+### test client
 go-test:
 	@echo "testing..."
 	go test -v ./...
 
-mkbin:
-	mkdir -p bin
 
+
+### container
 build-container: build-state
 	@echo "building container..."
 	docker build ./ -t $(CONTAINER_NAME):$(VERSION)
@@ -77,9 +85,26 @@ up:
 down:
 	docker compose down -v
 
-gen-pg: start-pg
+
+### generate code
+gen-pg: up-pg
 	GAMESYNC_DB_TYPE=postgres GAMESYNC_DB_URL=postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:5432/$(DB_NAME) go run ./cmd/gen/main.go
-gen-sqlite: up
+gen-sqlite: up # should not be used, just the gen-pg one 
 	GAMESYNC_DB_TYPE=sqlite GAMESYNC_DB_URL=./data/sqlite_db/gamesync.sqlite go run ./cmd/gen/main.go
+
+gen-api:
+	go generate .
+
+
+
+### linting
+lint-go:
+	golangci-lint run
+
+
+
+### util
+mkbin:
+	mkdir -p bin
 
 .PHONY: all build man install uninstall clean

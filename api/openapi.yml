@@ -5,7 +5,7 @@ info:
   description: |
     Api spec for interacting with the Gamesync server
 servers:
-  - url: api/v1
+  - url: /api/v1
 components:
   parameters:
     user_id:
@@ -15,6 +15,7 @@ components:
       required: true
       schema:
         type: integer
+        format: int64
         minimum: 0
   schemas:
     UserNew:
@@ -22,33 +23,48 @@ components:
       properties:
         userName:
           type: string
-          required: true
         roleId:
           type: integer
-          required: false
-    User:
+          format: int32
+      required:
+        - userName
+        - roleId
+    UserNewReturn:
       type: object
       properties:
         userId:
           type: integer
+          format: int64
         userName:
           type: string
         roleId:
           type: integer
+          format: int32
         token:
           type: string
+      required:
+        - userId
+        - userName
+        - roleId
+        - token
     RoleNew:
       type: object
       properties:
         roleName:
           type: string
-          required: true
+      required:
+        - roleName
     Role:
       type: object
       properties:
         roleName:
           type: string
-          required: true
+        roleId:
+          type: integer
+          format: int32
+      required:
+        - roleName
+        - roleId
 
 
 paths:
@@ -86,9 +102,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserNewReturn"
         "406":
           description: Bad data
+        "409":
+          description: User already exists
         "500":
           description: Server problem
   /users/{user_id}:
@@ -121,13 +139,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RoleNew"
+                $ref: "#/components/schemas/Role"
         "406":
           description: Bad data
+        "409":
+          description: Role already exists
         "500":
           description: Server problem
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Role"
+              $ref: "#/components/schemas/RoleNew"
