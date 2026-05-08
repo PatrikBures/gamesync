@@ -50,7 +50,7 @@ func start() error {
 	}
 	q := query.Use(db)
 
-	if err := roles.CreateDefaultRoles(q); err != nil {
+	if err := roles.CreateDefaultRoles(q, []string{}); err != nil {
 		return err
 	}
 
