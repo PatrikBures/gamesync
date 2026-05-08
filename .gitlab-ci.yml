@@ -13,6 +13,8 @@ check gitignore:
   script:
     - apk add --no-cache git
     - ./scripts/git-verify-ignore.sh
+  rules:
+    - when: always
 
 lint api:
   stage: lint
