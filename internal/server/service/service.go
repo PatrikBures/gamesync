@@ -19,7 +19,9 @@ func NewService(query *query.Query) *Service {
 		q: query,
 	}
 }
-
+func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.OperationName, t api.BearerAuth) (context.Context, error) {
+	return nil, nil
+}
 func (s *Service) GetHealth(ctx context.Context) error {
 	return nil
 }

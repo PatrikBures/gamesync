@@ -7,6 +7,11 @@ info:
 servers:
   - url: /api/v1
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
   parameters:
     user_id:
       description: Used to identify a user
@@ -67,11 +72,15 @@ components:
         - roleId
 
 
+security:
+  - bearerAuth: []
+
 paths:
   /health:
     get:
       summary: Get health of server
       operationId: get-health
+      security: []
       responses:
         "200":
           description: OK
@@ -91,6 +100,7 @@ paths:
     post:
       summary: Create new user
       operationId: post-users
+      security: []
       requestBody:
         content:
           application/json:
