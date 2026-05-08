@@ -19,11 +19,6 @@ lint go:
   stage: lint
   image: golangci/golangci-lint
   script: 
-    - go env GOCACHE
-    - go env GOMODCACHE
-    - go env GOLANGCI_LINT_CACHE
-    - echo $GOLANGCI_LINT_CACHE
-    - golangci-lint cache status
     - mkdir -p .cache/{go-build,mod,golangci-lint}
     - ls -1 .cache
     - golangci-lint run
