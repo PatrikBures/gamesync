@@ -7,5 +7,5 @@ if ! [ "$ignored" = "" ]; then
     echo "$ignored"
     exit 1
 else
-    echo "did not find any files/dirs in the repo which should be ignored"
+    echo "did not find any files/dirs in the repo which should be ignored."
 fi
