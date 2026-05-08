@@ -8,6 +8,7 @@ import (
 	"gamesync/internal/query"
 	"gamesync/internal/server"
 	serverConfig "gamesync/internal/server/config"
+	"gamesync/internal/server/roles"
 	"gamesync/internal/server/service"
 	"log"
 	"net/http"
@@ -48,6 +49,10 @@ func start() error {
 		db.Exec("PRAGMA foreign_keys = ON")
 	}
 	q := query.Use(db)
+
+	if err := roles.CreateDefaultRoles(q); err != nil {
+		return err
+	}
 
 	s := service.NewService(q)
 
