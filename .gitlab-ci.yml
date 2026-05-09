@@ -14,10 +14,10 @@ variables:
   services:
     - name: moby/buildkit:latest
       alias: buildkit
-      entrypoint: [""]
       command: ["buildkitd", "--addr", "tcp://0.0.0.0:1234"]
   before_script:
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - mkdir -p /root/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(echo -n $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD | base64)\"}}}" > /root/.docker/config.json
 
 build git image:
   stage: build util
@@ -25,7 +25,13 @@ build git image:
     name: moby/buildkit:latest 
     entrypoint: [""]
   extends: .docker
-  script: buildctl --addr tcp://buildkit:1234 build -t $GIT_IMAGE --push -f ./docker/git.Dockerfile .
+  script:
+    - buildctl --addr tcp://buildkit:1234 build \
+        --frontend dockerfile.v0 \
+        --local context=. \
+        --local dockerfile=. \
+        --opt filename=./docker/git.Dockerfile \
+        --output type=image,name=$GIT_IMAGE,push=true  
   rules:
     - changes: 
       - docker/git.Dockerfile
