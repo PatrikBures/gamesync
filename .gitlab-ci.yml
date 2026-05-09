@@ -30,7 +30,6 @@ lint go:
   image: golangci/golangci-lint
   script: 
     - mkdir -p .cache/{go-build,mod,golangci-lint}
-    - ls -1 .cache
     - golangci-lint run
     - golangci-lint cache status
   cache:
