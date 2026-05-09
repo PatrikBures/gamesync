@@ -8,8 +8,7 @@ variables:
   GOMODCACHE: "$CI_PROJECT_DIR/.cache/mod"
   GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint"
   IMAGE_GIT: $CI_REGISTRY_IMAGE/git:latest
-  VERSION: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-  VERSION_REGEX: /^v\d\.\d\.\d$/
+  VERSION_REGEX: /^v\d+\.\d+\.\d+$/
 
 workflow:
   rules:
