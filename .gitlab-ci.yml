@@ -1,4 +1,5 @@
 stages:
+  - build util
   - check
   - lint
 
@@ -6,10 +7,33 @@ variables:
   GOCACHE: "$CI_PROJECT_DIR/.cache/go-build"
   GOMODCACHE: "$CI_PROJECT_DIR/.cache/mod"
   GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint"
+  IMAGE_GIT: $CI_REGISTRY_IMAGE/git:latest
+
+.buildah setup:
+  image: quay.io/buildah/stable
+  before_script:
+    - export STORAGE_DRIVER=vfs
+    - export BUILDAH_FORMAT=docker
+    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+build git image:
+  stage: build util
+  extends: .buildah setup
+  script: 
+    - | 
+      buildah build \
+      -t "$IMAGE_GIT" \
+      -f ./docker/git.Dockerfile \
+      .
+    - buildah push "$IMAGE_GIT"
+  rules:
+    - changes: 
+      - docker/git.Dockerfile
+      - .gitlab-ci.yml
 
 check gitignore:
   stage: check
-  image: alpine:latest
+  image: $IMAGE_GIT
   script:
     - apk add --no-cache git
     - ./scripts/git-verify-ignore.sh
@@ -19,7 +43,7 @@ check gitignore:
 lint api:
   stage: lint
   image: dshanley/vacuum
-  script: vacuum --ext-refs lint -abdq --min-score 80 api/*
+  script: vacuum --ext-refs lint --min-score 100 --pipeline-output api/*
   rules:
     - changes: 
       - api/*
@@ -30,7 +54,6 @@ lint go:
   image: golangci/golangci-lint
   script: 
     - mkdir -p .cache/{go-build,mod,golangci-lint}
-    - ls -1 .cache
     - golangci-lint run
     - golangci-lint cache status
   cache:

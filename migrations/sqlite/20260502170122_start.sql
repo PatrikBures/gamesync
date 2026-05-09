@@ -22,7 +22,8 @@ CREATE TABLE users
 
 CREATE TABLE tokens
 (
-    user_id INTEGER PRIMARY KEY,
+    token_id INTEGER PRIMARY KEY,
+    user_id NOT NULL,
     token_hash BLOB NOT NULL,
 
     UNIQUE (token_hash),

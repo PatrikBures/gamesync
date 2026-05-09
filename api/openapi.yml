@@ -6,6 +6,10 @@ info:
     Api spec for interacting with the Gamesync server
 servers:
   - url: /api/v1
+tags:
+  - name: Other
+  - name: Users
+  - name: Roles
 components:
   securitySchemes:
     bearerAuth:
@@ -80,26 +84,29 @@ paths:
     get:
       summary: Get health of server
       operationId: get-health
+      tags:
+        - Other
       security: []
       responses:
-        "200":
-          description: OK
+        "200": {}
   /users:
     get:
       summary: Get all users
       operationId: get-users
+      tags:
+        - Users
       responses:
         "200":
-          description: OK
           content: 
             application/json:
               schema:
                 type: array
-        "500": 
-          description: Server problem
+        "500": {}
     post:
       summary: Create new user
       operationId: post-users
+      tags:
+        - Users
       security: []
       requestBody:
         content:
@@ -108,54 +115,48 @@ paths:
               $ref: "#/components/schemas/UserNew"
       responses:
         "201":
-          description: OK
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserNewReturn"
-        "406":
-          description: Bad data
-        "409":
-          description: User already exists
-        "500":
-          description: Server problem
+        "406": {}
+        "409": {}
+        "500": {}
   /users/{user_id}:
     parameters:
       - $ref: "#/components/parameters/user_id"
     get:
       summary: Get info about user
       operationId: get-user-id
+      tags:
+        - Users
       responses:
-        "200":
-          description: OK
+        "200": {}
 
   /roles:
     get:
       summary: Get all roles
       operationId: get-roles
+      tags:
+        - Roles
       responses:
-        "200":
-          description: OK
-        "406":
-          description: Bad data
-        "500":
-          description: Server problem
+        "200": {}
+        "406": {}
+        "500": {}
     post:
       summary: Create new role
       operationId: post-roles
+      tags:
+        - Roles
       responses:
         "201":
-          description: OK
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Role"
-        "406":
-          description: Bad data
-        "409":
-          description: Role already exists
-        "500":
-          description: Server problem
+        "406": {}
+        "409": {}
+        "500": {}
       requestBody:
         content:
           application/json:

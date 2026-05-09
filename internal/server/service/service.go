@@ -2,12 +2,8 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/sha256"
 	"database/sql/driver"
-	"encoding/base64"
 	"errors"
-	"fmt"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/query"
@@ -36,39 +32,10 @@ func NewService(query *query.Query) *Service {
 		q: query,
 	}
 }
-func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.OperationName, t api.BearerAuth) (context.Context, error) {
-	tokenRaw := make([]byte, tokenLen)
-	if _, err := base64.URLEncoding.Decode(tokenRaw, []byte(t.Token)); err != nil {
-		return ctx, ErrToken
-	}
-	if len(tokenRaw) != tokenLen {
-		return ctx, ErrToken
-	}
-
-	tokenHash := sha256.Sum256(tokenRaw)
-	tokenHashSlice := tokenHash[:]
-
-	tokenRecord, err := s.q.Token.WithContext(ctx).Where(s.q.Token.TokenHash.Eq(HashBytes(tokenHashSlice))).First()
-	if err != nil {
-		return ctx, ErrNotAuthorized
-	}
-	user, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(tokenRecord.UserID)).First()
-	if err != nil {
-		return ctx, ErrNotAuthorized
-	}
-	ctx = context.WithValue(ctx, userContextKey, user)
-	return ctx, nil
-}
 func (s *Service) GetHealth(ctx context.Context) error {
 	return nil
 }
 func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
-	return nil, nil
-}
-func (s *Service) GetUserID(ctx context.Context, params api.GetUserIDParams) error {
-	return nil
-}
-func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
 	return nil, nil
 }
 func (s *Service) PostRoles(ctx context.Context, req api.OptRoleNew) (api.PostRolesRes, error) {
@@ -84,53 +51,5 @@ func (s *Service) PostRoles(ctx context.Context, req api.OptRoleNew) (api.PostRo
 	}
 	return &api.Role{RoleId: role.RoleID, RoleName: req.Value.RoleName}, nil
 }
-func (s *Service) PostUsers(ctx context.Context, req api.OptUserNew) (api.PostUsersRes, error) {
-	if !req.Set {
-		return &api.PostUsersNotAcceptable{}, ErrMissingBody
-	}
-	user := model.User{
-		UserName: req.Value.UserName,
-		RoleID: req.Value.RoleId,
-	}
-	if err := s.q.User.WithContext(ctx).Create(&user); err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return &api.PostUsersConflict{}, ErrDuplicateKey
-		} else if errors.Is(err, gorm.ErrForeignKeyViolated) {
-			return &api.PostUsersNotAcceptable{}, fmt.Errorf("invalid role")
-		}
-		return &api.PostUsersInternalServerError{}, ErrDatabase
-	}
 
 
-	token, err := generateToken()
-	if err != nil {
-		return &api.PostUsersInternalServerError{}, ErrToken
-	}
-	token64 := base64.URLEncoding.EncodeToString(token)
-	tokenHash := sha256.Sum256(token)
-
-	t := model.Token{
-		UserID: user.UserID,
-		TokenHash: tokenHash[:],
-	}
-	if err := s.q.Token.WithContext(ctx).Create(&t); err != nil {
-		return &api.PostUsersInternalServerError{}, ErrDatabase
-	}
-
-	return &api.UserNewReturn{
-		UserId: user.UserID,
-		UserName: user.UserName,
-		RoleId: user.RoleID,
-		Token: token64,
-	}, nil
-}
-
-
-func generateToken() ([]byte, error) {
-	b := make([]byte, 33)
-	_, err := rand.Read(b)
-	if err != nil {
-		return []byte{}, err
-	}
-	return b, nil
-}
