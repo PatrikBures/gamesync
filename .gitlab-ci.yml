@@ -14,13 +14,15 @@ variables:
   services:
     - name: moby/buildkit:latest
       alias: buildkit
-      command: ["buildkitd", "--addr", "tcp://0.0.0.0.1234"]
+      command: ["buildkitd", "--addr", "tcp://0.0.0.0:1234"]
   before_script:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
 
 build git image:
   stage: build util
-  image: moby/buildkit:latest
+  image: 
+    name: moby/buildkit:latest 
+    entrypoint: [""]
   extends: .docker
   script: buildctl --addr tcp://buildkit:1234 build -t $GIT_IMAGE --push -f ./docker/git.Dockerfile .
   rules:
