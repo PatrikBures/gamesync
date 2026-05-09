@@ -8,6 +8,9 @@ import (
 	"strings"
 )
 
+
+const sliceSeperator = '|'
+
 // Adds a bool flag and env var.
 // The env var value must be "true" for the variable to be true.
 //
@@ -55,4 +58,8 @@ func AddIntvar(variable *int, name string, defaultValue int, description string)
 
 func getEnvName(name string) string {
 	return "GAMESYNC_" + strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
+}
+
+func StringToSlice(s string) []string {
+	return strings.Split(s, string(sliceSeperator))
 }

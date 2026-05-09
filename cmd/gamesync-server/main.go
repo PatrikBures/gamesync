@@ -25,6 +25,7 @@ type config struct {
 	appDir   string
 	dbType   string
 	dbUrl    string
+	disabledRoles string
 }
 
 func start() error {
@@ -32,6 +33,7 @@ func start() error {
 	serverConfig.AddStringVar(&c.appDir, "app-dir", server.AppDir, "Path where files will be kept like the SQLite database")
 	serverConfig.AddStringVar(&c.dbType, "db-type", "sqlite", "Either 'postgres' or 'sqlite'")
 	serverConfig.AddStringVar(&c.dbUrl, "db-url", server.DefaultSQLitePath, "Url to postgres db or path to SQLite db-file")
+	serverConfig.AddStringVar(&c.disabledRoles, "disabled-roles", "", "Default roles to disable, seperated by '|'")
 
 	flag.Parse()
 
@@ -50,7 +52,7 @@ func start() error {
 	}
 	q := query.Use(db)
 
-	if err := roles.CreateDefaultRoles(q, []string{}); err != nil {
+	if err := roles.CreateDefaultRoles(q, serverConfig.StringToSlice(c.disabledRoles)); err != nil {
 		return err
 	}
 
