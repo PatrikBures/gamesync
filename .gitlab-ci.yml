@@ -8,37 +8,6 @@ variables:
   GOMODCACHE: "$CI_PROJECT_DIR/.cache/mod"
   GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint"
   IMAGE_GIT: $CI_REGISTRY_IMAGE/git:latest
-  IMAGE_GIT_BUILDAH: $CI_REGISTRY_IMAGE/git-buildah
-
-
-.docker buildkit:
-  services:
-    - name: moby/buildkit:latest
-      alias: buildkit
-      entrypoint: [""]
-      command: ["buildkitd", "--addr", "tcp://0.0.0.0:1234"]
-  before_script:
-    - mkdir -p /root/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(echo -n $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD | base64)\"}}}" > /root/.docker/config.json
-
-build git image:
-  stage: build util
-  image: 
-    name: moby/buildkit:latest 
-    entrypoint: [""]
-  extends: .docker buildkit
-  script:
-    - |
-      buildctl --addr tcp://buildkit:1234 build \
-        --frontend dockerfile.v0 \
-        --local context=. \
-        --local dockerfile=. \
-        --opt filename=./docker/git.Dockerfile \
-        --output type=image,name=$IMAGE_GIT,push=true
-  rules:
-    - changes: 
-      - docker/git.Dockerfile
-      - .gitlab-ci.yml
 
 .docker buildah:
   image: quay.io/buildah/stable
@@ -47,16 +16,16 @@ build git image:
     - export BUILDAH_FORMAT=docker
     - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
-build git image buildah:
+build git image:
   stage: build util
-  extends: .docker buildah
+  extends: .buildah
   script: 
     - | 
       buildah build \
-      -t "$IMAGE_GIT_BUILDAH" \
+      -t "$IMAGE_GIT" \
       -f ./docker/git.Dockerfile \
       .
-    - buildah push "$IMAGE_GIT_BUILDAH"
+    - buildah push "$IMAGE_GIT"
   rules:
     - changes: 
       - docker/git.Dockerfile
@@ -64,7 +33,7 @@ build git image buildah:
 
 check gitignore:
   stage: check
-  image: $IMAGE_GIT_BUILDAH
+  image: $IMAGE_GIT
   script:
     - apk add --no-cache git
     - ./scripts/git-verify-ignore.sh
