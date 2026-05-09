@@ -45,4 +45,3 @@ total_to=$(git rev-list --disk-usage --objects "$merge_to_branch")
 total_from=$(git rev-list --disk-usage --objects "$merge_from_branch")
 echo "total size of $merge_to_branch is $(human "$total_to")"
 echo "total size of $merge_from_branch is $(human "$total_from")"
-
