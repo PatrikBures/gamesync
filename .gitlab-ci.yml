@@ -31,15 +31,34 @@ build git image:
       - docker/git.Dockerfile
       - .gitlab-ci.yml
 
+
+# ---
+# GIT check
+# ---
 check gitignore:
   stage: check
   image: $IMAGE_GIT
   script:
-    - apk add --no-cache git
     - ./scripts/git-verify-ignore.sh
   rules:
     - when: always
 
+check git size diff:
+  stage: check
+  image: $IMAGE_GIT
+  script:
+    - git fetch -a
+    - |
+      ./scripts/git-verify-size.sh \
+      remotes/origin/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME \
+      remotes/origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+  rules:
+    - when: always
+
+
+# ---
+# LINTERS
+# ---
 lint api:
   stage: lint
   image: dshanley/vacuum
