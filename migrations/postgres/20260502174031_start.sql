@@ -26,7 +26,8 @@ CREATE TABLE users
 
 CREATE TABLE tokens
 (
-    user_id BIGINT PRIMARY KEY,
+    token_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
     token_hash BYTEA NOT NULL,
 
     UNIQUE (token_hash),
