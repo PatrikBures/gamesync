@@ -82,8 +82,7 @@ paths:
       operationId: get-health
       security: []
       responses:
-        "200":
-          description: OK
+        "200": {}
   /users:
     get:
       summary: Get all users
@@ -95,8 +94,7 @@ paths:
             application/json:
               schema:
                 type: array
-        "500": 
-          description: Server problem
+        "500": {}
     post:
       summary: Create new user
       operationId: post-users
@@ -113,12 +111,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserNewReturn"
-        "406":
-          description: Bad data
-        "409":
-          description: User already exists
-        "500":
-          description: Server problem
+        "406": {}
+        "409": {}
+        "500": {}
   /users/{user_id}:
     parameters:
       - $ref: "#/components/parameters/user_id"
@@ -134,12 +129,9 @@ paths:
       summary: Get all roles
       operationId: get-roles
       responses:
-        "200":
-          description: OK
-        "406":
-          description: Bad data
-        "500":
-          description: Server problem
+        "200": {}
+        "406": {}
+        "500": {}
     post:
       summary: Create new role
       operationId: post-roles
@@ -150,12 +142,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Role"
-        "406":
-          description: Bad data
-        "409":
-          description: Role already exists
-        "500":
-          description: Server problem
+        "406": {}
+        "409": {}
+        "500": {}
       requestBody:
         content:
           application/json:
