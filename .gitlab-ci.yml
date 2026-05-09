@@ -8,6 +8,22 @@ variables:
   GOMODCACHE: "$CI_PROJECT_DIR/.cache/mod"
   GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint"
   IMAGE_GIT: $CI_REGISTRY_IMAGE/git:latest
+  VERSION_REGEX: /^v\d+\.\d+\.\d+$/
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      variables:
+        RUN: true
+        VERSION: latest
+    - if: $CI_COMMIT_TAG =~ $VERSION_REGEX
+      variables:
+        RUN: true
+        VERSION: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      variables:
+        RUN: true
+        VERSION: $CI_COMMIT_REF_SLUG
 
 .buildah setup:
   image: quay.io/buildah/stable
@@ -27,9 +43,10 @@ build git image:
       .
     - buildah push "$IMAGE_GIT"
   rules:
-    - changes: 
-      - docker/git.Dockerfile
-      - .gitlab-ci.yml
+    - if: $RUN
+      changes: 
+        - docker/git.Dockerfile
+        - .gitlab-ci.yml
 
 
 # ---
@@ -41,7 +58,7 @@ check gitignore:
   script:
     - ./scripts/git-verify-ignore.sh
   rules:
-    - when: always
+    - if: $RUN
 
 check git size diff:
   stage: check
@@ -53,7 +70,7 @@ check git size diff:
       remotes/origin/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME \
       remotes/origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
   rules:
-    - when: always
+    - if: $RUN
 
 
 # ---
@@ -64,9 +81,10 @@ lint api:
   image: dshanley/vacuum
   script: vacuum --ext-refs lint --min-score 100 --pipeline-output api/*
   rules:
-    - changes: 
-      - api/*
-      - .gitlab-ci.yml
+    - if: $RUN
+      changes: 
+        - api/*
+        - .gitlab-ci.yml
 
 lint go:
   stage: lint
@@ -85,6 +103,8 @@ lint go:
       - .cache/golangci-lint
     when: always
   rules:
-    - changes: 
-      - "**/*.go"
-      - .gitlab-ci.yml
+    - if: $RUN
+      changes: 
+        - "**/*.go"
+        - .gitlab-ci.yml
+
