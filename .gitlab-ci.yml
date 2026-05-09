@@ -19,7 +19,7 @@ check gitignore:
 lint api:
   stage: lint
   image: dshanley/vacuum
-  script: vacuum --ext-refs lint -abdq --min-score 80 api/*
+  script: vacuum --ext-refs lint --min-score 100 --pipeline-output api/*
   rules:
     - changes: 
       - api/*
