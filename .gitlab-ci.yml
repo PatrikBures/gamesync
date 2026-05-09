@@ -9,7 +9,7 @@ variables:
   GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint"
   IMAGE_GIT: $CI_REGISTRY_IMAGE/git:latest
 
-.docker buildah:
+.buildah setup:
   image: quay.io/buildah/stable
   before_script:
     - export STORAGE_DRIVER=vfs
@@ -18,7 +18,7 @@ variables:
 
 build git image:
   stage: build util
-  extends: .buildah
+  extends: .buildah setup
   script: 
     - | 
       buildah build \
