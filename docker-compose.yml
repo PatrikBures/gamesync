@@ -6,6 +6,8 @@ services:
       - "8080:8080"
     volumes:
       - ./data/sqlite_db:/srv/gamesync/sqlite_db
+    environment:
+      GAMESYNC_DISABLED_ROLES: "maintainer"
     depends_on:
       migrate:
         condition: service_completed_successfully
