@@ -16,7 +16,7 @@ variables:
 
 build git image:
   stage: build util
-  image: docker:29
+  image: moby/buildkit:rootless
   extends: .docker login
   script: docker buildx build -t $GIT_IMAGE --push -f ./docker/git.Dockerfile .
   rules:
