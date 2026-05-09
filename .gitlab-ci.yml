@@ -48,7 +48,10 @@ check git size diff:
   image: $IMAGE_GIT
   script:
     - git fetch -a
-    - ./scripts/git-verify-size.sh
+    - |
+      ./scripts/git-verify-size.sh \
+      remotes/origin/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME \
+      remotes/origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
   rules:
     - when: always
 
