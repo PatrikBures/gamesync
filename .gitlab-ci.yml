@@ -58,7 +58,7 @@ check gitignore:
   script:
     - ./scripts/git-verify-ignore.sh
   rules:
-    - if: $RUN
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 check git size diff:
   stage: check
@@ -70,7 +70,7 @@ check git size diff:
       remotes/origin/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME \
       remotes/origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
   rules:
-    - if: $RUN
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 
 # ---
