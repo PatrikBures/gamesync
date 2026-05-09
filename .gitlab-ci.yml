@@ -1,4 +1,5 @@
 stages:
+  - build util
   - check
   - lint
 
@@ -6,10 +7,27 @@ variables:
   GOCACHE: "$CI_PROJECT_DIR/.cache/go-build"
   GOMODCACHE: "$CI_PROJECT_DIR/.cache/mod"
   GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint"
+  GIT_IMAGE: $CI_REGISTRY_IMAGE/git:latest
+
+
+.docker login:
+  before_script:
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
+build git image:
+  stage: build util
+  image: docker:29
+  extends: .docker login
+  script: docker buildx build -t $GIT_IMAGE --push -f ./docker/git.Dockerfile .
+  rules:
+    - changes: 
+      - docker/git.Dockerfile
+      - .gitlab-ci.yml
+
 
 check gitignore:
   stage: check
-  image: alpine:latest
+  image: $GIT_IMAGE
   script:
     - apk add --no-cache git
     - ./scripts/git-verify-ignore.sh
