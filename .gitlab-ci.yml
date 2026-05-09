@@ -26,12 +26,13 @@ build git image:
     entrypoint: [""]
   extends: .docker
   script:
-    - buildctl --addr tcp://buildkit:1234 build \
+    - |
+      buildctl --addr tcp://buildkit:1234 build \
         --frontend dockerfile.v0 \
         --local context=. \
         --local dockerfile=. \
         --opt filename=./docker/git.Dockerfile \
-        --output type=image,name=$GIT_IMAGE,push=true  
+        --output type=image,name=$GIT_IMAGE,push=true
   rules:
     - changes: 
       - docker/git.Dockerfile
