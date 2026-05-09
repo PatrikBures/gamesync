@@ -49,6 +49,8 @@ check git size diff:
   script:
     - git fetch -a
     - ./scripts/git-verify-size.sh
+  rules:
+    - when: always
 
 
 # ---
