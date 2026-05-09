@@ -56,7 +56,10 @@ build git image buildah:
       -f ./docker/git.Dockerfile \
       .
     - buildah push "$IMAGE_GIT_BUILDAH"
-
+  rules:
+    - changes: 
+      - docker/git.Dockerfile
+      - .gitlab-ci.yml
 
 check gitignore:
   stage: check
