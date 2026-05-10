@@ -1,4 +1,4 @@
-package Permissions
+package permissions
 
 type Perms []Perm
 
