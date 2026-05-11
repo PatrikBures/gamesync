@@ -14,3 +14,14 @@ const (
 	PermRolesUpdateName            Perm = 6
 	PermRolesUpdatePerms           Perm = 7
 )
+
+var AllPerms Perms = Perms{
+	PermUsersDelete,
+	PermUsersUpdateName,
+	PermUsersUpdateNameOwn,
+	PermUsersUpdateRole,
+	PermRolesCreate,
+	PermRolesDelete,
+	PermRolesUpdateName,
+	PermRolesUpdatePerms,
+}

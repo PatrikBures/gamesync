@@ -45,7 +45,7 @@ CREATE TABLE role_permissions
 
     UNIQUE (role_id, perm_id),
     FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE,
-    FOREIGN KEY (perm_id) REFERENCES roles(perm_id) ON DELETE CASCADE
+    FOREIGN KEY (perm_id) REFERENCES permissions(perm_id) ON DELETE CASCADE
 );
 
 

@@ -52,6 +52,9 @@ func start() error {
 	}
 	q := query.Use(db)
 
+	if err := initServer.EnsurePermissions(q); err != nil {
+		return err
+	}
 	if err := initServer.CreateDefaultRoles(q, serverConfig.StringToSlice(c.disabledRoles)); err != nil {
 		return err
 	}
