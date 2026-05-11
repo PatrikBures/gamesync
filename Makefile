@@ -103,6 +103,10 @@ gen-api:
 ### linting
 lint-go:
 	golangci-lint run
+lint-api:
+	vacuum --ext-refs lint --min-score 100 api/*
+lint-apid:
+	vacuum --ext-refs dashboard api/*
 
 
 
