@@ -8,7 +8,8 @@ const TableNameToken = "tokens"
 
 // Token mapped from table <tokens>
 type Token struct {
-	UserID    int64   `gorm:"column:user_id;primaryKey" json:"user_id"`
+	TokenID   int64   `gorm:"column:token_id;primaryKey;autoIncrement:true" json:"token_id"`
+	UserID    int64   `gorm:"column:user_id;not null" json:"user_id"`
 	TokenHash []uint8 `gorm:"column:token_hash;not null" json:"token_hash"`
 }
 

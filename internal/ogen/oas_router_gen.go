@@ -11,15 +11,20 @@ import (
 )
 
 var (
-	rn3AllowedHeaders = map[string]string{
+	rn6AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
-	rn6AllowedHeaders = map[string]string{
+	rn5AllowedHeaders = map[string]string{
+		"GET":   "Authorization",
+		"PATCH": "Authorization,Content-Type",
+		"PUT":   "Authorization,Content-Type",
+	}
+	rn9AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
 		"POST": "Content-Type",
 	}
-	rn5AllowedHeaders = map[string]string{
+	rn8AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 )
@@ -109,38 +114,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if len(elem) == 0 {
-					// Leaf node.
 					switch r.Method {
 					case "GET":
 						s.handleGetRolesRequest([0]string{}, elemIsEscaped, w, r)
 					case "POST":
 						s.handlePostRolesRequest([0]string{}, elemIsEscaped, w, r)
-					default:
-						s.notAllowed(w, r, notAllowedParams{
-							allowedMethods: "GET,POST",
-							allowedHeaders: rn3AllowedHeaders,
-							acceptPost:     "application/json",
-							acceptPatch:    "",
-						})
-					}
-
-					return
-				}
-
-			case 'u': // Prefix: "users"
-
-				if l := len("users"); len(elem) >= l && elem[0:l] == "users" {
-					elem = elem[l:]
-				} else {
-					break
-				}
-
-				if len(elem) == 0 {
-					switch r.Method {
-					case "GET":
-						s.handleGetUsersRequest([0]string{}, elemIsEscaped, w, r)
-					case "POST":
-						s.handlePostUsersRequest([0]string{}, elemIsEscaped, w, r)
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET,POST",
@@ -161,7 +139,93 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 
-					// Param: "user_id"
+					// Param: "roleId"
+					// Match until "/"
+					idx := strings.IndexByte(elem, '/')
+					if idx < 0 {
+						idx = len(elem)
+					}
+					args[0] = elem[:idx]
+					elem = elem[idx:]
+
+					if len(elem) == 0 {
+						break
+					}
+					switch elem[0] {
+					case '/': // Prefix: "/perms"
+
+						if l := len("/perms"); len(elem) >= l && elem[0:l] == "/perms" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch r.Method {
+							case "GET":
+								s.handleGetRolePermsRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							case "PATCH":
+								s.handlePatchRolePermsRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							case "PUT":
+								s.handlePutRolePermsRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, notAllowedParams{
+									allowedMethods: "GET,PATCH,PUT",
+									allowedHeaders: rn5AllowedHeaders,
+									acceptPost:     "",
+									acceptPatch:    "application/json",
+								})
+							}
+
+							return
+						}
+
+					}
+
+				}
+
+			case 'u': // Prefix: "users"
+
+				if l := len("users"); len(elem) >= l && elem[0:l] == "users" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					switch r.Method {
+					case "GET":
+						s.handleGetUsersRequest([0]string{}, elemIsEscaped, w, r)
+					case "POST":
+						s.handlePostUsersRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, notAllowedParams{
+							allowedMethods: "GET,POST",
+							allowedHeaders: rn9AllowedHeaders,
+							acceptPost:     "application/json",
+							acceptPatch:    "",
+						})
+					}
+
+					return
+				}
+				switch elem[0] {
+				case '/': // Prefix: "/"
+
+					if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					// Param: "userId"
 					// Leaf parameter, slashes are prohibited
 					idx := strings.IndexByte(elem, '/')
 					if idx >= 0 {
@@ -180,7 +244,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						default:
 							s.notAllowed(w, r, notAllowedParams{
 								allowedMethods: "GET",
-								allowedHeaders: rn5AllowedHeaders,
+								allowedHeaders: rn8AllowedHeaders,
 								acceptPost:     "",
 								acceptPatch:    "",
 							})
@@ -325,7 +389,6 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				}
 
 				if len(elem) == 0 {
-					// Leaf node.
 					switch method {
 					case "GET":
 						r.name = GetRolesOperation
@@ -348,6 +411,74 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					default:
 						return
 					}
+				}
+				switch elem[0] {
+				case '/': // Prefix: "/"
+
+					if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					// Param: "roleId"
+					// Match until "/"
+					idx := strings.IndexByte(elem, '/')
+					if idx < 0 {
+						idx = len(elem)
+					}
+					args[0] = elem[:idx]
+					elem = elem[idx:]
+
+					if len(elem) == 0 {
+						break
+					}
+					switch elem[0] {
+					case '/': // Prefix: "/perms"
+
+						if l := len("/perms"); len(elem) >= l && elem[0:l] == "/perms" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch method {
+							case "GET":
+								r.name = GetRolePermsOperation
+								r.summary = "Get all permissions the role has"
+								r.operationID = "get-role-perms"
+								r.operationGroup = ""
+								r.pathPattern = "/roles/{roleId}/perms"
+								r.args = args
+								r.count = 1
+								return r, true
+							case "PATCH":
+								r.name = PatchRolePermsOperation
+								r.summary = "Patch perms for role"
+								r.operationID = "patch-role-perms"
+								r.operationGroup = ""
+								r.pathPattern = "/roles/{roleId}/perms"
+								r.args = args
+								r.count = 1
+								return r, true
+							case "PUT":
+								r.name = PutRolePermsOperation
+								r.summary = "Set perms for role"
+								r.operationID = "put-role-perms"
+								r.operationGroup = ""
+								r.pathPattern = "/roles/{roleId}/perms"
+								r.args = args
+								r.count = 1
+								return r, true
+							default:
+								return
+							}
+						}
+
+					}
+
 				}
 
 			case 'u': // Prefix: "users"
@@ -391,7 +522,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						break
 					}
 
-					// Param: "user_id"
+					// Param: "userId"
 					// Leaf parameter, slashes are prohibited
 					idx := strings.IndexByte(elem, '/')
 					if idx >= 0 {
@@ -408,7 +539,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							r.summary = "Get info about user"
 							r.operationID = "get-user-id"
 							r.operationGroup = ""
-							r.pathPattern = "/users/{user_id}"
+							r.pathPattern = "/users/{userId}"
 							r.args = args
 							r.count = 1
 							return r, true

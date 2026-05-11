@@ -14,6 +14,12 @@ type Handler interface {
 	//
 	// GET /health
 	GetHealth(ctx context.Context) error
+	// GetRolePerms implements get-role-perms operation.
+	//
+	// Get all permissions the role has.
+	//
+	// GET /roles/{roleId}/perms
+	GetRolePerms(ctx context.Context, params GetRolePermsParams) (GetRolePermsRes, error)
 	// GetRoles implements get-roles operation.
 	//
 	// Get all roles.
@@ -24,7 +30,7 @@ type Handler interface {
 	//
 	// Get info about user.
 	//
-	// GET /users/{user_id}
+	// GET /users/{userId}
 	GetUserID(ctx context.Context, params GetUserIDParams) error
 	// GetUsers implements get-users operation.
 	//
@@ -32,6 +38,12 @@ type Handler interface {
 	//
 	// GET /users
 	GetUsers(ctx context.Context) (GetUsersRes, error)
+	// PatchRolePerms implements patch-role-perms operation.
+	//
+	// Patch perms for role.
+	//
+	// PATCH /roles/{roleId}/perms
+	PatchRolePerms(ctx context.Context, req OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
 	// PostRoles implements post-roles operation.
 	//
 	// Create new role.
@@ -44,6 +56,12 @@ type Handler interface {
 	//
 	// POST /users
 	PostUsers(ctx context.Context, req OptUserNew) (PostUsersRes, error)
+	// PutRolePerms implements put-role-perms operation.
+	//
+	// Set perms for role.
+	//
+	// PUT /roles/{roleId}/perms
+	PutRolePerms(ctx context.Context, req PermArray, params PutRolePermsParams) (PutRolePermsRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and
