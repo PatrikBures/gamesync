@@ -10,7 +10,13 @@ import (
 )
 
 func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
-	return nil, nil
+	roles, err := s.q.Role.WithContext(ctx).Find()
+	if err != nil {
+		return &api.GetRolesInternalServerError{}, ErrDatabase
+	}
+	rolesReturn := 
+
+
 }
 
 func (s *Service) PostRoles(ctx context.Context, req api.OptRoleNew) (api.PostRolesRes, error) {
