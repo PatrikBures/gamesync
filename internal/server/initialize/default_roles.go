@@ -1,4 +1,4 @@
-package roles
+package initServer
 
 import (
 	"context"

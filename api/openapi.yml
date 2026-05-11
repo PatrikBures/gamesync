@@ -140,7 +140,13 @@ paths:
       tags:
         - Roles
       responses:
-        "200": {}
+        "200": 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
         "406": {}
         "500": {}
     post:

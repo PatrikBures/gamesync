@@ -11,6 +11,56 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
+// Encode encodes GetRolesOKApplicationJSON as json.
+func (s GetRolesOKApplicationJSON) Encode(e *jx.Encoder) {
+	unwrapped := []Role(s)
+
+	e.ArrStart()
+	for _, elem := range unwrapped {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes GetRolesOKApplicationJSON from json.
+func (s *GetRolesOKApplicationJSON) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode GetRolesOKApplicationJSON to nil")
+	}
+	var unwrapped []Role
+	if err := func() error {
+		unwrapped = make([]Role, 0)
+		if err := d.Arr(func(d *jx.Decoder) error {
+			var elem Role
+			if err := elem.Decode(d); err != nil {
+				return err
+			}
+			unwrapped = append(unwrapped, elem)
+			return nil
+		}); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = GetRolesOKApplicationJSON(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s GetRolesOKApplicationJSON) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *GetRolesOKApplicationJSON) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes GetUsersOKApplicationJSON as json.
 func (s GetUsersOKApplicationJSON) Encode(e *jx.Encoder) {
 	unwrapped := []jx.Raw(s)

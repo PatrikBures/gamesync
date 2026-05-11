@@ -8,7 +8,7 @@ import (
 	"gamesync/internal/query"
 	"gamesync/internal/server"
 	serverConfig "gamesync/internal/server/config"
-	"gamesync/internal/server/roles"
+	initServer "gamesync/internal/server/initialize"
 	"gamesync/internal/server/service"
 	"log"
 	"net/http"
@@ -52,7 +52,7 @@ func start() error {
 	}
 	q := query.Use(db)
 
-	if err := roles.CreateDefaultRoles(q, serverConfig.StringToSlice(c.disabledRoles)); err != nil {
+	if err := initServer.CreateDefaultRoles(q, serverConfig.StringToSlice(c.disabledRoles)); err != nil {
 		return err
 	}
 
