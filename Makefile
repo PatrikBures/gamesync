@@ -90,6 +90,9 @@ down:
 
 
 ### generate code
+gen-all: up-pg gen-api gen-strings
+gen-most: gen-api gen-strings
+
 gen-pg: up-pg
 	GAMESYNC_DB_TYPE=postgres GAMESYNC_DB_URL=postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:5432/$(DB_NAME) go run ./cmd/gen/main.go
 gen-sqlite: up # should not be used, just the gen-pg one 
@@ -98,6 +101,8 @@ gen-sqlite: up # should not be used, just the gen-pg one
 gen-api:
 	go generate .
 
+gen-strings:
+	go generate ./internal/server/permissions
 
 
 ### linting
