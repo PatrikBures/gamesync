@@ -44,10 +44,9 @@ type GetRolesNotAcceptable struct{}
 
 func (*GetRolesNotAcceptable) getRolesRes() {}
 
-// GetRolesOK is response for GetRoles operation.
-type GetRolesOK struct{}
+type GetRolesOKApplicationJSON []Role
 
-func (*GetRolesOK) getRolesRes() {}
+func (*GetRolesOKApplicationJSON) getRolesRes() {}
 
 // GetUserIDOK is response for GetUserID operation.
 type GetUserIDOK struct{}

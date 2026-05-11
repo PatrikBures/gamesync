@@ -145,7 +145,8 @@ paths:
             application/json:
               schema:
                 type: array
-                items: "#/components/schemas/Role"
+                items:
+                  $ref: "#/components/schemas/Role"
         "406": {}
         "500": {}
     post:
