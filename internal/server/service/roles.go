@@ -14,15 +14,14 @@ func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
 	if err != nil {
 		return &api.GetRolesInternalServerError{}, ErrDatabase
 	}
-	rolesReturn := make([]api.Role, 0, len(roles))
+	rolesReturn := make(api.GetRolesOKApplicationJSON, 0, len(roles))
 	for _, role := range roles {
 		rolesReturn = append(rolesReturn, api.Role{
 			RoleId: role.RoleID,
 			RoleName: role.RoleName,
 		})
 	}
-	res := api.GetRolesOKApplicationJSON(rolesReturn)
-	return &res, nil
+	return &rolesReturn, nil
 }
 
 func (s *Service) PostRoles(ctx context.Context, req api.OptRoleNew) (api.PostRolesRes, error) {
