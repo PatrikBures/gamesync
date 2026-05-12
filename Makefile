@@ -77,6 +77,8 @@ build-container: build-state
 
 up-pg:
 	docker compose -f ./docker-compose-pg.yml up --build --remove-orphans -d
+up-pg-gen:
+	docker compose -f ./docker-compose-pg-gen.yml up --build --remove-orphans -d
 down-pg:
 	docker compose -f ./docker-compose-pg.yml down -v
 
@@ -90,10 +92,10 @@ down:
 
 
 ### generate code
-gen-all: up-pg gen-api gen-strings
+gen-all: gen-pg gen-api gen-strings
 gen-most: gen-api gen-strings
 
-gen-pg: down-pg up-pg
+gen-pg: down-pg up-pg-gen
 	GAMESYNC_DB_TYPE=postgres GAMESYNC_DB_URL=postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:5432/$(DB_NAME) go run ./cmd/gen/main.go
 gen-sqlite: up # should not be used, just the gen-pg one 
 	GAMESYNC_DB_TYPE=sqlite GAMESYNC_DB_URL=./data/sqlite_db/gamesync.sqlite go run ./cmd/gen/main.go
