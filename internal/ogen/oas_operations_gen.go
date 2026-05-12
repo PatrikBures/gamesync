@@ -6,10 +6,13 @@ package api
 type OperationName = string
 
 const (
-	GetHealthOperation OperationName = "GetHealth"
-	GetRolesOperation  OperationName = "GetRoles"
-	GetUserIDOperation OperationName = "GetUserID"
-	GetUsersOperation  OperationName = "GetUsers"
-	PostRolesOperation OperationName = "PostRoles"
-	PostUsersOperation OperationName = "PostUsers"
+	GetHealthOperation      OperationName = "GetHealth"
+	GetRolePermsOperation   OperationName = "GetRolePerms"
+	GetRolesOperation       OperationName = "GetRoles"
+	GetUserIDOperation      OperationName = "GetUserID"
+	GetUsersOperation       OperationName = "GetUsers"
+	PatchRolePermsOperation OperationName = "PatchRolePerms"
+	PostRolesOperation      OperationName = "PostRoles"
+	PostUsersOperation      OperationName = "PostUsers"
+	PutRolePermsOperation   OperationName = "PutRolePerms"
 )

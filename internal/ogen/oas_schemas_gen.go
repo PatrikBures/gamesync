@@ -34,15 +34,15 @@ func (s *BearerAuth) SetRoles(val []string) {
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
 
+// GetRolePermsInternalServerError is response for GetRolePerms operation.
+type GetRolePermsInternalServerError struct{}
+
+func (*GetRolePermsInternalServerError) getRolePermsRes() {}
+
 // GetRolesInternalServerError is response for GetRoles operation.
 type GetRolesInternalServerError struct{}
 
 func (*GetRolesInternalServerError) getRolesRes() {}
-
-// GetRolesNotAcceptable is response for GetRoles operation.
-type GetRolesNotAcceptable struct{}
-
-func (*GetRolesNotAcceptable) getRolesRes() {}
 
 type GetRolesOKApplicationJSON []Role
 
@@ -59,6 +59,52 @@ func (*GetUsersInternalServerError) getUsersRes() {}
 type GetUsersOKApplicationJSON []jx.Raw
 
 func (*GetUsersOKApplicationJSON) getUsersRes() {}
+
+// NewOptPermDiff returns new OptPermDiff with value set to v.
+func NewOptPermDiff(v PermDiff) OptPermDiff {
+	return OptPermDiff{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptPermDiff is optional PermDiff.
+type OptPermDiff struct {
+	Value PermDiff
+	Set   bool
+}
+
+// IsSet returns true if OptPermDiff was set.
+func (o OptPermDiff) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptPermDiff) Reset() {
+	var v PermDiff
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptPermDiff) SetTo(v PermDiff) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptPermDiff) Get() (v PermDiff, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptPermDiff) Or(d PermDiff) PermDiff {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
 
 // NewOptRoleNew returns new OptRoleNew with value set to v.
 func NewOptRoleNew(v RoleNew) OptRoleNew {
@@ -152,6 +198,50 @@ func (o OptUserNew) Or(d UserNew) UserNew {
 	return d
 }
 
+// PatchRolePermsInternalServerError is response for PatchRolePerms operation.
+type PatchRolePermsInternalServerError struct{}
+
+func (*PatchRolePermsInternalServerError) patchRolePermsRes() {}
+
+// PatchRolePermsNotAcceptable is response for PatchRolePerms operation.
+type PatchRolePermsNotAcceptable struct{}
+
+func (*PatchRolePermsNotAcceptable) patchRolePermsRes() {}
+
+type Perm int32
+
+type PermArray []Perm
+
+func (*PermArray) getRolePermsRes()   {}
+func (*PermArray) patchRolePermsRes() {}
+func (*PermArray) putRolePermsRes()   {}
+
+// Ref: #/components/schemas/PermDiff
+type PermDiff struct {
+	Add    PermArray `json:"add"`
+	Remove PermArray `json:"remove"`
+}
+
+// GetAdd returns the value of Add.
+func (s *PermDiff) GetAdd() PermArray {
+	return s.Add
+}
+
+// GetRemove returns the value of Remove.
+func (s *PermDiff) GetRemove() PermArray {
+	return s.Remove
+}
+
+// SetAdd sets the value of Add.
+func (s *PermDiff) SetAdd(val PermArray) {
+	s.Add = val
+}
+
+// SetRemove sets the value of Remove.
+func (s *PermDiff) SetRemove(val PermArray) {
+	s.Remove = val
+}
+
 // PostRolesConflict is response for PostRoles operation.
 type PostRolesConflict struct{}
 
@@ -181,6 +271,16 @@ func (*PostUsersInternalServerError) postUsersRes() {}
 type PostUsersNotAcceptable struct{}
 
 func (*PostUsersNotAcceptable) postUsersRes() {}
+
+// PutRolePermsInternalServerError is response for PutRolePerms operation.
+type PutRolePermsInternalServerError struct{}
+
+func (*PutRolePermsInternalServerError) putRolePermsRes() {}
+
+// PutRolePermsNotAcceptable is response for PutRolePerms operation.
+type PutRolePermsNotAcceptable struct{}
+
+func (*PutRolePermsNotAcceptable) putRolePermsRes() {}
 
 // Ref: #/components/schemas/Role
 type Role struct {

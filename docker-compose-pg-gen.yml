@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      start_period: 10s
+      start_interval: 1s
+      interval: 5s
+      timeout: 5s
+      retries: 3
+  migrate:
+    build:
+      dockerfile: docker/goose_postgres.Dockerfile
+      context: .
+    environment:
+      GOOSE_DBSTRING: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}"
+    command: ["goose", "up"]
+    depends_on:
+      db:
+        condition: service_healthy

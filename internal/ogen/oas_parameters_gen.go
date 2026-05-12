@@ -14,25 +14,25 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-// GetUserIDParams is parameters of get-user-id operation.
-type GetUserIDParams struct {
-	// Used to identify a user.
-	UserID int64
+// GetRolePermsParams is parameters of get-role-perms operation.
+type GetRolePermsParams struct {
+	// Identify role.
+	RoleId int32
 }
 
-func unpackGetUserIDParams(packed middleware.Parameters) (params GetUserIDParams) {
+func unpackGetRolePermsParams(packed middleware.Parameters) (params GetRolePermsParams) {
 	{
 		key := middleware.ParameterKey{
-			Name: "user_id",
+			Name: "roleId",
 			In:   "path",
 		}
-		params.UserID = packed[key].(int64)
+		params.RoleId = packed[key].(int32)
 	}
 	return params
 }
 
-func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (params GetUserIDParams, _ error) {
-	// Decode path: user_id.
+func decodeGetRolePermsParams(args [1]string, argsEscaped bool, r *http.Request) (params GetRolePermsParams, _ error) {
+	// Decode path: roleId.
 	if err := func() error {
 		param := args[0]
 		if argsEscaped {
@@ -44,7 +44,91 @@ func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (p
 		}
 		if len(param) > 0 {
 			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "user_id",
+				Param:   "roleId",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt32(val)
+				if err != nil {
+					return err
+				}
+
+				params.RoleId = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.Int{
+					MinSet:        true,
+					Min:           0,
+					MaxSet:        false,
+					Max:           0,
+					MinExclusive:  false,
+					MaxExclusive:  false,
+					MultipleOfSet: false,
+					MultipleOf:    0,
+					Pattern:       nil,
+				}).Validate(int64(params.RoleId)); err != nil {
+					return errors.Wrap(err, "int")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "roleId",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetUserIDParams is parameters of get-user-id operation.
+type GetUserIDParams struct {
+	// Used to identify a user.
+	UserId int64
+}
+
+func unpackGetUserIDParams(packed middleware.Parameters) (params GetUserIDParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "userId",
+			In:   "path",
+		}
+		params.UserId = packed[key].(int64)
+	}
+	return params
+}
+
+func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (params GetUserIDParams, _ error) {
+	// Decode path: userId.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "userId",
 				Value:   param,
 				Style:   uri.PathStyleSimple,
 				Explode: false,
@@ -61,7 +145,7 @@ func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (p
 					return err
 				}
 
-				params.UserID = c
+				params.UserId = c
 				return nil
 			}(); err != nil {
 				return err
@@ -77,7 +161,7 @@ func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (p
 					MultipleOfSet: false,
 					MultipleOf:    0,
 					Pattern:       nil,
-				}).Validate(int64(params.UserID)); err != nil {
+				}).Validate(int64(params.UserId)); err != nil {
 					return errors.Wrap(err, "int")
 				}
 				return nil
@@ -90,7 +174,175 @@ func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (p
 		return nil
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
-			Name: "user_id",
+			Name: "userId",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PatchRolePermsParams is parameters of patch-role-perms operation.
+type PatchRolePermsParams struct {
+	// Identify role.
+	RoleId int32
+}
+
+func unpackPatchRolePermsParams(packed middleware.Parameters) (params PatchRolePermsParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "roleId",
+			In:   "path",
+		}
+		params.RoleId = packed[key].(int32)
+	}
+	return params
+}
+
+func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Request) (params PatchRolePermsParams, _ error) {
+	// Decode path: roleId.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "roleId",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt32(val)
+				if err != nil {
+					return err
+				}
+
+				params.RoleId = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.Int{
+					MinSet:        true,
+					Min:           0,
+					MaxSet:        false,
+					Max:           0,
+					MinExclusive:  false,
+					MaxExclusive:  false,
+					MultipleOfSet: false,
+					MultipleOf:    0,
+					Pattern:       nil,
+				}).Validate(int64(params.RoleId)); err != nil {
+					return errors.Wrap(err, "int")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "roleId",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PutRolePermsParams is parameters of put-role-perms operation.
+type PutRolePermsParams struct {
+	// Identify role.
+	RoleId int32
+}
+
+func unpackPutRolePermsParams(packed middleware.Parameters) (params PutRolePermsParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "roleId",
+			In:   "path",
+		}
+		params.RoleId = packed[key].(int32)
+	}
+	return params
+}
+
+func decodePutRolePermsParams(args [1]string, argsEscaped bool, r *http.Request) (params PutRolePermsParams, _ error) {
+	// Decode path: roleId.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "roleId",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt32(val)
+				if err != nil {
+					return err
+				}
+
+				params.RoleId = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.Int{
+					MinSet:        true,
+					Min:           0,
+					MaxSet:        false,
+					Max:           0,
+					MinExclusive:  false,
+					MaxExclusive:  false,
+					MultipleOfSet: false,
+					MultipleOf:    0,
+					Pattern:       nil,
+				}).Validate(int64(params.RoleId)); err != nil {
+					return errors.Wrap(err, "int")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "roleId",
 			In:   "path",
 			Err:  err,
 		}

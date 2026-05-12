@@ -34,6 +34,12 @@ type Invoker interface {
 	//
 	// GET /health
 	GetHealth(ctx context.Context) error
+	// GetRolePerms invokes get-role-perms operation.
+	//
+	// Get all permissions the role has.
+	//
+	// GET /roles/{roleId}/perms
+	GetRolePerms(ctx context.Context, params GetRolePermsParams) (GetRolePermsRes, error)
 	// GetRoles invokes get-roles operation.
 	//
 	// Get all roles.
@@ -44,7 +50,7 @@ type Invoker interface {
 	//
 	// Get info about user.
 	//
-	// GET /users/{user_id}
+	// GET /users/{userId}
 	GetUserID(ctx context.Context, params GetUserIDParams) error
 	// GetUsers invokes get-users operation.
 	//
@@ -52,6 +58,12 @@ type Invoker interface {
 	//
 	// GET /users
 	GetUsers(ctx context.Context) (GetUsersRes, error)
+	// PatchRolePerms invokes patch-role-perms operation.
+	//
+	// Patch perms for role.
+	//
+	// PATCH /roles/{roleId}/perms
+	PatchRolePerms(ctx context.Context, request OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
 	// PostRoles invokes post-roles operation.
 	//
 	// Create new role.
@@ -64,6 +76,12 @@ type Invoker interface {
 	//
 	// POST /users
 	PostUsers(ctx context.Context, request OptUserNew) (PostUsersRes, error)
+	// PutRolePerms invokes put-role-perms operation.
+	//
+	// Set perms for role.
+	//
+	// PUT /roles/{roleId}/perms
+	PutRolePerms(ctx context.Context, request PermArray, params PutRolePermsParams) (PutRolePermsRes, error)
 }
 
 // Client implements OAS client.
@@ -174,6 +192,132 @@ func (c *Client) sendGetHealth(ctx context.Context) (res *GetHealthOK, err error
 
 	stage = "DecodeResponse"
 	result, err := decodeGetHealthResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetRolePerms invokes get-role-perms operation.
+//
+// Get all permissions the role has.
+//
+// GET /roles/{roleId}/perms
+func (c *Client) GetRolePerms(ctx context.Context, params GetRolePermsParams) (GetRolePermsRes, error) {
+	res, err := c.sendGetRolePerms(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetRolePerms(ctx context.Context, params GetRolePermsParams) (res GetRolePermsRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("get-role-perms"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.URLTemplateKey.String("/roles/{roleId}/perms"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, GetRolePermsOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/roles/"
+	{
+		// Encode "roleId" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "roleId",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int32ToString(params.RoleId))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/perms"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, GetRolePermsOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeGetRolePermsResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -292,7 +436,7 @@ func (c *Client) sendGetRoles(ctx context.Context) (res GetRolesRes, err error) 
 //
 // Get info about user.
 //
-// GET /users/{user_id}
+// GET /users/{userId}
 func (c *Client) GetUserID(ctx context.Context, params GetUserIDParams) error {
 	_, err := c.sendGetUserID(ctx, params)
 	return err
@@ -302,7 +446,7 @@ func (c *Client) sendGetUserID(ctx context.Context, params GetUserIDParams) (res
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-user-id"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.URLTemplateKey.String("/users/{user_id}"),
+		semconv.URLTemplateKey.String("/users/{userId}"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -338,14 +482,14 @@ func (c *Client) sendGetUserID(ctx context.Context, params GetUserIDParams) (res
 	var pathParts [2]string
 	pathParts[0] = "/users/"
 	{
-		// Encode "user_id" parameter.
+		// Encode "userId" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "user_id",
+			Param:   "userId",
 			Style:   uri.PathStyleSimple,
 			Explode: false,
 		})
 		if err := func() error {
-			return e.EncodeValue(conv.Int64ToString(params.UserID))
+			return e.EncodeValue(conv.Int64ToString(params.UserId))
 		}(); err != nil {
 			return res, errors.Wrap(err, "encode path")
 		}
@@ -513,6 +657,135 @@ func (c *Client) sendGetUsers(ctx context.Context) (res GetUsersRes, err error) 
 
 	stage = "DecodeResponse"
 	result, err := decodeGetUsersResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PatchRolePerms invokes patch-role-perms operation.
+//
+// Patch perms for role.
+//
+// PATCH /roles/{roleId}/perms
+func (c *Client) PatchRolePerms(ctx context.Context, request OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error) {
+	res, err := c.sendPatchRolePerms(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendPatchRolePerms(ctx context.Context, request OptPermDiff, params PatchRolePermsParams) (res PatchRolePermsRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("patch-role-perms"),
+		semconv.HTTPRequestMethodKey.String("PATCH"),
+		semconv.URLTemplateKey.String("/roles/{roleId}/perms"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, PatchRolePermsOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/roles/"
+	{
+		// Encode "roleId" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "roleId",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int32ToString(params.RoleId))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/perms"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "PATCH", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePatchRolePermsRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, PatchRolePermsOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodePatchRolePermsResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -700,6 +973,135 @@ func (c *Client) sendPostUsers(ctx context.Context, request OptUserNew) (res Pos
 
 	stage = "DecodeResponse"
 	result, err := decodePostUsersResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutRolePerms invokes put-role-perms operation.
+//
+// Set perms for role.
+//
+// PUT /roles/{roleId}/perms
+func (c *Client) PutRolePerms(ctx context.Context, request PermArray, params PutRolePermsParams) (PutRolePermsRes, error) {
+	res, err := c.sendPutRolePerms(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendPutRolePerms(ctx context.Context, request PermArray, params PutRolePermsParams) (res PutRolePermsRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("put-role-perms"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
+		semconv.URLTemplateKey.String("/roles/{roleId}/perms"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, PutRolePermsOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/roles/"
+	{
+		// Encode "roleId" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "roleId",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int32ToString(params.RoleId))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/perms"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutRolePermsRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, PutRolePermsOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodePutRolePermsResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
