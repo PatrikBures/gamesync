@@ -2,7 +2,7 @@ package permissions
 
 type Perms []Perm
 
-//go:generate stringer -type=Perm -trimprefix=Perm
+//go:generate go run golang.org/x/tools/cmd/stringer -type=Perm -trimprefix=Perm
 type Perm int
 const (
 	PermUsersDelete                Perm = 0
