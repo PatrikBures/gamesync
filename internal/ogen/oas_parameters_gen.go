@@ -17,22 +17,22 @@ import (
 // GetRolePermsParams is parameters of get-role-perms operation.
 type GetRolePermsParams struct {
 	// Identify role.
-	RoleId int32
+	RoleID int32
 }
 
 func unpackGetRolePermsParams(packed middleware.Parameters) (params GetRolePermsParams) {
 	{
 		key := middleware.ParameterKey{
-			Name: "roleId",
+			Name: "roleID",
 			In:   "path",
 		}
-		params.RoleId = packed[key].(int32)
+		params.RoleID = packed[key].(int32)
 	}
 	return params
 }
 
 func decodeGetRolePermsParams(args [1]string, argsEscaped bool, r *http.Request) (params GetRolePermsParams, _ error) {
-	// Decode path: roleId.
+	// Decode path: roleID.
 	if err := func() error {
 		param := args[0]
 		if argsEscaped {
@@ -44,7 +44,7 @@ func decodeGetRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 		}
 		if len(param) > 0 {
 			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "roleId",
+				Param:   "roleID",
 				Value:   param,
 				Style:   uri.PathStyleSimple,
 				Explode: false,
@@ -61,7 +61,7 @@ func decodeGetRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 					return err
 				}
 
-				params.RoleId = c
+				params.RoleID = c
 				return nil
 			}(); err != nil {
 				return err
@@ -77,7 +77,7 @@ func decodeGetRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 					MultipleOfSet: false,
 					MultipleOf:    0,
 					Pattern:       nil,
-				}).Validate(int64(params.RoleId)); err != nil {
+				}).Validate(int64(params.RoleID)); err != nil {
 					return errors.Wrap(err, "int")
 				}
 				return nil
@@ -90,7 +90,7 @@ func decodeGetRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 		return nil
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
-			Name: "roleId",
+			Name: "roleID",
 			In:   "path",
 			Err:  err,
 		}
@@ -101,22 +101,22 @@ func decodeGetRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 // GetUserIDParams is parameters of get-user-id operation.
 type GetUserIDParams struct {
 	// Used to identify a user.
-	UserId int64
+	UserID int64
 }
 
 func unpackGetUserIDParams(packed middleware.Parameters) (params GetUserIDParams) {
 	{
 		key := middleware.ParameterKey{
-			Name: "userId",
+			Name: "userID",
 			In:   "path",
 		}
-		params.UserId = packed[key].(int64)
+		params.UserID = packed[key].(int64)
 	}
 	return params
 }
 
 func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (params GetUserIDParams, _ error) {
-	// Decode path: userId.
+	// Decode path: userID.
 	if err := func() error {
 		param := args[0]
 		if argsEscaped {
@@ -128,7 +128,7 @@ func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (p
 		}
 		if len(param) > 0 {
 			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "userId",
+				Param:   "userID",
 				Value:   param,
 				Style:   uri.PathStyleSimple,
 				Explode: false,
@@ -145,7 +145,7 @@ func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (p
 					return err
 				}
 
-				params.UserId = c
+				params.UserID = c
 				return nil
 			}(); err != nil {
 				return err
@@ -161,7 +161,7 @@ func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (p
 					MultipleOfSet: false,
 					MultipleOf:    0,
 					Pattern:       nil,
-				}).Validate(int64(params.UserId)); err != nil {
+				}).Validate(int64(params.UserID)); err != nil {
 					return errors.Wrap(err, "int")
 				}
 				return nil
@@ -174,7 +174,7 @@ func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (p
 		return nil
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
-			Name: "userId",
+			Name: "userID",
 			In:   "path",
 			Err:  err,
 		}
@@ -185,22 +185,22 @@ func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (p
 // PatchRolePermsParams is parameters of patch-role-perms operation.
 type PatchRolePermsParams struct {
 	// Identify role.
-	RoleId int32
+	RoleID int32
 }
 
 func unpackPatchRolePermsParams(packed middleware.Parameters) (params PatchRolePermsParams) {
 	{
 		key := middleware.ParameterKey{
-			Name: "roleId",
+			Name: "roleID",
 			In:   "path",
 		}
-		params.RoleId = packed[key].(int32)
+		params.RoleID = packed[key].(int32)
 	}
 	return params
 }
 
 func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Request) (params PatchRolePermsParams, _ error) {
-	// Decode path: roleId.
+	// Decode path: roleID.
 	if err := func() error {
 		param := args[0]
 		if argsEscaped {
@@ -212,7 +212,7 @@ func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Reques
 		}
 		if len(param) > 0 {
 			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "roleId",
+				Param:   "roleID",
 				Value:   param,
 				Style:   uri.PathStyleSimple,
 				Explode: false,
@@ -229,7 +229,7 @@ func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Reques
 					return err
 				}
 
-				params.RoleId = c
+				params.RoleID = c
 				return nil
 			}(); err != nil {
 				return err
@@ -245,7 +245,7 @@ func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Reques
 					MultipleOfSet: false,
 					MultipleOf:    0,
 					Pattern:       nil,
-				}).Validate(int64(params.RoleId)); err != nil {
+				}).Validate(int64(params.RoleID)); err != nil {
 					return errors.Wrap(err, "int")
 				}
 				return nil
@@ -258,7 +258,7 @@ func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Reques
 		return nil
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
-			Name: "roleId",
+			Name: "roleID",
 			In:   "path",
 			Err:  err,
 		}
@@ -269,22 +269,22 @@ func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Reques
 // PutRolePermsParams is parameters of put-role-perms operation.
 type PutRolePermsParams struct {
 	// Identify role.
-	RoleId int32
+	RoleID int32
 }
 
 func unpackPutRolePermsParams(packed middleware.Parameters) (params PutRolePermsParams) {
 	{
 		key := middleware.ParameterKey{
-			Name: "roleId",
+			Name: "roleID",
 			In:   "path",
 		}
-		params.RoleId = packed[key].(int32)
+		params.RoleID = packed[key].(int32)
 	}
 	return params
 }
 
 func decodePutRolePermsParams(args [1]string, argsEscaped bool, r *http.Request) (params PutRolePermsParams, _ error) {
-	// Decode path: roleId.
+	// Decode path: roleID.
 	if err := func() error {
 		param := args[0]
 		if argsEscaped {
@@ -296,7 +296,7 @@ func decodePutRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 		}
 		if len(param) > 0 {
 			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "roleId",
+				Param:   "roleID",
 				Value:   param,
 				Style:   uri.PathStyleSimple,
 				Explode: false,
@@ -313,7 +313,7 @@ func decodePutRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 					return err
 				}
 
-				params.RoleId = c
+				params.RoleID = c
 				return nil
 			}(); err != nil {
 				return err
@@ -329,7 +329,7 @@ func decodePutRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 					MultipleOfSet: false,
 					MultipleOf:    0,
 					Pattern:       nil,
-				}).Validate(int64(params.RoleId)); err != nil {
+				}).Validate(int64(params.RoleID)); err != nil {
 					return errors.Wrap(err, "int")
 				}
 				return nil
@@ -342,7 +342,7 @@ func decodePutRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 		return nil
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
-			Name: "roleId",
+			Name: "roleID",
 			In:   "path",
 			Err:  err,
 		}

@@ -17,7 +17,7 @@ func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
 	rolesReturn := make(api.GetRolesOKApplicationJSON, 0, len(roles))
 	for _, role := range roles {
 		rolesReturn = append(rolesReturn, api.Role{
-			RoleId: role.RoleID,
+			RoleID: role.RoleID,
 			RoleName: role.RoleName,
 		})
 	}
@@ -35,5 +35,5 @@ func (s *Service) PostRoles(ctx context.Context, req api.OptRoleNew) (api.PostRo
 		}
 		return &api.PostRolesInternalServerError{}, ErrDatabase
 	}
-	return &api.Role{RoleId: role.RoleID, RoleName: req.Value.RoleName}, nil
+	return &api.Role{RoleID: role.RoleID, RoleName: req.Value.RoleName}, nil
 }

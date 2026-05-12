@@ -35,7 +35,7 @@ func (UnimplementedHandler) GetPerms(ctx context.Context) (r GetPermsRes, _ erro
 //
 // Get all permissions the role has.
 //
-// GET /roles/{roleId}/perms
+// GET /roles/{roleID}/perms
 func (UnimplementedHandler) GetRolePerms(ctx context.Context, params GetRolePermsParams) (r GetRolePermsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
@@ -53,7 +53,7 @@ func (UnimplementedHandler) GetRoles(ctx context.Context) (r GetRolesRes, _ erro
 //
 // Get info about user.
 //
-// GET /users/{userId}
+// GET /users/{userID}
 func (UnimplementedHandler) GetUserID(ctx context.Context, params GetUserIDParams) error {
 	return ht.ErrNotImplemented
 }
@@ -71,7 +71,7 @@ func (UnimplementedHandler) GetUsers(ctx context.Context) (r GetUsersRes, _ erro
 //
 // Patch perms for role.
 //
-// PATCH /roles/{roleId}/perms
+// PATCH /roles/{roleID}/perms
 func (UnimplementedHandler) PatchRolePerms(ctx context.Context, req OptPermDiff, params PatchRolePermsParams) (r PatchRolePermsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
@@ -98,7 +98,7 @@ func (UnimplementedHandler) PostUsers(ctx context.Context, req OptUserNew) (r Po
 //
 // Set perms for role.
 //
-// PUT /roles/{roleId}/perms
+// PUT /roles/{roleID}/perms
 func (UnimplementedHandler) PutRolePerms(ctx context.Context, req PermArray, params PutRolePermsParams) (r PutRolePermsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }

@@ -167,7 +167,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 
-					// Param: "roleId"
+					// Param: "roleID"
 					// Match until "/"
 					idx := strings.IndexByte(elem, '/')
 					if idx < 0 {
@@ -253,7 +253,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 
-					// Param: "userId"
+					// Param: "userID"
 					// Leaf parameter, slashes are prohibited
 					idx := strings.IndexByte(elem, '/')
 					if idx >= 0 {
@@ -474,7 +474,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						break
 					}
 
-					// Param: "roleId"
+					// Param: "roleID"
 					// Match until "/"
 					idx := strings.IndexByte(elem, '/')
 					if idx < 0 {
@@ -503,7 +503,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.summary = "Get all permissions the role has"
 								r.operationID = "get-role-perms"
 								r.operationGroup = ""
-								r.pathPattern = "/roles/{roleId}/perms"
+								r.pathPattern = "/roles/{roleID}/perms"
 								r.args = args
 								r.count = 1
 								return r, true
@@ -512,7 +512,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.summary = "Patch perms for role"
 								r.operationID = "patch-role-perms"
 								r.operationGroup = ""
-								r.pathPattern = "/roles/{roleId}/perms"
+								r.pathPattern = "/roles/{roleID}/perms"
 								r.args = args
 								r.count = 1
 								return r, true
@@ -521,7 +521,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.summary = "Set perms for role"
 								r.operationID = "put-role-perms"
 								r.operationGroup = ""
-								r.pathPattern = "/roles/{roleId}/perms"
+								r.pathPattern = "/roles/{roleID}/perms"
 								r.args = args
 								r.count = 1
 								return r, true
@@ -575,7 +575,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						break
 					}
 
-					// Param: "userId"
+					// Param: "userID"
 					// Leaf parameter, slashes are prohibited
 					idx := strings.IndexByte(elem, '/')
 					if idx >= 0 {
@@ -592,7 +592,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							r.summary = "Get info about user"
 							r.operationID = "get-user-id"
 							r.operationGroup = ""
-							r.pathPattern = "/users/{userId}"
+							r.pathPattern = "/users/{userID}"
 							r.args = args
 							r.count = 1
 							return r, true

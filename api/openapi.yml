@@ -18,8 +18,8 @@ components:
       scheme: bearer
       bearerFormat: opaque
   parameters:
-    userId:
-      name: userId
+    userID:
+      name: userID
       description: Used to identify a user
       in: path
       required: true
@@ -28,8 +28,8 @@ components:
         format: int64
         minimum: 0
 
-    roleId:
-      name: roleId
+    roleID:
+      name: roleID
       description: Identify role
       in: path
       required: true
@@ -43,46 +43,46 @@ components:
     User:
       type: object
       properties:
-        userId:
+        userID:
           type: integer
           format: int64
         userName:
           type: string
-        roleId:
+        roleID:
           type: integer
           format: int32
       required:
         - userName
-        - roleId
-        - userId
+        - roleID
+        - userID
     UserNew:
       type: object
       properties:
         userName:
           type: string
-        roleId:
+        roleID:
           type: integer
           format: int32
       required:
         - userName
-        - roleId
+        - roleID
     UserNewReturn:
       type: object
       properties:
-        userId:
+        userID:
           type: integer
           format: int64
         userName:
           type: string
-        roleId:
+        roleID:
           type: integer
           format: int32
         token:
           type: string
       required:
-        - userId
+        - userID
         - userName
-        - roleId
+        - roleID
         - token
 
 
@@ -99,23 +99,23 @@ components:
       properties:
         roleName:
           type: string
-        roleId:
+        roleID:
           type: integer
           format: int32
       required:
         - roleName
-        - roleId
+        - roleID
 
     ### Permission schemas
     PermWithName:
       type: object
       properties:
-        permId:
+        permID:
           $ref: "#/components/schemas/Perm"
         permName:
           type: string
       required:
-        - permId
+        - permID
         - permName
     Perm:
       type: integer
@@ -186,9 +186,9 @@ paths:
         "406": {}
         "409": {}
         "500": {}
-  /users/{userId}:
+  /users/{userID}:
     parameters:
-      - $ref: "#/components/parameters/userId"
+      - $ref: "#/components/parameters/userID"
     get:
       summary: Get info about user
       operationId: get-user-id
@@ -236,9 +236,9 @@ paths:
 
 
 
-  /roles/{roleId}/perms:
+  /roles/{roleID}/perms:
     parameters:
-      - $ref: "#/components/parameters/roleId"
+      - $ref: "#/components/parameters/roleID"
     get:
       summary: Get all permissions the role has
       operationId: get-role-perms

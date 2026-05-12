@@ -333,14 +333,14 @@ func (s *Server) handleGetPermsRequest(args [0]string, argsEscaped bool, w http.
 //
 // Get all permissions the role has.
 //
-// GET /roles/{roleId}/perms
+// GET /roles/{roleID}/perms
 func (s *Server) handleGetRolePermsRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-role-perms"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/roles/{roleId}/perms"),
+		semconv.HTTPRouteKey.String("/roles/{roleID}/perms"),
 	}
 	// Add attributes from config.
 	otelAttrs = append(otelAttrs, s.cfg.Attributes...)
@@ -473,9 +473,9 @@ func (s *Server) handleGetRolePermsRequest(args [1]string, argsEscaped bool, w h
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
-					Name: "roleId",
+					Name: "roleID",
 					In:   "path",
-				}: params.RoleId,
+				}: params.RoleID,
 			},
 			Raw: r,
 		}
@@ -692,14 +692,14 @@ func (s *Server) handleGetRolesRequest(args [0]string, argsEscaped bool, w http.
 //
 // Get info about user.
 //
-// GET /users/{userId}
+// GET /users/{userID}
 func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-user-id"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/users/{userId}"),
+		semconv.HTTPRouteKey.String("/users/{userID}"),
 	}
 	// Add attributes from config.
 	otelAttrs = append(otelAttrs, s.cfg.Attributes...)
@@ -832,9 +832,9 @@ func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
-					Name: "userId",
+					Name: "userID",
 					In:   "path",
-				}: params.UserId,
+				}: params.UserID,
 			},
 			Raw: r,
 		}
@@ -1051,14 +1051,14 @@ func (s *Server) handleGetUsersRequest(args [0]string, argsEscaped bool, w http.
 //
 // Patch perms for role.
 //
-// PATCH /roles/{roleId}/perms
+// PATCH /roles/{roleID}/perms
 func (s *Server) handlePatchRolePermsRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("patch-role-perms"),
 		semconv.HTTPRequestMethodKey.String("PATCH"),
-		semconv.HTTPRouteKey.String("/roles/{roleId}/perms"),
+		semconv.HTTPRouteKey.String("/roles/{roleID}/perms"),
 	}
 	// Add attributes from config.
 	otelAttrs = append(otelAttrs, s.cfg.Attributes...)
@@ -1206,9 +1206,9 @@ func (s *Server) handlePatchRolePermsRequest(args [1]string, argsEscaped bool, w
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
-					Name: "roleId",
+					Name: "roleID",
 					In:   "path",
-				}: params.RoleId,
+				}: params.RoleID,
 			},
 			Raw: r,
 		}
@@ -1583,14 +1583,14 @@ func (s *Server) handlePostUsersRequest(args [0]string, argsEscaped bool, w http
 //
 // Set perms for role.
 //
-// PUT /roles/{roleId}/perms
+// PUT /roles/{roleID}/perms
 func (s *Server) handlePutRolePermsRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("put-role-perms"),
 		semconv.HTTPRequestMethodKey.String("PUT"),
-		semconv.HTTPRouteKey.String("/roles/{roleId}/perms"),
+		semconv.HTTPRouteKey.String("/roles/{roleID}/perms"),
 	}
 	// Add attributes from config.
 	otelAttrs = append(otelAttrs, s.cfg.Attributes...)
@@ -1738,9 +1738,9 @@ func (s *Server) handlePutRolePermsRequest(args [1]string, argsEscaped bool, w h
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
-					Name: "roleId",
+					Name: "roleID",
 					In:   "path",
-				}: params.RoleId,
+				}: params.RoleID,
 			},
 			Raw: r,
 		}

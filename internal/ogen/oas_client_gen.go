@@ -44,7 +44,7 @@ type Invoker interface {
 	//
 	// Get all permissions the role has.
 	//
-	// GET /roles/{roleId}/perms
+	// GET /roles/{roleID}/perms
 	GetRolePerms(ctx context.Context, params GetRolePermsParams) (GetRolePermsRes, error)
 	// GetRoles invokes get-roles operation.
 	//
@@ -56,7 +56,7 @@ type Invoker interface {
 	//
 	// Get info about user.
 	//
-	// GET /users/{userId}
+	// GET /users/{userID}
 	GetUserID(ctx context.Context, params GetUserIDParams) error
 	// GetUsers invokes get-users operation.
 	//
@@ -68,7 +68,7 @@ type Invoker interface {
 	//
 	// Patch perms for role.
 	//
-	// PATCH /roles/{roleId}/perms
+	// PATCH /roles/{roleID}/perms
 	PatchRolePerms(ctx context.Context, request OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
 	// PostRoles invokes post-roles operation.
 	//
@@ -86,7 +86,7 @@ type Invoker interface {
 	//
 	// Set perms for role.
 	//
-	// PUT /roles/{roleId}/perms
+	// PUT /roles/{roleID}/perms
 	PutRolePerms(ctx context.Context, request PermArray, params PutRolePermsParams) (PutRolePermsRes, error)
 }
 
@@ -316,7 +316,7 @@ func (c *Client) sendGetPerms(ctx context.Context) (res GetPermsRes, err error) 
 //
 // Get all permissions the role has.
 //
-// GET /roles/{roleId}/perms
+// GET /roles/{roleID}/perms
 func (c *Client) GetRolePerms(ctx context.Context, params GetRolePermsParams) (GetRolePermsRes, error) {
 	res, err := c.sendGetRolePerms(ctx, params)
 	return res, err
@@ -326,7 +326,7 @@ func (c *Client) sendGetRolePerms(ctx context.Context, params GetRolePermsParams
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-role-perms"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.URLTemplateKey.String("/roles/{roleId}/perms"),
+		semconv.URLTemplateKey.String("/roles/{roleID}/perms"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -362,14 +362,14 @@ func (c *Client) sendGetRolePerms(ctx context.Context, params GetRolePermsParams
 	var pathParts [3]string
 	pathParts[0] = "/roles/"
 	{
-		// Encode "roleId" parameter.
+		// Encode "roleID" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "roleId",
+			Param:   "roleID",
 			Style:   uri.PathStyleSimple,
 			Explode: false,
 		})
 		if err := func() error {
-			return e.EncodeValue(conv.Int32ToString(params.RoleId))
+			return e.EncodeValue(conv.Int32ToString(params.RoleID))
 		}(); err != nil {
 			return res, errors.Wrap(err, "encode path")
 		}
@@ -549,7 +549,7 @@ func (c *Client) sendGetRoles(ctx context.Context) (res GetRolesRes, err error) 
 //
 // Get info about user.
 //
-// GET /users/{userId}
+// GET /users/{userID}
 func (c *Client) GetUserID(ctx context.Context, params GetUserIDParams) error {
 	_, err := c.sendGetUserID(ctx, params)
 	return err
@@ -559,7 +559,7 @@ func (c *Client) sendGetUserID(ctx context.Context, params GetUserIDParams) (res
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-user-id"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.URLTemplateKey.String("/users/{userId}"),
+		semconv.URLTemplateKey.String("/users/{userID}"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -595,14 +595,14 @@ func (c *Client) sendGetUserID(ctx context.Context, params GetUserIDParams) (res
 	var pathParts [2]string
 	pathParts[0] = "/users/"
 	{
-		// Encode "userId" parameter.
+		// Encode "userID" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "userId",
+			Param:   "userID",
 			Style:   uri.PathStyleSimple,
 			Explode: false,
 		})
 		if err := func() error {
-			return e.EncodeValue(conv.Int64ToString(params.UserId))
+			return e.EncodeValue(conv.Int64ToString(params.UserID))
 		}(); err != nil {
 			return res, errors.Wrap(err, "encode path")
 		}
@@ -781,7 +781,7 @@ func (c *Client) sendGetUsers(ctx context.Context) (res GetUsersRes, err error) 
 //
 // Patch perms for role.
 //
-// PATCH /roles/{roleId}/perms
+// PATCH /roles/{roleID}/perms
 func (c *Client) PatchRolePerms(ctx context.Context, request OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error) {
 	res, err := c.sendPatchRolePerms(ctx, request, params)
 	return res, err
@@ -791,7 +791,7 @@ func (c *Client) sendPatchRolePerms(ctx context.Context, request OptPermDiff, pa
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("patch-role-perms"),
 		semconv.HTTPRequestMethodKey.String("PATCH"),
-		semconv.URLTemplateKey.String("/roles/{roleId}/perms"),
+		semconv.URLTemplateKey.String("/roles/{roleID}/perms"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -827,14 +827,14 @@ func (c *Client) sendPatchRolePerms(ctx context.Context, request OptPermDiff, pa
 	var pathParts [3]string
 	pathParts[0] = "/roles/"
 	{
-		// Encode "roleId" parameter.
+		// Encode "roleID" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "roleId",
+			Param:   "roleID",
 			Style:   uri.PathStyleSimple,
 			Explode: false,
 		})
 		if err := func() error {
-			return e.EncodeValue(conv.Int32ToString(params.RoleId))
+			return e.EncodeValue(conv.Int32ToString(params.RoleID))
 		}(); err != nil {
 			return res, errors.Wrap(err, "encode path")
 		}
@@ -1097,7 +1097,7 @@ func (c *Client) sendPostUsers(ctx context.Context, request OptUserNew) (res Pos
 //
 // Set perms for role.
 //
-// PUT /roles/{roleId}/perms
+// PUT /roles/{roleID}/perms
 func (c *Client) PutRolePerms(ctx context.Context, request PermArray, params PutRolePermsParams) (PutRolePermsRes, error) {
 	res, err := c.sendPutRolePerms(ctx, request, params)
 	return res, err
@@ -1107,7 +1107,7 @@ func (c *Client) sendPutRolePerms(ctx context.Context, request PermArray, params
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("put-role-perms"),
 		semconv.HTTPRequestMethodKey.String("PUT"),
-		semconv.URLTemplateKey.String("/roles/{roleId}/perms"),
+		semconv.URLTemplateKey.String("/roles/{roleID}/perms"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -1143,14 +1143,14 @@ func (c *Client) sendPutRolePerms(ctx context.Context, request PermArray, params
 	var pathParts [3]string
 	pathParts[0] = "/roles/"
 	{
-		// Encode "roleId" parameter.
+		// Encode "roleID" parameter.
 		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "roleId",
+			Param:   "roleID",
 			Style:   uri.PathStyleSimple,
 			Explode: false,
 		})
 		if err := func() error {
-			return e.EncodeValue(conv.Int32ToString(params.RoleId))
+			return e.EncodeValue(conv.Int32ToString(params.RoleID))
 		}(); err != nil {
 			return res, errors.Wrap(err, "encode path")
 		}

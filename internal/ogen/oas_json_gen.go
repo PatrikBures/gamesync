@@ -478,8 +478,8 @@ func (s *PermWithName) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *PermWithName) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("permId")
-		s.PermId.Encode(e)
+		e.FieldStart("permID")
+		s.PermID.Encode(e)
 	}
 	{
 		e.FieldStart("permName")
@@ -488,7 +488,7 @@ func (s *PermWithName) encodeFields(e *jx.Encoder) {
 }
 
 var jsonFieldsNameOfPermWithName = [2]string{
-	0: "permId",
+	0: "permID",
 	1: "permName",
 }
 
@@ -501,15 +501,15 @@ func (s *PermWithName) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "permId":
+		case "permID":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				if err := s.PermId.Decode(d); err != nil {
+				if err := s.PermID.Decode(d); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"permId\"")
+				return errors.Wrap(err, "decode field \"permID\"")
 			}
 		case "permName":
 			requiredBitSet[0] |= 1 << 1
@@ -593,14 +593,14 @@ func (s *Role) encodeFields(e *jx.Encoder) {
 		e.Str(s.RoleName)
 	}
 	{
-		e.FieldStart("roleId")
-		e.Int32(s.RoleId)
+		e.FieldStart("roleID")
+		e.Int32(s.RoleID)
 	}
 }
 
 var jsonFieldsNameOfRole = [2]string{
 	0: "roleName",
-	1: "roleId",
+	1: "roleID",
 }
 
 // Decode decodes Role from json.
@@ -624,17 +624,17 @@ func (s *Role) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"roleName\"")
 			}
-		case "roleId":
+		case "roleID":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Int32()
-				s.RoleId = int32(v)
+				s.RoleID = int32(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"roleId\"")
+				return errors.Wrap(err, "decode field \"roleID\"")
 			}
 		default:
 			return d.Skip()
@@ -798,23 +798,23 @@ func (s *User) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *User) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("userId")
-		e.Int64(s.UserId)
+		e.FieldStart("userID")
+		e.Int64(s.UserID)
 	}
 	{
 		e.FieldStart("userName")
 		e.Str(s.UserName)
 	}
 	{
-		e.FieldStart("roleId")
-		e.Int32(s.RoleId)
+		e.FieldStart("roleID")
+		e.Int32(s.RoleID)
 	}
 }
 
 var jsonFieldsNameOfUser = [3]string{
-	0: "userId",
+	0: "userID",
 	1: "userName",
-	2: "roleId",
+	2: "roleID",
 }
 
 // Decode decodes User from json.
@@ -826,17 +826,17 @@ func (s *User) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "userId":
+		case "userID":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
 				v, err := d.Int64()
-				s.UserId = int64(v)
+				s.UserID = int64(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"userId\"")
+				return errors.Wrap(err, "decode field \"userID\"")
 			}
 		case "userName":
 			requiredBitSet[0] |= 1 << 1
@@ -850,17 +850,17 @@ func (s *User) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"userName\"")
 			}
-		case "roleId":
+		case "roleID":
 			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Int32()
-				s.RoleId = int32(v)
+				s.RoleID = int32(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"roleId\"")
+				return errors.Wrap(err, "decode field \"roleID\"")
 			}
 		default:
 			return d.Skip()
@@ -932,14 +932,14 @@ func (s *UserNew) encodeFields(e *jx.Encoder) {
 		e.Str(s.UserName)
 	}
 	{
-		e.FieldStart("roleId")
-		e.Int32(s.RoleId)
+		e.FieldStart("roleID")
+		e.Int32(s.RoleID)
 	}
 }
 
 var jsonFieldsNameOfUserNew = [2]string{
 	0: "userName",
-	1: "roleId",
+	1: "roleID",
 }
 
 // Decode decodes UserNew from json.
@@ -963,17 +963,17 @@ func (s *UserNew) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"userName\"")
 			}
-		case "roleId":
+		case "roleID":
 			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Int32()
-				s.RoleId = int32(v)
+				s.RoleID = int32(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"roleId\"")
+				return errors.Wrap(err, "decode field \"roleID\"")
 			}
 		default:
 			return d.Skip()
@@ -1041,16 +1041,16 @@ func (s *UserNewReturn) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *UserNewReturn) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("userId")
-		e.Int64(s.UserId)
+		e.FieldStart("userID")
+		e.Int64(s.UserID)
 	}
 	{
 		e.FieldStart("userName")
 		e.Str(s.UserName)
 	}
 	{
-		e.FieldStart("roleId")
-		e.Int32(s.RoleId)
+		e.FieldStart("roleID")
+		e.Int32(s.RoleID)
 	}
 	{
 		e.FieldStart("token")
@@ -1059,9 +1059,9 @@ func (s *UserNewReturn) encodeFields(e *jx.Encoder) {
 }
 
 var jsonFieldsNameOfUserNewReturn = [4]string{
-	0: "userId",
+	0: "userID",
 	1: "userName",
-	2: "roleId",
+	2: "roleID",
 	3: "token",
 }
 
@@ -1074,17 +1074,17 @@ func (s *UserNewReturn) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "userId":
+		case "userID":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
 				v, err := d.Int64()
-				s.UserId = int64(v)
+				s.UserID = int64(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"userId\"")
+				return errors.Wrap(err, "decode field \"userID\"")
 			}
 		case "userName":
 			requiredBitSet[0] |= 1 << 1
@@ -1098,17 +1098,17 @@ func (s *UserNewReturn) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"userName\"")
 			}
-		case "roleId":
+		case "roleID":
 			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Int32()
-				s.RoleId = int32(v)
+				s.RoleID = int32(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"roleId\"")
+				return errors.Wrap(err, "decode field \"roleID\"")
 			}
 		case "token":
 			requiredBitSet[0] |= 1 << 3
