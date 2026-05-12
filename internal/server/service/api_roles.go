@@ -24,7 +24,7 @@ func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
 	return &rolesReturn, nil
 }
 
-func (s *Service) PostRoles(ctx context.Context, req api.OptRoleNew) (api.PostRolesRes, error) {
+func (s *Service) PostRoles(ctx context.Context, req api.OptRoleName) (api.PostRolesRes, error) {
 	if !req.Set {
 		return &api.PostRolesNotAcceptable{}, ErrMissingBody
 	}

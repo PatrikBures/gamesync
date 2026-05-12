@@ -31,7 +31,7 @@ func encodePatchRolePermsRequest(
 }
 
 func encodePostRolesRequest(
-	req OptRoleNew,
+	req OptRoleName,
 	r *http.Request,
 ) error {
 	const contentType = "application/json"
