@@ -40,6 +40,21 @@ components:
   schemas:
 
     ### User schemas
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        userName:
+          type: string
+        roleId:
+          type: integer
+          format: int32
+      required:
+        - userName
+        - roleId
+        - userId
     UserNew:
       type: object
       properties:
@@ -136,6 +151,8 @@ paths:
             application/json:
               schema:
                 type: array
+                items:
+                  $ref: "#/components/schemas/User"
         "500": {}
     post:
       summary: Create new user

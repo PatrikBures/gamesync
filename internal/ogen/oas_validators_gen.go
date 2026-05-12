@@ -4,7 +4,6 @@ package api
 
 import (
 	"github.com/go-faster/errors"
-	"github.com/go-faster/jx"
 )
 
 func (s GetRolesOKApplicationJSON) Validate() error {
@@ -16,7 +15,7 @@ func (s GetRolesOKApplicationJSON) Validate() error {
 }
 
 func (s GetUsersOKApplicationJSON) Validate() error {
-	alias := ([]jx.Raw)(s)
+	alias := ([]User)(s)
 	if alias == nil {
 		return errors.New("nil is invalid value")
 	}

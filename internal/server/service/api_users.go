@@ -16,7 +16,16 @@ func (s *Service) GetUserID(ctx context.Context, params api.GetUserIDParams) err
 	return nil
 }
 func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
-	return nil, nil
+	users, err := s.q.User.WithContext(ctx).Find()
+	if err != nil {
+		return &api.GetUsersInternalServerError{}, ErrDatabase
+	}
+	usersReturn := make(api.GetUsersOKApplicationJSON, len(users))
+	for _, user := range users {
+		usersReturn = append(usersReturn, api.User{UserId: user.UserID, UserName: user.UserName, RoleId: user.RoleID})
+	}
+
+	return &usersReturn, nil
 }
 
 func (s *Service) PostUsers(ctx context.Context, req api.OptUserNew) (result api.PostUsersRes, err error) {

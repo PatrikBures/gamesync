@@ -2,10 +2,6 @@
 
 package api
 
-import (
-	"github.com/go-faster/jx"
-)
-
 type BearerAuth struct {
 	Token string
 	Roles []string
@@ -56,7 +52,7 @@ type GetUsersInternalServerError struct{}
 
 func (*GetUsersInternalServerError) getUsersRes() {}
 
-type GetUsersOKApplicationJSON []jx.Raw
+type GetUsersOKApplicationJSON []User
 
 func (*GetUsersOKApplicationJSON) getUsersRes() {}
 
@@ -323,6 +319,43 @@ func (s *RoleNew) GetRoleName() string {
 // SetRoleName sets the value of RoleName.
 func (s *RoleNew) SetRoleName(val string) {
 	s.RoleName = val
+}
+
+// Ref: #/components/schemas/User
+type User struct {
+	UserId   int64  `json:"userId"`
+	UserName string `json:"userName"`
+	RoleId   int32  `json:"roleId"`
+}
+
+// GetUserId returns the value of UserId.
+func (s *User) GetUserId() int64 {
+	return s.UserId
+}
+
+// GetUserName returns the value of UserName.
+func (s *User) GetUserName() string {
+	return s.UserName
+}
+
+// GetRoleId returns the value of RoleId.
+func (s *User) GetRoleId() int32 {
+	return s.RoleId
+}
+
+// SetUserId sets the value of UserId.
+func (s *User) SetUserId(val int64) {
+	s.UserId = val
+}
+
+// SetUserName sets the value of UserName.
+func (s *User) SetUserName(val string) {
+	s.UserName = val
+}
+
+// SetRoleId sets the value of RoleId.
+func (s *User) SetRoleId(val int32) {
+	s.RoleId = val
 }
 
 // Ref: #/components/schemas/UserNew
