@@ -22,6 +22,15 @@ func (UnimplementedHandler) GetHealth(ctx context.Context) error {
 	return ht.ErrNotImplemented
 }
 
+// GetPerms implements get-perms operation.
+//
+// Get all available permissions.
+//
+// GET /perms
+func (UnimplementedHandler) GetPerms(ctx context.Context) (r GetPermsRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetRolePerms implements get-role-perms operation.
 //
 // Get all permissions the role has.

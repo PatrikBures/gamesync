@@ -30,6 +30,15 @@ func (s *BearerAuth) SetRoles(val []string) {
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
 
+// GetPermsInternalServerError is response for GetPerms operation.
+type GetPermsInternalServerError struct{}
+
+func (*GetPermsInternalServerError) getPermsRes() {}
+
+type GetPermsOKApplicationJSON []PermWithName
+
+func (*GetPermsOKApplicationJSON) getPermsRes() {}
+
 // GetRolePermsInternalServerError is response for GetRolePerms operation.
 type GetRolePermsInternalServerError struct{}
 
@@ -236,6 +245,32 @@ func (s *PermDiff) SetAdd(val PermArray) {
 // SetRemove sets the value of Remove.
 func (s *PermDiff) SetRemove(val PermArray) {
 	s.Remove = val
+}
+
+// Ref: #/components/schemas/PermWithName
+type PermWithName struct {
+	PermId   Perm   `json:"permId"`
+	PermName string `json:"permName"`
+}
+
+// GetPermId returns the value of PermId.
+func (s *PermWithName) GetPermId() Perm {
+	return s.PermId
+}
+
+// GetPermName returns the value of PermName.
+func (s *PermWithName) GetPermName() string {
+	return s.PermName
+}
+
+// SetPermId sets the value of PermId.
+func (s *PermWithName) SetPermId(val Perm) {
+	s.PermId = val
+}
+
+// SetPermName sets the value of PermName.
+func (s *PermWithName) SetPermName(val string) {
+	s.PermName = val
 }
 
 // PostRolesConflict is response for PostRoles operation.
