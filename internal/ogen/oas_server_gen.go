@@ -24,7 +24,7 @@ type Handler interface {
 	//
 	// Get all permissions the role has.
 	//
-	// GET /roles/{roleId}/perms
+	// GET /roles/{roleID}/perms
 	GetRolePerms(ctx context.Context, params GetRolePermsParams) (GetRolePermsRes, error)
 	// GetRoles implements get-roles operation.
 	//
@@ -36,7 +36,7 @@ type Handler interface {
 	//
 	// Get info about user.
 	//
-	// GET /users/{userId}
+	// GET /users/{userID}
 	GetUserID(ctx context.Context, params GetUserIDParams) error
 	// GetUsers implements get-users operation.
 	//
@@ -48,7 +48,7 @@ type Handler interface {
 	//
 	// Patch perms for role.
 	//
-	// PATCH /roles/{roleId}/perms
+	// PATCH /roles/{roleID}/perms
 	PatchRolePerms(ctx context.Context, req OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
 	// PostRoles implements post-roles operation.
 	//
@@ -66,7 +66,7 @@ type Handler interface {
 	//
 	// Set perms for role.
 	//
-	// PUT /roles/{roleId}/perms
+	// PUT /roles/{roleID}/perms
 	PutRolePerms(ctx context.Context, req PermArray, params PutRolePermsParams) (PutRolePermsRes, error)
 }
 

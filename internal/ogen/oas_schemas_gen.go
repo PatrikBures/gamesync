@@ -249,13 +249,13 @@ func (s *PermDiff) SetRemove(val PermArray) {
 
 // Ref: #/components/schemas/PermWithName
 type PermWithName struct {
-	PermId   Perm   `json:"permId"`
+	PermID   Perm   `json:"permID"`
 	PermName string `json:"permName"`
 }
 
-// GetPermId returns the value of PermId.
-func (s *PermWithName) GetPermId() Perm {
-	return s.PermId
+// GetPermID returns the value of PermID.
+func (s *PermWithName) GetPermID() Perm {
+	return s.PermID
 }
 
 // GetPermName returns the value of PermName.
@@ -263,9 +263,9 @@ func (s *PermWithName) GetPermName() string {
 	return s.PermName
 }
 
-// SetPermId sets the value of PermId.
-func (s *PermWithName) SetPermId(val Perm) {
-	s.PermId = val
+// SetPermID sets the value of PermID.
+func (s *PermWithName) SetPermID(val Perm) {
+	s.PermID = val
 }
 
 // SetPermName sets the value of PermName.
@@ -316,7 +316,7 @@ func (*PutRolePermsNotAcceptable) putRolePermsRes() {}
 // Ref: #/components/schemas/Role
 type Role struct {
 	RoleName string `json:"roleName"`
-	RoleId   int32  `json:"roleId"`
+	RoleID   int32  `json:"roleID"`
 }
 
 // GetRoleName returns the value of RoleName.
@@ -324,9 +324,9 @@ func (s *Role) GetRoleName() string {
 	return s.RoleName
 }
 
-// GetRoleId returns the value of RoleId.
-func (s *Role) GetRoleId() int32 {
-	return s.RoleId
+// GetRoleID returns the value of RoleID.
+func (s *Role) GetRoleID() int32 {
+	return s.RoleID
 }
 
 // SetRoleName sets the value of RoleName.
@@ -334,9 +334,9 @@ func (s *Role) SetRoleName(val string) {
 	s.RoleName = val
 }
 
-// SetRoleId sets the value of RoleId.
-func (s *Role) SetRoleId(val int32) {
-	s.RoleId = val
+// SetRoleID sets the value of RoleID.
+func (s *Role) SetRoleID(val int32) {
+	s.RoleID = val
 }
 
 func (*Role) postRolesRes() {}
@@ -358,14 +358,14 @@ func (s *RoleNew) SetRoleName(val string) {
 
 // Ref: #/components/schemas/User
 type User struct {
-	UserId   int64  `json:"userId"`
+	UserID   int64  `json:"userID"`
 	UserName string `json:"userName"`
-	RoleId   int32  `json:"roleId"`
+	RoleID   int32  `json:"roleID"`
 }
 
-// GetUserId returns the value of UserId.
-func (s *User) GetUserId() int64 {
-	return s.UserId
+// GetUserID returns the value of UserID.
+func (s *User) GetUserID() int64 {
+	return s.UserID
 }
 
 // GetUserName returns the value of UserName.
@@ -373,14 +373,14 @@ func (s *User) GetUserName() string {
 	return s.UserName
 }
 
-// GetRoleId returns the value of RoleId.
-func (s *User) GetRoleId() int32 {
-	return s.RoleId
+// GetRoleID returns the value of RoleID.
+func (s *User) GetRoleID() int32 {
+	return s.RoleID
 }
 
-// SetUserId sets the value of UserId.
-func (s *User) SetUserId(val int64) {
-	s.UserId = val
+// SetUserID sets the value of UserID.
+func (s *User) SetUserID(val int64) {
+	s.UserID = val
 }
 
 // SetUserName sets the value of UserName.
@@ -388,15 +388,15 @@ func (s *User) SetUserName(val string) {
 	s.UserName = val
 }
 
-// SetRoleId sets the value of RoleId.
-func (s *User) SetRoleId(val int32) {
-	s.RoleId = val
+// SetRoleID sets the value of RoleID.
+func (s *User) SetRoleID(val int32) {
+	s.RoleID = val
 }
 
 // Ref: #/components/schemas/UserNew
 type UserNew struct {
 	UserName string `json:"userName"`
-	RoleId   int32  `json:"roleId"`
+	RoleID   int32  `json:"roleID"`
 }
 
 // GetUserName returns the value of UserName.
@@ -404,9 +404,9 @@ func (s *UserNew) GetUserName() string {
 	return s.UserName
 }
 
-// GetRoleId returns the value of RoleId.
-func (s *UserNew) GetRoleId() int32 {
-	return s.RoleId
+// GetRoleID returns the value of RoleID.
+func (s *UserNew) GetRoleID() int32 {
+	return s.RoleID
 }
 
 // SetUserName sets the value of UserName.
@@ -414,22 +414,22 @@ func (s *UserNew) SetUserName(val string) {
 	s.UserName = val
 }
 
-// SetRoleId sets the value of RoleId.
-func (s *UserNew) SetRoleId(val int32) {
-	s.RoleId = val
+// SetRoleID sets the value of RoleID.
+func (s *UserNew) SetRoleID(val int32) {
+	s.RoleID = val
 }
 
 // Ref: #/components/schemas/UserNewReturn
 type UserNewReturn struct {
-	UserId   int64  `json:"userId"`
+	UserID   int64  `json:"userID"`
 	UserName string `json:"userName"`
-	RoleId   int32  `json:"roleId"`
+	RoleID   int32  `json:"roleID"`
 	Token    string `json:"token"`
 }
 
-// GetUserId returns the value of UserId.
-func (s *UserNewReturn) GetUserId() int64 {
-	return s.UserId
+// GetUserID returns the value of UserID.
+func (s *UserNewReturn) GetUserID() int64 {
+	return s.UserID
 }
 
 // GetUserName returns the value of UserName.
@@ -437,9 +437,9 @@ func (s *UserNewReturn) GetUserName() string {
 	return s.UserName
 }
 
-// GetRoleId returns the value of RoleId.
-func (s *UserNewReturn) GetRoleId() int32 {
-	return s.RoleId
+// GetRoleID returns the value of RoleID.
+func (s *UserNewReturn) GetRoleID() int32 {
+	return s.RoleID
 }
 
 // GetToken returns the value of Token.
@@ -447,9 +447,9 @@ func (s *UserNewReturn) GetToken() string {
 	return s.Token
 }
 
-// SetUserId sets the value of UserId.
-func (s *UserNewReturn) SetUserId(val int64) {
-	s.UserId = val
+// SetUserID sets the value of UserID.
+func (s *UserNewReturn) SetUserID(val int64) {
+	s.UserID = val
 }
 
 // SetUserName sets the value of UserName.
@@ -457,9 +457,9 @@ func (s *UserNewReturn) SetUserName(val string) {
 	s.UserName = val
 }
 
-// SetRoleId sets the value of RoleId.
-func (s *UserNewReturn) SetRoleId(val int32) {
-	s.RoleId = val
+// SetRoleID sets the value of RoleID.
+func (s *UserNewReturn) SetRoleID(val int32) {
+	s.RoleID = val
 }
 
 // SetToken sets the value of Token.

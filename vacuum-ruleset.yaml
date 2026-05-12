@@ -4,3 +4,4 @@ rules:
   component-description: false
   operation-description: false
   oas3-missing-example: false
+  camel-case-properties: false

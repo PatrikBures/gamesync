@@ -17,7 +17,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 	add := make([]*model.RolePermission, len(req.Value.Add))
 	for _, a := range req.Value.Add {
 		r := &model.RolePermission{
-			RoleID: params.RoleId,
+			RoleID: params.RoleID,
 			PermID: int32(a),
 		}
 		add = append(add, r)

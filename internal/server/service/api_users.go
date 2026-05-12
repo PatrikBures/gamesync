@@ -22,7 +22,7 @@ func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
 	}
 	usersReturn := make(api.GetUsersOKApplicationJSON, 0, len(users))
 	for _, user := range users {
-		usersReturn = append(usersReturn, api.User{UserId: user.UserID, UserName: user.UserName, RoleId: user.RoleID})
+		usersReturn = append(usersReturn, api.User{UserID: user.UserID, UserName: user.UserName, RoleID: user.RoleID})
 	}
 
 	return &usersReturn, nil
@@ -34,7 +34,7 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserNew) (result api
 	}
 	user := model.User{
 		UserName: req.Value.UserName,
-		RoleID: req.Value.RoleId,
+		RoleID: req.Value.RoleID,
 	}
 	tx := s.q.Begin()
 	defer func() {
@@ -72,9 +72,9 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserNew) (result api
 	}
 
 	return &api.UserNewReturn{
-		UserId: user.UserID,
+		UserID: user.UserID,
 		UserName: user.UserName,
-		RoleId: user.RoleID,
+		RoleID: user.RoleID,
 		Token: token64,
 	}, nil
 }

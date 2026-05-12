@@ -14,7 +14,7 @@ func (s *Service) GetPerms(ctx context.Context) (api.GetPermsRes, error) {
 	permsReturn := make(api.GetPermsOKApplicationJSON, 0, len(perms))
 	for _, perm := range perms {
 		permsReturn = append(permsReturn, api.PermWithName{
-			PermId: api.Perm(perm.PermID),
+			PermID: api.Perm(perm.PermID),
 			PermName: perm.PermName,
 		})
 	}
