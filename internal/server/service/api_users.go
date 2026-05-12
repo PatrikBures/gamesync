@@ -20,7 +20,7 @@ func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
 	if err != nil {
 		return &api.GetUsersInternalServerError{}, ErrDatabase
 	}
-	usersReturn := make(api.GetUsersOKApplicationJSON, len(users))
+	usersReturn := make(api.GetUsersOKApplicationJSON, 0, len(users))
 	for _, user := range users {
 		usersReturn = append(usersReturn, api.User{UserId: user.UserID, UserName: user.UserName, RoleId: user.RoleID})
 	}
