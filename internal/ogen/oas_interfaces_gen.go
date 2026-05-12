@@ -13,6 +13,10 @@ type GetRolesRes interface {
 	getRolesRes()
 }
 
+type GetUserRes interface {
+	getUserRes()
+}
+
 type GetUsersRes interface {
 	getUsersRes()
 }

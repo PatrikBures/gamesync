@@ -53,8 +53,15 @@ type GetRolesOKApplicationJSON []Role
 
 func (*GetRolesOKApplicationJSON) getRolesRes() {}
 
-// GetUserIDOK is response for GetUserID operation.
-type GetUserIDOK struct{}
+// GetUserInternalServerError is response for GetUser operation.
+type GetUserInternalServerError struct{}
+
+func (*GetUserInternalServerError) getUserRes() {}
+
+// GetUserOK is response for GetUser operation.
+type GetUserOK struct{}
+
+func (*GetUserOK) getUserRes() {}
 
 // GetUsersInternalServerError is response for GetUsers operation.
 type GetUsersInternalServerError struct{}

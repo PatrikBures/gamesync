@@ -12,9 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *Service) GetUserID(ctx context.Context, params api.GetUserIDParams) error {
-	return nil
+func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.GetUserRes, error) {
+	return nil, nil
 }
+
 func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
 	users, err := s.q.User.WithContext(ctx).Find()
 	if err != nil {

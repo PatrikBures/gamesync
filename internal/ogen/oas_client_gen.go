@@ -52,12 +52,12 @@ type Invoker interface {
 	//
 	// GET /roles
 	GetRoles(ctx context.Context) (GetRolesRes, error)
-	// GetUserID invokes get-user-id operation.
+	// GetUser invokes get-user operation.
 	//
 	// Get info about user.
 	//
 	// GET /users/{userID}
-	GetUserID(ctx context.Context, params GetUserIDParams) error
+	GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error)
 	// GetUsers invokes get-users operation.
 	//
 	// Get all users.
@@ -545,19 +545,19 @@ func (c *Client) sendGetRoles(ctx context.Context) (res GetRolesRes, err error) 
 	return result, nil
 }
 
-// GetUserID invokes get-user-id operation.
+// GetUser invokes get-user operation.
 //
 // Get info about user.
 //
 // GET /users/{userID}
-func (c *Client) GetUserID(ctx context.Context, params GetUserIDParams) error {
-	_, err := c.sendGetUserID(ctx, params)
-	return err
+func (c *Client) GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error) {
+	res, err := c.sendGetUser(ctx, params)
+	return res, err
 }
 
-func (c *Client) sendGetUserID(ctx context.Context, params GetUserIDParams) (res *GetUserIDOK, err error) {
+func (c *Client) sendGetUser(ctx context.Context, params GetUserParams) (res GetUserRes, err error) {
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("get-user-id"),
+		otelogen.OperationID("get-user"),
 		semconv.HTTPRequestMethodKey.String("GET"),
 		semconv.URLTemplateKey.String("/users/{userID}"),
 	}
@@ -575,7 +575,7 @@ func (c *Client) sendGetUserID(ctx context.Context, params GetUserIDParams) (res
 	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
 
 	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, GetUserIDOperation,
+	ctx, span := c.cfg.Tracer.Start(ctx, GetUserOperation,
 		trace.WithAttributes(otelAttrs...),
 		clientSpanKind,
 	)
@@ -625,7 +625,7 @@ func (c *Client) sendGetUserID(ctx context.Context, params GetUserIDParams) (res
 		var satisfied bitset
 		{
 			stage = "Security:BearerAuth"
-			switch err := c.securityBearerAuth(ctx, GetUserIDOperation, r); {
+			switch err := c.securityBearerAuth(ctx, GetUserOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -662,7 +662,7 @@ func (c *Client) sendGetUserID(ctx context.Context, params GetUserIDParams) (res
 	defer body.Close()
 
 	stage = "DecodeResponse"
-	result, err := decodeGetUserIDResponse(resp)
+	result, err := decodeGetUserResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

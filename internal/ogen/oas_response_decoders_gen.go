@@ -172,11 +172,14 @@ func decodeGetRolesResponse(resp *http.Response) (res GetRolesRes, _ error) {
 	return res, validate.UnexpectedStatusCodeWithResponse(resp)
 }
 
-func decodeGetUserIDResponse(resp *http.Response) (res *GetUserIDOK, _ error) {
+func decodeGetUserResponse(resp *http.Response) (res GetUserRes, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
-		return &GetUserIDOK{}, nil
+		return &GetUserOK{}, nil
+	case 500:
+		// Code 500.
+		return &GetUserInternalServerError{}, nil
 	}
 	return res, validate.UnexpectedStatusCodeWithResponse(resp)
 }

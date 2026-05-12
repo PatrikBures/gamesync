@@ -191,11 +191,12 @@ paths:
       - $ref: "#/components/parameters/userID"
     get:
       summary: Get info about user
-      operationId: get-user-id
+      operationId: get-user
       tags:
         - Users
       responses:
         "200": {}
+        "500": {}
 
 
 

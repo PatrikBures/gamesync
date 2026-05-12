@@ -32,12 +32,12 @@ type Handler interface {
 	//
 	// GET /roles
 	GetRoles(ctx context.Context) (GetRolesRes, error)
-	// GetUserID implements get-user-id operation.
+	// GetUser implements get-user operation.
 	//
 	// Get info about user.
 	//
 	// GET /users/{userID}
-	GetUserID(ctx context.Context, params GetUserIDParams) error
+	GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error)
 	// GetUsers implements get-users operation.
 	//
 	// Get all users.
