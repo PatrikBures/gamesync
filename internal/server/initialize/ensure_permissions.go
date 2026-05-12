@@ -39,7 +39,9 @@ func EnsurePermissions(q *query.Query) (err error) {
 			slog.Info("already exists", "permission", *perm)
 			continue
 		}
-		tx.Permission.WithContext(ctx).Create(perm)
+		if err := tx.Permission.WithContext(ctx).Create(perm); err != nil {
+			return err
+		}
 		slog.Info("created", "permission", *perm)
 	}
 
@@ -48,7 +50,9 @@ func EnsurePermissions(q *query.Query) (err error) {
 			continue
 		}
 		perm := &model.Permission{PermID: c}
-		tx.Permission.WithContext(ctx).Delete(perm)
+		if _, err := tx.Permission.WithContext(ctx).Delete(perm); err != nil {
+			return nil
+		}
 		slog.Info("deleted", "permission", *perm)
 	}
 	return tx.Commit()

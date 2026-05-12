@@ -31,11 +31,3 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 func (s *Service) PutRolePerms(ctx context.Context, req api.PermArray, params api.PutRolePermsParams) (api.PutRolePermsRes, error) {
 	return nil, nil
 }
-
-func (s *Service) getPermsWithRole(ctx context.Context, roleId int32) ([]*model.RolePermission, error) {
-	return s.q.RolePermission.WithContext(ctx).
-		Where(s.q.RolePermission.RoleID.Eq(roleId)).
-		Order(s.q.RolePermission.RoleID.Asc()).
-		Find()
-}
-
