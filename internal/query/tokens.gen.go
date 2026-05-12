@@ -28,6 +28,7 @@ func newToken(db *gorm.DB, opts ...gen.DOOption) token {
 
 	tableName := _token.tokenDo.TableName()
 	_token.ALL = field.NewAsterisk(tableName)
+	_token.TokenID = field.NewInt64(tableName, "token_id")
 	_token.UserID = field.NewInt64(tableName, "user_id")
 	_token.TokenHash = field.NewField(tableName, "token_hash")
 
@@ -40,6 +41,7 @@ type token struct {
 	tokenDo tokenDo
 
 	ALL       field.Asterisk
+	TokenID   field.Int64
 	UserID    field.Int64
 	TokenHash field.Field
 
@@ -58,6 +60,7 @@ func (t token) As(alias string) *token {
 
 func (t *token) updateTableName(table string) *token {
 	t.ALL = field.NewAsterisk(table)
+	t.TokenID = field.NewInt64(table, "token_id")
 	t.UserID = field.NewInt64(table, "user_id")
 	t.TokenHash = field.NewField(table, "token_hash")
 
@@ -84,7 +87,8 @@ func (t *token) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *token) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 2)
+	t.fieldMap = make(map[string]field.Expr, 3)
+	t.fieldMap["token_id"] = t.TokenID
 	t.fieldMap["user_id"] = t.UserID
 	t.fieldMap["token_hash"] = t.TokenHash
 }

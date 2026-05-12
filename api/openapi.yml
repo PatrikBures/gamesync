@@ -10,6 +10,7 @@ tags:
   - name: Other
   - name: Users
   - name: Roles
+  - name: Perms
 components:
   securitySchemes:
     bearerAuth:
@@ -17,16 +18,43 @@ components:
       scheme: bearer
       bearerFormat: opaque
   parameters:
-    user_id:
+    userId:
+      name: userId
       description: Used to identify a user
-      name: user_id
       in: path
       required: true
       schema:
         type: integer
         format: int64
         minimum: 0
+
+    roleId:
+      name: roleId
+      description: Identify role
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
   schemas:
+
+    ### User schemas
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        userName:
+          type: string
+        roleId:
+          type: integer
+          format: int32
+      required:
+        - userName
+        - roleId
+        - userId
     UserNew:
       type: object
       properties:
@@ -56,6 +84,9 @@ components:
         - userName
         - roleId
         - token
+
+
+    ### Role schemas
     RoleNew:
       type: object
       properties:
@@ -74,6 +105,25 @@ components:
       required:
         - roleName
         - roleId
+
+    ### Permission schemas
+    Perm:
+      type: integer
+      format: int32
+    PermArray:
+      type: array
+      items: 
+        $ref: "#/components/schemas/Perm"
+    PermDiff:
+      type: object
+      properties:
+        add:
+          $ref: "#/components/schemas/PermArray" 
+        remove:
+          $ref: "#/components/schemas/PermArray" 
+      required:
+        - add
+        - remove
 
 
 security:
@@ -101,6 +151,8 @@ paths:
             application/json:
               schema:
                 type: array
+                items:
+                  $ref: "#/components/schemas/User"
         "500": {}
     post:
       summary: Create new user
@@ -122,9 +174,9 @@ paths:
         "406": {}
         "409": {}
         "500": {}
-  /users/{user_id}:
+  /users/{userId}:
     parameters:
-      - $ref: "#/components/parameters/user_id"
+      - $ref: "#/components/parameters/userId"
     get:
       summary: Get info about user
       operationId: get-user-id
@@ -147,7 +199,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Role"
-        "406": {}
         "500": {}
     post:
       summary: Create new role
@@ -168,3 +219,60 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RoleNew"
+
+
+
+  /roles/{roleId}/perms:
+    parameters:
+      - $ref: "#/components/parameters/roleId"
+    get:
+      summary: Get all permissions the role has
+      operationId: get-role-perms
+      tags:
+        - Perms
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PermArray"
+
+        "500": {}
+    patch:
+      summary: Patch perms for role
+      operationId: patch-role-perms
+      tags:
+        - Perms
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PermArray"
+        "406": {}
+        "500": {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PermDiff"
+    put:
+      summary: Set perms for role
+      operationId: put-role-perms
+      tags:
+        - Perms
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PermArray"
+        "406": {}
+        "500": {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PermArray"
+
+

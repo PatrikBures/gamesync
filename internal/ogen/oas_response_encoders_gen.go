@@ -18,6 +18,34 @@ func encodeGetHealthResponse(response *GetHealthOK, w http.ResponseWriter, span 
 	return nil
 }
 
+func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *PermArray:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
+
+		e := new(jx.Encoder)
+		if response != nil {
+			response.Encode(e)
+		}
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *GetRolePermsInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
 func encodeGetRolesResponse(response GetRolesRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *GetRolesOKApplicationJSON:
@@ -30,12 +58,6 @@ func encodeGetRolesResponse(response GetRolesRes, w http.ResponseWriter, span tr
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
-
-		return nil
-
-	case *GetRolesNotAcceptable:
-		w.WriteHeader(406)
-		span.SetStatus(codes.Error, http.StatusText(406))
 
 		return nil
 
@@ -73,6 +95,40 @@ func encodeGetUsersResponse(response GetUsersRes, w http.ResponseWriter, span tr
 		return nil
 
 	case *GetUsersInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
+func encodePatchRolePermsResponse(response PatchRolePermsRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *PermArray:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(201)
+		span.SetStatus(codes.Ok, http.StatusText(201))
+
+		e := new(jx.Encoder)
+		if response != nil {
+			response.Encode(e)
+		}
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *PatchRolePermsNotAcceptable:
+		w.WriteHeader(406)
+		span.SetStatus(codes.Error, http.StatusText(406))
+
+		return nil
+
+	case *PatchRolePermsInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
 
@@ -149,6 +205,40 @@ func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span 
 		return nil
 
 	case *PostUsersInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
+func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *PermArray:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(201)
+		span.SetStatus(codes.Ok, http.StatusText(201))
+
+		e := new(jx.Encoder)
+		if response != nil {
+			response.Encode(e)
+		}
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *PutRolePermsNotAcceptable:
+		w.WriteHeader(406)
+		span.SetStatus(codes.Error, http.StatusText(406))
+
+		return nil
+
+	case *PutRolePermsInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
 
