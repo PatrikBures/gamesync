@@ -18,6 +18,32 @@ func encodeGetHealthResponse(response *GetHealthOK, w http.ResponseWriter, span 
 	return nil
 }
 
+func encodeGetPermsResponse(response GetPermsRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *GetPermsOKApplicationJSON:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *GetPermsInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
 func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *PermArray:

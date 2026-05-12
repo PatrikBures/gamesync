@@ -107,6 +107,16 @@ components:
         - roleId
 
     ### Permission schemas
+    PermWithName:
+      type: object
+      properties:
+        permId:
+          $ref: "#/components/schemas/Perm"
+        permName:
+          type: string
+      required:
+        - permId
+        - permName
     Perm:
       type: integer
       format: int32
@@ -139,6 +149,8 @@ paths:
       security: []
       responses:
         "200": {}
+
+
   /users:
     get:
       summary: Get all users
@@ -184,6 +196,8 @@ paths:
         - Users
       responses:
         "200": {}
+
+
 
   /roles:
     get:
@@ -274,5 +288,19 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/PermArray"
-
+  /perms:
+    get:
+      summary: Get all available permissions
+      operationId: get-perms
+      tags:
+        - Perms
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PermWithName"
+        "500": {}
 

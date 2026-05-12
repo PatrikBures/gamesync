@@ -14,6 +14,12 @@ type Handler interface {
 	//
 	// GET /health
 	GetHealth(ctx context.Context) error
+	// GetPerms implements get-perms operation.
+	//
+	// Get all available permissions.
+	//
+	// GET /perms
+	GetPerms(ctx context.Context) (GetPermsRes, error)
 	// GetRolePerms implements get-role-perms operation.
 	//
 	// Get all permissions the role has.
