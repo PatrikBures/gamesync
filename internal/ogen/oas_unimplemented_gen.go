@@ -81,7 +81,7 @@ func (UnimplementedHandler) PatchRolePerms(ctx context.Context, req OptPermDiff,
 // Create new role.
 //
 // POST /roles
-func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRoleNew) (r PostRolesRes, _ error) {
+func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRoleName) (r PostRolesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

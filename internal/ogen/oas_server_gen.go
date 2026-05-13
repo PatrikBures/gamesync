@@ -55,7 +55,7 @@ type Handler interface {
 	// Create new role.
 	//
 	// POST /roles
-	PostRoles(ctx context.Context, req OptRoleNew) (PostRolesRes, error)
+	PostRoles(ctx context.Context, req OptRoleName) (PostRolesRes, error)
 	// PostUsers implements post-users operation.
 	//
 	// Create new user.
