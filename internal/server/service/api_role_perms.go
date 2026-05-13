@@ -25,7 +25,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 	if err := s.q.RolePermission.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(add...); err != nil {
 		return &api.PatchRolePermsInternalServerError{}, ErrDatabase
 	}
-	return nil, nil
+	return &api.PatchRolePermsCreated{}, nil
 }
 
 func (s *Service) PutRolePerms(ctx context.Context, req api.PermArray, params api.PutRolePermsParams) (api.PutRolePermsRes, error) {

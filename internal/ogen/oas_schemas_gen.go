@@ -205,6 +205,11 @@ func (o OptUserNew) Or(d UserNew) UserNew {
 	return d
 }
 
+// PatchRolePermsCreated is response for PatchRolePerms operation.
+type PatchRolePermsCreated struct{}
+
+func (*PatchRolePermsCreated) patchRolePermsRes() {}
+
 // PatchRolePermsInternalServerError is response for PatchRolePerms operation.
 type PatchRolePermsInternalServerError struct{}
 
@@ -219,9 +224,8 @@ type Perm int32
 
 type PermArray []Perm
 
-func (*PermArray) getRolePermsRes()   {}
-func (*PermArray) patchRolePermsRes() {}
-func (*PermArray) putRolePermsRes()   {}
+func (*PermArray) getRolePermsRes() {}
+func (*PermArray) putRolePermsRes() {}
 
 // Ref: #/components/schemas/PermDiff
 type PermDiff struct {

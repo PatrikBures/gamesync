@@ -266,11 +266,7 @@ paths:
       tags:
         - Permissions
       responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PermArray"
+        "201": {}
         "406": {}
         "500": {}
       requestBody:
