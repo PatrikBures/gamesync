@@ -13,7 +13,11 @@ import (
 )
 
 func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.GetUserRes, error) {
-	return nil, nil
+	user, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(params.UserID)).First()
+	if err != nil {
+		return &api.GetUserInternalServerError{}, ErrDatabase
+	}
+	return &api.User{UserID: user.UserID, UserName: user.UserName, RoleID: user.RoleID}, nil
 }
 
 func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
