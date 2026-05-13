@@ -688,16 +688,16 @@ func (s *Server) handleGetRolesRequest(args [0]string, argsEscaped bool, w http.
 	}
 }
 
-// handleGetUserIDRequest handles get-user-id operation.
+// handleGetUserRequest handles get-user operation.
 //
 // Get info about user.
 //
 // GET /users/{userID}
-func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetUserRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("get-user-id"),
+		otelogen.OperationID("get-user"),
 		semconv.HTTPRequestMethodKey.String("GET"),
 		semconv.HTTPRouteKey.String("/users/{userID}"),
 	}
@@ -705,7 +705,7 @@ func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http
 	otelAttrs = append(otelAttrs, s.cfg.Attributes...)
 
 	// Start a span for this request.
-	ctx, span := s.cfg.Tracer.Start(r.Context(), GetUserIDOperation,
+	ctx, span := s.cfg.Tracer.Start(r.Context(), GetUserOperation,
 		trace.WithAttributes(otelAttrs...),
 		serverSpanKind,
 	)
@@ -760,15 +760,15 @@ func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http
 		}
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: GetUserIDOperation,
-			ID:   "get-user-id",
+			Name: GetUserOperation,
+			ID:   "get-user",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityBearerAuth(ctx, GetUserIDOperation, r)
+			sctx, ok, err := s.securityBearerAuth(ctx, GetUserOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -808,7 +808,7 @@ func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http
 			return
 		}
 	}
-	params, err := decodeGetUserIDParams(args, argsEscaped, r)
+	params, err := decodeGetUserParams(args, argsEscaped, r)
 	if err != nil {
 		err = &ogenerrors.DecodeParamsError{
 			OperationContext: opErrContext,
@@ -821,13 +821,13 @@ func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http
 
 	var rawBody []byte
 
-	var response *GetUserIDOK
+	var response GetUserRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    GetUserIDOperation,
+			OperationName:    GetUserOperation,
 			OperationSummary: "Get info about user",
-			OperationID:      "get-user-id",
+			OperationID:      "get-user",
 			Body:             nil,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
@@ -841,8 +841,8 @@ func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http
 
 		type (
 			Request  = struct{}
-			Params   = GetUserIDParams
-			Response = *GetUserIDOK
+			Params   = GetUserParams
+			Response = GetUserRes
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -851,14 +851,14 @@ func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http
 		](
 			m,
 			mreq,
-			unpackGetUserIDParams,
+			unpackGetUserParams,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				err = s.h.GetUserID(ctx, params)
+				response, err = s.h.GetUser(ctx, params)
 				return response, err
 			},
 		)
 	} else {
-		err = s.h.GetUserID(ctx, params)
+		response, err = s.h.GetUser(ctx, params)
 	}
 	if err != nil {
 		defer recordError("Internal", err)
@@ -866,7 +866,7 @@ func (s *Server) handleGetUserIDRequest(args [1]string, argsEscaped bool, w http
 		return
 	}
 
-	if err := encodeGetUserIDResponse(response, w, span); err != nil {
+	if err := encodeGetUserResponse(response, w, span); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)
@@ -1401,7 +1401,7 @@ func (s *Server) handlePostRolesRequest(args [0]string, argsEscaped bool, w http
 		}
 
 		type (
-			Request  = OptRoleNew
+			Request  = OptRoleName
 			Params   = struct{}
 			Response = PostRolesRes
 		)

@@ -49,13 +49,13 @@ func (UnimplementedHandler) GetRoles(ctx context.Context) (r GetRolesRes, _ erro
 	return r, ht.ErrNotImplemented
 }
 
-// GetUserID implements get-user-id operation.
+// GetUser implements get-user operation.
 //
 // Get info about user.
 //
 // GET /users/{userID}
-func (UnimplementedHandler) GetUserID(ctx context.Context, params GetUserIDParams) error {
-	return ht.ErrNotImplemented
+func (UnimplementedHandler) GetUser(ctx context.Context, params GetUserParams) (r GetUserRes, _ error) {
+	return r, ht.ErrNotImplemented
 }
 
 // GetUsers implements get-users operation.
@@ -81,7 +81,7 @@ func (UnimplementedHandler) PatchRolePerms(ctx context.Context, req OptPermDiff,
 // Create new role.
 //
 // POST /roles
-func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRoleNew) (r PostRolesRes, _ error) {
+func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRoleName) (r PostRolesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

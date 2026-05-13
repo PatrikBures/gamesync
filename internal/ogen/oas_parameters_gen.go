@@ -98,13 +98,13 @@ func decodeGetRolePermsParams(args [1]string, argsEscaped bool, r *http.Request)
 	return params, nil
 }
 
-// GetUserIDParams is parameters of get-user-id operation.
-type GetUserIDParams struct {
+// GetUserParams is parameters of get-user operation.
+type GetUserParams struct {
 	// Used to identify a user.
 	UserID int64
 }
 
-func unpackGetUserIDParams(packed middleware.Parameters) (params GetUserIDParams) {
+func unpackGetUserParams(packed middleware.Parameters) (params GetUserParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "userID",
@@ -115,7 +115,7 @@ func unpackGetUserIDParams(packed middleware.Parameters) (params GetUserIDParams
 	return params
 }
 
-func decodeGetUserIDParams(args [1]string, argsEscaped bool, r *http.Request) (params GetUserIDParams, _ error) {
+func decodeGetUserParams(args [1]string, argsEscaped bool, r *http.Request) (params GetUserParams, _ error) {
 	// Decode path: userID.
 	if err := func() error {
 		param := args[0]

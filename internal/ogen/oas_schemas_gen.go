@@ -53,8 +53,15 @@ type GetRolesOKApplicationJSON []Role
 
 func (*GetRolesOKApplicationJSON) getRolesRes() {}
 
-// GetUserIDOK is response for GetUserID operation.
-type GetUserIDOK struct{}
+// GetUserInternalServerError is response for GetUser operation.
+type GetUserInternalServerError struct{}
+
+func (*GetUserInternalServerError) getUserRes() {}
+
+// GetUserOK is response for GetUser operation.
+type GetUserOK struct{}
+
+func (*GetUserOK) getUserRes() {}
 
 // GetUsersInternalServerError is response for GetUsers operation.
 type GetUsersInternalServerError struct{}
@@ -111,38 +118,38 @@ func (o OptPermDiff) Or(d PermDiff) PermDiff {
 	return d
 }
 
-// NewOptRoleNew returns new OptRoleNew with value set to v.
-func NewOptRoleNew(v RoleNew) OptRoleNew {
-	return OptRoleNew{
+// NewOptRoleName returns new OptRoleName with value set to v.
+func NewOptRoleName(v RoleName) OptRoleName {
+	return OptRoleName{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptRoleNew is optional RoleNew.
-type OptRoleNew struct {
-	Value RoleNew
+// OptRoleName is optional RoleName.
+type OptRoleName struct {
+	Value RoleName
 	Set   bool
 }
 
-// IsSet returns true if OptRoleNew was set.
-func (o OptRoleNew) IsSet() bool { return o.Set }
+// IsSet returns true if OptRoleName was set.
+func (o OptRoleName) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptRoleNew) Reset() {
-	var v RoleNew
+func (o *OptRoleName) Reset() {
+	var v RoleName
 	o.Value = v
 	o.Set = false
 }
 
 // SetTo sets value to v.
-func (o *OptRoleNew) SetTo(v RoleNew) {
+func (o *OptRoleName) SetTo(v RoleName) {
 	o.Set = true
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptRoleNew) Get() (v RoleNew, ok bool) {
+func (o OptRoleName) Get() (v RoleName, ok bool) {
 	if !o.Set {
 		return v, false
 	}
@@ -150,7 +157,7 @@ func (o OptRoleNew) Get() (v RoleNew, ok bool) {
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptRoleNew) Or(d RoleNew) RoleNew {
+func (o OptRoleName) Or(d RoleName) RoleName {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -247,6 +254,7 @@ func (s *PermDiff) SetRemove(val PermArray) {
 	s.Remove = val
 }
 
+// Merged schema.
 // Ref: #/components/schemas/PermWithName
 type PermWithName struct {
 	PermID   Perm   `json:"permID"`
@@ -313,15 +321,11 @@ type PutRolePermsNotAcceptable struct{}
 
 func (*PutRolePermsNotAcceptable) putRolePermsRes() {}
 
+// Merged schema.
 // Ref: #/components/schemas/Role
 type Role struct {
-	RoleName string `json:"roleName"`
 	RoleID   int32  `json:"roleID"`
-}
-
-// GetRoleName returns the value of RoleName.
-func (s *Role) GetRoleName() string {
-	return s.RoleName
+	RoleName string `json:"roleName"`
 }
 
 // GetRoleID returns the value of RoleID.
@@ -329,9 +333,9 @@ func (s *Role) GetRoleID() int32 {
 	return s.RoleID
 }
 
-// SetRoleName sets the value of RoleName.
-func (s *Role) SetRoleName(val string) {
-	s.RoleName = val
+// GetRoleName returns the value of RoleName.
+func (s *Role) GetRoleName() string {
+	return s.RoleName
 }
 
 // SetRoleID sets the value of RoleID.
@@ -339,23 +343,29 @@ func (s *Role) SetRoleID(val int32) {
 	s.RoleID = val
 }
 
+// SetRoleName sets the value of RoleName.
+func (s *Role) SetRoleName(val string) {
+	s.RoleName = val
+}
+
 func (*Role) postRolesRes() {}
 
-// Ref: #/components/schemas/RoleNew
-type RoleNew struct {
+// Ref: #/components/schemas/_RoleName
+type RoleName struct {
 	RoleName string `json:"roleName"`
 }
 
 // GetRoleName returns the value of RoleName.
-func (s *RoleNew) GetRoleName() string {
+func (s *RoleName) GetRoleName() string {
 	return s.RoleName
 }
 
 // SetRoleName sets the value of RoleName.
-func (s *RoleNew) SetRoleName(val string) {
+func (s *RoleName) SetRoleName(val string) {
 	s.RoleName = val
 }
 
+// Merged schema.
 // Ref: #/components/schemas/User
 type User struct {
 	UserID   int64  `json:"userID"`
@@ -393,6 +403,7 @@ func (s *User) SetRoleID(val int32) {
 	s.RoleID = val
 }
 
+// Merged schema.
 // Ref: #/components/schemas/UserNew
 type UserNew struct {
 	UserName string `json:"userName"`
@@ -419,6 +430,7 @@ func (s *UserNew) SetRoleID(val int32) {
 	s.RoleID = val
 }
 
+// Merged schema.
 // Ref: #/components/schemas/UserNewReturn
 type UserNewReturn struct {
 	UserID   int64  `json:"userID"`

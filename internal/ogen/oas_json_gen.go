@@ -194,18 +194,18 @@ func (s *OptPermDiff) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
-// Encode encodes RoleNew as json.
-func (o OptRoleNew) Encode(e *jx.Encoder) {
+// Encode encodes RoleName as json.
+func (o OptRoleName) Encode(e *jx.Encoder) {
 	if !o.Set {
 		return
 	}
 	o.Value.Encode(e)
 }
 
-// Decode decodes RoleNew from json.
-func (o *OptRoleNew) Decode(d *jx.Decoder) error {
+// Decode decodes RoleName from json.
+func (o *OptRoleName) Decode(d *jx.Decoder) error {
 	if o == nil {
-		return errors.New("invalid: unable to decode OptRoleNew to nil")
+		return errors.New("invalid: unable to decode OptRoleName to nil")
 	}
 	o.Set = true
 	if err := o.Value.Decode(d); err != nil {
@@ -215,14 +215,14 @@ func (o *OptRoleNew) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s OptRoleNew) MarshalJSON() ([]byte, error) {
+func (s OptRoleName) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptRoleNew) UnmarshalJSON(data []byte) error {
+func (s *OptRoleName) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -589,18 +589,18 @@ func (s *Role) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *Role) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("roleName")
-		e.Str(s.RoleName)
-	}
-	{
 		e.FieldStart("roleID")
 		e.Int32(s.RoleID)
+	}
+	{
+		e.FieldStart("roleName")
+		e.Str(s.RoleName)
 	}
 }
 
 var jsonFieldsNameOfRole = [2]string{
-	0: "roleName",
-	1: "roleID",
+	0: "roleID",
+	1: "roleName",
 }
 
 // Decode decodes Role from json.
@@ -612,20 +612,8 @@ func (s *Role) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "roleName":
-			requiredBitSet[0] |= 1 << 0
-			if err := func() error {
-				v, err := d.Str()
-				s.RoleName = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"roleName\"")
-			}
 		case "roleID":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
 				v, err := d.Int32()
 				s.RoleID = int32(v)
@@ -635,6 +623,18 @@ func (s *Role) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"roleID\"")
+			}
+		case "roleName":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.RoleName = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"roleName\"")
 			}
 		default:
 			return d.Skip()
@@ -693,28 +693,28 @@ func (s *Role) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s *RoleNew) Encode(e *jx.Encoder) {
+func (s *RoleName) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *RoleNew) encodeFields(e *jx.Encoder) {
+func (s *RoleName) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("roleName")
 		e.Str(s.RoleName)
 	}
 }
 
-var jsonFieldsNameOfRoleNew = [1]string{
+var jsonFieldsNameOfRoleName = [1]string{
 	0: "roleName",
 }
 
-// Decode decodes RoleNew from json.
-func (s *RoleNew) Decode(d *jx.Decoder) error {
+// Decode decodes RoleName from json.
+func (s *RoleName) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode RoleNew to nil")
+		return errors.New("invalid: unable to decode RoleName to nil")
 	}
 	var requiredBitSet [1]uint8
 
@@ -737,7 +737,7 @@ func (s *RoleNew) Decode(d *jx.Decoder) error {
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode RoleNew")
+		return errors.Wrap(err, "decode RoleName")
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
@@ -754,8 +754,8 @@ func (s *RoleNew) Decode(d *jx.Decoder) error {
 				bitIdx := bits.TrailingZeros8(result)
 				fieldIdx := i*8 + bitIdx
 				var name string
-				if fieldIdx < len(jsonFieldsNameOfRoleNew) {
-					name = jsonFieldsNameOfRoleNew[fieldIdx]
+				if fieldIdx < len(jsonFieldsNameOfRoleName) {
+					name = jsonFieldsNameOfRoleName[fieldIdx]
 				} else {
 					name = strconv.Itoa(fieldIdx)
 				}
@@ -776,14 +776,14 @@ func (s *RoleNew) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *RoleNew) MarshalJSON() ([]byte, error) {
+func (s *RoleName) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *RoleNew) UnmarshalJSON(data []byte) error {
+func (s *RoleName) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

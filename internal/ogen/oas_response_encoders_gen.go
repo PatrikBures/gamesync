@@ -98,11 +98,23 @@ func encodeGetRolesResponse(response GetRolesRes, w http.ResponseWriter, span tr
 	}
 }
 
-func encodeGetUserIDResponse(response *GetUserIDOK, w http.ResponseWriter, span trace.Span) error {
-	w.WriteHeader(200)
-	span.SetStatus(codes.Ok, http.StatusText(200))
+func encodeGetUserResponse(response GetUserRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *GetUserOK:
+		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
 
-	return nil
+		return nil
+
+	case *GetUserInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
 }
 
 func encodeGetUsersResponse(response GetUsersRes, w http.ResponseWriter, span trace.Span) error {

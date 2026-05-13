@@ -7,10 +7,18 @@ info:
 servers:
   - url: /api/v1
 tags:
-  - name: Other
+  - name: System
+    description: system level stuff like health checks
   - name: Users
+    description: managing users
+    kind: nav
   - name: Roles
-  - name: Perms
+    description: managing roles
+    kind: nav
+  - name: Permissions
+    description: managing permissions for roles
+    parent: Roles
+    kind: nav
 components:
   securitySchemes:
     bearerAuth:
@@ -39,91 +47,87 @@ components:
         minimum: 0
   schemas:
 
-    ### User schemas
-    User:
+    ### base models
+    _UserID:
       type: object
       properties:
         userID:
           type: integer
           format: int64
-        userName:
-          type: string
-        roleID:
-          type: integer
-          format: int32
-      required:
-        - userName
-        - roleID
-        - userID
-    UserNew:
+      required: [userID]
+    _UserName:
       type: object
       properties:
         userName:
           type: string
-        roleID:
-          type: integer
-          format: int32
-      required:
-        - userName
-        - roleID
-    UserNewReturn:
+      required: [userName]
+
+    _RoleID:
       type: object
       properties:
-        userID:
-          type: integer
-          format: int64
-        userName:
-          type: string
         roleID:
           type: integer
           format: int32
-        token:
-          type: string
-      required:
-        - userID
-        - userName
-        - roleID
-        - token
-
-
-    ### Role schemas
-    RoleNew:
+      required: [roleID]
+    _RoleName:
       type: object
       properties:
         roleName:
           type: string
-      required:
-        - roleName
-    Role:
-      type: object
-      properties:
-        roleName:
-          type: string
-        roleID:
-          type: integer
-          format: int32
-      required:
-        - roleName
-        - roleID
+      required: [roleName]
 
-    ### Permission schemas
-    PermWithName:
+    _Perm:
+      type: integer
+      format: int32
+    _PermID:
       type: object
       properties:
         permID:
-          $ref: "#/components/schemas/Perm"
+          $ref: "#/components/schemas/_Perm"
+      required: [permID]
+    _PermName:
+      type: object
+      properties:
         permName:
           type: string
-      required:
-        - permID
-        - permName
-    Perm:
-      type: integer
-      format: int32
+      required: [permName]
+
+    ### User schemas
+    UserNew:
+      allOf:
+        - $ref: "#/components/schemas/_UserName"
+        - $ref: "#/components/schemas/_RoleID"
+    User:
+      allOf:
+        - $ref: "#/components/schemas/_UserID"
+        - $ref: "#/components/schemas/_UserName"
+        - $ref: "#/components/schemas/_RoleID"
+    UserNewReturn:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            token:
+              type: string
+          required: [token]
+
+    ### Role schemas
+    RoleNew:
+      $ref: "#/components/schemas/_RoleName"
+    Role:
+      allOf:
+        - $ref: "#/components/schemas/_RoleID"
+        - $ref: "#/components/schemas/_RoleName"
+
+    ### Permission schemas
+    PermWithName:
+      allOf:
+        - $ref: "#/components/schemas/_PermID"
+        - $ref: "#/components/schemas/_PermName"
     PermArray:
       type: array
       items: 
-        $ref: "#/components/schemas/Perm"
+        $ref: "#/components/schemas/_Perm"
     PermDiff:
       type: object
       properties:
@@ -145,7 +149,7 @@ paths:
       summary: Get health of server
       operationId: get-health
       tags:
-        - Other
+        - System
       security: []
       responses:
         "200": {}
@@ -191,11 +195,12 @@ paths:
       - $ref: "#/components/parameters/userID"
     get:
       summary: Get info about user
-      operationId: get-user-id
+      operationId: get-user
       tags:
         - Users
       responses:
         "200": {}
+        "500": {}
 
 
 
@@ -243,20 +248,19 @@ paths:
       summary: Get all permissions the role has
       operationId: get-role-perms
       tags:
-        - Perms
+        - Permissions
       responses:
         "200":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PermArray"
-
         "500": {}
     patch:
       summary: Patch perms for role
       operationId: patch-role-perms
       tags:
-        - Perms
+        - Permissions
       responses:
         "201":
           content:
@@ -274,7 +278,7 @@ paths:
       summary: Set perms for role
       operationId: put-role-perms
       tags:
-        - Perms
+        - Permissions
       responses:
         "201":
           content:
@@ -293,7 +297,7 @@ paths:
       summary: Get all available permissions
       operationId: get-perms
       tags:
-        - Perms
+        - Permissions
       responses:
         "200":
           content:
