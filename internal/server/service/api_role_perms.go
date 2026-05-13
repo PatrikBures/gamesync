@@ -13,19 +13,27 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 	return nil, nil
 }
 
-func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, params api.PatchRolePermsParams) (api.PatchRolePermsRes, error) {
+func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, params api.PatchRolePermsParams) (result api.PatchRolePermsRes, err error) {
+	tx := s.q.Begin()
+    defer func() {
+        if recover() != nil || err != nil {
+            _ = tx.Rollback()
+        }
+    }()
+
 	if len(req.Value.Add) > 0 {
 		add := apiRoleToDbRole(req.Value.Add, params.RoleID)
-		if err := s.q.RolePermission.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(add...); err != nil {
+		if err = tx.RolePermission.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(add...); err != nil {
 			return &api.PatchRolePermsInternalServerError{}, ErrDatabase
 		}
 	}
+
 	if len(req.Value.Remove) > 0 {
 		remove := make([]int32, 0, len(req.Value.Remove))
 		for _, r := range req.Value.Remove {
 			remove = append(remove, int32(r))
 		}
-		_, err := s.q.RolePermission.WithContext(ctx).
+		_, err = tx.RolePermission.WithContext(ctx).
 			Where(
 				s.q.RolePermission.RoleID.Eq(params.RoleID),
 				s.q.RolePermission.PermID.In(remove...),
@@ -34,6 +42,11 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 			return &api.PatchRolePermsInternalServerError{}, ErrDatabase
 		}
 	}
+
+	if err := tx.Commit(); err != nil {
+		return &api.PatchRolePermsInternalServerError{}, ErrDatabase
+	}
+
 	return &api.PatchRolePermsCreated{}, nil
 }
 
