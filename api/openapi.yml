@@ -7,10 +7,18 @@ info:
 servers:
   - url: /api/v1
 tags:
-  - name: Other
+  - name: System
+    description: system level stuff like health checks
   - name: Users
+    description: managing users
+    kind: nav
   - name: Roles
-  - name: Perms
+    description: managing roles
+    kind: nav
+  - name: Permissions
+    description: managing permissions for roles
+    parent: Roles
+    kind: nav
 components:
   securitySchemes:
     bearerAuth:
@@ -141,7 +149,7 @@ paths:
       summary: Get health of server
       operationId: get-health
       tags:
-        - Other
+        - System
       security: []
       responses:
         "200": {}
@@ -240,7 +248,7 @@ paths:
       summary: Get all permissions the role has
       operationId: get-role-perms
       tags:
-        - Perms
+        - Permissions
       responses:
         "200":
           content:
@@ -252,7 +260,7 @@ paths:
       summary: Patch perms for role
       operationId: patch-role-perms
       tags:
-        - Perms
+        - Permissions
       responses:
         "201":
           content:
@@ -270,7 +278,7 @@ paths:
       summary: Set perms for role
       operationId: put-role-perms
       tags:
-        - Perms
+        - Permissions
       responses:
         "201":
           content:
@@ -289,7 +297,7 @@ paths:
       summary: Get all available permissions
       operationId: get-perms
       tags:
-        - Perms
+        - Permissions
       responses:
         "200":
           content:
