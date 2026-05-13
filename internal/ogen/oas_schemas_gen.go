@@ -58,11 +58,6 @@ type GetUserInternalServerError struct{}
 
 func (*GetUserInternalServerError) getUserRes() {}
 
-// GetUserOK is response for GetUser operation.
-type GetUserOK struct{}
-
-func (*GetUserOK) getUserRes() {}
-
 // GetUsersInternalServerError is response for GetUsers operation.
 type GetUsersInternalServerError struct{}
 
@@ -402,6 +397,8 @@ func (s *User) SetUserName(val string) {
 func (s *User) SetRoleID(val int32) {
 	s.RoleID = val
 }
+
+func (*User) getUserRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/UserNew
