@@ -14,7 +14,7 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 }
 
 func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, params api.PatchRolePermsParams) (api.PatchRolePermsRes, error) {
-	add := make([]*model.RolePermission, len(req.Value.Add))
+	add := make([]*model.RolePermission, 0, len(req.Value.Add))
 	for _, a := range req.Value.Add {
 		r := &model.RolePermission{
 			RoleID: params.RoleID,
