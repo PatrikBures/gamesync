@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 
@@ -14,6 +15,26 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 }
 
 func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, params api.PatchRolePermsParams) (result api.PatchRolePermsRes, err error) {
+	if ! req.Set {
+		return &api.PatchRolePermsNotAcceptable{}, ErrMissingBody
+	}
+	permsAdd, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req.Value.Add...)).Find()
+	if err != nil {
+		return &api.PatchRolePermsInternalServerError{}, ErrDatabase
+	}
+	if len(permsAdd) != len(req.Value.Add) {
+		return &api.PatchRolePermsUnprocessableEntity{}, ErrPermNotFound
+	}
+
+	permsRemove, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req.Value.Remove...)).Find()
+	if err != nil {
+		return &api.PatchRolePermsInternalServerError{}, ErrDatabase
+	}
+	if len(permsRemove) != len(req.Value.Remove) {
+		return &api.PatchRolePermsUnprocessableEntity{}, ErrPermNotFound
+	}
+
+
 	tx := s.q.Begin()
     defer func() {
         if recover() != nil || err != nil {

@@ -220,38 +220,43 @@ type PatchRolePermsNotAcceptable struct{}
 
 func (*PatchRolePermsNotAcceptable) patchRolePermsRes() {}
 
+// PatchRolePermsUnprocessableEntity is response for PatchRolePerms operation.
+type PatchRolePermsUnprocessableEntity struct{}
+
+func (*PatchRolePermsUnprocessableEntity) patchRolePermsRes() {}
+
 type Perm int32
-
-type PermArray []Perm
-
-func (*PermArray) getRolePermsRes() {}
-func (*PermArray) putRolePermsRes() {}
 
 // Ref: #/components/schemas/PermDiff
 type PermDiff struct {
-	Add    PermArray `json:"add"`
-	Remove PermArray `json:"remove"`
+	Add    PermNameArray `json:"add"`
+	Remove PermNameArray `json:"remove"`
 }
 
 // GetAdd returns the value of Add.
-func (s *PermDiff) GetAdd() PermArray {
+func (s *PermDiff) GetAdd() PermNameArray {
 	return s.Add
 }
 
 // GetRemove returns the value of Remove.
-func (s *PermDiff) GetRemove() PermArray {
+func (s *PermDiff) GetRemove() PermNameArray {
 	return s.Remove
 }
 
 // SetAdd sets the value of Add.
-func (s *PermDiff) SetAdd(val PermArray) {
+func (s *PermDiff) SetAdd(val PermNameArray) {
 	s.Add = val
 }
 
 // SetRemove sets the value of Remove.
-func (s *PermDiff) SetRemove(val PermArray) {
+func (s *PermDiff) SetRemove(val PermNameArray) {
 	s.Remove = val
 }
+
+type PermNameArray []string
+
+func (*PermNameArray) getRolePermsRes() {}
+func (*PermNameArray) putRolePermsRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/PermWithName

@@ -240,7 +240,7 @@ func (s *Server) decodePostUsersRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutRolePermsRequest(r *http.Request) (
-	req PermArray,
+	req PermNameArray,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -290,7 +290,7 @@ func (s *Server) decodePutRolePermsRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request PermArray
+		var request PermNameArray
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

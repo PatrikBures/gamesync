@@ -71,7 +71,7 @@ func encodePostUsersRequest(
 }
 
 func encodePutRolePermsRequest(
-	req PermArray,
+	req PermNameArray,
 	r *http.Request,
 ) error {
 	const contentType = "application/json"

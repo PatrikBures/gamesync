@@ -91,7 +91,7 @@ func decodeGetRolePermsResponse(resp *http.Response) (res GetRolePermsRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PermArray
+			var response PermNameArray
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
@@ -277,6 +277,9 @@ func decodePatchRolePermsResponse(resp *http.Response) (res PatchRolePermsRes, _
 	case 406:
 		// Code 406.
 		return &PatchRolePermsNotAcceptable{}, nil
+	case 422:
+		// Code 422.
+		return &PatchRolePermsUnprocessableEntity{}, nil
 	case 500:
 		// Code 500.
 		return &PatchRolePermsInternalServerError{}, nil
@@ -400,7 +403,7 @@ func decodePutRolePermsResponse(resp *http.Response) (res PutRolePermsRes, _ err
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response PermArray
+			var response PermNameArray
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err

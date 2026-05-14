@@ -99,6 +99,6 @@ func (UnimplementedHandler) PostUsers(ctx context.Context, req OptUserNew) (r Po
 // Set perms for role.
 //
 // PUT /roles/{roleID}/perms
-func (UnimplementedHandler) PutRolePerms(ctx context.Context, req PermArray, params PutRolePermsParams) (r PutRolePermsRes, _ error) {
+func (UnimplementedHandler) PutRolePerms(ctx context.Context, req PermNameArray, params PutRolePermsParams) (r PutRolePermsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
