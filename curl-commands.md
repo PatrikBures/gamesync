@@ -2,7 +2,7 @@
 
 ### create user
 ```sh
-curl -X POST localhost:8080/api/v1/users -H "Content-Type: application/json" -d '{"userName": "something", "roleId":50}' 
+curl -X POST localhost:8080/api/v1/users -H "Content-Type: application/json" -d '{"userName": "something", "roleID":50}' 
 ```
 
 ### create role

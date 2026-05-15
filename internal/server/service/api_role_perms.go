@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 
@@ -36,23 +35,24 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 
 
 	tx := s.q.Begin()
-    defer func() {
-        if recover() != nil || err != nil {
-            _ = tx.Rollback()
-        }
-    }()
+	   defer func() {
+	       if recover() != nil || err != nil {
+	           _ = tx.Rollback()
+	       }
+	   }()
 
 	if len(req.Value.Add) > 0 {
-		add := apiRoleToDbRole(req.Value.Add, params.RoleID)
-		if err = tx.RolePermission.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(add...); err != nil {
+		rolePerms := permToRolePerm(permsAdd, params.RoleID)
+		err = tx.RolePermission.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(rolePerms...)
+		if err != nil {
 			return &api.PatchRolePermsInternalServerError{}, ErrDatabase
 		}
 	}
 
 	if len(req.Value.Remove) > 0 {
 		remove := make([]int32, 0, len(req.Value.Remove))
-		for _, r := range req.Value.Remove {
-			remove = append(remove, int32(r))
+		for _, pr := range permsRemove {
+			remove = append(remove, pr.PermID)
 		}
 		_, err = tx.RolePermission.WithContext(ctx).
 			Where(
@@ -71,18 +71,18 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 	return &api.PatchRolePermsCreated{}, nil
 }
 
-func (s *Service) PutRolePerms(ctx context.Context, req api.PermArray, params api.PutRolePermsParams) (api.PutRolePermsRes, error) {
+func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, params api.PutRolePermsParams) (api.PutRolePermsRes, error) {
 	return nil, nil
 }
 
-func apiRoleToDbRole(perms api.PermArray, roleID int32) []*model.RolePermission {
-	newPerms := make([]*model.RolePermission, 0, len(perms))
-	for _, a := range perms {
-		r := &model.RolePermission{
+func permToRolePerm(perms []*model.Permission, roleID int32) []*model.RolePermission {
+	rolePerms := make([]*model.RolePermission, 0, len(perms))
+	for _, p := range perms {
+		rolePerm := model.RolePermission{
+			PermID: p.PermID, 
 			RoleID: roleID,
-			PermID: int32(a),
 		}
-		newPerms = append(newPerms, r)
+		rolePerms = append(rolePerms, &rolePerm)
 	}
-	return newPerms
+	return rolePerms
 }
