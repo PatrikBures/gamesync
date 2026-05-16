@@ -16,7 +16,9 @@ func EnsurePermissions(q *query.Query) (err error) {
 	tx := q.Begin()
 	defer func() {
 		if recover() != nil || err != nil {
-			_ = tx.Rollback()
+			if e := tx.Rollback(); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
 		}
 	}()
 

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
@@ -44,7 +45,9 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 	tx := s.q.Begin()
 	defer func() {
 		if recover() != nil || err != nil {
-			err = tx.Rollback()
+			if e := tx.Rollback(); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
 		}
 	}()
 
