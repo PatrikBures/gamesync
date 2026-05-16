@@ -7,6 +7,8 @@ import (
 	"gamesync/internal/server/permissions"
 	"log/slog"
 	"slices"
+
+	"gorm.io/gorm/clause"
 )
 
 
@@ -41,7 +43,10 @@ func EnsurePermissions(q *query.Query) (err error) {
 			slog.Info("already exists", "permission", *perm)
 			continue
 		}
-		if err := tx.Permission.WithContext(ctx).Create(perm); err != nil {
+		err = tx.Permission.WithContext(ctx).
+			Clauses(clause.OnConflict{UpdateAll: true}).
+			Create(perm)
+		if err != nil {
 			return err
 		}
 		slog.Info("created", "permission", *perm)
@@ -52,7 +57,7 @@ func EnsurePermissions(q *query.Query) (err error) {
 			continue
 		}
 		perm := &model.Permission{PermID: c}
-		if _, err := tx.Permission.WithContext(ctx).Delete(perm); err != nil {
+		if _, err = tx.Permission.WithContext(ctx).Delete(perm); err != nil {
 			return nil
 		}
 		slog.Info("deleted", "permission", *perm)
