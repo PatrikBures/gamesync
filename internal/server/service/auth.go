@@ -4,7 +4,9 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/server/permissions"
 )
 
 func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.OperationName, t api.BearerAuth) (context.Context, error) {
@@ -27,6 +29,25 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 	if err != nil {
 		return ctx, ErrNotAuthorized
 	}
+	userRolePerms, err := s.q.RolePermission.WithContext(ctx).Where(s.q.RolePermission.RoleID.Eq(user.RoleID)).Find()
+	if err != nil {
+		return ctx, ErrDatabase
+	}
+	perms := make(permissions.Perms, 0, len(userRolePerms))
+	for _, perm := range permissions.AllPerms {
+		perm32 := int32(perm)
+		for _, rolePerm := range userRolePerms {
+			if rolePerm.PermID == perm32 {
+				perms = append(perms, perm)
+				break
+			}
+		}
+	}
+	if len(perms) != len(userRolePerms) {
+		return ctx, errors.New("Role has invalid RoleID")
+	}
+
 	ctx = context.WithValue(ctx, userContextKey, user)
+	ctx = context.WithValue(ctx, userPermsContextKey, perms)
 	return ctx, nil
 }
