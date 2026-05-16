@@ -1544,7 +1544,7 @@ func (s *Server) handlePostUsersRequest(args [0]string, argsEscaped bool, w http
 		}
 
 		type (
-			Request  = OptUserNew
+			Request  = OptUserName
 			Params   = struct{}
 			Response = PostUsersRes
 		)

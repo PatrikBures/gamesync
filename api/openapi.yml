@@ -94,9 +94,7 @@ components:
 
     ### User schemas
     UserNew:
-      allOf:
-        - $ref: "#/components/schemas/_UserName"
-        - $ref: "#/components/schemas/_RoleID"
+      $ref: "#/components/schemas/_UserName"
     User:
       allOf:
         - $ref: "#/components/schemas/_UserID"

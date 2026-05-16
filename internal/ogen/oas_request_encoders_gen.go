@@ -51,7 +51,7 @@ func encodePostRolesRequest(
 }
 
 func encodePostUsersRequest(
-	req OptUserNew,
+	req OptUserName,
 	r *http.Request,
 ) error {
 	const contentType = "application/json"

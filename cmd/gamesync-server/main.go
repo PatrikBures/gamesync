@@ -26,6 +26,7 @@ type config struct {
 	dbType   string
 	dbUrl    string
 	disabledRoles string
+	defaultRoleID int
 }
 
 func start() error {
@@ -34,6 +35,7 @@ func start() error {
 	serverConfig.AddStringVar(&c.dbType, "db-type", "sqlite", "Either 'postgres' or 'sqlite'")
 	serverConfig.AddStringVar(&c.dbUrl, "db-url", server.DefaultSQLitePath, "Url to postgres db or path to SQLite db-file")
 	serverConfig.AddStringVar(&c.disabledRoles, "disabled-roles", "", "Default roles to disable, seperated by '|'")
+	serverConfig.AddIntVar(&c.defaultRoleID, "default-role-id", 50, "Default role id for newly created users. Role needs to exist for creation of new users to work")
 
 	flag.Parse()
 
@@ -59,7 +61,9 @@ func start() error {
 		return err
 	}
 
-	s := service.NewService(q)
+	s := service.NewService(q, service.ServiceOpts{
+		DefaultRoleID: int32(c.defaultRoleID),
+	})
 
 	srv, err := api.NewServer(s, s, api.WithPathPrefix("/api/v1"))
 	if err != nil {

@@ -90,7 +90,7 @@ func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRoleName) (r P
 // Create new user.
 //
 // POST /users
-func (UnimplementedHandler) PostUsers(ctx context.Context, req OptUserNew) (r PostUsersRes, _ error) {
+func (UnimplementedHandler) PostUsers(ctx context.Context, req OptUserName) (r PostUsersRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

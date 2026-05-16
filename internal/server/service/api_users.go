@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
@@ -33,18 +34,20 @@ func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
 	return &usersReturn, nil
 }
 
-func (s *Service) PostUsers(ctx context.Context, req api.OptUserNew) (result api.PostUsersRes, err error) {
+func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result api.PostUsersRes, err error) {
 	if !req.Set {
 		return &api.PostUsersNotAcceptable{}, ErrMissingBody
 	}
 	user := model.User{
 		UserName: req.Value.UserName,
-		RoleID: req.Value.RoleID,
+		RoleID: s.o.DefaultRoleID,
 	}
 	tx := s.q.Begin()
 	defer func() {
 		if recover() != nil || err != nil {
-			err = tx.Rollback()
+			if e := tx.Rollback(); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
 		}
 	}()
 

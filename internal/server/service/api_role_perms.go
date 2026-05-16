@@ -4,6 +4,7 @@ import (
 	"context"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
+	"log/slog"
 
 	"gorm.io/gorm/clause"
 )
@@ -35,11 +36,13 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 
 
 	tx := s.q.Begin()
-	   defer func() {
-	       if recover() != nil || err != nil {
-	           _ = tx.Rollback()
-	       }
-	   }()
+	defer func() {
+		if recover() != nil || err != nil {
+			if e := tx.Rollback(); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
+		}
+	}()
 
 	if len(req.Value.Add) > 0 {
 		rolePerms := permToRolePerm(permsAdd, params.RoleID)

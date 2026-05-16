@@ -21,10 +21,15 @@ const (
 
 type Service struct {
 	q *query.Query
+	o ServiceOpts
 }
-func NewService(query *query.Query) *Service {
+type ServiceOpts struct {
+	DefaultRoleID int32
+}
+func NewService(query *query.Query, opts ServiceOpts) *Service {
 	return &Service{
 		q: query,
+		o: opts,
 	}
 }
 func (s *Service) GetHealth(ctx context.Context) error {

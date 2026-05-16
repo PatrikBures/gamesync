@@ -7,6 +7,7 @@ services:
     volumes:
       - ./data/sqlite_db:/srv/gamesync/sqlite_db
     environment:
+      GAMESYNC_DEFAULT_ROLE_ID: "2"
       GAMESYNC_DISABLED_ROLES: "maintainer"
     depends_on:
       migrate:
