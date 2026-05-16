@@ -17,7 +17,7 @@ func (h HashBytes) Value() (driver.Value, error) {
 type contextKey int
 const (
 	userContextKey contextKey = iota
-	userPermsContextKey
+	userRolePermsContextKey
 )
 
 type Service struct {

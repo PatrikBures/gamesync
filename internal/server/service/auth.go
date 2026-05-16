@@ -48,6 +48,6 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 	}
 
 	ctx = context.WithValue(ctx, userContextKey, user)
-	ctx = context.WithValue(ctx, userPermsContextKey, perms)
+	ctx = context.WithValue(ctx, userRolePermsContextKey, perms)
 	return ctx, nil
 }
