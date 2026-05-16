@@ -81,7 +81,7 @@ type Invoker interface {
 	// Create new user.
 	//
 	// POST /users
-	PostUsers(ctx context.Context, request OptUserNew) (PostUsersRes, error)
+	PostUsers(ctx context.Context, request OptUserName) (PostUsersRes, error)
 	// PutRolePerms invokes put-role-perms operation.
 	//
 	// Set perms for role.
@@ -1021,12 +1021,12 @@ func (c *Client) sendPostRoles(ctx context.Context, request OptRoleName) (res Po
 // Create new user.
 //
 // POST /users
-func (c *Client) PostUsers(ctx context.Context, request OptUserNew) (PostUsersRes, error) {
+func (c *Client) PostUsers(ctx context.Context, request OptUserName) (PostUsersRes, error) {
 	res, err := c.sendPostUsers(ctx, request)
 	return res, err
 }
 
-func (c *Client) sendPostUsers(ctx context.Context, request OptUserNew) (res PostUsersRes, err error) {
+func (c *Client) sendPostUsers(ctx context.Context, request OptUserName) (res PostUsersRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("post-users"),
 		semconv.HTTPRequestMethodKey.String("POST"),

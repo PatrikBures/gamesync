@@ -33,13 +33,13 @@ func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
 	return &usersReturn, nil
 }
 
-func (s *Service) PostUsers(ctx context.Context, req api.OptUserNew) (result api.PostUsersRes, err error) {
+func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result api.PostUsersRes, err error) {
 	if !req.Set {
 		return &api.PostUsersNotAcceptable{}, ErrMissingBody
 	}
 	user := model.User{
 		UserName: req.Value.UserName,
-		RoleID: req.Value.RoleID,
+		RoleID: 99,
 	}
 	tx := s.q.Begin()
 	defer func() {

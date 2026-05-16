@@ -61,7 +61,7 @@ type Handler interface {
 	// Create new user.
 	//
 	// POST /users
-	PostUsers(ctx context.Context, req OptUserNew) (PostUsersRes, error)
+	PostUsers(ctx context.Context, req OptUserName) (PostUsersRes, error)
 	// PutRolePerms implements put-role-perms operation.
 	//
 	// Set perms for role.

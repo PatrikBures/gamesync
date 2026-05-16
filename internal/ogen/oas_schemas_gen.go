@@ -159,38 +159,38 @@ func (o OptRoleName) Or(d RoleName) RoleName {
 	return d
 }
 
-// NewOptUserNew returns new OptUserNew with value set to v.
-func NewOptUserNew(v UserNew) OptUserNew {
-	return OptUserNew{
+// NewOptUserName returns new OptUserName with value set to v.
+func NewOptUserName(v UserName) OptUserName {
+	return OptUserName{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptUserNew is optional UserNew.
-type OptUserNew struct {
-	Value UserNew
+// OptUserName is optional UserName.
+type OptUserName struct {
+	Value UserName
 	Set   bool
 }
 
-// IsSet returns true if OptUserNew was set.
-func (o OptUserNew) IsSet() bool { return o.Set }
+// IsSet returns true if OptUserName was set.
+func (o OptUserName) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptUserNew) Reset() {
-	var v UserNew
+func (o *OptUserName) Reset() {
+	var v UserName
 	o.Value = v
 	o.Set = false
 }
 
 // SetTo sets value to v.
-func (o *OptUserNew) SetTo(v UserNew) {
+func (o *OptUserName) SetTo(v UserName) {
 	o.Set = true
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptUserNew) Get() (v UserNew, ok bool) {
+func (o OptUserName) Get() (v UserName, ok bool) {
 	if !o.Set {
 		return v, false
 	}
@@ -198,7 +198,7 @@ func (o OptUserNew) Get() (v UserNew, ok bool) {
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptUserNew) Or(d UserNew) UserNew {
+func (o OptUserName) Or(d UserName) UserName {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -409,31 +409,19 @@ func (s *User) SetRoleID(val int32) {
 
 func (*User) getUserRes() {}
 
-// Merged schema.
-// Ref: #/components/schemas/UserNew
-type UserNew struct {
+// Ref: #/components/schemas/_UserName
+type UserName struct {
 	UserName string `json:"userName"`
-	RoleID   int32  `json:"roleID"`
 }
 
 // GetUserName returns the value of UserName.
-func (s *UserNew) GetUserName() string {
+func (s *UserName) GetUserName() string {
 	return s.UserName
 }
 
-// GetRoleID returns the value of RoleID.
-func (s *UserNew) GetRoleID() int32 {
-	return s.RoleID
-}
-
 // SetUserName sets the value of UserName.
-func (s *UserNew) SetUserName(val string) {
+func (s *UserName) SetUserName(val string) {
 	s.UserName = val
-}
-
-// SetRoleID sets the value of RoleID.
-func (s *UserNew) SetRoleID(val int32) {
-	s.RoleID = val
 }
 
 // Merged schema.
