@@ -39,7 +39,7 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 	}
 	user := model.User{
 		UserName: req.Value.UserName,
-		RoleID: 99,
+		RoleID: s.o.DefaultRoleID,
 	}
 	tx := s.q.Begin()
 	defer func() {

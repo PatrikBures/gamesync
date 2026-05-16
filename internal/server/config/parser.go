@@ -41,7 +41,7 @@ func AddStringVar(variable *string, name string, defaultValue string, descriptio
 //
 // The env var is turned uppercase and replaces "-" to "_" and
 // adds "GAMESYNC_" prefix to it.
-func AddIntvar(variable *int, name string, defaultValue int, description string) {
+func AddIntVar(variable *int, name string, defaultValue int, description string) {
 	flag.IntVar(variable, name, defaultValue, description)
 
 	envName := getEnvName(name)
