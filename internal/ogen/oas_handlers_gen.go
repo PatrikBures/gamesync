@@ -1746,7 +1746,7 @@ func (s *Server) handlePutRolePermsRequest(args [1]string, argsEscaped bool, w h
 		}
 
 		type (
-			Request  = PermArray
+			Request  = PermNameArray
 			Params   = PutRolePermsParams
 			Response = PutRolePermsRes
 		)

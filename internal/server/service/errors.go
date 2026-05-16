@@ -10,4 +10,5 @@ var (
 	ErrToken            = errors.New("token error")
 	ErrAuth             = errors.New("authentication error")
 	ErrNotAuthorized    = errors.New("not authorized")
+	ErrPermNotFound     = errors.New("permission not found")
 )

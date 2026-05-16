@@ -67,7 +67,7 @@ type Handler interface {
 	// Set perms for role.
 	//
 	// PUT /roles/{roleID}/perms
-	PutRolePerms(ctx context.Context, req PermArray, params PutRolePermsParams) (PutRolePermsRes, error)
+	PutRolePerms(ctx context.Context, req PermNameArray, params PutRolePermsParams) (PutRolePermsRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and

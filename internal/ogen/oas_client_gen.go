@@ -87,7 +87,7 @@ type Invoker interface {
 	// Set perms for role.
 	//
 	// PUT /roles/{roleID}/perms
-	PutRolePerms(ctx context.Context, request PermArray, params PutRolePermsParams) (PutRolePermsRes, error)
+	PutRolePerms(ctx context.Context, request PermNameArray, params PutRolePermsParams) (PutRolePermsRes, error)
 }
 
 // Client implements OAS client.
@@ -1098,12 +1098,12 @@ func (c *Client) sendPostUsers(ctx context.Context, request OptUserNew) (res Pos
 // Set perms for role.
 //
 // PUT /roles/{roleID}/perms
-func (c *Client) PutRolePerms(ctx context.Context, request PermArray, params PutRolePermsParams) (PutRolePermsRes, error) {
+func (c *Client) PutRolePerms(ctx context.Context, request PermNameArray, params PutRolePermsParams) (PutRolePermsRes, error) {
 	res, err := c.sendPutRolePerms(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPutRolePerms(ctx context.Context, request PermArray, params PutRolePermsParams) (res PutRolePermsRes, err error) {
+func (c *Client) sendPutRolePerms(ctx context.Context, request PermNameArray, params PutRolePermsParams) (res PutRolePermsRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("put-role-perms"),
 		semconv.HTTPRequestMethodKey.String("PUT"),

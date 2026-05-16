@@ -46,7 +46,7 @@ func encodeGetPermsResponse(response GetPermsRes, w http.ResponseWriter, span tr
 
 func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
-	case *PermArray:
+	case *PermNameArray:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 		span.SetStatus(codes.Ok, http.StatusText(200))
@@ -164,6 +164,12 @@ func encodePatchRolePermsResponse(response PatchRolePermsRes, w http.ResponseWri
 
 		return nil
 
+	case *PatchRolePermsUnprocessableEntity:
+		w.WriteHeader(422)
+		span.SetStatus(codes.Error, http.StatusText(422))
+
+		return nil
+
 	case *PatchRolePermsInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
@@ -253,7 +259,7 @@ func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span 
 
 func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
-	case *PermArray:
+	case *PermNameArray:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(201)
 		span.SetStatus(codes.Ok, http.StatusText(201))
