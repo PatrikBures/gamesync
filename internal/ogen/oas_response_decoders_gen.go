@@ -68,6 +68,9 @@ func decodeGetPermsResponse(resp *http.Response) (res GetPermsRes, _ error) {
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
+	case 401:
+		// Code 401.
+		return &GetPermsUnauthorized{}, nil
 	case 500:
 		// Code 500.
 		return &GetPermsInternalServerError{}, nil
@@ -112,6 +115,9 @@ func decodeGetRolePermsResponse(resp *http.Response) (res GetRolePermsRes, _ err
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
+	case 401:
+		// Code 401.
+		return &GetRolePermsUnauthorized{}, nil
 	case 500:
 		// Code 500.
 		return &GetRolePermsInternalServerError{}, nil
@@ -165,6 +171,9 @@ func decodeGetRolesResponse(resp *http.Response) (res GetRolesRes, _ error) {
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
+	case 401:
+		// Code 401.
+		return &GetRolesUnauthorized{}, nil
 	case 500:
 		// Code 500.
 		return &GetRolesInternalServerError{}, nil
@@ -209,6 +218,9 @@ func decodeGetUserResponse(resp *http.Response) (res GetUserRes, _ error) {
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
+	case 401:
+		// Code 401.
+		return &GetUserUnauthorized{}, nil
 	case 500:
 		// Code 500.
 		return &GetUserInternalServerError{}, nil
@@ -262,6 +274,9 @@ func decodeGetUsersResponse(resp *http.Response) (res GetUsersRes, _ error) {
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
+	case 401:
+		// Code 401.
+		return &GetUsersUnauthorized{}, nil
 	case 500:
 		// Code 500.
 		return &GetUsersInternalServerError{}, nil
@@ -274,6 +289,9 @@ func decodePatchRolePermsResponse(resp *http.Response) (res PatchRolePermsRes, _
 	case 201:
 		// Code 201.
 		return &PatchRolePermsCreated{}, nil
+	case 401:
+		// Code 401.
+		return &PatchRolePermsUnauthorized{}, nil
 	case 406:
 		// Code 406.
 		return &PatchRolePermsNotAcceptable{}, nil
@@ -324,6 +342,9 @@ func decodePostRolesResponse(resp *http.Response) (res PostRolesRes, _ error) {
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
+	case 401:
+		// Code 401.
+		return &PostRolesUnauthorized{}, nil
 	case 406:
 		// Code 406.
 		return &PostRolesNotAcceptable{}, nil
@@ -424,6 +445,9 @@ func decodePutRolePermsResponse(resp *http.Response) (res PutRolePermsRes, _ err
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
+	case 401:
+		// Code 401.
+		return &PutRolePermsUnauthorized{}, nil
 	case 406:
 		// Code 406.
 		return &PutRolePermsNotAcceptable{}, nil

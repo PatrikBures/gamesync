@@ -5,11 +5,16 @@ import (
 	"errors"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/server/permissions"
 
 	"gorm.io/gorm"
 )
 
 func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
+	if err := hasPerm(ctx, permissions.PermRolesGet); err != nil {
+		return &api.GetRolesUnauthorized{}, err
+	}
+
 	roles, err := s.q.Role.WithContext(ctx).Find()
 	if err != nil {
 		return &api.GetRolesInternalServerError{}, ErrDatabase

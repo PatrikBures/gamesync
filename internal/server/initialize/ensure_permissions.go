@@ -28,12 +28,12 @@ func EnsurePermissions(q *query.Query) (err error) {
 	if err != nil {
 		return err
 	}
-	currentPermIds := make([]int32, len(currentPerms))
+	currentPermIds := make([]int32, 0, len(currentPerms))
 	for _, c := range currentPerms {
 		currentPermIds = append(currentPermIds, c.PermID)
 	}
 
-	expectedPermsInt32 := make([]int32, len(permissions.AllPerms))
+	expectedPermsInt32 := make([]int32, 0, len(permissions.AllPerms))
 
 	for _, e := range permissions.AllPerms {
 		i := int32(e)
@@ -58,7 +58,7 @@ func EnsurePermissions(q *query.Query) (err error) {
 		}
 		perm := &model.Permission{PermID: c}
 		if _, err = tx.Permission.WithContext(ctx).Delete(perm); err != nil {
-			return nil
+			return err
 		}
 		slog.Info("deleted", "permission", *perm)
 	}

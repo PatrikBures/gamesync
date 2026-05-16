@@ -8,12 +8,29 @@ import (
 	"fmt"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/server/permissions"
 	"log/slog"
 
 	"gorm.io/gorm"
 )
 
 func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.GetUserRes, error) {
+	currentUser, ok := ctx.Value(ckUser).(*model.User)
+	if !ok {
+		slog.Error("mapping user context", "UserID", params.UserID)
+		return &api.GetUserInternalServerError{}, ErrContext
+	}
+	if params.UserID == currentUser.UserID {
+		if err := hasPerm(ctx, permissions.PermUserGetOwn); err != nil {
+			return &api.GetUserUnauthorized{}, err
+		}
+		return &api.User{UserID: currentUser.UserID, UserName: currentUser.UserName, RoleID: currentUser.RoleID}, nil
+	}
+
+	if err := hasPerm(ctx, permissions.PermUserGet); err != nil {
+		return &api.GetUserUnauthorized{}, err
+	}
+
 	user, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(params.UserID)).First()
 	if err != nil {
 		return &api.GetUserInternalServerError{}, ErrDatabase
@@ -22,6 +39,10 @@ func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.Ge
 }
 
 func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
+	if err := hasPerm(ctx, permissions.PermUsersList); err != nil {
+		return &api.GetUsersUnauthorized{}, err
+	}
+
 	users, err := s.q.User.WithContext(ctx).Find()
 	if err != nil {
 		return &api.GetUsersInternalServerError{}, ErrDatabase
@@ -55,7 +76,7 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return &api.PostUsersConflict{}, ErrDuplicateKey
 		} else if errors.Is(err, gorm.ErrForeignKeyViolated) {
-			return &api.PostUsersNotAcceptable{}, fmt.Errorf("invalid role")
+			return &api.PostUsersInternalServerError{}, fmt.Errorf("invalid role")
 		}
 		return &api.PostUsersInternalServerError{}, ErrDatabase
 	}

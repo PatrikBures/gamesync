@@ -33,6 +33,12 @@ func encodeGetPermsResponse(response GetPermsRes, w http.ResponseWriter, span tr
 
 		return nil
 
+	case *GetPermsUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
 	case *GetPermsInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
@@ -58,6 +64,12 @@ func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter,
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
+
+		return nil
+
+	case *GetRolePermsUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
@@ -87,6 +99,12 @@ func encodeGetRolesResponse(response GetRolesRes, w http.ResponseWriter, span tr
 
 		return nil
 
+	case *GetRolesUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
 	case *GetRolesInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
@@ -110,6 +128,12 @@ func encodeGetUserResponse(response GetUserRes, w http.ResponseWriter, span trac
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
+
+		return nil
+
+	case *GetUserUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
@@ -139,6 +163,12 @@ func encodeGetUsersResponse(response GetUsersRes, w http.ResponseWriter, span tr
 
 		return nil
 
+	case *GetUsersUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
 	case *GetUsersInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
@@ -155,6 +185,12 @@ func encodePatchRolePermsResponse(response PatchRolePermsRes, w http.ResponseWri
 	case *PatchRolePermsCreated:
 		w.WriteHeader(201)
 		span.SetStatus(codes.Ok, http.StatusText(201))
+
+		return nil
+
+	case *PatchRolePermsUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
@@ -193,6 +229,12 @@ func encodePostRolesResponse(response PostRolesRes, w http.ResponseWriter, span 
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
+
+		return nil
+
+	case *PostRolesUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
@@ -271,6 +313,12 @@ func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter,
 		if _, err := e.WriteTo(w); err != nil {
 			return errors.Wrap(err, "write")
 		}
+
+		return nil
+
+	case *PutRolePermsUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
