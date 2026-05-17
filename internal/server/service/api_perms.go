@@ -3,13 +3,14 @@ package service
 import (
 	"context"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/server"
 )
 
 
 func (s *Service) GetPerms(ctx context.Context) (api.GetPermsRes, error) {
 	perms, err := s.q.Permission.WithContext(ctx).Find()
 	if err != nil {
-		return &api.GetPermsInternalServerError{}, ErrDatabase
+		return &api.GetPermsInternalServerError{}, server.ErrDatabase
 	}
 	permsReturn := make(api.GetPermsOKApplicationJSON, 0, len(perms))
 	for _, perm := range perms {

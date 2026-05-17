@@ -8,6 +8,7 @@ type Perms []Perm
 //go:generate go run golang.org/x/tools/cmd/stringer -type=Perm -trimprefix=Perm
 type Perm int32
 const (
+	PermAllAllowed                  Perm = 10
 
 	// /users
 	PermUsersList					Perm = 1000
@@ -30,4 +31,16 @@ const (
 )
 
 var AllPerms Perms = Perms{
+	PermAllAllowed,
+	PermUsersList,
+	PermUserDelete,
+	PermUserGet,
+	PermUserGetOwn,
+	PermUserNameUpdate,
+	PermUserNameUpdateOwn,
+	PermUserRoleUpdate,
+	PermRolesGet,
+	PermRolesMod,
+	PermRolesCreate,
+	PermRolesDelete,
 }

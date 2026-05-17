@@ -4,6 +4,7 @@ import (
 	"context"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/server"
 	"log/slog"
 
 	"gorm.io/gorm/clause"
@@ -16,22 +17,22 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 
 func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, params api.PatchRolePermsParams) (result api.PatchRolePermsRes, err error) {
 	if ! req.Set {
-		return &api.PatchRolePermsNotAcceptable{}, ErrMissingBody
+		return &api.PatchRolePermsNotAcceptable{}, server.ErrMissingBody
 	}
 	permsAdd, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req.Value.Add...)).Find()
 	if err != nil {
-		return &api.PatchRolePermsInternalServerError{}, ErrDatabase
+		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
 	}
 	if len(permsAdd) != len(req.Value.Add) {
-		return &api.PatchRolePermsUnprocessableEntity{}, ErrPermNotFound
+		return &api.PatchRolePermsUnprocessableEntity{}, server.ErrPermNotFound
 	}
 
 	permsRemove, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req.Value.Remove...)).Find()
 	if err != nil {
-		return &api.PatchRolePermsInternalServerError{}, ErrDatabase
+		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
 	}
 	if len(permsRemove) != len(req.Value.Remove) {
-		return &api.PatchRolePermsUnprocessableEntity{}, ErrPermNotFound
+		return &api.PatchRolePermsUnprocessableEntity{}, server.ErrPermNotFound
 	}
 
 
@@ -48,7 +49,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 		rolePerms := permToRolePerm(permsAdd, params.RoleID)
 		err = tx.RolePermission.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(rolePerms...)
 		if err != nil {
-			return &api.PatchRolePermsInternalServerError{}, ErrDatabase
+			return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
 		}
 	}
 
@@ -63,12 +64,12 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 				s.q.RolePermission.PermID.In(remove...),
 			).Delete()
 		if err != nil {
-			return &api.PatchRolePermsInternalServerError{}, ErrDatabase
+			return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		return &api.PatchRolePermsInternalServerError{}, ErrDatabase
+		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
 	}
 
 	return &api.PatchRolePermsCreated{}, nil

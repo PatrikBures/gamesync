@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"gamesync/internal/server"
 	"gamesync/internal/server/permissions"
 	"slices"
 )
@@ -16,13 +17,13 @@ func generateToken() ([]byte, error) {
 	return b, nil
 }
 
-func hasPerm(ctx context.Context, perm permissions.Perm) error {
+func CheckPerm(ctx context.Context, perm permissions.Perm) error {
 	perms, ok := ctx.Value(ckRolePerms).(permissions.Perms)
 	if !ok {
-		return ErrContext
+		return server.ErrContext
 	}
 	if !slices.Contains(perms, perm) {
-		return ErrNotAuthorized
+		return server.ErrNotAuthorized
 	}
 	return nil
 }

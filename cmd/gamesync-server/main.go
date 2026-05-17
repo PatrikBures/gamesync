@@ -9,6 +9,7 @@ import (
 	"gamesync/internal/server"
 	serverConfig "gamesync/internal/server/config"
 	initServer "gamesync/internal/server/initialize"
+	middlewares "gamesync/internal/server/middleware"
 	"gamesync/internal/server/service"
 	"log"
 	"net/http"
@@ -65,7 +66,14 @@ func start() error {
 		DefaultRoleID: int32(c.defaultRoleID),
 	})
 
-	srv, err := api.NewServer(s, s, api.WithPathPrefix("/api/v1"))
+	srv, err := api.NewServer(
+		s,
+		s,
+		api.WithMiddleware(
+			middlewares.AuthzMiddleware(),
+		),
+		api.WithPathPrefix("/api/v1"),
+	)
 	if err != nil {
 		return fmt.Errorf("creating server: %v", err)
 	}
