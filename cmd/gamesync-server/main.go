@@ -12,6 +12,7 @@ import (
 	middlewares "gamesync/internal/server/middleware"
 	"gamesync/internal/server/service"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 )
@@ -60,6 +61,13 @@ func start() error {
 	}
 	if err := initServer.CreateDefaultRoles(q, serverConfig.StringToSlice(c.disabledRoles)); err != nil {
 		return err
+	}
+	if token, err := initServer.CreateAdmin(q); err == nil {
+		if token == "" {
+			slog.Info("admin already exists")
+		} else {
+			slog.Info("Created admin, make sure to update the token", "token", token)
+		}
 	}
 
 	s := service.NewService(q, service.ServiceOpts{
