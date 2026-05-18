@@ -69,7 +69,6 @@ func CreateDefaultRolePerms(q *query.Query) error {
 		permissions.PermRolesGet,
 		permissions.PermUserGetOwn,
 		permissions.PermUserNameUpdateOwn,
-		permissions.PermRolesGet,
 	})...)
 
 
