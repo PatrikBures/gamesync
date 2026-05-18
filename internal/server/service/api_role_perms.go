@@ -10,9 +10,26 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+type GetRolePermsResult struct {
+	PermName string
+}
 
 func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParams) (api.GetRolePermsRes, error) {
-	return nil, nil
+
+	var result []GetRolePermsResult
+	err := s.q.RolePermission.WithContext(ctx).
+		Select(s.q.Permission.PermName).
+		Join(s.q.Permission, s.q.RolePermission.PermID.EqCol(s.q.Permission.PermID)).
+		Where(s.q.RolePermission.RoleID.Eq(params.RoleID)).
+		Scan(&result)
+	if err != nil {
+		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
+	}
+	permNames := make(api.PermNameArray, 0, len(result))
+	for _, r := range result {
+		permNames = append(permNames, r.PermName)
+	}
+	return &permNames, nil
 }
 
 func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, params api.PatchRolePermsParams) (result api.PatchRolePermsRes, err error) {
