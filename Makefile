@@ -97,6 +97,7 @@ gen-most: gen-api gen-strings
 
 gen-pg: down-pg up-pg-gen
 	GAMESYNC_DB_TYPE=postgres GAMESYNC_DB_URL=postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:5432/$(DB_NAME) go run ./cmd/gen/main.go
+	make down-pg
 gen-sqlite: up # should not be used, just the gen-pg one 
 	GAMESYNC_DB_TYPE=sqlite GAMESYNC_DB_URL=./data/sqlite_db/gamesync.sqlite go run ./cmd/gen/main.go
 
