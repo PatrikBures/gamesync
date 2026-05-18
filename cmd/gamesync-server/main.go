@@ -62,6 +62,9 @@ func start() error {
 	if err := initServer.CreateDefaultRoles(q, serverConfig.StringToSlice(c.disabledRoles)); err != nil {
 		return err
 	}
+	if err := initServer.CreateDefaultRolePerms(q); err != nil {
+		return err
+	}
 	if token, err := initServer.CreateAdmin(q); err == nil {
 		if token == "" {
 			slog.Info("admin already exists")

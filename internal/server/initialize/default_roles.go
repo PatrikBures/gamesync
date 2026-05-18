@@ -5,9 +5,11 @@ import (
 	"errors"
 	"gamesync/internal/model"
 	"gamesync/internal/query"
+	"gamesync/internal/server/permissions"
 	"log/slog"
 	"slices"
 
+	"gorm.io/gen"
 	"gorm.io/gorm"
 )
 
@@ -56,4 +58,52 @@ func CreateDefaultRoles(q *query.Query, skipRoles []string) error {
 		slog.Info("created", "role", *role)
 	}
 	return nil
+}
+
+func CreateDefaultRolePerms(q *query.Query) error {
+	ctx := context.Background()
+	rolePerms := []*model.RolePermission{}
+	
+	rolePerms = append(rolePerms, permsToRolePermModel(1, permissions.AllPerms)...)
+	rolePerms = append(rolePerms, permsToRolePermModel(50, permissions.Perms{
+		permissions.PermRolesGet,
+		permissions.PermUserGetOwn,
+		permissions.PermUserNameUpdateOwn,
+		permissions.PermRolesGet,
+	})...)
+
+
+	var rolesRemovedCount gen.ResultInfo
+	err := q.Transaction(func(tx *query.Query) error {
+		var err error
+		rolesRemovedCount, err = tx.RolePermission.WithContext(ctx).Where(q.RolePermission.RoleID.Lt(100)).Delete()
+		if err != nil {
+			return err
+		}
+
+		if err := tx.RolePermission.WithContext(ctx).Create(rolePerms...); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil
+	}
+	slog.Info("removed role perms under 100", "count", rolesRemovedCount.RowsAffected)
+	slog.Info("created perms for roles under 100", "count", len(rolePerms))
+
+	return nil
+}
+
+func permsToRolePermModel(roleID int32, perms permissions.Perms) []*model.RolePermission {
+	m := make([]*model.RolePermission, 0, len(perms))
+	for _, p := range perms {
+		rp := &model.RolePermission{
+			RoleID: roleID,
+			PermID: int32(p),
+		}
+		m = append(m, rp)
+	}
+
+	return m
 }
