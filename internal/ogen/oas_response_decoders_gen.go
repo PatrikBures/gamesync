@@ -457,6 +457,9 @@ func decodePutRolePermsResponse(resp *http.Response) (res PutRolePermsRes, _ err
 	case 406:
 		// Code 406.
 		return &PutRolePermsNotAcceptable{}, nil
+	case 422:
+		// Code 422.
+		return &PutRolePermsUnprocessableEntity{}, nil
 	case 500:
 		// Code 500.
 		return &PutRolePermsInternalServerError{}, nil

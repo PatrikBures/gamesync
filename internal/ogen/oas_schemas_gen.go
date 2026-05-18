@@ -375,6 +375,11 @@ type PutRolePermsUnauthorized struct{}
 
 func (*PutRolePermsUnauthorized) putRolePermsRes() {}
 
+// PutRolePermsUnprocessableEntity is response for PutRolePerms operation.
+type PutRolePermsUnprocessableEntity struct{}
+
+func (*PutRolePermsUnprocessableEntity) putRolePermsRes() {}
+
 // Merged schema.
 // Ref: #/components/schemas/Role
 type Role struct {

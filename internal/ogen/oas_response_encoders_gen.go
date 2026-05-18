@@ -340,6 +340,12 @@ func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter,
 
 		return nil
 
+	case *PutRolePermsUnprocessableEntity:
+		w.WriteHeader(422)
+		span.SetStatus(codes.Error, http.StatusText(422))
+
+		return nil
+
 	case *PutRolePermsInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))

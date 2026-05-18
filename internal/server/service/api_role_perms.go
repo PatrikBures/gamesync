@@ -4,6 +4,7 @@ import (
 	"context"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/query"
 	"gamesync/internal/server"
 	"log/slog"
 
@@ -71,7 +72,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 	}()
 
 	if len(req.Value.Add) > 0 {
-		rolePerms := permToRolePerm(permsAdd, params.RoleID)
+		rolePerms := permToRolePerm(params.RoleID, permsAdd)
 		err = tx.RolePermission.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(rolePerms...)
 		if err != nil {
 			return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
@@ -101,10 +102,32 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 }
 
 func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, params api.PutRolePermsParams) (api.PutRolePermsRes, error) {
+	perms, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req...)).Find()
+	if err != nil {
+		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+	}
+	if len(perms) != len(req) {
+		return &api.PutRolePermsUnprocessableEntity{}, server.ErrPermNotFound
+	}
+
+	err = s.q.Transaction(func(tx *query.Query) error {
+		if _, err := tx.RolePermission.WithContext(ctx).Where(tx.RolePermission.RoleID.Eq(params.RoleID)).Delete(); err != nil {
+			return err
+		}
+		permIDs := permToRolePerm(params.RoleID, perms)
+		if err := tx.RolePermission.WithContext(ctx).Create(permIDs...); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+	}
+
 	return nil, nil
 }
 
-func permToRolePerm(perms []*model.Permission, roleID int32) []*model.RolePermission {
+func permToRolePerm(roleID int32, perms []*model.Permission) []*model.RolePermission {
 	rolePerms := make([]*model.RolePermission, 0, len(perms))
 	for _, p := range perms {
 		rolePerm := model.RolePermission{

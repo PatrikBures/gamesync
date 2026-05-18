@@ -295,6 +295,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/PermNameArray"
         "406": {}
+        "422":
+          description: Any of the provided perms do not exist
         "500": {}
       requestBody:
         content:
