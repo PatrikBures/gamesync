@@ -12,10 +12,14 @@ import (
 var operationPerms = map[string]permissions.Perm{
 	"GetHealth": permissions.PermAllAllowed,
 	"PostUsers": permissions.PermAllAllowed,
+	"GetPerms": permissions.PermAllAllowed,
 
-	"PatchRolePerms": permissions.PermAllAllowed,
+
+	"GetUser": permissions.PermUserGet,
+	"GetRoles": permissions.PermRolesGet,
+	"PatchRolePerms": permissions.PermRolesMod,
 	"GetUsers": permissions.PermUsersList,
-	"GetRolePerms": permissions.PermAllAllowed,
+	"GetRolePerms": permissions.PermRolesGet,
 }
 
 func AuthzMiddleware() middleware.Middleware {
