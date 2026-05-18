@@ -73,6 +73,12 @@ func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter,
 
 		return nil
 
+	case *GetRolePermsNotFound:
+		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
+
+		return nil
+
 	case *GetRolePermsInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
@@ -134,6 +140,12 @@ func encodeGetUserResponse(response GetUserRes, w http.ResponseWriter, span trac
 	case *GetUserUnauthorized:
 		w.WriteHeader(401)
 		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
+	case *GetUserNotFound:
+		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
 
 		return nil
 

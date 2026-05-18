@@ -15,9 +15,17 @@ type GetRolePermsResult struct {
 }
 
 func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParams) (api.GetRolePermsRes, error) {
+	roleCount, err := s.q.Role.WithContext(ctx).
+		Where(s.q.Role.RoleID.Eq(params.RoleID)).Count()
+	if err != nil {
+		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
+	}
+	if roleCount < 1 {
+		return &api.GetRolePermsNotFound{}, server.ErrNotFound
+	}
 
 	var result []GetRolePermsResult
-	err := s.q.RolePermission.WithContext(ctx).
+	err = s.q.RolePermission.WithContext(ctx).
 		Select(s.q.Permission.PermName).
 		Join(s.q.Permission, s.q.RolePermission.PermID.EqCol(s.q.Permission.PermID)).
 		Where(s.q.RolePermission.RoleID.Eq(params.RoleID)).

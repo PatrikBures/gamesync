@@ -118,6 +118,9 @@ func decodeGetRolePermsResponse(resp *http.Response) (res GetRolePermsRes, _ err
 	case 401:
 		// Code 401.
 		return &GetRolePermsUnauthorized{}, nil
+	case 404:
+		// Code 404.
+		return &GetRolePermsNotFound{}, nil
 	case 500:
 		// Code 500.
 		return &GetRolePermsInternalServerError{}, nil
@@ -221,6 +224,9 @@ func decodeGetUserResponse(resp *http.Response) (res GetUserRes, _ error) {
 	case 401:
 		// Code 401.
 		return &GetUserUnauthorized{}, nil
+	case 404:
+		// Code 404.
+		return &GetUserNotFound{}, nil
 	case 500:
 		// Code 500.
 		return &GetUserInternalServerError{}, nil

@@ -199,6 +199,7 @@ paths:
         - Users
       responses:
         "401": {}
+        "404": {}
         "200":
           content: 
             application/json:
@@ -257,6 +258,7 @@ paths:
         - Permissions
       responses:
         "401": {}
+        "404": {}
         "200":
           content:
             application/json:

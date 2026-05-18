@@ -49,6 +49,11 @@ type GetRolePermsInternalServerError struct{}
 
 func (*GetRolePermsInternalServerError) getRolePermsRes() {}
 
+// GetRolePermsNotFound is response for GetRolePerms operation.
+type GetRolePermsNotFound struct{}
+
+func (*GetRolePermsNotFound) getRolePermsRes() {}
+
 // GetRolePermsUnauthorized is response for GetRolePerms operation.
 type GetRolePermsUnauthorized struct{}
 
@@ -72,6 +77,11 @@ func (*GetRolesUnauthorized) getRolesRes() {}
 type GetUserInternalServerError struct{}
 
 func (*GetUserInternalServerError) getUserRes() {}
+
+// GetUserNotFound is response for GetUser operation.
+type GetUserNotFound struct{}
+
+func (*GetUserNotFound) getUserRes() {}
 
 // GetUserUnauthorized is response for GetUser operation.
 type GetUserUnauthorized struct{}
