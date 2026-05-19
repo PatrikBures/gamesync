@@ -2,12 +2,14 @@
 
 CREATE TABLE roles
 (
-    role_id INTEGER,
+    role_id INTEGER PRIMARY KEY AUTOINCREMENT,
     role_name TEXT NOT NULL,
 
-    PRIMARY KEY (role_id),
     UNIQUE (role_name)
 );
+
+INSERT INTO sqlite_sequence (name, seq)
+VALUES ('roles', 99);
 
 CREATE TABLE users
 (
@@ -59,3 +61,4 @@ DELETE roles;
 DELETE tokens;
 DELETE permissions;
 DELETE role_permissions;
+
