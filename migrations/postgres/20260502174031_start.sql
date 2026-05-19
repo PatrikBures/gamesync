@@ -10,6 +10,9 @@ CREATE TABLE roles
     UNIQUE (role_name)
 );
 
+ALTER SEQUENCE roles_role_id_seq RESTART 100;
+
+
 CREATE TABLE users
 (
     user_id BIGSERIAL NOT NULL,
