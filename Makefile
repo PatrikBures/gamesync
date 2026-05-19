@@ -79,7 +79,7 @@ up-pg:
 	docker compose -f ./docker-compose-pg.yml up --build --remove-orphans -d
 up-pg-gen:
 	docker compose -f ./docker-compose-pg-gen.yml up --build --remove-orphans -d
-down-pg:
+down-pg: down-swagger
 	docker compose -f ./docker-compose-pg.yml down -v
 
 psql:
@@ -87,8 +87,11 @@ psql:
 
 up:
 	docker compose up --build --remove-orphans -d
-down:
+down: down-swagger
 	docker compose down -v
+
+down-swagger:
+	docker compose -f ./docker-compose-swagger.yml down
 
 
 ### generate code
