@@ -79,7 +79,7 @@ up-pg:
 	docker compose -f ./docker-compose-pg.yml up --build --remove-orphans -d
 up-pg-gen:
 	docker compose -f ./docker-compose-pg-gen.yml up --build --remove-orphans -d
-down-pg:
+down-pg: down-swagger
 	docker compose -f ./docker-compose-pg.yml down -v
 
 psql:
@@ -87,8 +87,11 @@ psql:
 
 up:
 	docker compose up --build --remove-orphans -d
-down:
+down: down-swagger
 	docker compose down -v
+
+down-swagger:
+	docker compose -f ./docker-compose-swagger.yml down
 
 
 ### generate code
@@ -97,6 +100,7 @@ gen-most: gen-api gen-strings
 
 gen-pg: down-pg up-pg-gen
 	GAMESYNC_DB_TYPE=postgres GAMESYNC_DB_URL=postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:5432/$(DB_NAME) go run ./cmd/gen/main.go
+	make down-pg
 gen-sqlite: up # should not be used, just the gen-pg one 
 	GAMESYNC_DB_TYPE=sqlite GAMESYNC_DB_URL=./data/sqlite_db/gamesync.sqlite go run ./cmd/gen/main.go
 

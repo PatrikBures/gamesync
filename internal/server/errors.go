@@ -1,4 +1,4 @@
-package service
+package server
 
 import "errors"
 
@@ -11,4 +11,5 @@ var (
 	ErrAuth             = errors.New("authentication error")
 	ErrNotAuthorized    = errors.New("not authorized")
 	ErrPermNotFound     = errors.New("permission not found")
+	ErrContext          = errors.New("context error")
 )

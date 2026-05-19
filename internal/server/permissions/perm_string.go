@@ -8,24 +8,40 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[PermUsersDelete-1]
-	_ = x[PermUsersUpdateName-2]
-	_ = x[PermUsersUpdateNameOwn-3]
-	_ = x[PermUsersUpdateRole-4]
-	_ = x[PermRolesCreate-5]
-	_ = x[PermRolesDelete-6]
-	_ = x[PermRolesUpdateName-7]
-	_ = x[PermRolesUpdatePerms-8]
+	_ = x[PermAllAllowed-10]
+	_ = x[PermUsersList-1000]
+	_ = x[PermUserDelete-1050]
+	_ = x[PermUserGet-1060]
+	_ = x[PermUserGetOwn-1070]
+	_ = x[PermUserNameUpdate-1100]
+	_ = x[PermUserNameUpdateOwn-1110]
+	_ = x[PermUserRoleUpdate-1130]
+	_ = x[PermRolesGet-2000]
+	_ = x[PermRolesMod-2010]
+	_ = x[PermRolesCreate-2020]
+	_ = x[PermRolesDelete-2030]
 }
 
-const _Perm_name = "UsersDeleteUsersUpdateNameUsersUpdateNameOwnUsersUpdateRoleRolesCreateRolesDeleteRolesUpdateNameRolesUpdatePerms"
+const _Perm_name = "AllAllowedUsersListUserDeleteUserGetUserGetOwnUserNameUpdateUserNameUpdateOwnUserRoleUpdateRolesGetRolesModRolesCreateRolesDelete"
 
-var _Perm_index = [...]uint8{0, 11, 26, 44, 59, 70, 81, 96, 112}
+var _Perm_map = map[Perm]string{
+	10:   _Perm_name[0:10],
+	1000: _Perm_name[10:19],
+	1050: _Perm_name[19:29],
+	1060: _Perm_name[29:36],
+	1070: _Perm_name[36:46],
+	1100: _Perm_name[46:60],
+	1110: _Perm_name[60:77],
+	1130: _Perm_name[77:91],
+	2000: _Perm_name[91:99],
+	2010: _Perm_name[99:107],
+	2020: _Perm_name[107:118],
+	2030: _Perm_name[118:129],
+}
 
 func (i Perm) String() string {
-	idx := int(i) - 1
-	if i < 1 || idx >= len(_Perm_index)-1 {
-		return "Perm(" + strconv.FormatInt(int64(i), 10) + ")"
+	if str, ok := _Perm_map[i]; ok {
+		return str
 	}
-	return _Perm_name[_Perm_index[idx]:_Perm_index[idx+1]]
+	return "Perm(" + strconv.FormatInt(int64(i), 10) + ")"
 }

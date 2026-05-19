@@ -5,6 +5,7 @@ import (
 	"errors"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/server"
 
 	"gorm.io/gorm"
 )
@@ -12,7 +13,7 @@ import (
 func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
 	roles, err := s.q.Role.WithContext(ctx).Find()
 	if err != nil {
-		return &api.GetRolesInternalServerError{}, ErrDatabase
+		return &api.GetRolesInternalServerError{}, server.ErrDatabase
 	}
 	rolesReturn := make(api.GetRolesOKApplicationJSON, 0, len(roles))
 	for _, role := range roles {
@@ -26,14 +27,14 @@ func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
 
 func (s *Service) PostRoles(ctx context.Context, req api.OptRoleName) (api.PostRolesRes, error) {
 	if !req.Set {
-		return &api.PostRolesNotAcceptable{}, ErrMissingBody
+		return &api.PostRolesNotAcceptable{}, server.ErrMissingBody
 	}
 	role := model.Role{RoleName: req.Value.RoleName}
 	if err := s.q.Role.WithContext(ctx).Create(&role); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return &api.PostRolesConflict{}, ErrDuplicateKey
+			return &api.PostRolesConflict{}, server.ErrDuplicateKey
 		}
-		return &api.PostRolesInternalServerError{}, ErrDatabase
+		return &api.PostRolesInternalServerError{}, server.ErrDatabase
 	}
 	return &api.Role{RoleID: role.RoleID, RoleName: req.Value.RoleName}, nil
 }

@@ -39,10 +39,25 @@ type GetPermsOKApplicationJSON []PermWithName
 
 func (*GetPermsOKApplicationJSON) getPermsRes() {}
 
+// GetPermsUnauthorized is response for GetPerms operation.
+type GetPermsUnauthorized struct{}
+
+func (*GetPermsUnauthorized) getPermsRes() {}
+
 // GetRolePermsInternalServerError is response for GetRolePerms operation.
 type GetRolePermsInternalServerError struct{}
 
 func (*GetRolePermsInternalServerError) getRolePermsRes() {}
+
+// GetRolePermsNotFound is response for GetRolePerms operation.
+type GetRolePermsNotFound struct{}
+
+func (*GetRolePermsNotFound) getRolePermsRes() {}
+
+// GetRolePermsUnauthorized is response for GetRolePerms operation.
+type GetRolePermsUnauthorized struct{}
+
+func (*GetRolePermsUnauthorized) getRolePermsRes() {}
 
 // GetRolesInternalServerError is response for GetRoles operation.
 type GetRolesInternalServerError struct{}
@@ -53,10 +68,25 @@ type GetRolesOKApplicationJSON []Role
 
 func (*GetRolesOKApplicationJSON) getRolesRes() {}
 
+// GetRolesUnauthorized is response for GetRoles operation.
+type GetRolesUnauthorized struct{}
+
+func (*GetRolesUnauthorized) getRolesRes() {}
+
 // GetUserInternalServerError is response for GetUser operation.
 type GetUserInternalServerError struct{}
 
 func (*GetUserInternalServerError) getUserRes() {}
+
+// GetUserNotFound is response for GetUser operation.
+type GetUserNotFound struct{}
+
+func (*GetUserNotFound) getUserRes() {}
+
+// GetUserUnauthorized is response for GetUser operation.
+type GetUserUnauthorized struct{}
+
+func (*GetUserUnauthorized) getUserRes() {}
 
 // GetUsersInternalServerError is response for GetUsers operation.
 type GetUsersInternalServerError struct{}
@@ -66,6 +96,11 @@ func (*GetUsersInternalServerError) getUsersRes() {}
 type GetUsersOKApplicationJSON []User
 
 func (*GetUsersOKApplicationJSON) getUsersRes() {}
+
+// GetUsersUnauthorized is response for GetUsers operation.
+type GetUsersUnauthorized struct{}
+
+func (*GetUsersUnauthorized) getUsersRes() {}
 
 // NewOptPermDiff returns new OptPermDiff with value set to v.
 func NewOptPermDiff(v PermDiff) OptPermDiff {
@@ -220,6 +255,11 @@ type PatchRolePermsNotAcceptable struct{}
 
 func (*PatchRolePermsNotAcceptable) patchRolePermsRes() {}
 
+// PatchRolePermsUnauthorized is response for PatchRolePerms operation.
+type PatchRolePermsUnauthorized struct{}
+
+func (*PatchRolePermsUnauthorized) patchRolePermsRes() {}
+
 // PatchRolePermsUnprocessableEntity is response for PatchRolePerms operation.
 type PatchRolePermsUnprocessableEntity struct{}
 
@@ -300,6 +340,11 @@ type PostRolesNotAcceptable struct{}
 
 func (*PostRolesNotAcceptable) postRolesRes() {}
 
+// PostRolesUnauthorized is response for PostRoles operation.
+type PostRolesUnauthorized struct{}
+
+func (*PostRolesUnauthorized) postRolesRes() {}
+
 // PostUsersConflict is response for PostUsers operation.
 type PostUsersConflict struct{}
 
@@ -324,6 +369,16 @@ func (*PutRolePermsInternalServerError) putRolePermsRes() {}
 type PutRolePermsNotAcceptable struct{}
 
 func (*PutRolePermsNotAcceptable) putRolePermsRes() {}
+
+// PutRolePermsUnauthorized is response for PutRolePerms operation.
+type PutRolePermsUnauthorized struct{}
+
+func (*PutRolePermsUnauthorized) putRolePermsRes() {}
+
+// PutRolePermsUnprocessableEntity is response for PutRolePerms operation.
+type PutRolePermsUnprocessableEntity struct{}
+
+func (*PutRolePermsUnprocessableEntity) putRolePermsRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/Role

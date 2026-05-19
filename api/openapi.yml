@@ -160,6 +160,7 @@ paths:
       tags:
         - Users
       responses:
+        "401": {}
         "200":
           content: 
             application/json:
@@ -197,6 +198,8 @@ paths:
       tags:
         - Users
       responses:
+        "401": {}
+        "404": {}
         "200":
           content: 
             application/json:
@@ -213,6 +216,7 @@ paths:
       tags:
         - Roles
       responses:
+        "401": {}
         "200": 
           content:
             application/json:
@@ -227,6 +231,7 @@ paths:
       tags:
         - Roles
       responses:
+        "401": {}
         "201":
           content:
             application/json:
@@ -252,6 +257,8 @@ paths:
       tags:
         - Permissions
       responses:
+        "401": {}
+        "404": {}
         "200":
           content:
             application/json:
@@ -264,6 +271,7 @@ paths:
       tags:
         - Permissions
       responses:
+        "401": {}
         "201": {}
         "406": {}
         "422":
@@ -280,12 +288,15 @@ paths:
       tags:
         - Permissions
       responses:
+        "401": {}
         "201":
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PermNameArray"
         "406": {}
+        "422":
+          description: Any of the provided perms do not exist
         "500": {}
       requestBody:
         content:
@@ -299,6 +310,7 @@ paths:
       tags:
         - Permissions
       responses:
+        "401": {}
         "200":
           content:
             application/json:
