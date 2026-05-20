@@ -32,7 +32,10 @@ func ConnectDb(dbType string, dsn string) (*gorm.DB, error) {
 			Logger: newLogger,
 		})
 	case "postgres":
-		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{TranslateError: true})
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+			TranslateError: true,
+			Logger: newLogger,
+		})
 	default:
 		return nil, fmt.Errorf("unsupported database type '%s'", dbType)
 	}
