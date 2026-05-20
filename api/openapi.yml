@@ -293,8 +293,7 @@ paths:
         "401": {}
         "201": {}
         "406": {}
-        "422":
-          description: Any of the provided perms do not exist
+        "422": {}
         "500": {}
       requestBody:
         content:
@@ -314,8 +313,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PermNameArray"
         "406": {}
-        "422":
-          description: Any of the provided perms do not exist
+        "422": {}
         "500": {}
       requestBody:
         content:
