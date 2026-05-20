@@ -85,12 +85,12 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 		return &api.PutUserNameNotAcceptable{}, server.ErrMissingBody
 	}
 
-	_, err := isUserSelf(ctx, params.UserID)
-	if errors.Is(err, server.ErrContext) {
-		return &api.PutUserNameInternalServerError{}, err
-	}
-	if errPerm := CheckPerm(ctx, permissions.PermUserNameUpdate); (err != nil) && (errPerm != nil) {
-		return &api.PutUserNameUnauthorized{}, server.ErrNotAuthorized
+	if err := isUserSelfAndPerm(ctx, params.UserID, permissions.PermUserNameUpdate); err != nil {
+		if errors.Is(err, server.ErrContext) {
+			return &api.PutUserNameInternalServerError{}, err
+		} else if errors.Is(err, server.ErrNotAuthorized) {
+			return &api.PutUserNameUnauthorized{}, err
+		}
 	}
 
 	if _, err := s.q.User.WithContext(ctx).
@@ -118,4 +118,30 @@ func isUserSelf(ctx context.Context, userID int64) (*model.User, error) {
 		return currentUser, server.ErrNotAuthorized
 	}
 	return currentUser, nil
+}
+
+
+// checks if the user is trying to access itself, 
+// if it is it will return nil
+//
+// if it is trying to access a user id which is not itself, 
+// it will check if it has the perm for that
+//
+// returns either ErrContext, ErrNotAuthorized or nil
+func isUserSelfAndPerm(ctx context.Context, userID int64, perm permissions.Perm) error {
+	_, errUser := isUserSelf(ctx, userID)
+	if errors.Is(errUser, server.ErrContext) {
+		return errUser
+	} else if errUser == nil {
+		return nil
+	}
+
+	errPerm := CheckPerm(ctx, perm)
+	if errors.Is(errPerm, server.ErrContext) {
+		return errPerm
+	} else if errPerm != nil {
+		return server.ErrNotAuthorized
+	}
+
+	return nil
 }
