@@ -2,12 +2,15 @@ package service
 
 import (
 	"context"
+	"errors"
 	"gamesync/internal/dbx"
 	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/permissions"
 	"log/slog"
+
+	"gorm.io/gorm"
 )
 
 func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.GetUserRes, error) {
@@ -18,9 +21,6 @@ func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.Ge
 		return &api.GetUserInternalServerError{}, server.ErrContext
 	}
 	if params.UserID == currentUser.UserID {
-		if err := CheckPerm(ctx, permissions.PermUserGetOwn); err != nil {
-			return &api.GetUserUnauthorized{}, err
-		}
 		return &api.User{UserID: currentUser.UserID, UserName: currentUser.UserName, RoleID: currentUser.RoleID}, nil
 	}
 
@@ -30,6 +30,9 @@ func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.Ge
 
 	user, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(params.UserID)).First()
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &api.GetUserNotFound{}, server.ErrNotFound
+		}
 		return &api.GetUserInternalServerError{}, server.ErrDatabase
 	}
 	return &api.User{UserID: user.UserID, UserName: user.UserName, RoleID: user.RoleID}, nil
