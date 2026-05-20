@@ -380,6 +380,11 @@ type PutRolePermsUnprocessableEntity struct{}
 
 func (*PutRolePermsUnprocessableEntity) putRolePermsRes() {}
 
+// PutUserNameConflict is response for PutUserName operation.
+type PutUserNameConflict struct{}
+
+func (*PutUserNameConflict) putUserNameRes() {}
+
 // PutUserNameInternalServerError is response for PutUserName operation.
 type PutUserNameInternalServerError struct{}
 

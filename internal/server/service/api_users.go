@@ -88,6 +88,9 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 	}
 	_, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(params.UserID)).Update(s.q.User.UserName, req.Value.UserName)
 	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return &api.PutUserNameConflict{}, server.ErrDuplicateKey
+		}
 		return &api.PutUserNameInternalServerError{}, server.ErrDatabase
 	}
 	return &api.PutUserNameOK{}, nil

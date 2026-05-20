@@ -481,6 +481,9 @@ func decodePutUserNameResponse(resp *http.Response) (res PutUserNameRes, _ error
 	case 406:
 		// Code 406.
 		return &PutUserNameNotAcceptable{}, nil
+	case 409:
+		// Code 409.
+		return &PutUserNameConflict{}, nil
 	case 500:
 		// Code 500.
 		return &PutUserNameInternalServerError{}, nil

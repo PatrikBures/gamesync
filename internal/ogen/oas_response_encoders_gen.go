@@ -383,6 +383,12 @@ func encodePutUserNameResponse(response PutUserNameRes, w http.ResponseWriter, s
 
 		return nil
 
+	case *PutUserNameConflict:
+		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
+
+		return nil
+
 	case *PutUserNameInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
