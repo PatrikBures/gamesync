@@ -15,19 +15,17 @@ import (
 
 func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.GetUserRes, error) {
 	// TODO: Seperate endpoint like GET /users/me to get info about the authenticated user
-	currentUser, ok := ctx.Value(ckUser).(*model.User)
-	if !ok {
-		slog.Error("mapping user context", "UserID", params.UserID)
-		return &api.GetUserInternalServerError{}, server.ErrContext
-	}
-	if params.UserID == currentUser.UserID {
+
+	currentUser, err := isUserSelf(ctx, params.UserID)
+	if errors.Is(err, server.ErrContext) {
+		return &api.GetUserInternalServerError{}, err
+	} else if err == nil {
 		return &api.User{UserID: currentUser.UserID, UserName: currentUser.UserName, RoleID: currentUser.RoleID}, nil
 	}
 
 	if err := CheckPerm(ctx, permissions.PermUserGet); err != nil {
 		return &api.GetUserUnauthorized{}, err
 	}
-
 	user, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(params.UserID)).First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -86,8 +84,20 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 	if !req.Set {
 		return &api.PutUserNameNotAcceptable{}, server.ErrMissingBody
 	}
-	_, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(params.UserID)).Update(s.q.User.UserName, req.Value.UserName)
-	if err != nil {
+
+	_, err := isUserSelf(ctx, params.UserID)
+	if errors.Is(err, server.ErrContext) {
+		return &api.PutUserNameInternalServerError{}, err
+	}
+	if errPerm := CheckPerm(ctx, permissions.PermUserNameUpdate); (err != nil) && (errPerm != nil) {
+		return &api.PutUserNameUnauthorized{}, server.ErrNotAuthorized
+	}
+
+	if _, err := s.q.User.WithContext(ctx).
+		Where(s.q.User.UserID.Eq(params.UserID)).
+		Update(s.q.User.UserName, req.Value.UserName);
+		err != nil {
+
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return &api.PutUserNameConflict{}, server.ErrDuplicateKey
 		}
@@ -96,3 +106,16 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 	return &api.PutUserNameOK{}, nil
 }
 
+
+
+func isUserSelf(ctx context.Context, userID int64) (*model.User, error) {
+	currentUser, ok := ctx.Value(ckUser).(*model.User)
+	if !ok {
+		slog.Error("mapping user context", "UserID", userID)
+		return nil, server.ErrContext
+	}
+	if userID != currentUser.UserID {
+		return currentUser, server.ErrNotAuthorized
+	}
+	return currentUser, nil
+}
