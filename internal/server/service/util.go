@@ -7,6 +7,12 @@ import (
 	"slices"
 )
 
+
+// server.ErrContext if there is a issue loading the context
+//
+// server.ErrNotAuthorized if user does not have perm 
+//
+// nil if the user has perm
 func CheckPerm(ctx context.Context, perm permissions.Perm) error {
 	perms, ok := ctx.Value(ckRolePerms).(permissions.Perms)
 	if !ok {

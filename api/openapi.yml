@@ -206,7 +206,26 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
         "500": {}
-
+  /users/{userID}/name:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+    put:
+      summary: Change username of user
+      operationId: put-user-name
+      tags:
+        - Users
+      responses:
+        "401": {}
+        "404": {}
+        "406": {}
+        "409": {}
+        "200": {}
+        "500": {}
+      requestBody:
+        content: 
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_UserName"
 
 
   /roles:
@@ -274,8 +293,7 @@ paths:
         "401": {}
         "201": {}
         "406": {}
-        "422":
-          description: Any of the provided perms do not exist
+        "422": {}
         "500": {}
       requestBody:
         content:
@@ -295,8 +313,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PermNameArray"
         "406": {}
-        "422":
-          description: Any of the provided perms do not exist
+        "422": {}
         "500": {}
       requestBody:
         content:

@@ -42,6 +42,7 @@ var operationRolesBearerAuth = map[string][]string{
 	PatchRolePermsOperation: []string{},
 	PostRolesOperation:      []string{},
 	PutRolePermsOperation:   []string{},
+	PutUserNameOperation:    []string{},
 }
 
 // GetRolesForBearerAuth returns the required roles for the given operation.

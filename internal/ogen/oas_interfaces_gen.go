@@ -36,3 +36,7 @@ type PostUsersRes interface {
 type PutRolePermsRes interface {
 	putRolePermsRes()
 }
+
+type PutUserNameRes interface {
+	putUserNameRes()
+}
