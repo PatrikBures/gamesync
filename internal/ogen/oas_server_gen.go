@@ -68,6 +68,12 @@ type Handler interface {
 	//
 	// PUT /roles/{roleID}/perms
 	PutRolePerms(ctx context.Context, req PermNameArray, params PutRolePermsParams) (PutRolePermsRes, error)
+	// PutUserName implements put-user-name operation.
+	//
+	// Change username of user.
+	//
+	// PUT /users/{userID}/name
+	PutUserName(ctx context.Context, req OptUserName, params PutUserNameParams) (PutUserNameRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and

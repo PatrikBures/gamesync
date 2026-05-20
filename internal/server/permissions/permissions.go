@@ -26,7 +26,6 @@ const (
 	// /roles
 	PermRolesGet                    Perm = 2000 // list roles, list role perms, get name
 	PermRolesMod                    Perm = 2010 // mod perms/name for existing roles
-	PermRolesCreate                 Perm = 2020 // create new perm
 	PermRolesDelete                 Perm = 2030 // delete role with no users
 )
 
@@ -41,6 +40,5 @@ var AllPerms Perms = Perms{
 	PermUserRoleUpdate,
 	PermRolesGet,
 	PermRolesMod,
-	PermRolesCreate,
 	PermRolesDelete,
 }

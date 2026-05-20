@@ -206,7 +206,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
         "500": {}
-
+  /users/{userID}/name:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+    put:
+      summary: Change username of user
+      operationId: put-user-name
+      tags:
+        - Users
+      responses:
+        "401": {}
+        "404": {}
+        "406": {}
+        "200": {}
+        "500": {}
+      requestBody:
+        content: 
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_UserName"
 
 
   /roles:

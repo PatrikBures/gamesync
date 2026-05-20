@@ -102,3 +102,12 @@ func (UnimplementedHandler) PostUsers(ctx context.Context, req OptUserName) (r P
 func (UnimplementedHandler) PutRolePerms(ctx context.Context, req PermNameArray, params PutRolePermsParams) (r PutRolePermsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
+
+// PutUserName implements put-user-name operation.
+//
+// Change username of user.
+//
+// PUT /users/{userID}/name
+func (UnimplementedHandler) PutUserName(ctx context.Context, req OptUserName, params PutUserNameParams) (r PutUserNameRes, _ error) {
+	return r, ht.ErrNotImplemented
+}

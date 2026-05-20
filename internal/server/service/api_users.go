@@ -82,3 +82,14 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 }
 
 
+func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params api.PutUserNameParams) (api.PutUserNameRes, error) {
+	if !req.Set {
+		return &api.PutUserNameNotAcceptable{}, server.ErrMissingBody
+	}
+	_, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(params.UserID)).Update(s.q.User.UserName, req.Value.UserName)
+	if err != nil {
+		return &api.PutUserNameInternalServerError{}, server.ErrDatabase
+	}
+	return &api.PutUserNameOK{}, nil
+}
+

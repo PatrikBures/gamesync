@@ -16,4 +16,5 @@ const (
 	PostRolesOperation      OperationName = "PostRoles"
 	PostUsersOperation      OperationName = "PostUsers"
 	PutRolePermsOperation   OperationName = "PutRolePerms"
+	PutUserNameOperation    OperationName = "PutUserName"
 )

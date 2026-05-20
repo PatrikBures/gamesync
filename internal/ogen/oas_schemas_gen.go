@@ -380,6 +380,31 @@ type PutRolePermsUnprocessableEntity struct{}
 
 func (*PutRolePermsUnprocessableEntity) putRolePermsRes() {}
 
+// PutUserNameInternalServerError is response for PutUserName operation.
+type PutUserNameInternalServerError struct{}
+
+func (*PutUserNameInternalServerError) putUserNameRes() {}
+
+// PutUserNameNotAcceptable is response for PutUserName operation.
+type PutUserNameNotAcceptable struct{}
+
+func (*PutUserNameNotAcceptable) putUserNameRes() {}
+
+// PutUserNameNotFound is response for PutUserName operation.
+type PutUserNameNotFound struct{}
+
+func (*PutUserNameNotFound) putUserNameRes() {}
+
+// PutUserNameOK is response for PutUserName operation.
+type PutUserNameOK struct{}
+
+func (*PutUserNameOK) putUserNameRes() {}
+
+// PutUserNameUnauthorized is response for PutUserName operation.
+type PutUserNameUnauthorized struct{}
+
+func (*PutUserNameUnauthorized) putUserNameRes() {}
+
 // Merged schema.
 // Ref: #/components/schemas/Role
 type Role struct {
