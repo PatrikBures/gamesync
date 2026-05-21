@@ -194,9 +194,9 @@ func encodeGetUsersResponse(response GetUsersRes, w http.ResponseWriter, span tr
 
 func encodePatchRolePermsResponse(response PatchRolePermsRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
-	case *PatchRolePermsCreated:
-		w.WriteHeader(201)
-		span.SetStatus(codes.Ok, http.StatusText(201))
+	case *PatchRolePermsOK:
+		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		return nil
 
