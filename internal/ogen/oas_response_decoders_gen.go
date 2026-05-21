@@ -292,9 +292,9 @@ func decodeGetUsersResponse(resp *http.Response) (res GetUsersRes, _ error) {
 
 func decodePatchRolePermsResponse(resp *http.Response) (res PatchRolePermsRes, _ error) {
 	switch resp.StatusCode {
-	case 201:
-		// Code 201.
-		return &PatchRolePermsCreated{}, nil
+	case 200:
+		// Code 200.
+		return &PatchRolePermsOK{}, nil
 	case 401:
 		// Code 401.
 		return &PatchRolePermsUnauthorized{}, nil

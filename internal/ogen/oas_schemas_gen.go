@@ -240,11 +240,6 @@ func (o OptUserName) Or(d UserName) UserName {
 	return d
 }
 
-// PatchRolePermsCreated is response for PatchRolePerms operation.
-type PatchRolePermsCreated struct{}
-
-func (*PatchRolePermsCreated) patchRolePermsRes() {}
-
 // PatchRolePermsInternalServerError is response for PatchRolePerms operation.
 type PatchRolePermsInternalServerError struct{}
 
@@ -254,6 +249,11 @@ func (*PatchRolePermsInternalServerError) patchRolePermsRes() {}
 type PatchRolePermsNotAcceptable struct{}
 
 func (*PatchRolePermsNotAcceptable) patchRolePermsRes() {}
+
+// PatchRolePermsOK is response for PatchRolePerms operation.
+type PatchRolePermsOK struct{}
+
+func (*PatchRolePermsOK) patchRolePermsRes() {}
 
 // PatchRolePermsUnauthorized is response for PatchRolePerms operation.
 type PatchRolePermsUnauthorized struct{}

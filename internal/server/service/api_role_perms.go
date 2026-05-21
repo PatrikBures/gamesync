@@ -98,7 +98,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
 	}
 
-	return &api.PatchRolePermsCreated{}, nil
+	return &api.PatchRolePermsOK{}, nil
 }
 
 func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, params api.PutRolePermsParams) (api.PutRolePermsRes, error) {
