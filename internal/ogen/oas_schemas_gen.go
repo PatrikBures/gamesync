@@ -360,6 +360,31 @@ type PostUsersNotAcceptable struct{}
 
 func (*PostUsersNotAcceptable) postUsersRes() {}
 
+// PutRoleNameConflict is response for PutRoleName operation.
+type PutRoleNameConflict struct{}
+
+func (*PutRoleNameConflict) putRoleNameRes() {}
+
+// PutRoleNameInternalServerError is response for PutRoleName operation.
+type PutRoleNameInternalServerError struct{}
+
+func (*PutRoleNameInternalServerError) putRoleNameRes() {}
+
+// PutRoleNameNotAcceptable is response for PutRoleName operation.
+type PutRoleNameNotAcceptable struct{}
+
+func (*PutRoleNameNotAcceptable) putRoleNameRes() {}
+
+// PutRoleNameOK is response for PutRoleName operation.
+type PutRoleNameOK struct{}
+
+func (*PutRoleNameOK) putRoleNameRes() {}
+
+// PutRoleNameUnauthorized is response for PutRoleName operation.
+type PutRoleNameUnauthorized struct{}
+
+func (*PutRoleNameUnauthorized) putRoleNameRes() {}
+
 // PutRolePermsInternalServerError is response for PutRolePerms operation.
 type PutRolePermsInternalServerError struct{}
 

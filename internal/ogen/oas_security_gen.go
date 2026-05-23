@@ -41,6 +41,7 @@ var operationRolesBearerAuth = map[string][]string{
 	GetUsersOperation:       []string{},
 	PatchRolePermsOperation: []string{},
 	PostRolesOperation:      []string{},
+	PutRoleNameOperation:    []string{},
 	PutRolePermsOperation:   []string{},
 	PutUserNameOperation:    []string{},
 }

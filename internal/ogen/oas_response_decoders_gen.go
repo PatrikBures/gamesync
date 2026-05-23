@@ -414,6 +414,27 @@ func decodePostUsersResponse(resp *http.Response) (res PostUsersRes, _ error) {
 	return res, validate.UnexpectedStatusCodeWithResponse(resp)
 }
 
+func decodePutRoleNameResponse(resp *http.Response) (res PutRoleNameRes, _ error) {
+	switch resp.StatusCode {
+	case 200:
+		// Code 200.
+		return &PutRoleNameOK{}, nil
+	case 401:
+		// Code 401.
+		return &PutRoleNameUnauthorized{}, nil
+	case 406:
+		// Code 406.
+		return &PutRoleNameNotAcceptable{}, nil
+	case 409:
+		// Code 409.
+		return &PutRoleNameConflict{}, nil
+	case 500:
+		// Code 500.
+		return &PutRoleNameInternalServerError{}, nil
+	}
+	return res, validate.UnexpectedStatusCodeWithResponse(resp)
+}
+
 func decodePutRolePermsResponse(resp *http.Response) (res PutRolePermsRes, _ error) {
 	switch resp.StatusCode {
 	case 201:
