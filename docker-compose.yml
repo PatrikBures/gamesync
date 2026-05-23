@@ -11,6 +11,7 @@ services:
     environment:
       GAMESYNC_DEFAULT_ROLE_ID: "50"
       GAMESYNC_DISABLED_ROLES: "maintainer"
+      GAMESYNC_REQUEST_LOGGER: true
     depends_on:
       migrate:
         condition: service_completed_successfully

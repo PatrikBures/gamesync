@@ -29,6 +29,7 @@ type config struct {
 	dbUrl    string
 	disabledRoles string
 	defaultRoleID int
+	requestLogger bool
 }
 
 func start() error {
@@ -38,6 +39,7 @@ func start() error {
 	serverConfig.AddStringVar(&c.dbUrl, "db-url", server.DefaultSQLitePath, "Url to postgres db or path to SQLite db-file")
 	serverConfig.AddStringVar(&c.disabledRoles, "disabled-roles", "", "Default roles to disable, seperated by '|'")
 	serverConfig.AddIntVar(&c.defaultRoleID, "default-role-id", 50, "Default role id for newly created users. Role needs to exist for creation of new users to work")
+	serverConfig.AddBoolVar(&c.requestLogger, "request-logger", false, "Enable logs for requests")
 
 	flag.Parse()
 
@@ -77,15 +79,21 @@ func start() error {
 		DefaultRoleID: int32(c.defaultRoleID),
 	})
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+
+	mw := []api.Middleware{
+		middlewares.AuthzMiddleware(),
+	}
+
+	if c.requestLogger {
+		requestLogger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+		mw = append(mw, middlewares.Logging(requestLogger))
+	}
 
 	srv, err := api.NewServer(
 		s,
 		s,
-		api.WithMiddleware(
-			middlewares.AuthzMiddleware(),
-			middlewares.Logging(logger),
-		),
+		api.WithMiddleware(mw...),
 		api.WithPathPrefix("/api/v1"),
 	)
 	if err != nil {
