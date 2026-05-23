@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gamesync/internal/dbx"
 	api "gamesync/internal/ogen"
-	"gamesync/internal/query"
 	"gamesync/internal/server"
 	serverConfig "gamesync/internal/server/config"
 	initServer "gamesync/internal/server/initialize"
@@ -49,36 +47,17 @@ func start() error {
 		}
 	}
 
-	db, err := dbx.ConnectDb(c.dbType, c.dbUrl)
+	q, err := initServer.InitDatabase(
+		c.dbType, c.dbUrl, 
+		serverConfig.StringToSlice(c.disabledRoles),
+	)
 	if err != nil {
-		return err
-	}
-	if c.dbType == "sqlite" {
-		db.Exec("PRAGMA foreign_keys = ON")
-	}
-	q := query.Use(db)
-
-	if err := initServer.EnsurePermissions(q); err != nil {
-		return err
-	}
-	if err := initServer.CreateDefaultRoles(q, serverConfig.StringToSlice(c.disabledRoles)); err != nil {
-		return err
-	}
-	if err := initServer.CreateDefaultRolePerms(q); err != nil {
-		return err
-	}
-	if token, err := initServer.CreateAdmin(q); err == nil {
-		if token == "" {
-			slog.Info("admin already exists")
-		} else {
-			slog.Info("Created admin, make sure to update the token", "token", token)
-		}
+		return fmt.Errorf("initializing database: %w", err)
 	}
 
 	s := service.NewService(q, service.ServiceOpts{
 		DefaultRoleID: int32(c.defaultRoleID),
 	})
-
 
 
 	mw := []api.Middleware{
