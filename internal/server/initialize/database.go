@@ -4,10 +4,12 @@ import (
 	"gamesync/internal/dbx"
 	"gamesync/internal/query"
 	"log/slog"
+
+	"gorm.io/gorm/logger"
 )
 
-func InitDatabase(dbType string, dbUrl string, disabledRoles []string) (*query.Query, error) {
-	db, err := dbx.ConnectDb(dbType, dbUrl)
+func InitDatabase(dbType string, dbUrl string, dbLogger logger.LogLevel, disabledRoles []string) (*query.Query, error) {
+	db, err := dbx.ConnectDb(dbType, dbUrl, dbLogger)
 	if err != nil {
 		return nil, err
 	}

@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func ConnectDb(dbType string, dsn string) (*gorm.DB, error) {
+func ConnectDb(dbType string, dsn string, logLevel logger.LogLevel) (*gorm.DB, error) {
 	var err error
 	var db *gorm.DB
 
@@ -20,7 +20,7 @@ func ConnectDb(dbType string, dsn string) (*gorm.DB, error) {
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{
 			SlowThreshold: time.Second,
-			LogLevel: logger.Error,
+			LogLevel: logLevel,
 			IgnoreRecordNotFoundError: true,
 		},
 	)

@@ -13,6 +13,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+
+	"gorm.io/gorm/logger"
 )
 
 func main() {
@@ -22,12 +24,13 @@ func main() {
 }
 
 type config struct {
-	appDir   string
-	dbType   string
-	dbUrl    string
-	disabledRoles string
-	defaultRoleID int
-	requestLogs bool
+	appDir          string
+	dbType          string
+	dbUrl           string
+	dbLogLevel      string
+	disabledRoles   string
+	defaultRoleID   int
+	requestLogs     bool
 }
 
 func start() error {
@@ -38,6 +41,7 @@ func start() error {
 	serverConfig.AddStringVar(&c.disabledRoles, "disabled-roles", "", "Default roles to disable, seperated by '|'")
 	serverConfig.AddIntVar(&c.defaultRoleID, "default-role-id", 50, "Default role id for newly created users. Role needs to exist for creation of new users to work")
 	serverConfig.AddBoolVar(&c.requestLogs, "request-logs", false, "Enable logs for requests")
+	serverConfig.AddStringVar(&c.dbLogLevel, "db-log-level", "error", "Change log level for db (error, info, warn, silent) default=error")
 
 	flag.Parse()
 
@@ -47,8 +51,13 @@ func start() error {
 		}
 	}
 
+	logLevel, err := parseDbLogLevel(c.dbLogLevel)
+	if err != nil {
+		return err
+	}
+
 	q, err := initServer.InitDatabase(
-		c.dbType, c.dbUrl, 
+		c.dbType, c.dbUrl, logLevel,
 		serverConfig.StringToSlice(c.disabledRoles),
 	)
 	if err != nil {
@@ -80,4 +89,19 @@ func start() error {
 	}
 
 	return http.ListenAndServe(":8080", srv)
+}
+
+
+func parseDbLogLevel(level string) (logger.LogLevel, error) {
+	levelMap := map[string]logger.LogLevel {
+		"error":   logger.Error,
+		"warn":    logger.Warn,
+		"info":    logger.Info,
+		"silent":  logger.Silent,
+	}
+	logLevel, ok := levelMap[level]
+	if !ok {
+		return logger.Error, fmt.Errorf("invalid db log level '%s'. valid levels: error, warn, info, silent", level)
+	}
+	return logLevel, nil
 }
