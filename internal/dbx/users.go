@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// error can be: ErrDatabase, ErrToken, ErrDuplicateKey or nil
 func CreateUser(tx *query.QueryTx, ctx context.Context, user *model.User) (token64 string, err error) {
 	defer func() {
 		if recover() != nil || err != nil {
@@ -51,7 +52,7 @@ func CreateUser(tx *query.QueryTx, ctx context.Context, user *model.User) (token
 		return "", server.ErrDatabase
 	}
 
-	return token64, err
+	return token64, nil
 }
 
 

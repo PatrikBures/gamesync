@@ -311,6 +311,43 @@ func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span 
 	}
 }
 
+func encodePutRoleNameResponse(response PutRoleNameRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *PutRoleNameOK:
+		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
+
+		return nil
+
+	case *PutRoleNameUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
+	case *PutRoleNameNotAcceptable:
+		w.WriteHeader(406)
+		span.SetStatus(codes.Error, http.StatusText(406))
+
+		return nil
+
+	case *PutRoleNameConflict:
+		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
+
+		return nil
+
+	case *PutRoleNameInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
 func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *PermNameArray:

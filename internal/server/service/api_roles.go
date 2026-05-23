@@ -38,3 +38,18 @@ func (s *Service) PostRoles(ctx context.Context, req api.OptRoleName) (api.PostR
 	}
 	return &api.Role{RoleID: role.RoleID, RoleName: req.Value.RoleName}, nil
 }
+
+func (s *Service) PutRoleName(ctx context.Context, req api.OptRoleName, params api.PutRoleNameParams) (api.PutRoleNameRes, error) {
+	if !req.Set {
+		return &api.PutRoleNameNotAcceptable{}, server.ErrMissingBody
+	}
+	if _, err := s.q.Role.WithContext(ctx).
+	Where(s.q.Role.RoleID.Eq(params.RoleID)).
+	Update(s.q.Role.RoleName, req.Value.RoleName);
+	err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return &api.PutRoleNameConflict{}, server.ErrDuplicateKey
+		}
+	}
+	return &api.PutRoleNameOK{}, nil
+}

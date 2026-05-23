@@ -266,6 +266,26 @@ paths:
               $ref: "#/components/schemas/RoleNew"
 
 
+  /roles/{roleID}/name:
+    parameters:
+      - $ref: "#/components/parameters/roleID"
+    put:
+      summary: Update role name
+      operationId: put-role-name
+      tags:
+        - Roles
+      responses:
+        "401": {}
+        "200": {}
+        "406": {}
+        "409": {}
+        "500": {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_RoleName"
+
 
   /roles/{roleID}/perms:
     parameters:

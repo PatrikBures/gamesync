@@ -62,6 +62,12 @@ type Handler interface {
 	//
 	// POST /users
 	PostUsers(ctx context.Context, req OptUserName) (PostUsersRes, error)
+	// PutRoleName implements put-role-name operation.
+	//
+	// Update role name.
+	//
+	// PUT /roles/{roleID}/name
+	PutRoleName(ctx context.Context, req OptRoleName, params PutRoleNameParams) (PutRoleNameRes, error)
 	// PutRolePerms implements put-role-perms operation.
 	//
 	// Set perms for role.

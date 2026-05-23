@@ -23,6 +23,7 @@ var operationPerms = map[string]permissions.Perm{
 	"GetRoles":           permissions.PermRolesGet,
 	"PostRoles":          permissions.PermRolesMod,
 
+	"PutRoleName":        permissions.PermRolesMod,
 	"GetRolePerms":       permissions.PermRolesGet,
 	"PatchRolePerms":     permissions.PermRolesMod,
 	"PutRolePerms":       permissions.PermRolesMod,

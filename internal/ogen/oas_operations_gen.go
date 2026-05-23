@@ -15,6 +15,7 @@ const (
 	PatchRolePermsOperation OperationName = "PatchRolePerms"
 	PostRolesOperation      OperationName = "PostRoles"
 	PostUsersOperation      OperationName = "PostUsers"
+	PutRoleNameOperation    OperationName = "PutRoleName"
 	PutRolePermsOperation   OperationName = "PutRolePerms"
 	PutUserNameOperation    OperationName = "PutUserName"
 )

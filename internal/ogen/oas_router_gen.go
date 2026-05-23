@@ -18,6 +18,9 @@ var (
 		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
+	rn12AllowedHeaders = map[string]string{
+		"PUT": "Authorization,Content-Type",
+	}
 	rn6AllowedHeaders = map[string]string{
 		"GET":   "Authorization",
 		"PATCH": "Authorization,Content-Type",
@@ -30,7 +33,7 @@ var (
 	rn9AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn11AllowedHeaders = map[string]string{
+	rn13AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
 )
@@ -183,39 +186,80 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						break
 					}
 					switch elem[0] {
-					case '/': // Prefix: "/perms"
+					case '/': // Prefix: "/"
 
-						if l := len("/perms"); len(elem) >= l && elem[0:l] == "/perms" {
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							// Leaf node.
-							switch r.Method {
-							case "GET":
-								s.handleGetRolePermsRequest([1]string{
-									args[0],
-								}, elemIsEscaped, w, r)
-							case "PATCH":
-								s.handlePatchRolePermsRequest([1]string{
-									args[0],
-								}, elemIsEscaped, w, r)
-							case "PUT":
-								s.handlePutRolePermsRequest([1]string{
-									args[0],
-								}, elemIsEscaped, w, r)
-							default:
-								s.notAllowed(w, r, notAllowedParams{
-									allowedMethods: "GET,PATCH,PUT",
-									allowedHeaders: rn6AllowedHeaders,
-									acceptPost:     "",
-									acceptPatch:    "application/json",
-								})
+							break
+						}
+						switch elem[0] {
+						case 'n': // Prefix: "name"
+
+							if l := len("name"); len(elem) >= l && elem[0:l] == "name" {
+								elem = elem[l:]
+							} else {
+								break
 							}
 
-							return
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "PUT":
+									s.handlePutRoleNameRequest([1]string{
+										args[0],
+									}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, notAllowedParams{
+										allowedMethods: "PUT",
+										allowedHeaders: rn12AllowedHeaders,
+										acceptPost:     "",
+										acceptPatch:    "",
+									})
+								}
+
+								return
+							}
+
+						case 'p': // Prefix: "perms"
+
+							if l := len("perms"); len(elem) >= l && elem[0:l] == "perms" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "GET":
+									s.handleGetRolePermsRequest([1]string{
+										args[0],
+									}, elemIsEscaped, w, r)
+								case "PATCH":
+									s.handlePatchRolePermsRequest([1]string{
+										args[0],
+									}, elemIsEscaped, w, r)
+								case "PUT":
+									s.handlePutRolePermsRequest([1]string{
+										args[0],
+									}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, notAllowedParams{
+										allowedMethods: "GET,PATCH,PUT",
+										allowedHeaders: rn6AllowedHeaders,
+										acceptPost:     "",
+										acceptPatch:    "application/json",
+									})
+								}
+
+								return
+							}
+
 						}
 
 					}
@@ -301,7 +345,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							default:
 								s.notAllowed(w, r, notAllowedParams{
 									allowedMethods: "PUT",
-									allowedHeaders: rn11AllowedHeaders,
+									allowedHeaders: rn13AllowedHeaders,
 									acceptPost:     "",
 									acceptPatch:    "",
 								})
@@ -518,47 +562,86 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						break
 					}
 					switch elem[0] {
-					case '/': // Prefix: "/perms"
+					case '/': // Prefix: "/"
 
-						if l := len("/perms"); len(elem) >= l && elem[0:l] == "/perms" {
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							// Leaf node.
-							switch method {
-							case "GET":
-								r.name = GetRolePermsOperation
-								r.summary = "Get all permissions the role has"
-								r.operationID = "get-role-perms"
-								r.operationGroup = ""
-								r.pathPattern = "/roles/{roleID}/perms"
-								r.args = args
-								r.count = 1
-								return r, true
-							case "PATCH":
-								r.name = PatchRolePermsOperation
-								r.summary = "Patch perms for role"
-								r.operationID = "patch-role-perms"
-								r.operationGroup = ""
-								r.pathPattern = "/roles/{roleID}/perms"
-								r.args = args
-								r.count = 1
-								return r, true
-							case "PUT":
-								r.name = PutRolePermsOperation
-								r.summary = "Set perms for role"
-								r.operationID = "put-role-perms"
-								r.operationGroup = ""
-								r.pathPattern = "/roles/{roleID}/perms"
-								r.args = args
-								r.count = 1
-								return r, true
-							default:
-								return
+							break
+						}
+						switch elem[0] {
+						case 'n': // Prefix: "name"
+
+							if l := len("name"); len(elem) >= l && elem[0:l] == "name" {
+								elem = elem[l:]
+							} else {
+								break
 							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "PUT":
+									r.name = PutRoleNameOperation
+									r.summary = "Update role name"
+									r.operationID = "put-role-name"
+									r.operationGroup = ""
+									r.pathPattern = "/roles/{roleID}/name"
+									r.args = args
+									r.count = 1
+									return r, true
+								default:
+									return
+								}
+							}
+
+						case 'p': // Prefix: "perms"
+
+							if l := len("perms"); len(elem) >= l && elem[0:l] == "perms" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "GET":
+									r.name = GetRolePermsOperation
+									r.summary = "Get all permissions the role has"
+									r.operationID = "get-role-perms"
+									r.operationGroup = ""
+									r.pathPattern = "/roles/{roleID}/perms"
+									r.args = args
+									r.count = 1
+									return r, true
+								case "PATCH":
+									r.name = PatchRolePermsOperation
+									r.summary = "Patch perms for role"
+									r.operationID = "patch-role-perms"
+									r.operationGroup = ""
+									r.pathPattern = "/roles/{roleID}/perms"
+									r.args = args
+									r.count = 1
+									return r, true
+								case "PUT":
+									r.name = PutRolePermsOperation
+									r.summary = "Set perms for role"
+									r.operationID = "put-role-perms"
+									r.operationGroup = ""
+									r.pathPattern = "/roles/{roleID}/perms"
+									r.args = args
+									r.count = 1
+									return r, true
+								default:
+									return
+								}
+							}
+
 						}
 
 					}

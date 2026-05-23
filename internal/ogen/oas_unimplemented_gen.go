@@ -94,6 +94,15 @@ func (UnimplementedHandler) PostUsers(ctx context.Context, req OptUserName) (r P
 	return r, ht.ErrNotImplemented
 }
 
+// PutRoleName implements put-role-name operation.
+//
+// Update role name.
+//
+// PUT /roles/{roleID}/name
+func (UnimplementedHandler) PutRoleName(ctx context.Context, req OptRoleName, params PutRoleNameParams) (r PutRoleNameRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // PutRolePerms implements put-role-perms operation.
 //
 // Set perms for role.
