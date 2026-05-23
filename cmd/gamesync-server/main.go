@@ -77,11 +77,14 @@ func start() error {
 		DefaultRoleID: int32(c.defaultRoleID),
 	})
 
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
 	srv, err := api.NewServer(
 		s,
 		s,
 		api.WithMiddleware(
 			middlewares.AuthzMiddleware(),
+			middlewares.Logging(logger),
 		),
 		api.WithPathPrefix("/api/v1"),
 	)
