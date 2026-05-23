@@ -27,7 +27,7 @@ type config struct {
 	dbUrl    string
 	disabledRoles string
 	defaultRoleID int
-	requestLogger bool
+	requestLogs bool
 }
 
 func start() error {
@@ -37,7 +37,7 @@ func start() error {
 	serverConfig.AddStringVar(&c.dbUrl, "db-url", server.DefaultSQLitePath, "Url to postgres db or path to SQLite db-file")
 	serverConfig.AddStringVar(&c.disabledRoles, "disabled-roles", "", "Default roles to disable, seperated by '|'")
 	serverConfig.AddIntVar(&c.defaultRoleID, "default-role-id", 50, "Default role id for newly created users. Role needs to exist for creation of new users to work")
-	serverConfig.AddBoolVar(&c.requestLogger, "request-logs", false, "Enable logs for requests")
+	serverConfig.AddBoolVar(&c.requestLogs, "request-logs", false, "Enable logs for requests")
 
 	flag.Parse()
 
@@ -64,7 +64,7 @@ func start() error {
 		middlewares.AuthzMiddleware(),
 	}
 
-	if c.requestLogger {
+	if c.requestLogs {
 		requestLogger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 		mw = append(mw, middlewares.Logging(requestLogger))
 	}
