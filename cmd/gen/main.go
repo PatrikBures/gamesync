@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"gorm.io/gen"
+	"gorm.io/gorm/logger"
 )
 
 
@@ -15,7 +16,7 @@ func main() {
 		Mode: gen.WithDefaultQuery|gen.WithQueryInterface,
 	})
 
-	db, err := dbx.ConnectDb(os.Getenv("GAMESYNC_DB_TYPE"), os.Getenv("GAMESYNC_DB_URL"))
+	db, err := dbx.ConnectDb(os.Getenv("GAMESYNC_DB_TYPE"), os.Getenv("GAMESYNC_DB_URL"), logger.Error)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gamesync/internal/dbx"
 	api "gamesync/internal/ogen"
-	"gamesync/internal/query"
 	"gamesync/internal/server"
 	serverConfig "gamesync/internal/server/config"
 	initServer "gamesync/internal/server/initialize"
@@ -15,6 +13,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+
+	"gorm.io/gorm/logger"
 )
 
 func main() {
@@ -24,11 +24,13 @@ func main() {
 }
 
 type config struct {
-	appDir   string
-	dbType   string
-	dbUrl    string
-	disabledRoles string
-	defaultRoleID int
+	appDir          string
+	dbType          string
+	dbUrl           string
+	dbLogLevel      string
+	disabledRoles   string
+	defaultRoleID   int
+	requestLogs     bool
 }
 
 func start() error {
@@ -38,6 +40,8 @@ func start() error {
 	serverConfig.AddStringVar(&c.dbUrl, "db-url", server.DefaultSQLitePath, "Url to postgres db or path to SQLite db-file")
 	serverConfig.AddStringVar(&c.disabledRoles, "disabled-roles", "", "Default roles to disable, seperated by '|'")
 	serverConfig.AddIntVar(&c.defaultRoleID, "default-role-id", 50, "Default role id for newly created users. Role needs to exist for creation of new users to work")
+	serverConfig.AddBoolVar(&c.requestLogs, "request-logs", false, "Enable logs for requests")
+	serverConfig.AddStringVar(&c.dbLogLevel, "db-log-level", "error", "Change log level for db (error, info, warn, silent) default=error")
 
 	flag.Parse()
 
@@ -47,42 +51,37 @@ func start() error {
 		}
 	}
 
-	db, err := dbx.ConnectDb(c.dbType, c.dbUrl)
+	logLevel, err := parseDbLogLevel(c.dbLogLevel)
 	if err != nil {
 		return err
 	}
-	if c.dbType == "sqlite" {
-		db.Exec("PRAGMA foreign_keys = ON")
-	}
-	q := query.Use(db)
 
-	if err := initServer.EnsurePermissions(q); err != nil {
-		return err
-	}
-	if err := initServer.CreateDefaultRoles(q, serverConfig.StringToSlice(c.disabledRoles)); err != nil {
-		return err
-	}
-	if err := initServer.CreateDefaultRolePerms(q); err != nil {
-		return err
-	}
-	if token, err := initServer.CreateAdmin(q); err == nil {
-		if token == "" {
-			slog.Info("admin already exists")
-		} else {
-			slog.Info("Created admin, make sure to update the token", "token", token)
-		}
+	q, err := initServer.InitDatabase(
+		c.dbType, c.dbUrl, logLevel,
+		serverConfig.StringToSlice(c.disabledRoles),
+	)
+	if err != nil {
+		return fmt.Errorf("initializing database: %w", err)
 	}
 
 	s := service.NewService(q, service.ServiceOpts{
 		DefaultRoleID: int32(c.defaultRoleID),
 	})
 
+
+	mw := []api.Middleware{
+		middlewares.AuthzMiddleware(),
+	}
+
+	if c.requestLogs {
+		requestLogger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+		mw = append(mw, middlewares.Logging(requestLogger))
+	}
+
 	srv, err := api.NewServer(
 		s,
 		s,
-		api.WithMiddleware(
-			middlewares.AuthzMiddleware(),
-		),
+		api.WithMiddleware(mw...),
 		api.WithPathPrefix("/api/v1"),
 	)
 	if err != nil {
@@ -90,4 +89,19 @@ func start() error {
 	}
 
 	return http.ListenAndServe(":8080", srv)
+}
+
+
+func parseDbLogLevel(level string) (logger.LogLevel, error) {
+	levelMap := map[string]logger.LogLevel {
+		"error":   logger.Error,
+		"warn":    logger.Warn,
+		"info":    logger.Info,
+		"silent":  logger.Silent,
+	}
+	logLevel, ok := levelMap[level]
+	if !ok {
+		return logger.Error, fmt.Errorf("invalid db log level '%s'. valid levels: error, warn, info, silent", level)
+	}
+	return logLevel, nil
 }
