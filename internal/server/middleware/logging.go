@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/ogen-go/ogen/middleware"
 )
@@ -13,13 +14,18 @@ func Logging(logger *slog.Logger) middleware.Middleware {
 			"operation", req.OperationName,
 		)
 
-		resp, err := next(req)
+		start := time.Now()
 
+		resp, err := next(req)
 		if err != nil {
 			logger.Error("Fail", "error", err)
 			return resp, err
 		}
-		var fields []any
+
+		response_time := time.Since(start)
+
+		fields := []any{"response_time", response_time}
+
 		if tresp, ok := resp.Type.(interface{ GetStatusCode() int }); ok {
 			fields = append(fields, "status_code", tresp.GetStatusCode())
 		} else {
