@@ -1,12 +1,12 @@
 -- +goose Up
-CREATE TABLE syncs
+CREATE TABLE repos
 (
-    sync_id BIGSERIAL NOT NULL,
+    repo_id BIGSERIAL NOT NULL,
     user_id BIGINT NOT NULL,
-    sync_name VARCHAR(25) NOT NULL,
+    repo_name VARCHAR(25) NOT NULL,
 
-    PRIMARY KEY (sync_id),
-    UNIQUE (user_id, sync_name),
+    PRIMARY KEY (repo_id),
+    UNIQUE (user_id, repo_name),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
@@ -14,21 +14,23 @@ CREATE TABLE snapshots
 (
     snapshot_id BIGSERIAL NOT NULL,
     parent_snapshot_id BIGINT NULL,
+    created_at TIMESTAMPZ NOT NULL DEFAULT now(),
 
     PRIMARY KEY (snapshot_id),
     FOREIGN KEY (parent_snapshot_id) REFERENCES snapshots(snapshot_id)
 );
+CREATE INDEX idx_snapshots_parent ON snapshots(parent_snapshot_id);
 
-CREATE TABLE sync_profiles
+CREATE TABLE branches
 (
-    sync_profile_id BIGSERIAL NOT NULL,
-    sync_id BIGINT NOT NULL,
-    profile_name VARCHAR(25) NOT NULL,
-    head_snapshot_id BIGSERIAL NOT NULL REFERENCES snapshots(snapshot_id),
+    branch_id BIGSERIAL NOT NULL,
+    repo_id BIGINT NOT NULL,
+    branch_name VARCHAR(25) NOT NULL,
+    head_snapshot_id BIGINT NULL REFERENCES snapshots(snapshot_id),
 
-    PRIMARY KEY (sync_profile_id),
-    UNIQUE (sync_id, profile_name),
-    FOREIGN KEY (sync_id) REFERENCES syncs(sync_id)
+    PRIMARY KEY (branch_id),
+    UNIQUE (repo_id, branch_name),
+    FOREIGN KEY (repo_id) REFERENCES repos(repo_id)
 );
 
 
@@ -44,14 +46,13 @@ CREATE TABLE snapshot_files
     file_hash BYTEA NOT NULL REFERENCES files(file_hash),
     snapshot_id BIGINT NOT NULL REFERENCES snapshots(snapshot_id),
     file_path VARCHAR(500) NOT NULL,
-    PRIMARY KEY (file_hash, snapshot_id)
+    PRIMARY KEY (snapshot_id, file_path)
 );
-
+CREATE INDEX idx_snapshot_files_file_hash ON snapshot_files(file_hash);
 
 CREATE TABLE chunks
 (
-    chunk_hash BYTEA NOT NULL,
-    PRIMARY KEY (chunk_hash)
+    chunk_hash BYTEA NOT NULL PRIMARY KEY,
 );
 
 CREATE TABLE file_chunks
@@ -61,11 +62,19 @@ CREATE TABLE file_chunks
     chunk_order SMALLINT NOT NULL,
     PRIMARY KEY (file_hash, chunk_order)
 );
-
+CREATE INDEX idx_file_chunks_chunk_hash ON file_chunks(chunk_hash);
 
 
 
 -- +goose Down
-DELETE syncs;
-DELETE sync_profiles;
+DELETE repos;
+DELETE snapshots;
+DELETE branches;
+DELETE files;
+DELETE snapshot_files;
+DELETE chunks;
+DELETE file_chunks;
 
+DROP INDEX idx_snapshots_parent;
+DROP INDEX idx_snapshot_files_file_hash;
+DROP INDEX idx_file_chunks_chunk_hash;
