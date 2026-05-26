@@ -14,7 +14,7 @@ CREATE TABLE snapshots
 (
     snapshot_id INTEGER NOT NULL,
     parent_snapshot_id INTEGER NULL,
-    created_at FLOAT NOT NULL DEFAULT (junianday('now')),
+    created_at DATETIME NOT NULL DEFAULT (datetime('now')),
 
     PRIMARY KEY (snapshot_id),
     FOREIGN KEY (parent_snapshot_id) REFERENCES snapshots(snapshot_id)

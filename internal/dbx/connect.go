@@ -32,6 +32,7 @@ func ConnectDb(dbType string, dsn string, logLevel logger.LogLevel) (*gorm.DB, e
 
 	switch dbType{
 	case "sqlite":
+		dsn = dsn + "?parseTime=true"
 		db, err = gorm.Open(sqlite.Open(dsn), config)
 	case "postgres":
 		db, err = gorm.Open(postgres.Open(dsn), config)

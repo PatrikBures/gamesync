@@ -13,7 +13,7 @@ CREATE TABLE repos
 CREATE TABLE snapshots
 (
     snapshot_id BIGSERIAL NOT NULL,
-    parent_snapshot_id BIGINT NULL,
+    parent_snapshot_id BIGINT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     PRIMARY KEY (snapshot_id),

@@ -17,20 +17,34 @@ import (
 
 var (
 	Q              = new(Query)
+	Branch         *branch
+	Chunk          *chunk
+	File           *file
+	FileChunk      *fileChunk
 	GooseDbVersion *gooseDbVersion
 	Permission     *permission
+	Repo           *repo
 	Role           *role
 	RolePermission *rolePermission
+	Snapshot       *snapshot
+	SnapshotFile   *snapshotFile
 	Token          *token
 	User           *user
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	Branch = &Q.Branch
+	Chunk = &Q.Chunk
+	File = &Q.File
+	FileChunk = &Q.FileChunk
 	GooseDbVersion = &Q.GooseDbVersion
 	Permission = &Q.Permission
+	Repo = &Q.Repo
 	Role = &Q.Role
 	RolePermission = &Q.RolePermission
+	Snapshot = &Q.Snapshot
+	SnapshotFile = &Q.SnapshotFile
 	Token = &Q.Token
 	User = &Q.User
 }
@@ -38,10 +52,17 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:             db,
+		Branch:         newBranch(db, opts...),
+		Chunk:          newChunk(db, opts...),
+		File:           newFile(db, opts...),
+		FileChunk:      newFileChunk(db, opts...),
 		GooseDbVersion: newGooseDbVersion(db, opts...),
 		Permission:     newPermission(db, opts...),
+		Repo:           newRepo(db, opts...),
 		Role:           newRole(db, opts...),
 		RolePermission: newRolePermission(db, opts...),
+		Snapshot:       newSnapshot(db, opts...),
+		SnapshotFile:   newSnapshotFile(db, opts...),
 		Token:          newToken(db, opts...),
 		User:           newUser(db, opts...),
 	}
@@ -50,10 +71,17 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 type Query struct {
 	db *gorm.DB
 
+	Branch         branch
+	Chunk          chunk
+	File           file
+	FileChunk      fileChunk
 	GooseDbVersion gooseDbVersion
 	Permission     permission
+	Repo           repo
 	Role           role
 	RolePermission rolePermission
+	Snapshot       snapshot
+	SnapshotFile   snapshotFile
 	Token          token
 	User           user
 }
@@ -63,10 +91,17 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:             db,
+		Branch:         q.Branch.clone(db),
+		Chunk:          q.Chunk.clone(db),
+		File:           q.File.clone(db),
+		FileChunk:      q.FileChunk.clone(db),
 		GooseDbVersion: q.GooseDbVersion.clone(db),
 		Permission:     q.Permission.clone(db),
+		Repo:           q.Repo.clone(db),
 		Role:           q.Role.clone(db),
 		RolePermission: q.RolePermission.clone(db),
+		Snapshot:       q.Snapshot.clone(db),
+		SnapshotFile:   q.SnapshotFile.clone(db),
 		Token:          q.Token.clone(db),
 		User:           q.User.clone(db),
 	}
@@ -83,30 +118,51 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:             db,
+		Branch:         q.Branch.replaceDB(db),
+		Chunk:          q.Chunk.replaceDB(db),
+		File:           q.File.replaceDB(db),
+		FileChunk:      q.FileChunk.replaceDB(db),
 		GooseDbVersion: q.GooseDbVersion.replaceDB(db),
 		Permission:     q.Permission.replaceDB(db),
+		Repo:           q.Repo.replaceDB(db),
 		Role:           q.Role.replaceDB(db),
 		RolePermission: q.RolePermission.replaceDB(db),
+		Snapshot:       q.Snapshot.replaceDB(db),
+		SnapshotFile:   q.SnapshotFile.replaceDB(db),
 		Token:          q.Token.replaceDB(db),
 		User:           q.User.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
+	Branch         IBranchDo
+	Chunk          IChunkDo
+	File           IFileDo
+	FileChunk      IFileChunkDo
 	GooseDbVersion IGooseDbVersionDo
 	Permission     IPermissionDo
+	Repo           IRepoDo
 	Role           IRoleDo
 	RolePermission IRolePermissionDo
+	Snapshot       ISnapshotDo
+	SnapshotFile   ISnapshotFileDo
 	Token          ITokenDo
 	User           IUserDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
+		Branch:         q.Branch.WithContext(ctx),
+		Chunk:          q.Chunk.WithContext(ctx),
+		File:           q.File.WithContext(ctx),
+		FileChunk:      q.FileChunk.WithContext(ctx),
 		GooseDbVersion: q.GooseDbVersion.WithContext(ctx),
 		Permission:     q.Permission.WithContext(ctx),
+		Repo:           q.Repo.WithContext(ctx),
 		Role:           q.Role.WithContext(ctx),
 		RolePermission: q.RolePermission.WithContext(ctx),
+		Snapshot:       q.Snapshot.WithContext(ctx),
+		SnapshotFile:   q.SnapshotFile.WithContext(ctx),
 		Token:          q.Token.WithContext(ctx),
 		User:           q.User.WithContext(ctx),
 	}

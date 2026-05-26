@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	serverConfig "gamesync/internal/server/config"
@@ -65,6 +67,7 @@ func start() error {
 	if err != nil {
 		return fmt.Errorf("initializing database: %w", err)
 	}
+
 
 	s := service.NewService(q, service.ServiceOpts{
 		DefaultRoleID: int32(c.defaultRoleID),
