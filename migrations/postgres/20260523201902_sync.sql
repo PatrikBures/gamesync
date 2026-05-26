@@ -14,7 +14,7 @@ CREATE TABLE snapshots
 (
     snapshot_id BIGSERIAL NOT NULL,
     parent_snapshot_id BIGINT NULL,
-    created_at TIMESTAMPZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     PRIMARY KEY (snapshot_id),
     FOREIGN KEY (parent_snapshot_id) REFERENCES snapshots(snapshot_id)
@@ -52,7 +52,7 @@ CREATE INDEX idx_snapshot_files_file_hash ON snapshot_files(file_hash);
 
 CREATE TABLE chunks
 (
-    chunk_hash BYTEA NOT NULL PRIMARY KEY,
+    chunk_hash BYTEA NOT NULL PRIMARY KEY
 );
 
 CREATE TABLE file_chunks
