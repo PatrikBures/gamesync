@@ -45,7 +45,6 @@ func ChunkFilesInDir(repoDir string, chunkDir string) error {
 		if d.IsDir() {
 			return nil
 		}
-		fmt.Println(path)
 
 		if err := chunkFile(path, chunkDir); err != nil {
 			return err

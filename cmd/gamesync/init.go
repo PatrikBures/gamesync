@@ -74,9 +74,6 @@ func populateInitOpts(opts *initCmdOpts, args []string) error {
 
 
 func runInitCmd(opts initCmdOpts, chunkDir string) error {
-	fmt.Println("name:", opts.name)
-	fmt.Println("dir:", opts.repoDir)
-
 	if err := snapshoter.ChunkFilesInDir(opts.repoDir, chunkDir); err != nil {
 		return err
 	}
