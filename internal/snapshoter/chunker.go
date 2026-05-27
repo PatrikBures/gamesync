@@ -70,7 +70,7 @@ func chunkFile(path string, chunkDir string) error {
 	buf := make([]byte, 8*1024*1024)
 
 	g := errgroup.Group{}
-	g.SetLimit(3)
+	g.SetLimit(8)
 
 	chunkCount := 0
 	for {
