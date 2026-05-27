@@ -14,6 +14,28 @@ import (
 	"github.com/restic/chunker"
 )
 
+
+// how many dirs each hash will be in
+//
+// example:
+//
+// 2: as/df/asdf1234
+//
+// 3: as/df/12/asdf1234 
+const dirQty = 2
+
+// how many chars each dir will have, is probably better that is to the power of 2
+//
+// example:
+//
+// 2: as/asdf1234
+//
+// 4: asdf/asdf1234
+const dirLen = 2
+
+// chunks all files in repoDir
+//
+// all chunks will be in chunkDir
 func ChunkFilesInDir(repoDir string, chunkDir string) error {
 	if err := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
@@ -32,6 +54,7 @@ func ChunkFilesInDir(repoDir string, chunkDir string) error {
 	return nil
 }
 
+// creates chunk from the file at path to chunkDir
 func chunkFile(path string, chunkDir string) error {
 	f, err := os.Open(path)
 	if err != nil {
@@ -52,7 +75,17 @@ func chunkFile(path string, chunkDir string) error {
 		hash := sha256.Sum256(chunk.Data)
 		hashS := hex.EncodeToString(hash[:])
 
-		chunkFilePath := filepath.Join(chunkDir, hashS)
+		hashDir := filepath.Join(chunkDir, dirsForChunk(hashS))
+		chunkFilePath := filepath.Join(hashDir, hashS)
+
+		if cf, _ := os.Stat(chunkFilePath); cf != nil {
+			continue
+		}
+
+		if err := os.MkdirAll(hashDir, 0775); err != nil {
+			return fmt.Errorf("creating dir '%s': %w", hashDir, err)
+		}
+
 		chunkFile, err := os.Create(chunkFilePath)
 		if err != nil {
 			return err
@@ -66,6 +99,8 @@ func chunkFile(path string, chunkDir string) error {
 	return nil
 }
 
+
+// writes bytes to out compressed using zstd
 func writeChunk(bytes []byte, out io.Writer) (err error) {
 	w, err := zstd.NewWriter(out)
 	if err != nil {
@@ -83,3 +118,11 @@ func writeChunk(bytes []byte, out io.Writer) (err error) {
 	return nil
 }
 
+// returns the dirs that the chunk should be in based on dirQty and dirLen
+func dirsForChunk(hash string) (dirs string) {
+	a := dirQty * dirLen
+	for i := 0; i < a; i += dirLen {
+		dirs = filepath.Join(dirs, hash[i:i+dirLen])
+	}
+	return dirs
+}
