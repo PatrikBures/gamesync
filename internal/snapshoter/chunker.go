@@ -14,6 +14,10 @@ import (
 	"github.com/restic/chunker"
 )
 
+type chunkHash struct {
+	bytes [32]byte
+	hex string
+}
 
 // how many dirs each hash will be in
 //
@@ -72,26 +76,9 @@ func chunkFile(path string, chunkDir string) error {
 		} else if err != nil {
 			return err
 		}
-		hash := sha256.Sum256(chunk.Data)
-		hashS := hex.EncodeToString(hash[:])
-
-		hashDir := filepath.Join(chunkDir, dirsForChunk(hashS))
-		chunkFilePath := filepath.Join(hashDir, hashS)
-
-		if cf, _ := os.Stat(chunkFilePath); cf != nil {
-			continue
-		}
-
-		if err := os.MkdirAll(hashDir, 0775); err != nil {
-			return fmt.Errorf("creating dir '%s': %w", hashDir, err)
-		}
-
-		chunkFile, err := os.Create(chunkFilePath)
+		_, err = createChunk(chunk, chunkDir)
 		if err != nil {
-			return err
-		}
-		if err := writeChunk(chunk.Data, chunkFile); err != nil {
-			return err
+			return fmt.Errorf("creating chunk: %w", err)
 		}
 		chunkCount++
 	}
@@ -99,6 +86,31 @@ func chunkFile(path string, chunkDir string) error {
 	return nil
 }
 
+func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, error) {
+	ch := chunkHash{}
+	ch.bytes = sha256.Sum256(chunk.Data)
+	ch.hex = hex.EncodeToString(ch.bytes[:])
+
+	hashDir := filepath.Join(chunkDir, dirsForChunk(ch.hex))
+	chunkFilePath := filepath.Join(hashDir, ch.hex)
+
+	if cf, _ := os.Stat(chunkFilePath); cf != nil {
+		return ch, nil
+	}
+
+	if err := os.MkdirAll(hashDir, 0775); err != nil {
+		return ch, fmt.Errorf("creating dir '%s': %w", hashDir, err)
+	}
+
+	chunkFile, err := os.Create(chunkFilePath)
+	if err != nil {
+		return ch, err
+	}
+	if err := writeChunk(chunk.Data, chunkFile); err != nil {
+		return ch, err
+	}
+	return ch, nil
+}
 
 // writes bytes to out compressed using zstd
 func writeChunk(bytes []byte, out io.Writer) (err error) {
