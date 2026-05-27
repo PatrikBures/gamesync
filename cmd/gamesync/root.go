@@ -20,6 +20,7 @@ func newRootCmd() *rootCmd {
 
 	cmd.AddCommand(
 		newGenDocCmd().cmd,
+		newInitCmd().cmd,
 	)
 
 	cmd.DisableAutoGenTag = true

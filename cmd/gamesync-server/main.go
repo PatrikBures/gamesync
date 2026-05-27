@@ -1,10 +1,8 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
-	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	serverConfig "gamesync/internal/server/config"
