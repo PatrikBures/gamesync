@@ -1,7 +1,6 @@
 package snapshoter
 
 import (
-	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/restic/chunker"
+	"lukechampine.com/blake3"
 )
 
 type chunkHash struct {
@@ -88,7 +88,7 @@ func chunkFile(path string, chunkDir string) error {
 
 func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, error) {
 	ch := chunkHash{}
-	ch.bytes = sha256.Sum256(chunk.Data)
+	ch.bytes = blake3.Sum256(chunk.Data)
 	ch.hex = hex.EncodeToString(ch.bytes[:])
 
 	hashDir := filepath.Join(chunkDir, dirsForChunk(ch.hex))
