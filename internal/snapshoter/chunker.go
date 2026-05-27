@@ -1,6 +1,7 @@
 package snapshoter
 
 import (
+	"bytes"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -69,6 +70,7 @@ func chunkFile(path string, chunkDir string) error {
 	buf := make([]byte, 8*1024*1024)
 
 	g := errgroup.Group{}
+	g.SetLimit(3)
 
 	chunkCount := 0
 	for {
@@ -79,13 +81,16 @@ func chunkFile(path string, chunkDir string) error {
 			return err
 		}
 
-		_, chunkFile, err := createChunk(chunk, chunkDir)
+		chunkHash, chunkFile, err := createChunk(chunk, chunkDir)
 		if err != nil {
 			return err
 		}
+		if chunkFile == nil {
+			continue
+		}
 
 		g.Go(func() error {
-			return writeChunk(chunk.Data, chunkFile)
+			return writeChunk(bytes.Clone(chunk.Data), chunkFile, fmt.Sprintf("for file %s, with chunk nr %d, with hash %s", path, chunkCount+1, chunkHash.hex))
 		})
 
 		chunkCount++
@@ -121,19 +126,22 @@ func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, *os.File, err
 }
 
 // writes bytes to out compressed using zstd
-func writeChunk(bytes []byte, out io.Writer) (err error) {
+func writeChunk(bytes []byte, out io.Writer, errMsg string) (err error) {
 	w, err := zstd.NewWriter(out)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating writer %s: %w", errMsg, err)
 	}
 	defer func() {
-		if errc := w.Close(); errc != nil {
-			err = errors.Join(errc, err)
+		errc := w.Close()
+		if errc != nil {
+			if err != nil {
+				err = errors.Join(err, errc)
+			}
 		}
 	}()
 
 	if _, err = w.Write(bytes); err != nil {
-		return err
+		return fmt.Errorf("writing chunk %s: %w", errMsg, err)
 	}
 	return nil
 }
