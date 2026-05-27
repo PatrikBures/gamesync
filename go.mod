@@ -5,8 +5,10 @@ go 1.26.2
 require (
 	github.com/go-faster/errors v0.7.1
 	github.com/go-faster/jx v1.2.0
+	github.com/klauspost/compress v1.18.2
 	github.com/libtnb/sqlite v1.1.1
 	github.com/ogen-go/ogen v1.20.3
+	github.com/restic/chunker v0.4.0
 	github.com/spf13/cobra v1.10.2
 	go.opentelemetry.io/otel v1.42.0
 	go.opentelemetry.io/otel/metric v1.42.0

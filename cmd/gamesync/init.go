@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	clientConfig "gamesync/internal/client/config"
+	"gamesync/internal/snapshoter"
 	"os"
 	"path/filepath"
 
@@ -16,7 +18,31 @@ type initCmd struct {
 
 type initCmdOpts struct {
 	name string
-	dir string
+	repoDir string
+}
+
+func newInitCmd(configOpts *clientConfig.Config) *initCmd {
+	root := initCmd{}
+
+	cmd := &cobra.Command{
+		Use: "init NAME [DIR]",
+		Short: "Initialize repo",
+		Args: cobra.RangeArgs(1, 2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := populateInitOpts(&root.opts, args); err != nil {
+				return fmt.Errorf("populating init opts: %w", err)
+			}
+
+			if err := runInitCmd(root.opts, configOpts.ChunkDir); err != nil {
+				return fmt.Errorf("initializing repo: %w", err)
+			}
+
+			return nil
+		},
+	}
+
+	root.cmd = cmd
+	return &root
 }
 
 func populateInitOpts(opts *initCmdOpts, args []string) error {
@@ -26,45 +52,34 @@ func populateInitOpts(opts *initCmdOpts, args []string) error {
 		if err != nil {
 			return err
 		}
-		opts.dir = abs
+		opts.repoDir = abs
 	} else {
 		var err error
-		opts.dir, err = os.Getwd()
+		opts.repoDir, err = os.Getwd()
 		if err != nil {
 			return err
 		}
 	}
 
-	s, err := os.Stat(opts.dir)
+	s, err := os.Stat(opts.repoDir)
 	if err != nil {
 		return err
 	}
 	if !s.IsDir() {
-		return fmt.Errorf("is not dir")
+		return fmt.Errorf("repo not dir")
 	}
 
 	return nil
 }
 
-func newInitCmd() *initCmd {
-	root := initCmd{}
 
-	cmd := &cobra.Command{
-		Use: "init NAME [DIR]",
-		Short: "Initialize repo",
-		Args: cobra.RangeArgs(1, 2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := populateInitOpts(&root.opts, args); err != nil {
-				return fmt.Errorf("populating opts: %w", err)
-			}
+func runInitCmd(opts initCmdOpts, chunkDir string) error {
+	fmt.Println("name:", opts.name)
+	fmt.Println("dir:", opts.repoDir)
 
-			fmt.Println("name:", root.opts.name)
-			fmt.Println("dir:", root.opts.dir)
-
-			return nil
-		},
+	if err := snapshoter.ChunkFilesInDir(opts.repoDir, chunkDir); err != nil {
+		return err
 	}
 
-	root.cmd = cmd
-	return &root
+	return nil
 }
