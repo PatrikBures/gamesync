@@ -11,6 +11,7 @@ import (
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/restic/chunker"
+	"golang.org/x/sync/errgroup"
 	"lukechampine.com/blake3"
 )
 
@@ -68,6 +69,8 @@ func chunkFile(path string, chunkDir string) error {
 
 	buf := make([]byte, 8*1024*1024)
 
+	g := errgroup.Group{}
+
 	chunkCount := 0
 	for {
 		chunk, err := c.Next(buf)
@@ -76,17 +79,26 @@ func chunkFile(path string, chunkDir string) error {
 		} else if err != nil {
 			return err
 		}
-		_, err = createChunk(chunk, chunkDir)
+
+		_, chunkFile, err := createChunk(chunk, chunkDir)
 		if err != nil {
-			return fmt.Errorf("creating chunk: %w", err)
+			return err
 		}
+
+		g.Go(func() error {
+			return writeChunk(chunk.Data, chunkFile)
+		})
+
 		chunkCount++
+	}
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("creating chunk: %w", err)
 	}
 	
 	return nil
 }
 
-func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, error) {
+func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, *os.File, error) {
 	ch := chunkHash{}
 	ch.bytes = blake3.Sum256(chunk.Data)
 	ch.hex = hex.EncodeToString(ch.bytes[:])
@@ -95,21 +107,18 @@ func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, error) {
 	chunkFilePath := filepath.Join(hashDir, ch.hex)
 
 	if cf, _ := os.Stat(chunkFilePath); cf != nil {
-		return ch, nil
+		return ch, nil, nil
 	}
 
 	if err := os.MkdirAll(hashDir, 0775); err != nil {
-		return ch, fmt.Errorf("creating dir '%s': %w", hashDir, err)
+		return ch, nil, fmt.Errorf("creating dir '%s': %w", hashDir, err)
 	}
 
 	chunkFile, err := os.Create(chunkFilePath)
 	if err != nil {
-		return ch, err
+		return ch, nil, err
 	}
-	if err := writeChunk(chunk.Data, chunkFile); err != nil {
-		return ch, err
-	}
-	return ch, nil
+	return ch, chunkFile, nil
 }
 
 // writes bytes to out compressed using zstd
