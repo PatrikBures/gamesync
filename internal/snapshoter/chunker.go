@@ -98,8 +98,11 @@ func chunkFile(path string, chunkDir string) error {
 			continue
 		}
 
-		g.Go(func() error {
-			return writeChunk(bytes.Clone(chunk.Data), chunkFile, fmt.Sprintf("for file %s, with chunk nr %d, with hash %s", path, chunkCount+1, chunkHash.hex))
+		g.Go(func() (err error) {
+			data := bytes.Clone(chunk.Data)
+			werr := writeChunk(data, chunkFile, fmt.Sprintf("for file %s, with chunk nr %d, with hash %s", path, chunkCount+1, chunkHash.hex))
+			cerr := chunkFile.Close()
+			return errors.Join(werr, cerr)
 		})
 
 		chunkCount++
@@ -135,24 +138,22 @@ func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, *os.File, err
 }
 
 // writes bytes to out compressed using zstd
-func writeChunk(bytes []byte, out io.Writer, errMsg string) (err error) {
+func writeChunk(bytes []byte, out io.Writer, errMsg string) error {
 	w, err := zstd.NewWriter(out)
 	if err != nil {
 		return fmt.Errorf("creating writer %s: %w", errMsg, err)
 	}
-	defer func() {
-		errc := w.Close()
-		if errc != nil {
-			if err != nil {
-				err = errors.Join(err, errc)
-			}
-		}
-	}()
 
-	if _, err = w.Write(bytes); err != nil {
-		return fmt.Errorf("writing chunk %s: %w", errMsg, err)
+	_, writeErr := w.Write(bytes)
+	closeErr := w.Close()
+	if writeErr != nil {
+		writeErr = fmt.Errorf("writing chunk %s: %w", errMsg, err)
 	}
-	return nil
+	if closeErr != nil {
+		closeErr = fmt.Errorf("closing chunk %s, %w", errMsg, err)
+	}
+	
+	return errors.Join(writeErr, closeErr)
 }
 
 // returns the dirs that the chunk should be in based on dirQty and dirLen
