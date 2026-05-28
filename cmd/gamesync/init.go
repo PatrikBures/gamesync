@@ -74,9 +74,14 @@ func populateInitOpts(opts *initCmdOpts, args []string) error {
 
 
 func runInitCmd(opts initCmdOpts, chunkDir string) error {
-	if err := snapshoter.ChunkFilesInDir(opts.repoDir, chunkDir); err != nil {
+	cg := snapshoter.NewChunkGen(chunkDir)
+	if err := cg.ChunkFilesInDir(opts.repoDir); err != nil {
 		return err
 	}
+
+	fmt.Println("files chunked:", cg.Info.FilesChunked)
+	fmt.Println("chunks created:", cg.Info.ChunksCreated)
+	fmt.Println("chunks skipped:", cg.Info.ChunksSkipped)
 
 	return nil
 }
