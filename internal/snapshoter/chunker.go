@@ -39,22 +39,31 @@ const dirQty = 2
 // 4: asdf/asdf1234
 const dirLen = 2
 
+const limit1 = 1
+const limit2 = 1
+
 // chunks all files in repoDir
 //
 // all chunks will be in chunkDir
 func ChunkFilesInDir(repoDir string, chunkDir string) error {
+	g := errgroup.Group{}
+	g.SetLimit(limit1)
+
 	if err := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
 			return nil
 		}
 
-		if err := chunkFile(path, chunkDir); err != nil {
-			return err
-		}
+		g.Go(func() error {
+			return chunkFile(path, chunkDir)
+		})
 
 		return nil
 	}); err != nil {
 		return err
+	}
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("chunking file: %w", err)
 	}
 	return nil
 }
@@ -70,7 +79,7 @@ func chunkFile(path string, chunkDir string) error {
 	buf := make([]byte, 8*1024*1024)
 
 	g := errgroup.Group{}
-	g.SetLimit(8)
+	g.SetLimit(limit2)
 
 	chunkCount := 0
 	for {
