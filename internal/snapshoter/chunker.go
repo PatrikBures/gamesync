@@ -39,7 +39,7 @@ const dirQty = 2
 // 4: asdf/asdf1234
 const dirLen = 2
 
-const limit1 = 1
+const limit1 = 8
 const limit2 = 1
 
 // chunks all files in repoDir
@@ -78,9 +78,6 @@ func chunkFile(path string, chunkDir string) error {
 
 	buf := make([]byte, 8*1024*1024)
 
-	g := errgroup.Group{}
-	g.SetLimit(limit2)
-
 	chunkCount := 0
 	for {
 		chunk, err := c.Next(buf)
@@ -98,17 +95,13 @@ func chunkFile(path string, chunkDir string) error {
 			continue
 		}
 
-		g.Go(func() (err error) {
-			data := bytes.Clone(chunk.Data)
-			werr := writeChunk(data, chunkFile, fmt.Sprintf("for file %s, with chunk nr %d, with hash %s", path, chunkCount+1, chunkHash.hex))
-			cerr := chunkFile.Close()
-			return errors.Join(werr, cerr)
-		})
-
-		chunkCount++
-	}
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("creating chunk: %w", err)
+		data := bytes.Clone(chunk.Data)
+		werr := writeChunk(data, chunkFile, fmt.Sprintf("for file %s, with chunk nr %d, with hash %s", path, chunkCount+1, chunkHash.hex))
+		cerr := chunkFile.Close()
+		err = errors.Join(werr, cerr)
+		if err != nil {
+			return fmt.Errorf("creating chunk: %w", err)
+		}
 	}
 	
 	return nil
