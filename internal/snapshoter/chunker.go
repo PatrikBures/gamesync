@@ -93,8 +93,7 @@ func chunkFile(path string, chunkDir string) error {
 			continue
 		}
 
-		data := bytes.Clone(chunk.Data)
-		werr := writeChunk(data, chunkFile, fmt.Sprintf("for file %s, with chunk nr %d, with hash %s", path, chunkCount+1, chunkHash.hex))
+		werr := writeChunk(chunk.Data, chunkFile, fmt.Sprintf("for file %s, with chunk nr %d, with hash %s", path, chunkCount+1, chunkHash.hex))
 		cerr := chunkFile.Close()
 		err = errors.Join(werr, cerr)
 		if err != nil {
