@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/restic/chunker"
@@ -39,15 +40,12 @@ const dirQty = 2
 // 4: asdf/asdf1234
 const dirLen = 2
 
-const limit1 = 8
-const limit2 = 1
-
 // chunks all files in repoDir
 //
 // all chunks will be in chunkDir
 func ChunkFilesInDir(repoDir string, chunkDir string) error {
 	g := errgroup.Group{}
-	g.SetLimit(limit1)
+	g.SetLimit(runtime.NumCPU())
 
 	if err := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
