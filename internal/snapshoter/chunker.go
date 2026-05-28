@@ -72,6 +72,7 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]fileResults, error) {
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU())
 	results := make(chan fileResults, 100)
+	waitErr := make(chan error, 1)
 
 	if err := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
@@ -88,7 +89,7 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]fileResults, error) {
 		return nil, err
 	}
 	go func() {
-		g.Wait()
+		waitErr <- g.Wait()
 		close(results)
 	}()
 
@@ -100,6 +101,9 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]fileResults, error) {
 			cg.Info.FilesErr++
 		}
 		all = append(all, r)
+	}
+	if gErr := <- waitErr; gErr != nil {
+		return all, fmt.Errorf("chunking files: %w", gErr)
 	}
 	return all, nil
 }
