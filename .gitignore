@@ -8,3 +8,5 @@ server/gamesync-state
 **/*.db
 **/*.sqlite
 **/.env
+cpu.prof
+trace.out

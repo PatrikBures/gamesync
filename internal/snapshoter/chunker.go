@@ -8,9 +8,11 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/restic/chunker"
+	"golang.org/x/sync/errgroup"
 	"lukechampine.com/blake3"
 )
 
@@ -41,18 +43,24 @@ const dirLen = 2
 //
 // all chunks will be in chunkDir
 func ChunkFilesInDir(repoDir string, chunkDir string) error {
+	g := errgroup.Group{}
+	g.SetLimit(runtime.NumCPU())
+
 	if err := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
 			return nil
 		}
 
-		if err := chunkFile(path, chunkDir); err != nil {
-			return err
-		}
+		g.Go(func() error {
+			return chunkFile(path, chunkDir)
+		})
 
 		return nil
 	}); err != nil {
 		return err
+	}
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("chunking file: %w", err)
 	}
 	return nil
 }
@@ -75,9 +83,21 @@ func chunkFile(path string, chunkDir string) error {
 		} else if err != nil {
 			return err
 		}
-		_, err = createChunk(chunk, chunkDir)
+
+		chunkHash, chunkFile, err := createChunk(chunk, chunkDir)
 		if err != nil {
-			return fmt.Errorf("creating chunk: %w", err)
+			return err
+		}
+		// this means the chunk already exists
+		if chunkFile == nil {
+			continue
+		}
+
+		werr := writeChunk(chunk.Data, chunkFile)
+		cerr := chunkFile.Close()
+		err = errors.Join(werr, cerr)
+		if err != nil {
+			return fmt.Errorf("creating chunk for file %s, chunk nr %d, hash %s: %w", path, chunkCount+1, chunkHash.hex, err)
 		}
 		chunkCount++
 	}
@@ -85,7 +105,7 @@ func chunkFile(path string, chunkDir string) error {
 	return nil
 }
 
-func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, error) {
+func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, *os.File, error) {
 	ch := chunkHash{}
 	ch.bytes = blake3.Sum256(chunk.Data)
 	ch.hex = hex.EncodeToString(ch.bytes[:])
@@ -93,47 +113,45 @@ func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, error) {
 	hashDir := filepath.Join(chunkDir, dirsForChunk(ch.hex))
 	chunkFilePath := filepath.Join(hashDir, ch.hex)
 
-	if cf, _ := os.Stat(chunkFilePath); cf != nil {
-		return ch, nil
-	}
-
 	if err := os.MkdirAll(hashDir, 0775); err != nil {
-		return ch, fmt.Errorf("creating dir '%s': %w", hashDir, err)
+		return ch, nil, fmt.Errorf("creating dir '%s': %w", hashDir, err)
 	}
 
-	chunkFile, err := os.Create(chunkFilePath)
+	chunkFile, err := os.OpenFile(chunkFilePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0666)
 	if err != nil {
-		return ch, err
+		if errors.Is(err, os.ErrExist) {
+			return ch, nil, nil
+		}
+		return ch, nil, err
 	}
-	if err := writeChunk(chunk.Data, chunkFile); err != nil {
-		return ch, err
-	}
-	return ch, nil
+	return ch, chunkFile, nil
 }
 
 // writes bytes to out compressed using zstd
-func writeChunk(bytes []byte, out io.Writer) (err error) {
+func writeChunk(bytes []byte, out io.Writer) error {
 	w, err := zstd.NewWriter(out)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating writer: %w", err)
 	}
-	defer func() {
-		if errc := w.Close(); errc != nil {
-			err = errors.Join(errc, err)
-		}
-	}()
 
-	if _, err = w.Write(bytes); err != nil {
-		return err
+	_, writeErr := w.Write(bytes)
+	closeErr := w.Close()
+	if writeErr != nil {
+		writeErr = fmt.Errorf("writing chunk: %w", err)
 	}
-	return nil
+	if closeErr != nil {
+		closeErr = fmt.Errorf("closing chunk: %w", err)
+	}
+	
+	return errors.Join(writeErr, closeErr)
 }
 
 // returns the dirs that the chunk should be in based on dirQty and dirLen
 func dirsForChunk(hash string) (dirs string) {
 	a := dirQty * dirLen
+	parts := make([]string, dirQty)
 	for i := 0; i < a; i += dirLen {
-		dirs = filepath.Join(dirs, hash[i:i+dirLen])
+		parts[i/dirLen] = hash[i:i+dirLen]
 	}
-	return dirs
+	return filepath.Join(parts...)
 }
