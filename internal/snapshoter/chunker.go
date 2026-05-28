@@ -56,66 +56,82 @@ type chunkGenInfo struct {
 	ChunksSkipped int64
 }
 
-func NewChunkGen(chunkDir string) *chunkGen {
+type fileResults struct {
+	path string
+	hashes []chunkHash
+	err error
+}
+
+func NewChunkGen(chunkDir string)  *chunkGen {
 	return &chunkGen{chunkDir: chunkDir}
 }
 
 
 // chunks all files in repoDir
-func (cg *chunkGen) ChunkFilesInDir(repoDir string) error {
+func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]fileResults, error) {
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU())
+	results := make(chan fileResults, 100)
 
 	if err := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
 			return nil
 		}
-
 		g.Go(func() error {
-			err := cg.chunkFile(path)
-			if err != nil {
-				atomic.AddInt64(&cg.Info.FilesErr, 1)
-			} else {
-				atomic.AddInt64(&cg.Info.FilesChunked, 1)
-			}
+			hashes, err := cg.chunkFile(path)
+			results <- fileResults{path: path, hashes: hashes, err: err}
 			return err
 		})
 
 		return nil
 	}); err != nil {
-		return err
+		return nil, err
 	}
-	if err := g.Wait(); err != nil {
-		return fmt.Errorf("chunking file: %w", err)
+	go func() {
+		g.Wait()
+		close(results)
+	}()
+
+	var all[]fileResults
+	for r := range results {
+		if r.err == nil {
+			cg.Info.FilesChunked++
+		} else {
+			cg.Info.FilesErr++
+		}
+		all = append(all, r)
 	}
-	return nil
+	return all, nil
 }
 
 // creates chunk from the file at path to chunkDir
-func (cg *chunkGen) chunkFile(path string) error {
+func (cg *chunkGen) chunkFile(path string) ([]chunkHash, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	c := chunker.New(f, chunker.Pol(0x3DA3358B4DC173))
 
 	buf := make([]byte, 8*1024*1024)
+
+	chunkHashes := []chunkHash{}
 
 	for chunkCount := 0; ; chunkCount++ {
 		chunk, err := c.Next(buf)
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return err
+			return nil, err
 		}
 
 		chunkHash, chunkFile, err := cg.createChunk(chunk)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		// this means the chunk already exists
 		if chunkFile == nil {
 			atomic.AddInt64(&cg.Info.ChunksSkipped, 1)
+			chunkHashes = append(chunkHashes, chunkHash)
 			continue
 		}
 
@@ -123,12 +139,13 @@ func (cg *chunkGen) chunkFile(path string) error {
 		cerr := chunkFile.Close()
 		err = errors.Join(werr, cerr)
 		if err != nil {
-			return fmt.Errorf("creating chunk for file %s, chunk nr %d, hash %s: %w", path, chunkCount+1, chunkHash.hex, err)
+			return nil, fmt.Errorf("creating chunk for file %s, chunk nr %d, hash %s: %w", path, chunkCount+1, chunkHash.hex, err)
 		}
+		chunkHashes = append(chunkHashes, chunkHash)
 		atomic.AddInt64(&cg.Info.ChunksCreated, 1)
 	}
 	
-	return nil
+	return chunkHashes, nil
 }
 
 func (cg *chunkGen) createChunk(chunk chunker.Chunk) (chunkHash, *os.File, error) {
