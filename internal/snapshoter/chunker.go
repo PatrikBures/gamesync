@@ -113,16 +113,15 @@ func createChunk(chunk chunker.Chunk, chunkDir string) (chunkHash, *os.File, err
 	hashDir := filepath.Join(chunkDir, dirsForChunk(ch.hex))
 	chunkFilePath := filepath.Join(hashDir, ch.hex)
 
-	if cf, _ := os.Stat(chunkFilePath); cf != nil {
-		return ch, nil, nil
-	}
-
 	if err := os.MkdirAll(hashDir, 0775); err != nil {
 		return ch, nil, fmt.Errorf("creating dir '%s': %w", hashDir, err)
 	}
 
-	chunkFile, err := os.Create(chunkFilePath)
+	chunkFile, err := os.OpenFile(chunkFilePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0666)
 	if err != nil {
+		if errors.Is(err, os.ErrExist) {
+			return ch, nil, nil
+		}
 		return ch, nil, err
 	}
 	return ch, chunkFile, nil
