@@ -76,11 +76,11 @@ build-container: build-state
 	docker build ./ -t $(CONTAINER_NAME):$(VERSION)
 
 up-pg:
-	docker compose -f ./docker-compose-pg.yml up --build --remove-orphans -d
+	docker compose -f ./docker-compose.pg.yml up --build --remove-orphans -d
 up-pg-gen:
-	docker compose -f ./docker-compose-pg-gen.yml up --build --remove-orphans -d
+	docker compose -f ./docker-compose.pg-gen.yml up --build --remove-orphans -d
 down-pg: down-swagger
-	docker compose -f ./docker-compose-pg.yml down -v
+	docker compose -f ./docker-compose.pg.yml down -v
 
 psql:
 	docker compose exec -it db psql $(DB_NAME) $(DB_USER) 
@@ -91,7 +91,7 @@ down: down-swagger
 	docker compose down -v
 
 down-swagger:
-	docker compose -f ./docker-compose-swagger.yml down
+	docker compose -f ./docker-compose.swagger.yml down
 
 
 ### generate code
