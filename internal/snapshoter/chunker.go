@@ -71,7 +71,7 @@ func NewChunkGen(chunkDir string)  *chunkGen {
 func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU())
-	results := make(chan FileResults, 100)
+	results := make(chan FileResults, 10)
 	waitErr := make(chan error, 1)
 
 	if err := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
