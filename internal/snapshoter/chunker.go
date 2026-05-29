@@ -56,10 +56,10 @@ type chunkGenInfo struct {
 	ChunksSkipped int64
 }
 
-type fileResults struct {
-	path string
-	hashes []chunkHash
-	err error
+type FileResults struct {
+	Path string
+	Hashes []chunkHash
+	Err error
 }
 
 func NewChunkGen(chunkDir string)  *chunkGen {
@@ -68,10 +68,10 @@ func NewChunkGen(chunkDir string)  *chunkGen {
 
 
 // chunks all files in repoDir
-func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]fileResults, error) {
+func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU())
-	results := make(chan fileResults, 100)
+	results := make(chan FileResults, 100)
 	waitErr := make(chan error, 1)
 
 	if err := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
@@ -80,7 +80,7 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]fileResults, error) {
 		}
 		g.Go(func() error {
 			hashes, err := cg.chunkFile(path)
-			results <- fileResults{path: path, hashes: hashes, err: err}
+			results <- FileResults{Path: path, Hashes: hashes, Err: err}
 			return err
 		})
 
@@ -93,9 +93,9 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]fileResults, error) {
 		close(results)
 	}()
 
-	var all[]fileResults
+	var all[]FileResults
 	for r := range results {
-		if r.err == nil {
+		if r.Err == nil {
 			cg.Info.FilesChunked++
 		} else {
 			cg.Info.FilesErr++
@@ -108,7 +108,9 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]fileResults, error) {
 	return all, nil
 }
 
-// creates chunk from the file at path to chunkDir
+// creates chunks from the file at path to chunkDir
+//
+// and returns a slice of the chunk hashes, including already existing ones
 func (cg *chunkGen) chunkFile(path string) ([]chunkHash, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -152,6 +154,7 @@ func (cg *chunkGen) chunkFile(path string) ([]chunkHash, error) {
 	return chunkHashes, nil
 }
 
+// hashes chunk, creates the relative dirs, and opens the file (does not put any data in)
 func (cg *chunkGen) createChunk(chunk chunker.Chunk) (chunkHash, *os.File, error) {
 	ch := chunkHash{}
 	ch.bytes = blake3.Sum256(chunk.Data)
@@ -201,4 +204,15 @@ func dirsForChunk(hash string) (dirs string) {
 		parts[i/dirLen] = hash[i:i+dirLen]
 	}
 	return filepath.Join(parts...)
+}
+
+
+
+func PrintFileResultsErrors(result []FileResults) {
+	for _, r := range result {
+		if r.Err == nil {
+			continue
+		}
+		fmt.Fprintf(os.Stderr, "Error chunking file path: %s, err: %v\n", r.Path, r.Err)
+	}
 }
