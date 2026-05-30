@@ -83,8 +83,12 @@ func runGetUserCmd(client *api.Client, opts getUserOpts) error {
 		for _, user := range *res {
 			fmt.Println("name:", user.UserName, "ID:", user.UserID, "roleID:", user.RoleID)
 		}
+	case *api.GetUsersUnauthorized:
+		return fmt.Errorf("unauthorized")
+	case *api.GetUsersInternalServerError:
+		return fmt.Errorf("server error: %v", res)
 	default:
-		return fmt.Errorf("unrecognized result: %T", res)
+		return fmt.Errorf("unrecognized result: %v", res)
 	}
 	return nil
 }
