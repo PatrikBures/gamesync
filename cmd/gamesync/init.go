@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	clientConfig "gamesync/internal/client/config"
+	"gamesync/internal/client/config"
 	"gamesync/internal/snapshoter"
 	"os"
 	"path/filepath"
@@ -21,7 +21,7 @@ type initCmdOpts struct {
 	repoDir string
 }
 
-func newInitCmd(configOpts *clientConfig.Config) *initCmd {
+func newInitCmd(configOpts *config.Config) *initCmd {
 	root := initCmd{}
 
 	cmd := &cobra.Command{

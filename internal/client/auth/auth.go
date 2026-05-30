@@ -1,4 +1,4 @@
-package clientAuth
+package auth
 
 import (
 	"context"

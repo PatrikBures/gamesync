@@ -1,4 +1,4 @@
-package clientConfig
+package config
 
 import (
 	"os"

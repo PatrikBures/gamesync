@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gamesync/internal/client"
-	clientConfig "gamesync/internal/client/config"
+	"gamesync/internal/client/config"
 	api "gamesync/internal/ogen"
 
 	"github.com/spf13/cobra"
@@ -14,7 +14,7 @@ type getCmd struct {
 	cmd *cobra.Command
 }
 
-func newGetCmd(config *clientConfig.Config) *getCmd {
+func newGetCmd(config *config.Config) *getCmd {
 	root := getCmd{}
 
 	cmd := &cobra.Command{
@@ -38,7 +38,7 @@ type getUserOpts struct {
 	all bool
 }
 
-func newGetUserCmd(config *clientConfig.Config) *getUserCmd {
+func newGetUserCmd(config *config.Config) *getUserCmd {
 	root := getUserCmd{}
 
 	cmd := &cobra.Command{

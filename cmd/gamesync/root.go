@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	clientConfig "gamesync/internal/client/config"
+	"gamesync/internal/client/config"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -10,7 +10,7 @@ import (
 
 type rootCmd struct {
 	cmd *cobra.Command
-	config clientConfig.Config
+	config config.Config
 }
 
 func newRootCmd() *rootCmd {
@@ -20,7 +20,7 @@ func newRootCmd() *rootCmd {
 		Use: "gamesync",
 		Short: "Syncs save games to a server",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := clientConfig.LoadConfig(&root.config); err != nil {
+			if err := config.LoadConfig(&root.config); err != nil {
 				return fmt.Errorf("loading config: %w", err)
 			}
 
