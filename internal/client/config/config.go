@@ -7,6 +7,8 @@ import (
 
 type Config struct {
 	ChunkDir string
+	Token string
+	Server string  // example: http://localhost:8080, https://example.org
 }
 
 const projectName = "gamesync"
