@@ -69,12 +69,11 @@ func EnsurePermissions(conn dbx.DBconn) (err error) {
 		if slices.Contains(expectedPermsInt32, c) {
 			continue
 		}
-		var perm dbm.Permission
-		perm, err = qtx.DeletePermission(ctx, c)
+		_, err = qtx.DeletePermission(ctx, c)
 		if err != nil {
 			return
 		}
-		slog.Info("deleted permission", "permission", perm)
+		slog.Info("deleted permission", "permID", c)
 	}
 	return tx.Commit(ctx)
 }

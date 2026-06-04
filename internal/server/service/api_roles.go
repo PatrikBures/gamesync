@@ -5,6 +5,7 @@ import (
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
+	"log/slog"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -13,6 +14,7 @@ import (
 func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
 	roles, err := s.conn.Queries.ListRoles(ctx)
 	if err != nil {
+		slog.Error("listing roles", "error", err)
 		return &api.GetRolesInternalServerError{}, server.ErrDatabase
 	}
 	rolesReturn := make(api.GetRolesOKApplicationJSON, 0, len(roles))

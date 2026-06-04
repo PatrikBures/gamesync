@@ -78,13 +78,22 @@ func CreateDefaultRolePerms(conn dbx.DBconn) (err error) {
 	}()
 
 	rolesDeletedCount, err := qtx.DeleteRolePermsLT(ctx, 100)
-	_, err = qtx.InsertRolePerms(ctx, rolePerms)
+	if err != nil {
+		return err
+	}
+
+	permsInsertedCount, err := qtx.InsertRolePerms(ctx, rolePerms)
+	if err != nil {
+		return err
+	}
+	
+	err = tx.Commit(ctx)
 	if err != nil {
 		return err
 	}
 
 	slog.Info("removed role perms under 100", "count", rolesDeletedCount)
-	slog.Info("created perms for roles under 100", "count", len(rolePerms))
+	slog.Info("created perms for roles under 100", "roles", len(rolePerms), "total_perms_inserted", permsInsertedCount)
 
 	return nil
 }

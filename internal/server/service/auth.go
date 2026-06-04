@@ -24,10 +24,12 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 
 	userID, err := s.conn.Queries.GetUserIdFromToken(ctx, tokenHashSlice)
 	if err != nil {
+		slog.Warn("authorizing user, getting token", "userID", userID, "error", err)
 		return ctx, server.ErrNotAuthorized
 	}
 	user, err := s.conn.Queries.GetUser(ctx, userID)
 	if err != nil {
+		slog.Warn("authorizing user, getting user", "userID", userID, "error", err)
 		return ctx, server.ErrNotAuthorized
 	}
 	userRolePerms, err := s.conn.Queries.ListRolePerms(ctx, user.RoleID)
@@ -47,8 +49,6 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 	if len(perms) != len(userRolePerms) {
 		slog.Error("Role has invalid RoleID", "RoleID", user.RoleID)
 	}
-
-	// TODO: centralized authorization using middleware
 
 	ctx = context.WithValue(ctx, ckUser, user)
 	ctx = context.WithValue(ctx, ckRolePerms, perms)

@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
 	"log/slog"
@@ -52,11 +51,6 @@ func CreateUser(conn DBconn, ctx context.Context, user dbm.InsertUserParams) (us
 	if err = tx.Commit(ctx); err != nil {
 		slog.Error("commiting tx", "error", err)
 		return 0, "", server.ErrDatabase
-	}
-
-	if token64 == "" {
-		slog.Error("aslkjflk")
-		err = fmt.Errorf("asdofkmas")
 	}
 
 	return
