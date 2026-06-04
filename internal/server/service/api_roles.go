@@ -2,16 +2,16 @@ package service
 
 import (
 	"context"
-	"errors"
-	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
+	"gamesync/internal/server/dbm"
 
-	"gorm.io/gorm"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
-	roles, err := s.q.Role.WithContext(ctx).Find()
+	roles, err := s.conn.Queries.ListRoles(ctx)
 	if err != nil {
 		return &api.GetRolesInternalServerError{}, server.ErrDatabase
 	}
@@ -29,25 +29,29 @@ func (s *Service) PostRoles(ctx context.Context, req api.OptRoleName) (api.PostR
 	if !req.Set {
 		return &api.PostRolesNotAcceptable{}, server.ErrMissingBody
 	}
-	role := model.Role{RoleName: req.Value.RoleName}
-	if err := s.q.Role.WithContext(ctx).Create(&role); err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
+	roleID, err := s.conn.Queries.InsertRole(ctx, req.Value.RoleName)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		switch pgErr.Code {
+		case pgerrcode.UniqueViolation:
 			return &api.PostRolesConflict{}, server.ErrDuplicateKey
 		}
 		return &api.PostRolesInternalServerError{}, server.ErrDatabase
 	}
-	return &api.Role{RoleID: role.RoleID, RoleName: req.Value.RoleName}, nil
+	return &api.Role{RoleID: roleID, RoleName: req.Value.RoleName}, nil
 }
 
 func (s *Service) PutRoleName(ctx context.Context, req api.OptRoleName, params api.PutRoleNameParams) (api.PutRoleNameRes, error) {
 	if !req.Set {
 		return &api.PutRoleNameNotAcceptable{}, server.ErrMissingBody
 	}
-	if _, err := s.q.Role.WithContext(ctx).
-	Where(s.q.Role.RoleID.Eq(params.RoleID)).
-	Update(s.q.Role.RoleName, req.Value.RoleName);
-	err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
+	if err := s.conn.Queries.UpdateRoleName(ctx, dbm.UpdateRoleNameParams{
+		RoleID: params.RoleID,
+		RoleName: req.Value.RoleName,
+	}); err != nil {
+		var pgErr *pgconn.PgError
+		switch pgErr.Code {
+		case pgerrcode.UniqueViolation:
 			return &api.PutRoleNameConflict{}, server.ErrDuplicateKey
 		}
 	}

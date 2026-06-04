@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"errors"
-	"gamesync/internal/model"
 	"gamesync/internal/server"
+	"gamesync/internal/server/dbm"
 	"gamesync/internal/server/permissions"
 	"log/slog"
 	"slices"
@@ -24,11 +24,11 @@ func CheckPerm(ctx context.Context, perm permissions.Perm) error {
 
 
 
-func isUserSelf(ctx context.Context, userID int64) (*model.User, error) {
-	currentUser, ok := ctx.Value(ckUser).(*model.User)
+func isUserSelf(ctx context.Context, userID int64) (dbm.User, error) {
+	currentUser, ok := ctx.Value(ckUser).(dbm.User)
 	if !ok {
 		slog.Error("mapping user context", "UserID", userID)
-		return nil, server.ErrContext
+		return dbm.User{}, server.ErrContext
 	}
 	if userID != currentUser.UserID {
 		return currentUser, server.ErrNotAuthorized

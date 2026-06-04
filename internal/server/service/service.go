@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"database/sql/driver"
-	"gamesync/internal/query"
+	"gamesync/internal/dbx"
 )
 
 const tokenLen = 33
@@ -21,15 +21,15 @@ const (
 )
 
 type Service struct {
-	q *query.Query
+	conn dbx.DBconn
 	o ServiceOpts
 }
 type ServiceOpts struct {
 	DefaultRoleID int32
 }
-func NewService(query *query.Query, opts ServiceOpts) *Service {
+func NewService(conn dbx.DBconn, opts ServiceOpts) *Service {
 	return &Service{
-		q: query,
+		conn: conn,
 		o: opts,
 	}
 }

@@ -15,7 +15,7 @@ FROM busybox:1
 
 COPY --from=builder --chmod=775 /src/goose /usr/local/bin/goose
 
-COPY migrations/postgres/ /migrations
+COPY sql/migrations /migrations
 
 ENV GOOSE_DRIVER=postgres
 ENV GOOSE_MIGRATION_DIR=/migrations
