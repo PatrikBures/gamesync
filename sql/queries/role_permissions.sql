@@ -13,6 +13,11 @@ SELECT * FROM role_permissions
 WHERE role_id = $1
 ;
 
+-- name: DeleteRolePermsWithRoleId :exec
+DELETE FROM role_permissions
+WHERE role_id = $1
+;
+
 -- name: ListRolePermNamesWithName :many
 -- returns slice of all the permissions a role has
 --

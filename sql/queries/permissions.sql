@@ -1,5 +1,11 @@
 -- name: ListPermissions :many
-SELECT * FROM permissions;
+SELECT * FROM permissions
+;
+
+-- name: ListPermsWithNames :many
+SELECT * FROM permissions
+WHERE perm_name = ANY(sqlc.arg(perm_names)::VARCHAR[])
+;
 
 -- name: InsertPermission :exec
 INSERT INTO permissions (perm_id, perm_name)

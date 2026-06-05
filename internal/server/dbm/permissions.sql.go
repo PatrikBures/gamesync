@@ -61,6 +61,31 @@ func (q *Queries) ListPermissions(ctx context.Context) ([]Permission, error) {
 	return items, nil
 }
 
+const listPermsWithNames = `-- name: ListPermsWithNames :many
+SELECT perm_id, perm_name FROM permissions
+WHERE perm_name = ANY($1::VARCHAR[])
+`
+
+func (q *Queries) ListPermsWithNames(ctx context.Context, permNames []string) ([]Permission, error) {
+	rows, err := q.db.Query(ctx, listPermsWithNames, permNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Permission
+	for rows.Next() {
+		var i Permission
+		if err := rows.Scan(&i.PermID, &i.PermName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updatePermissionName = `-- name: UpdatePermissionName :exec
 UPDATE permissions
 SET perm_name = $2

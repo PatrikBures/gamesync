@@ -5,9 +5,7 @@ import (
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
-
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5/pgconn"
+	"log/slog"
 )
 
 type GetRolePermsResult struct {
@@ -33,7 +31,7 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 	}
 	permNamesReturn := make(api.PermNameArray, 0, len(permNames))
 	for _, n := range permNames {
-		permNamesReturn = append(permNames, n)
+		permNamesReturn = append(permNamesReturn, n)
 	}
 	return &permNamesReturn, nil
 }
@@ -98,7 +96,49 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 	return &api.PatchRolePermsOK{}, nil
 }
 
-func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, params api.PutRolePermsParams) (api.PutRolePermsRes, error) {
+func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, params api.PutRolePermsParams) (result api.PutRolePermsRes, err error) {
+	perms, err := s.conn.Queries.ListPermsWithNames(ctx, req)
+	if err != nil {
+		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+	}
+	if len(perms) != len(req) {
+		return &api.PutRolePermsUnprocessableEntity{}, server.ErrPermNotFound
+	}
+
+	tx, err := s.conn.Pool.Begin(ctx)
+	if err != nil {
+		slog.Error("starting tx", "error", err)
+		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+	}
+	qtx := s.conn.Queries.WithTx(tx)
+
+	defer func() {
+		if recover() != nil || err != nil {
+			if e := tx.Rollback(ctx); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
+		}
+	}()
+
+	err = qtx.DeleteRolePermsWithRoleId(ctx, params.RoleID)
+	if err != nil {
+		slog.Error("deleting all perms from role", "roleID", params.RoleID, "error", err)
+		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+	}
+
+
+	permIDs := permToRolePermInsert(params.RoleID, perms)
+	_, err = qtx.InsertRolePerms(ctx, permIDs)
+	if err != nil {
+		slog.Error("adding perms to role", "roleID", params.RoleID, "error", err)
+		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		slog.Error("commiting transaction", "error", err)
+		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+	}
 	// perms, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req...)).Find()
 	// if err != nil {
 	// 	return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
@@ -121,7 +161,7 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 	// 	return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
 	// }
 
-	return nil, nil
+	return &api.PutRolePermsOK{}, nil
 }
 
 func permToRolePermInsert(roleID int32, perms []dbm.Permission) []dbm.InsertRolePermsParams {

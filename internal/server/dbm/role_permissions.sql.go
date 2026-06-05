@@ -22,6 +22,16 @@ func (q *Queries) DeleteRolePermsLT(ctx context.Context, roleID int32) (int64, e
 	return result.RowsAffected(), nil
 }
 
+const deleteRolePermsWithRoleId = `-- name: DeleteRolePermsWithRoleId :exec
+DELETE FROM role_permissions
+WHERE role_id = $1
+`
+
+func (q *Queries) DeleteRolePermsWithRoleId(ctx context.Context, roleID int32) error {
+	_, err := q.db.Exec(ctx, deleteRolePermsWithRoleId, roleID)
+	return err
+}
+
 type InsertRolePermsParams struct {
 	RoleID int32
 	PermID int32

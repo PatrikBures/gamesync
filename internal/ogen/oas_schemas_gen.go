@@ -296,7 +296,6 @@ func (s *PermDiff) SetRemove(val PermNameArray) {
 type PermNameArray []string
 
 func (*PermNameArray) getRolePermsRes() {}
-func (*PermNameArray) putRolePermsRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/PermWithName
@@ -399,6 +398,11 @@ func (*PutRolePermsInternalServerError) putRolePermsRes() {}
 type PutRolePermsNotAcceptable struct{}
 
 func (*PutRolePermsNotAcceptable) putRolePermsRes() {}
+
+// PutRolePermsOK is response for PutRolePerms operation.
+type PutRolePermsOK struct{}
+
+func (*PutRolePermsOK) putRolePermsRes() {}
 
 // PutRolePermsUnauthorized is response for PutRolePerms operation.
 type PutRolePermsUnauthorized struct{}
