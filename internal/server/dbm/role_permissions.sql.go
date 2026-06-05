@@ -30,14 +30,14 @@ type InsertRolePermsParams struct {
 const listRolePermNamesWithName = `-- name: ListRolePermNamesWithName :many
 SELECT perm_name FROM permissions
 JOIN role_permissions USING (perm_id) 
-WHERE role_permissions.perm_id = $1
+WHERE role_permissions.role_id = $1
 `
 
 // returns slice of all the permissions a role has
 //
 // the returned permissions are their names
-func (q *Queries) ListRolePermNamesWithName(ctx context.Context, permID int32) ([]string, error) {
-	rows, err := q.db.Query(ctx, listRolePermNamesWithName, permID)
+func (q *Queries) ListRolePermNamesWithName(ctx context.Context, roleID int32) ([]string, error) {
+	rows, err := q.db.Query(ctx, listRolePermNamesWithName, roleID)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,9 @@ import (
 	"gamesync/internal/server/dbm"
 	"gamesync/internal/server/permissions"
 
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.GetUserRes, error) {
@@ -83,24 +85,29 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 		return &api.PutUserNameNotAcceptable{}, server.ErrMissingBody
 	}
 
-	// if err := isUserSelfAndPerm(ctx, params.UserID, permissions.PermUserNameUpdate); err != nil {
-	// 	if errors.Is(err, server.ErrContext) {
-	// 		return &api.PutUserNameInternalServerError{}, err
-	// 	} else if errors.Is(err, server.ErrNotAuthorized) {
-	// 		return &api.PutUserNameUnauthorized{}, err
-	// 	}
-	// }
-	//
-	// if _, err := s.q.User.WithContext(ctx).
-	// 	Where(s.q.User.UserID.Eq(params.UserID)).
-	// 	Update(s.q.User.UserName, req.Value.UserName);
-	// 	err != nil {
-	//
-	// 	if errors.Is(err, gorm.ErrDuplicatedKey) {
-	// 		return &api.PutUserNameConflict{}, server.ErrDuplicateKey
-	// 	}
-	// 	return &api.PutUserNameInternalServerError{}, server.ErrDatabase
-	// }
+	if err := isUserSelfAndPerm(ctx, params.UserID, permissions.PermUserNameUpdate); err != nil {
+		if errors.Is(err, server.ErrContext) {
+			return &api.PutUserNameInternalServerError{}, err
+		} else if errors.Is(err, server.ErrNotAuthorized) {
+			return &api.PutUserNameUnauthorized{}, err
+		}
+	}
+
+	if err := s.conn.Queries.UpdateUserName(ctx, dbm.UpdateUserNameParams{
+		UserID: params.UserID,
+		UserName: req.Value.UserName,
+	}); err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return &api.PutUserNameConflict{}, server.ErrDuplicateKey
+			case pgerrcode.ForeignKeyViolation:
+				return &api.PutUserNameNotFound{}, server.ErrNotFound
+			}
+		}
+		return &api.PutUserNameInternalServerError{}, server.ErrDatabase
+	}
+
 	return &api.PutUserNameOK{}, nil
 }
 

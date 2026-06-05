@@ -375,6 +375,11 @@ type PutRoleNameNotAcceptable struct{}
 
 func (*PutRoleNameNotAcceptable) putRoleNameRes() {}
 
+// PutRoleNameNotFound is response for PutRoleName operation.
+type PutRoleNameNotFound struct{}
+
+func (*PutRoleNameNotFound) putRoleNameRes() {}
+
 // PutRoleNameOK is response for PutRoleName operation.
 type PutRoleNameOK struct{}
 

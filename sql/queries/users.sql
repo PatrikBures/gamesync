@@ -22,3 +22,9 @@ WHERE user_name = $1
 SELECT * FROM users
 WHERE user_id = $1
 ;
+
+-- name: UpdateUserName :exec
+UPDATE users
+SET user_name = $2
+WHERE user_id = $1
+;

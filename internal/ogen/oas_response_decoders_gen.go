@@ -422,6 +422,9 @@ func decodePutRoleNameResponse(resp *http.Response) (res PutRoleNameRes, _ error
 	case 401:
 		// Code 401.
 		return &PutRoleNameUnauthorized{}, nil
+	case 404:
+		// Code 404.
+		return &PutRoleNameNotFound{}, nil
 	case 406:
 		// Code 406.
 		return &PutRoleNameNotAcceptable{}, nil

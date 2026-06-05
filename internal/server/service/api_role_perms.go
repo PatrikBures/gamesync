@@ -5,6 +5,9 @@ import (
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
+
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type GetRolePermsResult struct {
@@ -12,6 +15,10 @@ type GetRolePermsResult struct {
 }
 
 func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParams) (api.GetRolePermsRes, error) {
+
+	// we check first that the role exists before getting the perms it has.
+	// if we do not do that, the next query will  return an empty slice,
+	// even though the role does not exist.
 	roleCount, err := s.conn.Queries.GetRoleWithIdCount(ctx, params.RoleID)
 	if err != nil {
 		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase

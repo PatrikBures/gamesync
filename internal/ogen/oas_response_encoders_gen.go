@@ -325,6 +325,12 @@ func encodePutRoleNameResponse(response PutRoleNameRes, w http.ResponseWriter, s
 
 		return nil
 
+	case *PutRoleNameNotFound:
+		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
+
+		return nil
+
 	case *PutRoleNameNotAcceptable:
 		w.WriteHeader(406)
 		span.SetStatus(codes.Error, http.StatusText(406))

@@ -33,10 +33,11 @@ func (s *Service) PostRoles(ctx context.Context, req api.OptRoleName) (api.PostR
 	}
 	roleID, err := s.conn.Queries.InsertRole(ctx, req.Value.RoleName)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		switch pgErr.Code {
-		case pgerrcode.UniqueViolation:
-			return &api.PostRolesConflict{}, server.ErrDuplicateKey
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return &api.PostRolesConflict{}, server.ErrDuplicateKey
+			}
 		}
 		return &api.PostRolesInternalServerError{}, server.ErrDatabase
 	}
@@ -51,11 +52,15 @@ func (s *Service) PutRoleName(ctx context.Context, req api.OptRoleName, params a
 		RoleID: params.RoleID,
 		RoleName: req.Value.RoleName,
 	}); err != nil {
-		var pgErr *pgconn.PgError
-		switch pgErr.Code {
-		case pgerrcode.UniqueViolation:
-			return &api.PutRoleNameConflict{}, server.ErrDuplicateKey
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return &api.PutRoleNameConflict{}, server.ErrDuplicateKey
+			case pgerrcode.ForeignKeyViolation:
+				return &api.PutRoleNameNotFound{}, server.ErrNotFound
+			}
 		}
+		return &api.PutRoleNameInternalServerError{}, server.ErrDatabase
 	}
 	return &api.PutRoleNameOK{}, nil
 }

@@ -19,5 +19,5 @@ WHERE role_id = $1
 -- the returned permissions are their names
 SELECT perm_name FROM permissions
 JOIN role_permissions USING (perm_id) 
-WHERE role_permissions.perm_id = $1
+WHERE role_permissions.role_id = $1
 ;
