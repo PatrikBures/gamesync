@@ -139,27 +139,6 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 		slog.Error("commiting transaction", "error", err)
 		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
 	}
-	// perms, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req...)).Find()
-	// if err != nil {
-	// 	return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
-	// }
-	// if len(perms) != len(req) {
-	// 	return &api.PutRolePermsUnprocessableEntity{}, server.ErrPermNotFound
-	// }
-	//
-	// err = s.q.Transaction(func(tx *query.Query) error {
-	// 	if _, err := tx.RolePermission.WithContext(ctx).Where(tx.RolePermission.RoleID.Eq(params.RoleID)).Delete(); err != nil {
-	// 		return err
-	// 	}
-	// 	permIDs := permToRolePerm(params.RoleID, perms)
-	// 	if err := tx.RolePermission.WithContext(ctx).Create(permIDs...); err != nil {
-	// 		return err
-	// 	}
-	// 	return nil
-	// })
-	// if err != nil {
-	// 	return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
-	// }
 
 	return &api.PutRolePermsOK{}, nil
 }
