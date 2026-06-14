@@ -277,6 +277,7 @@ paths:
       responses:
         "401": {}
         "200": {}
+        "404": {}
         "406": {}
         "409": {}
         "500": {}
@@ -327,11 +328,7 @@ paths:
         - Permissions
       responses:
         "401": {}
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PermNameArray"
+        "200": {}
         "406": {}
         "422": {}
         "500": {}

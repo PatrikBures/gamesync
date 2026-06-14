@@ -43,6 +43,7 @@ func AuthzMiddleware() middleware.Middleware {
 
 		ctx := req.Context
 		if err := service.CheckPerm(ctx, perm); err != nil {
+			slog.Error("checking permission", "perm", perm)
 			return middleware.Response{}, err
 		}
 		return next(req)

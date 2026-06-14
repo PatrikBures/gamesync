@@ -1,25 +1,52 @@
-include:
-  - ./docker-compose.swagger.yml
 services:
   gamesync:
     build: .
     container_name: gamesync
     ports:
       - "8080:8080"
-    volumes:
-      - ./data/sqlite_db:/srv/gamesync/sqlite_db
     environment:
-      GAMESYNC_DEFAULT_ROLE_ID: "50"
-      GAMESYNC_DISABLED_ROLES: "maintainer"
-      GAMESYNC_REQUEST_LOGS: true
+      GAMESYNC_DB_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}"
+      GAMESYNC_DB_TYPE: postgres
       GAMESYNC_DB_LOG_LEVEL: error
+      GAMESYNC_REQUEST_LOGS: true
     depends_on:
       migrate:
         condition: service_completed_successfully
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      start_period: 10s
+      start_interval: 1s
+      interval: 5s
+      timeout: 5s
+      retries: 3
   migrate:
     build:
-      dockerfile: docker/goose_sqlite.Dockerfile
+      dockerfile: docker/goose_postgres.Dockerfile
       context: .
-    volumes:
-      - ./data/sqlite_db/:/db
+    environment:
+      GOOSE_DBSTRING: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}"
     command: ["goose", "up"]
+    depends_on:
+      db:
+        condition: service_healthy
+  swagger:
+    image: swaggerapi/swagger-ui:latest
+    ports:
+      - 8081:8080
+    environment:
+      SWAGGER_JSON: /api/openapi.yml
+    volumes:
+      - ./api:/api
+
+volumes:
+  db:

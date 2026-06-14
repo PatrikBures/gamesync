@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"gamesync/internal/dbx"
-	"gamesync/internal/model"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
+	"gamesync/internal/server/dbm"
 	"gamesync/internal/server/permissions"
 
-	"gorm.io/gorm"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.GetUserRes, error) {
@@ -25,9 +27,9 @@ func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.Ge
 	if err := CheckPerm(ctx, permissions.PermUserGet); err != nil {
 		return &api.GetUserUnauthorized{}, err
 	}
-	user, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(params.UserID)).First()
+	user, err := s.conn.Queries.GetUser(ctx, params.UserID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return &api.GetUserNotFound{}, server.ErrNotFound
 		}
 		return &api.GetUserInternalServerError{}, server.ErrDatabase
@@ -36,7 +38,7 @@ func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.Ge
 }
 
 func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
-	users, err := s.q.User.WithContext(ctx).Find()
+	users, err := s.conn.Queries.ListUsers(ctx)
 	if err != nil {
 		return &api.GetUsersInternalServerError{}, server.ErrDatabase
 	}
@@ -52,13 +54,12 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 	if !req.Set {
 		return &api.PostUsersNotAcceptable{}, server.ErrMissingBody
 	}
-	user := &model.User{
+	user := dbm.InsertUserParams{
 		UserName: req.Value.UserName,
 		RoleID: s.o.DefaultRoleID,
 	}
-	tx := s.q.Begin()
 
-	token64, err := dbx.CreateUser(tx, ctx, user)
+	userID, token64, err := dbx.CreateUser(s.conn, ctx, user)
 	if err != nil {
 		switch err {
 		case server.ErrDatabase:
@@ -71,7 +72,7 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 	}
 
 	return &api.UserNewReturn{
-		UserID: user.UserID,
+		UserID: userID,
 		UserName: user.UserName,
 		RoleID: user.RoleID,
 		Token: token64,
@@ -92,16 +93,21 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 		}
 	}
 
-	if _, err := s.q.User.WithContext(ctx).
-		Where(s.q.User.UserID.Eq(params.UserID)).
-		Update(s.q.User.UserName, req.Value.UserName);
-		err != nil {
-
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return &api.PutUserNameConflict{}, server.ErrDuplicateKey
+	if err := s.conn.Queries.UpdateUserName(ctx, dbm.UpdateUserNameParams{
+		UserID: params.UserID,
+		UserName: req.Value.UserName,
+	}); err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return &api.PutUserNameConflict{}, server.ErrDuplicateKey
+			case pgerrcode.ForeignKeyViolation:
+				return &api.PutUserNameNotFound{}, server.ErrNotFound
+			}
 		}
 		return &api.PutUserNameInternalServerError{}, server.ErrDatabase
 	}
+
 	return &api.PutUserNameOK{}, nil
 }
 

@@ -2,31 +2,30 @@ package initServer
 
 import (
 	"context"
+	"errors"
 	"gamesync/internal/dbx"
-	"gamesync/internal/model"
-	"gamesync/internal/query"
+	"gamesync/internal/server/dbm"
+
+	"github.com/jackc/pgx/v5"
 )
 
-func CreateAdmin(q *query.Query) (string, error) {
-	user := &model.User{
-		UserID: 1,
+func CreateAdmin(conn dbx.DBconn) (string, error) {
+	user := dbm.InsertUserParams{
 		UserName: "admin",
 		RoleID: 1,
 	}
 
 	ctx := context.Background()
 
-	existingUserCount, err := q.User.WithContext(ctx).Where(q.User.UserID.Eq(user.UserID)).Count()
-	if err != nil {
+	curUser, err := conn.Queries.GetUserWithName(ctx, "admin")
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return "", err
-	}
-	if existingUserCount == 1 {
+	} else if curUser.RoleID > 0 {
 		return "", nil
 	}
 
-	tx := q.Begin()
 
-	token, err := dbx.CreateUser(tx, ctx, user)
+	_, token, err := dbx.CreateUser(conn, ctx, user)
 	if err != nil {
 		return "", err
 	}

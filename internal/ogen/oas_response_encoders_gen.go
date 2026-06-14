@@ -325,6 +325,12 @@ func encodePutRoleNameResponse(response PutRoleNameRes, w http.ResponseWriter, s
 
 		return nil
 
+	case *PutRoleNameNotFound:
+		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
+
+		return nil
+
 	case *PutRoleNameNotAcceptable:
 		w.WriteHeader(406)
 		span.SetStatus(codes.Error, http.StatusText(406))
@@ -350,18 +356,9 @@ func encodePutRoleNameResponse(response PutRoleNameRes, w http.ResponseWriter, s
 
 func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
-	case *PermNameArray:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(201)
-		span.SetStatus(codes.Ok, http.StatusText(201))
-
-		e := new(jx.Encoder)
-		if response != nil {
-			response.Encode(e)
-		}
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
+	case *PutRolePermsOK:
+		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		return nil
 

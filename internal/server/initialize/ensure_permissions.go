@@ -2,29 +2,33 @@ package initServer
 
 import (
 	"context"
-	"gamesync/internal/model"
-	"gamesync/internal/query"
+	"gamesync/internal/dbx"
+	"gamesync/internal/server/dbm"
 	"gamesync/internal/server/permissions"
 	"log/slog"
 	"slices"
-
-	"gorm.io/gorm/clause"
 )
 
 
 
-func EnsurePermissions(q *query.Query) (err error) {
+func EnsurePermissions(conn dbx.DBconn) (err error) {
 	ctx := context.Background()
-	tx := q.Begin()
+
+	tx, err := conn.Pool.Begin(ctx)
+	if err != nil {
+		return
+	}
+	qtx := conn.Queries.WithTx(tx)
+
 	defer func() {
 		if recover() != nil || err != nil {
-			if e := tx.Rollback(); e != nil {
+			if e := tx.Rollback(ctx); e != nil {
 				slog.Error("failed rollback", "error", e)
 			}
 		}
 	}()
 
-	currentPerms, err := q.Permission.WithContext(ctx).Find()
+	currentPerms, err := qtx.ListPermissions(ctx)
 	if err != nil {
 		return err
 	}
@@ -35,32 +39,41 @@ func EnsurePermissions(q *query.Query) (err error) {
 
 	expectedPermsInt32 := make([]int32, 0, len(permissions.AllPerms))
 
-	for _, e := range permissions.AllPerms {
+	loop: for _, e := range permissions.AllPerms {
 		i := int32(e)
 		expectedPermsInt32 = append(expectedPermsInt32, i)
-		perm := &model.Permission{PermID: i, PermName: e.String()}
-		if slices.Contains(currentPermIds, i) {
-			slog.Info("already exists", "permission", *perm)
-			continue
+		perm := dbm.Permission{PermID: i, PermName: e.String()}
+
+		for _, cp := range currentPerms {
+			if cp.PermID == perm.PermID {
+				if cp.PermName != perm.PermName {
+					err = qtx.UpdatePermissionName(ctx, dbm.UpdatePermissionNameParams(perm))
+					if err != nil {
+						return
+					}
+					slog.Info("updated perm name", "permission", perm, "old_permission", cp)
+				}
+				slog.Info("already exists", "permission", perm)
+				continue loop
+			}
 		}
-		err = tx.Permission.WithContext(ctx).
-			Clauses(clause.OnConflict{UpdateAll: true}).
-			Create(perm)
+
+		err = qtx.InsertPermission(ctx, dbm.InsertPermissionParams(perm))
 		if err != nil {
-			return err
+			return
 		}
-		slog.Info("created", "permission", *perm)
+		slog.Info("created permission", "permission", perm)
 	}
 
 	for _, c := range currentPermIds {
 		if slices.Contains(expectedPermsInt32, c) {
 			continue
 		}
-		perm := &model.Permission{PermID: c}
-		if _, err = tx.Permission.WithContext(ctx).Delete(perm); err != nil {
-			return err
+		_, err = qtx.DeletePermission(ctx, c)
+		if err != nil {
+			return
 		}
-		slog.Info("deleted", "permission", *perm)
+		slog.Info("deleted permission", "permID", c)
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }

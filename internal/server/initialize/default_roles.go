@@ -2,67 +2,59 @@ package initServer
 
 import (
 	"context"
-	"errors"
-	"gamesync/internal/model"
-	"gamesync/internal/query"
+	"gamesync/internal/dbx"
+	"gamesync/internal/server/dbm"
 	"gamesync/internal/server/permissions"
 	"log/slog"
 	"slices"
-
-	"gorm.io/gen"
-	"gorm.io/gorm"
 )
 
 
-func CreateDefaultRoles(q *query.Query, skipRoles []string) error {
+func CreateDefaultRoles(conn dbx.DBconn, skipRoles []string) error {
 	ctx := context.Background()
-	roles := []*model.Role{
+	roles := []dbm.InsertRoleWithIdParams{
 		{ RoleID:  1, RoleName: "admin" },
 		{ RoleID: 50, RoleName: "standard" },
 		{ RoleID: 60, RoleName: "maintainer" },
 		{ RoleID: 99, RoleName: "none" },
 	}
 	for _, role := range roles {
-		existingRoleCount, err := q.Role.WithContext(ctx).Where(q.Role.RoleID.Eq(role.RoleID)).Count()
+		existingRoleCount, err := conn.Queries.GetRoleWithIdCount(ctx, role.RoleID)
 		if err != nil {
 			return err
 		}
 
 		if slices.Contains(skipRoles, role.RoleName) {
 			if existingRoleCount > 0 {
-				info, err := q.Role.WithContext(ctx).Delete(role)
+				err := conn.Queries.DeleteRole(ctx, role.RoleID)
 				if err != nil {
-					if errors.Is(err, gorm.ErrForeignKeyViolated) {
-						slog.Error("could not delete role. there are probably users with that role preventing deletion.")
-						return err
-					}
-
 					return err
 				}
-				slog.Info("deleted", "role", *role, "info", info)
+				slog.Info("deleted role", "role", role)
 				continue
 			}
-			slog.Info("skipped creating", "role", *role)
+			slog.Info("skipped creating role", "role", role)
 			continue
 		}
 
 		if existingRoleCount > 0 {
-			slog.Info("already exists", "role", *role)
+			slog.Info("role already exists", "role", role)
 			continue
 		}
 
-		if err := q.Role.WithContext(ctx).Create(role); err != nil {
+		if err := conn.Queries.InsertRoleWithId(ctx, role); err != nil {
 			return err
 		}
 
-		slog.Info("created", "role", *role)
+		slog.Info("created role", "role", role)
 	}
 	return nil
 }
 
-func CreateDefaultRolePerms(q *query.Query) error {
+func CreateDefaultRolePerms(conn dbx.DBconn) (err error) {
 	ctx := context.Background()
-	rolePerms := []*model.RolePermission{}
+	rolePerms := []dbm.InsertRolePermsParams{}
+
 	
 	rolePerms = append(rolePerms, permsToRolePermModel(1, permissions.AllPerms)...)
 	rolePerms = append(rolePerms, permsToRolePermModel(50, permissions.Perms{
@@ -71,33 +63,45 @@ func CreateDefaultRolePerms(q *query.Query) error {
 		permissions.PermUserNameUpdateOwn,
 	})...)
 
-
-	var rolesRemovedCount gen.ResultInfo
-	err := q.Transaction(func(tx *query.Query) error {
-		var err error
-		rolesRemovedCount, err = tx.RolePermission.WithContext(ctx).Where(q.RolePermission.RoleID.Lt(100)).Delete()
-		if err != nil {
-			return err
-		}
-
-		if err := tx.RolePermission.WithContext(ctx).Create(rolePerms...); err != nil {
-			return err
-		}
-		return nil
-	})
+	tx, err := conn.Pool.Begin(ctx)
 	if err != nil {
-		return nil
+		return
 	}
-	slog.Info("removed role perms under 100", "count", rolesRemovedCount.RowsAffected)
-	slog.Info("created perms for roles under 100", "count", len(rolePerms))
+	qtx := conn.Queries.WithTx(tx)
+
+	defer func() {
+		if recover() != nil || err != nil {
+			if e := tx.Rollback(ctx); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
+		}
+	}()
+
+	rolesDeletedCount, err := qtx.DeleteRolePermsLT(ctx, 100)
+	if err != nil {
+		return err
+	}
+
+	permsInsertedCount, err := qtx.InsertRolePerms(ctx, rolePerms)
+	if err != nil {
+		return err
+	}
+	
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	slog.Info("removed role perms under 100", "count", rolesDeletedCount)
+	slog.Info("created perms for roles under 100", "roles", len(rolePerms), "total_perms_inserted", permsInsertedCount)
 
 	return nil
 }
 
-func permsToRolePermModel(roleID int32, perms permissions.Perms) []*model.RolePermission {
-	m := make([]*model.RolePermission, 0, len(perms))
+func permsToRolePermModel(roleID int32, perms permissions.Perms) []dbm.InsertRolePermsParams {
+	m := make([]dbm.InsertRolePermsParams, 0, len(perms))
 	for _, p := range perms {
-		rp := &model.RolePermission{
+		rp := dbm.InsertRolePermsParams{
 			RoleID: roleID,
 			PermID: int32(p),
 		}

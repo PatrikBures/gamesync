@@ -5,54 +5,55 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
-	"gamesync/internal/model"
-	"gamesync/internal/query"
 	"gamesync/internal/server"
+	"gamesync/internal/server/dbm"
 	"log/slog"
-
-	"gorm.io/gorm"
 )
 
 // error can be: ErrDatabase, ErrToken, ErrDuplicateKey or nil
-func CreateUser(tx *query.QueryTx, ctx context.Context, user *model.User) (token64 string, err error) {
+func CreateUser(conn DBconn, ctx context.Context, user dbm.InsertUserParams) (userID int64, token64 string, err error) {
+	tx, err := conn.Pool.Begin(ctx)
+	if err != nil {
+		slog.Error("starting tx", "error", err)
+		return
+	}
+	qtx := conn.Queries.WithTx(tx)
+
 	defer func() {
 		if recover() != nil || err != nil {
-			if e := tx.Rollback(); e != nil {
+			if e := tx.Rollback(ctx); e != nil {
 				slog.Error("failed rollback", "error", e)
 			}
 		}
 	}()
 
-	if err = tx.User.WithContext(ctx).Create(user); err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return "", server.ErrDuplicateKey
-		} else if errors.Is(err, gorm.ErrForeignKeyViolated) {
-			return "", server.ErrDatabase
-		}
-		return "", server.ErrDatabase
+	userID, err = qtx.InsertUser(ctx, user)
+	if err != nil {
+		slog.Error("inserting user", "user", user, "error", err)
+		return 0, "", server.ErrDatabase
 	}
 
 	token, err := generateToken()
 	if err != nil {
-		return "", server.ErrToken
+		slog.Error("generating token", "error", err)
+		return 0, "", server.ErrToken
 	}
 	token64 = base64.URLEncoding.EncodeToString(token)
 	tokenHash := sha256.Sum256(token)
 
-	t := model.Token{
-		UserID: user.UserID,
-		TokenHash: tokenHash[:],
-	}
-	if err = tx.Token.WithContext(ctx).Create(&t); err != nil {
-		return "", server.ErrDatabase
-	}
-
-	if err = tx.Commit(); err != nil {
-		return "", server.ErrDatabase
+	t := dbm.InsertTokenParams{UserID: userID, TokenHash: tokenHash[:]}
+	_, err = qtx.InsertToken(ctx, t)
+	if err != nil {
+		slog.Error("inserting token", "token", t, "error", err)
+		return 0, "", server.ErrDatabase
 	}
 
-	return token64, nil
+	if err = tx.Commit(ctx); err != nil {
+		slog.Error("commiting tx", "error", err)
+		return 0, "", server.ErrDatabase
+	}
+
+	return
 }
 
 

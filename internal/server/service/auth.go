@@ -22,15 +22,17 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 	tokenHash := sha256.Sum256(tokenRaw)
 	tokenHashSlice := tokenHash[:]
 
-	tokenRecord, err := s.q.Token.WithContext(ctx).Where(s.q.Token.TokenHash.Eq(HashBytes(tokenHashSlice))).First()
+	userID, err := s.conn.Queries.GetUserIdFromToken(ctx, tokenHashSlice)
 	if err != nil {
+		slog.Warn("authorizing user, getting token", "userID", userID, "error", err)
 		return ctx, server.ErrNotAuthorized
 	}
-	user, err := s.q.User.WithContext(ctx).Where(s.q.User.UserID.Eq(tokenRecord.UserID)).First()
+	user, err := s.conn.Queries.GetUser(ctx, userID)
 	if err != nil {
+		slog.Warn("authorizing user, getting user", "userID", userID, "error", err)
 		return ctx, server.ErrNotAuthorized
 	}
-	userRolePerms, err := s.q.RolePermission.WithContext(ctx).Where(s.q.RolePermission.RoleID.Eq(user.RoleID)).Find()
+	userRolePerms, err := s.conn.Queries.ListRolePerms(ctx, user.RoleID)
 	if err != nil {
 		return ctx, server.ErrDatabase
 	}
@@ -47,8 +49,6 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 	if len(perms) != len(userRolePerms) {
 		slog.Error("Role has invalid RoleID", "RoleID", user.RoleID)
 	}
-
-	// TODO: centralized authorization using middleware
 
 	ctx = context.WithValue(ctx, ckUser, user)
 	ctx = context.WithValue(ctx, ckRolePerms, perms)
