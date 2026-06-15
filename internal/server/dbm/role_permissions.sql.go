@@ -48,9 +48,19 @@ func (q *Queries) DeleteRolePermsWithRoleId(ctx context.Context, roleID int32) e
 	return err
 }
 
+const insertRolePerms = `-- name: InsertRolePerms :exec
+INSERT INTO role_permissions (role_id, perm_id)
+SELECT $1, unnest($2::INTEGER[])
+`
+
 type InsertRolePermsParams struct {
-	RoleID int32
-	PermID int32
+	RoleID  int32
+	PermIds []int32
+}
+
+func (q *Queries) InsertRolePerms(ctx context.Context, arg InsertRolePermsParams) error {
+	_, err := q.db.Exec(ctx, insertRolePerms, arg.RoleID, arg.PermIds)
+	return err
 }
 
 const insertRolePermsNoConflict = `-- name: InsertRolePermsNoConflict :exec

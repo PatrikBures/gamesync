@@ -135,7 +135,7 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 		}
 	}()
 
-	perms, err := qtx.ListPermsWithNames(ctx, req)
+	perms, err := qtx.ListPermIDsWithNames(ctx, req)
 	if err != nil {
 		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
 	}
@@ -149,9 +149,10 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
 	}
 
-	permIDs := permToRolePermInsert(params.RoleID, perms)
-	_, err = qtx.InsertRolePerms(ctx, permIDs)
-	if err != nil {
+	if err = qtx.InsertRolePerms(ctx, dbm.InsertRolePermsParams{
+		RoleID: params.RoleID,
+		PermIds: perms,
+	}); err != nil {
 		slog.Error("adding perms to role", "roleID", params.RoleID, "error", err)
 		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
 	}
