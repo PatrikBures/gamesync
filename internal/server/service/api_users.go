@@ -27,7 +27,7 @@ func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.Ge
 	if err := CheckPerm(ctx, permissions.PermUserGet); err != nil {
 		return &api.GetUserUnauthorized{}, err
 	}
-	user, err := s.conn.Queries.GetUser(ctx, params.UserID)
+	user, err := s.db.ReadQuery().GetUser(ctx, params.UserID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return &api.GetUserNotFound{}, server.ErrNotFound
@@ -38,7 +38,7 @@ func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.Ge
 }
 
 func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
-	users, err := s.conn.Queries.ListUsers(ctx)
+	users, err := s.db.ReadQuery().ListUsers(ctx)
 	if err != nil {
 		return &api.GetUsersInternalServerError{}, server.ErrDatabase
 	}
@@ -59,7 +59,7 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 		RoleID: s.o.DefaultRoleID,
 	}
 
-	userID, token64, err := dbx.CreateUser(s.conn, ctx, user)
+	userID, token64, err := dbx.CreateUser(s.db, ctx, user)
 	if err != nil {
 		switch err {
 		case server.ErrDatabase:
@@ -93,7 +93,7 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 		}
 	}
 
-	if err := s.conn.Queries.UpdateUserName(ctx, dbm.UpdateUserNameParams{
+	if err := s.db.WriteQuery().UpdateUserName(ctx, dbm.UpdateUserNameParams{
 		UserID: params.UserID,
 		UserName: req.Value.UserName,
 	}); err != nil {

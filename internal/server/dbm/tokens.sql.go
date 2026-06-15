@@ -9,6 +9,21 @@ import (
 	"context"
 )
 
+const getUserFromToken = `-- name: GetUserFromToken :one
+SELECT user_id, user_name, role_id FROM users
+WHERE user_id = (
+    SELECT user_id FROM tokens
+    WHERE token_hash = $1
+)
+`
+
+func (q *Queries) GetUserFromToken(ctx context.Context, tokenHash []byte) (User, error) {
+	row := q.db.QueryRow(ctx, getUserFromToken, tokenHash)
+	var i User
+	err := row.Scan(&i.UserID, &i.UserName, &i.RoleID)
+	return i, err
+}
+
 const getUserIdFromToken = `-- name: GetUserIdFromToken :one
 SELECT user_id FROM tokens
 WHERE token_hash = $1

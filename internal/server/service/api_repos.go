@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Service) GetUserRepos(ctx context.Context, params api.GetUserReposParams) (api.GetUserReposRes, error) {
-	repos, err := s.conn.Queries.ListRepos(ctx, params.UserID)
+	repos, err := s.db.ReadQuery().ListRepos(ctx, params.UserID)
 	if err != nil {
 		return &api.GetUserReposInternalServerError{}, server.ErrDatabase
 	}
@@ -25,7 +25,7 @@ func (s *Service) GetUserRepos(ctx context.Context, params api.GetUserReposParam
 
 
 func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams) (api.PutUserRepoRes, error) {
-	if err := s.conn.Queries.CreateRepo(ctx, dbm.CreateRepoParams{
+	if err := s.db.WriteQuery().CreateRepo(ctx, dbm.CreateRepoParams{
 		RepoName: params.RepoName,
 		UserID: params.UserID,
 	}); err != nil {

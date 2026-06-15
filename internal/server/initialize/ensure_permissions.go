@@ -11,15 +11,13 @@ import (
 
 
 
-func EnsurePermissions(conn dbx.DBconn) (err error) {
+func EnsurePermissions(db *dbx.DB) (err error) {
 	ctx := context.Background()
 
-	tx, err := conn.Pool.Begin(ctx)
+	qtx, tx, err := db.BeginTX(ctx)
 	if err != nil {
 		return
 	}
-	qtx := conn.Queries.WithTx(tx)
-
 	defer func() {
 		if recover() != nil || err != nil {
 			if e := tx.Rollback(ctx); e != nil {

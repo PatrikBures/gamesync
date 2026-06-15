@@ -61,5 +61,8 @@ func getEnvName(name string) string {
 }
 
 func StringToSlice(s string) []string {
+	if s == "" {
+		return []string{}
+	}
 	return strings.Split(s, string(sliceSeperator))
 }

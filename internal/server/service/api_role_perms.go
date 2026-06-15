@@ -12,12 +12,24 @@ type GetRolePermsResult struct {
 	PermName string
 }
 
-func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParams) (api.GetRolePermsRes, error) {
+func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParams) (result api.GetRolePermsRes, err error) {
+
+	qtx, tx, err := s.db.BeginReadTX(ctx)
+	if err != nil {
+		return
+	}
+	defer func() {
+		if recover() != nil || err != nil {
+			if e := tx.Rollback(ctx); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
+		}
+	}()
 
 	// we check first that the role exists before getting the perms it has.
 	// if we do not do that, the next query will  return an empty slice,
 	// even though the role does not exist.
-	roleCount, err := s.conn.Queries.GetRoleWithIdCount(ctx, params.RoleID)
+	roleCount, err := qtx.GetRoleWithIdCount(ctx, params.RoleID)
 	if err != nil {
 		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
 	}
@@ -25,13 +37,16 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 		return &api.GetRolePermsNotFound{}, server.ErrNotFound
 	}
 
-	permNames, err := s.conn.Queries.ListRolePermNamesWithName(ctx, params.RoleID)
+	permNames, err := qtx.ListRolePermNamesWithName(ctx, params.RoleID)
 	if err != nil {
 		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
 	}
 	permNamesReturn := make(api.PermNameArray, 0, len(permNames))
 	for _, n := range permNames {
 		permNamesReturn = append(permNamesReturn, n)
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
 	}
 	return &permNamesReturn, nil
 }
@@ -97,21 +112,11 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 }
 
 func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, params api.PutRolePermsParams) (result api.PutRolePermsRes, err error) {
-	perms, err := s.conn.Queries.ListPermsWithNames(ctx, req)
-	if err != nil {
-		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
-	}
-	if len(perms) != len(req) {
-		return &api.PutRolePermsUnprocessableEntity{}, server.ErrPermNotFound
-	}
-
-	tx, err := s.conn.Pool.Begin(ctx)
+	qtx, tx, err := s.db.BeginTX(ctx)
 	if err != nil {
 		slog.Error("starting tx", "error", err)
 		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
 	}
-	qtx := s.conn.Queries.WithTx(tx)
-
 	defer func() {
 		if recover() != nil || err != nil {
 			if e := tx.Rollback(ctx); e != nil {
@@ -120,12 +125,19 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 		}
 	}()
 
+	perms, err := qtx.ListPermsWithNames(ctx, req)
+	if err != nil {
+		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+	}
+	if len(perms) != len(req) {
+		return &api.PutRolePermsUnprocessableEntity{}, server.ErrPermNotFound
+	}
+
 	err = qtx.DeleteRolePermsWithRoleId(ctx, params.RoleID)
 	if err != nil {
 		slog.Error("deleting all perms from role", "roleID", params.RoleID, "error", err)
 		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
 	}
-
 
 	permIDs := permToRolePermInsert(params.RoleID, perms)
 	_, err = qtx.InsertRolePerms(ctx, permIDs)

@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Service) GetUserRepoBranches(ctx context.Context, params api.GetUserRepoBranchesParams) (api.GetUserRepoBranchesRes, error) {
-	branches, err := s.conn.Queries.ListBranches(ctx, params.RepoName)
+	branches, err := s.db.ReadQuery().ListBranches(ctx, params.RepoName)
 	if err != nil {
 		return &api.GetUserRepoBranchesInternalServerError{}, server.ErrDatabase
 	}
@@ -24,7 +24,7 @@ func (s *Service) GetUserRepoBranches(ctx context.Context, params api.GetUserRep
 }
 
 func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoBranchParams) (api.PutUserRepoBranchRes, error) {
-	if err := s.conn.Queries.CreateBranch(ctx, dbm.CreateBranchParams{
+	if err := s.db.WriteQuery().CreateBranch(ctx, dbm.CreateBranchParams{
 		RepoName: params.RepoName,
 		BranchName: params.BranchName,
 	}); err != nil {

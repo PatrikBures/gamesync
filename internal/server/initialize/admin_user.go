@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func CreateAdmin(conn dbx.DBconn) (string, error) {
+func CreateAdmin(db *dbx.DB) (string, error) {
 	user := dbm.InsertUserParams{
 		UserName: "admin",
 		RoleID: 1,
@@ -17,7 +17,7 @@ func CreateAdmin(conn dbx.DBconn) (string, error) {
 
 	ctx := context.Background()
 
-	curUser, err := conn.Queries.GetUserWithName(ctx, "admin")
+	curUser, err := db.ReadQuery().GetUserWithName(ctx, "admin")
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return "", err
 	} else if curUser.RoleID > 0 {
@@ -25,7 +25,7 @@ func CreateAdmin(conn dbx.DBconn) (string, error) {
 	}
 
 
-	_, token, err := dbx.CreateUser(conn, ctx, user)
+	_, token, err := dbx.CreateUser(db, ctx, user)
 	if err != nil {
 		return "", err
 	}

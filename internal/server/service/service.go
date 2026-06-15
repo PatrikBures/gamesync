@@ -21,15 +21,15 @@ const (
 )
 
 type Service struct {
-	conn dbx.DBconn
+	db *dbx.DB
 	o ServiceOpts
 }
 type ServiceOpts struct {
 	DefaultRoleID int32
 }
-func NewService(conn dbx.DBconn, opts ServiceOpts) *Service {
+func NewService(db *dbx.DB, opts ServiceOpts) *Service {
 	return &Service{
-		conn: conn,
+		db: db,
 		o: opts,
 	}
 }
