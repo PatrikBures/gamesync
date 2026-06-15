@@ -524,6 +524,11 @@ func encodePutUserRepoBranchResponse(response PutUserRepoBranchRes, w http.Respo
 
 		return nil
 
+	case *PutUserRepoBranchNotFound:
+		w.WriteHeader(404)
+
+		return nil
+
 	case *PutUserRepoBranchConflict:
 		w.WriteHeader(409)
 

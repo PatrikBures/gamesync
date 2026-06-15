@@ -32,6 +32,8 @@ func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoB
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
 				return &api.PutUserRepoBranchConflict{}, nil
+			case pgerrcode.ForeignKeyViolation:
+				return &api.PutUserRepoBranchNotFound{}, nil
 			}
 		}
 		slog.Error("failed creating branch", "BranchName", params.BranchName, "RepoName", params.RepoName, "UserID", params.UserID)

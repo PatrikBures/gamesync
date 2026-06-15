@@ -34,7 +34,7 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
 	}
 	if roleCount < 1 {
-		return &api.GetRolePermsNotFound{}, server.ErrNotFound
+		return &api.GetRolePermsNotFound{}, nil
 	}
 
 	permNames, err := qtx.ListRolePermNamesWithName(ctx, params.RoleID)
@@ -53,14 +53,14 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 
 func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, params api.PatchRolePermsParams) (result api.PatchRolePermsRes, err error) {
 	if ! req.Set {
-		return &api.PatchRolePermsNotAcceptable{}, server.ErrMissingBody
+		return &api.PatchRolePermsNotAcceptable{}, nil
 	}
 	// permsAdd, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req.Value.Add...)).Find()
 	// if err != nil {
 	// 	return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
 	// }
 	// if len(permsAdd) != len(req.Value.Add) {
-	// 	return &api.PatchRolePermsUnprocessableEntity{}, server.ErrPermNotFound
+	// 	return &api.PatchRolePermsUnprocessableEntity{}, nil
 	// }
 	//
 	// permsRemove, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req.Value.Remove...)).Find()
@@ -68,7 +68,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 	// 	return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
 	// }
 	// if len(permsRemove) != len(req.Value.Remove) {
-	// 	return &api.PatchRolePermsUnprocessableEntity{}, server.ErrPermNotFound
+	// 	return &api.PatchRolePermsUnprocessableEntity{}, nil
 	// }
 	//
 	//
@@ -130,7 +130,7 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
 	}
 	if len(perms) != len(req) {
-		return &api.PutRolePermsUnprocessableEntity{}, server.ErrPermNotFound
+		return &api.PutRolePermsUnprocessableEntity{}, nil
 	}
 
 	err = qtx.DeleteRolePermsWithRoleId(ctx, params.RoleID)

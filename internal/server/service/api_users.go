@@ -8,6 +8,7 @@ import (
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
 	"gamesync/internal/server/permissions"
+	"log/slog"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -25,12 +26,13 @@ func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.Ge
 	}
 
 	if err := CheckPerm(ctx, permissions.PermUserGet); err != nil {
-		return &api.GetUserUnauthorized{}, err
+		slog.Info("")
+		return &api.GetUserUnauthorized{}, nil
 	}
 	user, err := s.db.ReadQuery().GetUser(ctx, params.UserID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return &api.GetUserNotFound{}, server.ErrNotFound
+			return &api.GetUserNotFound{}, nil
 		}
 		return &api.GetUserInternalServerError{}, server.ErrDatabase
 	}
@@ -52,7 +54,7 @@ func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
 
 func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result api.PostUsersRes, err error) {
 	if !req.Set {
-		return &api.PostUsersNotAcceptable{}, server.ErrMissingBody
+		return &api.PostUsersNotAcceptable{}, nil
 	}
 	user := dbm.InsertUserParams{
 		UserName: req.Value.UserName,
@@ -65,9 +67,9 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 		case server.ErrDatabase:
 			return &api.PostUsersInternalServerError{}, err
 		case server.ErrDuplicateKey:
-			return &api.PostUsersConflict{}, err
+			return &api.PostUsersConflict{}, nil
 		case server.ErrToken:
-			return &api.PostUsersInternalServerError{}, err
+			return &api.PostUsersInternalServerError{}, nil
 		}
 	}
 
@@ -82,14 +84,14 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 
 func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params api.PutUserNameParams) (api.PutUserNameRes, error) {
 	if !req.Set {
-		return &api.PutUserNameNotAcceptable{}, server.ErrMissingBody
+		return &api.PutUserNameNotAcceptable{}, nil
 	}
 
 	if err := isUserSelfAndPerm(ctx, params.UserID, permissions.PermUserNameUpdate); err != nil {
 		if errors.Is(err, server.ErrContext) {
 			return &api.PutUserNameInternalServerError{}, err
 		} else if errors.Is(err, server.ErrNotAuthorized) {
-			return &api.PutUserNameUnauthorized{}, err
+			return &api.PutUserNameUnauthorized{}, nil
 		}
 	}
 
@@ -100,9 +102,9 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return &api.PutUserNameConflict{}, server.ErrDuplicateKey
+				return &api.PutUserNameConflict{}, nil
 			case pgerrcode.ForeignKeyViolation:
-				return &api.PutUserNameNotFound{}, server.ErrNotFound
+				return &api.PutUserNameNotFound{}, nil
 			}
 		}
 		return &api.PutUserNameInternalServerError{}, server.ErrDatabase

@@ -549,6 +549,11 @@ type PutUserRepoBranchInternalServerError struct{}
 
 func (*PutUserRepoBranchInternalServerError) putUserRepoBranchRes() {}
 
+// PutUserRepoBranchNotFound is response for PutUserRepoBranch operation.
+type PutUserRepoBranchNotFound struct{}
+
+func (*PutUserRepoBranchNotFound) putUserRepoBranchRes() {}
+
 // PutUserRepoBranchUnauthorized is response for PutUserRepoBranch operation.
 type PutUserRepoBranchUnauthorized struct{}
 
