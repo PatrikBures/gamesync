@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	api "gamesync/internal/ogen"
-	"gamesync/internal/server"
 	serverConfig "gamesync/internal/server/config"
 	initServer "gamesync/internal/server/initialize"
 	middlewares "gamesync/internal/server/middleware"
@@ -22,8 +22,8 @@ func main() {
 }
 
 type config struct {
-	appDir          string
-	dbUrl           string
+	dbPrimaryUrl    string
+	dbReplicaUrls   string
 	disabledRoles   string
 	defaultRoleID   int
 	requestLogs     bool
@@ -33,22 +33,22 @@ func start() error {
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 
 	c := config{}
-	serverConfig.AddStringVar(&c.appDir, "app-dir", server.AppDir, "Path where files will be kept like the SQLite database")
-	serverConfig.AddStringVar(&c.dbUrl, "db-url", server.DefaultSQLitePath, "Url to postgres db or path to SQLite db-file")
+	serverConfig.AddStringVar(&c.dbPrimaryUrl, "db-primary-url", "", "Url to primary postgres db, if you only have no replicas use this")
+	serverConfig.AddStringVar(&c.dbReplicaUrls, "db-replica-urls", "", "Urls to replica postgres dbs, seperated by '|")
 	serverConfig.AddStringVar(&c.disabledRoles, "disabled-roles", "", "Default roles to disable, seperated by '|'")
 	serverConfig.AddIntVar(&c.defaultRoleID, "default-role-id", 50, "Default role id for newly created users. Role needs to exist for creation of new users to work")
 	serverConfig.AddBoolVar(&c.requestLogs, "request-logs", false, "Enable logs for requests")
 
 	flag.Parse()
 
-	for _, dir := range []string{c.appDir} {
-		if err := os.MkdirAll(dir, 0775); err != nil {
-			return fmt.Errorf("could not initialize dirs: %v", err)
-		}
+	if err := validateConfig(&c); err != nil {
+		return fmt.Errorf("validating config: %w", err)
 	}
 
-	q, err := initServer.InitDatabase(
-		c.dbUrl,
+	db, err := initServer.InitDatabase(
+		context.Background(),
+		c.dbPrimaryUrl,
+		serverConfig.StringToSlice(c.dbReplicaUrls),
 		serverConfig.StringToSlice(c.disabledRoles),
 	)
 	if err != nil {
@@ -56,7 +56,7 @@ func start() error {
 	}
 
 
-	s := service.NewService(q, service.ServiceOpts{
+	s := service.NewService(db, service.ServiceOpts{
 		DefaultRoleID: int32(c.defaultRoleID),
 	})
 
@@ -81,4 +81,11 @@ func start() error {
 	}
 
 	return http.ListenAndServe(":8080", srv)
+}
+
+func validateConfig(c *config) error {
+	if c.dbPrimaryUrl == "" {
+		return fmt.Errorf("primary url needs to be set")
+	}
+	return nil
 }

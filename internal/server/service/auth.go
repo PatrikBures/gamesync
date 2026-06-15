@@ -22,17 +22,12 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 	tokenHash := sha256.Sum256(tokenRaw)
 	tokenHashSlice := tokenHash[:]
 
-	userID, err := s.conn.Queries.GetUserIdFromToken(ctx, tokenHashSlice)
+	user, err := s.db.ReadQuery().GetUserFromToken(ctx, tokenHashSlice)
 	if err != nil {
-		slog.Warn("authorizing user, getting token", "userID", userID, "error", err)
+		slog.Warn("authorizing user, getting user", "user", user, "error", err)
 		return ctx, server.ErrNotAuthorized
 	}
-	user, err := s.conn.Queries.GetUser(ctx, userID)
-	if err != nil {
-		slog.Warn("authorizing user, getting user", "userID", userID, "error", err)
-		return ctx, server.ErrNotAuthorized
-	}
-	userRolePerms, err := s.conn.Queries.ListRolePerms(ctx, user.RoleID)
+	userRolePerms, err := s.db.ReadQuery().ListRolePerms(ctx, user.RoleID)
 	if err != nil {
 		return ctx, server.ErrDatabase
 	}

@@ -8,7 +8,7 @@ import (
 
 
 func (s *Service) GetPerms(ctx context.Context) (api.GetPermsRes, error) {
-	perms, err := s.conn.Queries.ListPermissions(ctx)
+	perms, err := s.db.ReadQuery().ListPermissions(ctx)
 	if err != nil {
 		return &api.GetPermsInternalServerError{}, server.ErrDatabase
 	}

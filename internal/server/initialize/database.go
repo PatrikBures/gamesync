@@ -1,29 +1,30 @@
 package initServer
 
 import (
+	"context"
 	"fmt"
 	"gamesync/internal/dbx"
 	"log/slog"
 )
 
-func InitDatabase(dbUrl string, disabledRoles []string) (conn dbx.DBconn, err error) {
-	conn, err = dbx.ConnectDb(dbUrl)
+func InitDatabase(ctx context.Context, dbWriteUrl string, dbReadUrls []string, disabledRoles []string) (db *dbx.DB, err error) {
+	db, err = dbx.NewDB(ctx, dbWriteUrl, dbReadUrls)
 	if err != nil {
 		err = fmt.Errorf("connecting db: %w", err)
 		return
 	}
 
-	if err = EnsurePermissions(conn); err != nil {
+	if err = EnsurePermissions(db); err != nil {
 		return
 	}
-	if err = CreateDefaultRoles(conn, disabledRoles); err != nil {
+	if err = CreateDefaultRoles(db, disabledRoles); err != nil {
 		return
 	}
-	if err = CreateDefaultRolePerms(conn); err != nil {
+	if err = CreateDefaultRolePerms(db); err != nil {
 		return
 	}
 
-	token, err := CreateAdmin(conn)
+	token, err := CreateAdmin(db)
 	if err != nil {
 		err = fmt.Errorf("creating admin: %w", err)
 		return
@@ -35,5 +36,5 @@ func InitDatabase(dbUrl string, disabledRoles []string) (conn dbx.DBconn, err er
 		slog.Info("Created admin, make sure to update the token", "token", token)
 	}
 
-	return conn, nil
+	return db, nil
 }

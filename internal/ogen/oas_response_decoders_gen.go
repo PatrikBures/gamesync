@@ -639,6 +639,9 @@ func decodePutUserRepoBranchResponse(resp *http.Response) (res PutUserRepoBranch
 	case 401:
 		// Code 401.
 		return &PutUserRepoBranchUnauthorized{}, nil
+	case 404:
+		// Code 404.
+		return &PutUserRepoBranchNotFound{}, nil
 	case 409:
 		// Code 409.
 		return &PutUserRepoBranchConflict{}, nil

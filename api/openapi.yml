@@ -350,6 +350,8 @@ paths:
         - Users
       responses:
         "401": {}
+        "404":
+          description: "Repo not found"
         "409": {}
         "201": {}
         "500": {}

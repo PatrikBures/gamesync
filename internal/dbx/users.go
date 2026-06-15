@@ -11,13 +11,12 @@ import (
 )
 
 // error can be: ErrDatabase, ErrToken, ErrDuplicateKey or nil
-func CreateUser(conn DBconn, ctx context.Context, user dbm.InsertUserParams) (userID int64, token64 string, err error) {
-	tx, err := conn.Pool.Begin(ctx)
+func CreateUser(db *DB, ctx context.Context, user dbm.InsertUserParams) (userID int64, token64 string, err error) {
+	qtx, tx, err := db.BeginTX(ctx)
 	if err != nil {
 		slog.Error("starting tx", "error", err)
 		return
 	}
-	qtx := conn.Queries.WithTx(tx)
 
 	defer func() {
 		if recover() != nil || err != nil {

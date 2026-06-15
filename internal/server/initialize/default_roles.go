@@ -10,7 +10,7 @@ import (
 )
 
 
-func CreateDefaultRoles(conn dbx.DBconn, skipRoles []string) error {
+func CreateDefaultRoles(db *dbx.DB, skipRoles []string) error {
 	ctx := context.Background()
 	roles := []dbm.InsertRoleWithIdParams{
 		{ RoleID:  1, RoleName: "admin" },
@@ -19,14 +19,14 @@ func CreateDefaultRoles(conn dbx.DBconn, skipRoles []string) error {
 		{ RoleID: 99, RoleName: "none" },
 	}
 	for _, role := range roles {
-		existingRoleCount, err := conn.Queries.GetRoleWithIdCount(ctx, role.RoleID)
+		existingRoleCount, err := db.ReadQuery().GetRoleWithIdCount(ctx, role.RoleID)
 		if err != nil {
 			return err
 		}
 
 		if slices.Contains(skipRoles, role.RoleName) {
 			if existingRoleCount > 0 {
-				err := conn.Queries.DeleteRole(ctx, role.RoleID)
+				err := db.WriteQuery().DeleteRole(ctx, role.RoleID)
 				if err != nil {
 					return err
 				}
@@ -42,7 +42,7 @@ func CreateDefaultRoles(conn dbx.DBconn, skipRoles []string) error {
 			continue
 		}
 
-		if err := conn.Queries.InsertRoleWithId(ctx, role); err != nil {
+		if err := db.WriteQuery().InsertRoleWithId(ctx, role); err != nil {
 			return err
 		}
 
@@ -51,7 +51,7 @@ func CreateDefaultRoles(conn dbx.DBconn, skipRoles []string) error {
 	return nil
 }
 
-func CreateDefaultRolePerms(conn dbx.DBconn) (err error) {
+func CreateDefaultRolePerms(db *dbx.DB) (err error) {
 	ctx := context.Background()
 	rolePerms := []dbm.InsertRolePermsParams{}
 
@@ -63,11 +63,10 @@ func CreateDefaultRolePerms(conn dbx.DBconn) (err error) {
 		permissions.PermUserNameUpdateOwn,
 	})...)
 
-	tx, err := conn.Pool.Begin(ctx)
+	qtx, tx, err := db.BeginTX(ctx)
 	if err != nil {
 		return
 	}
-	qtx := conn.Queries.WithTx(tx)
 
 	defer func() {
 		if recover() != nil || err != nil {

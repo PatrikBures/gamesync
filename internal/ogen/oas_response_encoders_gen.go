@@ -13,7 +13,6 @@ import (
 
 func encodeGetHealthResponse(response *GetHealthOK, w http.ResponseWriter, span trace.Span) error {
 	w.WriteHeader(200)
-	span.SetStatus(codes.Ok, http.StatusText(200))
 
 	return nil
 }
@@ -23,7 +22,6 @@ func encodeGetPermsResponse(response GetPermsRes, w http.ResponseWriter, span tr
 	case *GetPermsOKApplicationJSON:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -35,7 +33,6 @@ func encodeGetPermsResponse(response GetPermsRes, w http.ResponseWriter, span tr
 
 	case *GetPermsUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
@@ -55,7 +52,6 @@ func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter,
 	case *PermNameArray:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		if response != nil {
@@ -69,13 +65,11 @@ func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter,
 
 	case *GetRolePermsUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
 	case *GetRolePermsNotFound:
 		w.WriteHeader(404)
-		span.SetStatus(codes.Error, http.StatusText(404))
 
 		return nil
 
@@ -95,7 +89,6 @@ func encodeGetRolesResponse(response GetRolesRes, w http.ResponseWriter, span tr
 	case *GetRolesOKApplicationJSON:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -107,7 +100,6 @@ func encodeGetRolesResponse(response GetRolesRes, w http.ResponseWriter, span tr
 
 	case *GetRolesUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
@@ -127,7 +119,6 @@ func encodeGetUserResponse(response GetUserRes, w http.ResponseWriter, span trac
 	case *User:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -139,13 +130,11 @@ func encodeGetUserResponse(response GetUserRes, w http.ResponseWriter, span trac
 
 	case *GetUserUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
 	case *GetUserNotFound:
 		w.WriteHeader(404)
-		span.SetStatus(codes.Error, http.StatusText(404))
 
 		return nil
 
@@ -165,7 +154,6 @@ func encodeGetUserRepoBranchesResponse(response GetUserRepoBranchesRes, w http.R
 	case *Branches:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -177,7 +165,6 @@ func encodeGetUserRepoBranchesResponse(response GetUserRepoBranchesRes, w http.R
 
 	case *GetUserRepoBranchesUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
@@ -197,7 +184,6 @@ func encodeGetUserReposResponse(response GetUserReposRes, w http.ResponseWriter,
 	case *Repos:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -209,7 +195,6 @@ func encodeGetUserReposResponse(response GetUserReposRes, w http.ResponseWriter,
 
 	case *GetUserReposUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
@@ -229,7 +214,6 @@ func encodeGetUsersResponse(response GetUsersRes, w http.ResponseWriter, span tr
 	case *GetUsersOKApplicationJSON:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -241,7 +225,6 @@ func encodeGetUsersResponse(response GetUsersRes, w http.ResponseWriter, span tr
 
 	case *GetUsersUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
@@ -260,25 +243,21 @@ func encodePatchRolePermsResponse(response PatchRolePermsRes, w http.ResponseWri
 	switch response := response.(type) {
 	case *PatchRolePermsOK:
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		return nil
 
 	case *PatchRolePermsUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
 	case *PatchRolePermsNotAcceptable:
 		w.WriteHeader(406)
-		span.SetStatus(codes.Error, http.StatusText(406))
 
 		return nil
 
 	case *PatchRolePermsUnprocessableEntity:
 		w.WriteHeader(422)
-		span.SetStatus(codes.Error, http.StatusText(422))
 
 		return nil
 
@@ -298,7 +277,6 @@ func encodePostRolesResponse(response PostRolesRes, w http.ResponseWriter, span 
 	case *Role:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(201)
-		span.SetStatus(codes.Ok, http.StatusText(201))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -310,19 +288,16 @@ func encodePostRolesResponse(response PostRolesRes, w http.ResponseWriter, span 
 
 	case *PostRolesUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
 	case *PostRolesNotAcceptable:
 		w.WriteHeader(406)
-		span.SetStatus(codes.Error, http.StatusText(406))
 
 		return nil
 
 	case *PostRolesConflict:
 		w.WriteHeader(409)
-		span.SetStatus(codes.Error, http.StatusText(409))
 
 		return nil
 
@@ -341,19 +316,16 @@ func encodePostUserRepoBranchSnapshotResponse(response PostUserRepoBranchSnapsho
 	switch response := response.(type) {
 	case *PostUserRepoBranchSnapshotCreated:
 		w.WriteHeader(201)
-		span.SetStatus(codes.Ok, http.StatusText(201))
 
 		return nil
 
 	case *PostUserRepoBranchSnapshotUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
 	case *PostUserRepoBranchSnapshotConflict:
 		w.WriteHeader(409)
-		span.SetStatus(codes.Error, http.StatusText(409))
 
 		return nil
 
@@ -373,7 +345,6 @@ func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span 
 	case *UserNewReturn:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(201)
-		span.SetStatus(codes.Ok, http.StatusText(201))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -385,13 +356,11 @@ func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span 
 
 	case *PostUsersNotAcceptable:
 		w.WriteHeader(406)
-		span.SetStatus(codes.Error, http.StatusText(406))
 
 		return nil
 
 	case *PostUsersConflict:
 		w.WriteHeader(409)
-		span.SetStatus(codes.Error, http.StatusText(409))
 
 		return nil
 
@@ -410,31 +379,26 @@ func encodePutRoleNameResponse(response PutRoleNameRes, w http.ResponseWriter, s
 	switch response := response.(type) {
 	case *PutRoleNameOK:
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		return nil
 
 	case *PutRoleNameUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
 	case *PutRoleNameNotFound:
 		w.WriteHeader(404)
-		span.SetStatus(codes.Error, http.StatusText(404))
 
 		return nil
 
 	case *PutRoleNameNotAcceptable:
 		w.WriteHeader(406)
-		span.SetStatus(codes.Error, http.StatusText(406))
 
 		return nil
 
 	case *PutRoleNameConflict:
 		w.WriteHeader(409)
-		span.SetStatus(codes.Error, http.StatusText(409))
 
 		return nil
 
@@ -453,25 +417,21 @@ func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter,
 	switch response := response.(type) {
 	case *PutRolePermsOK:
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		return nil
 
 	case *PutRolePermsUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
 	case *PutRolePermsNotAcceptable:
 		w.WriteHeader(406)
-		span.SetStatus(codes.Error, http.StatusText(406))
 
 		return nil
 
 	case *PutRolePermsUnprocessableEntity:
 		w.WriteHeader(422)
-		span.SetStatus(codes.Error, http.StatusText(422))
 
 		return nil
 
@@ -490,31 +450,26 @@ func encodePutUserNameResponse(response PutUserNameRes, w http.ResponseWriter, s
 	switch response := response.(type) {
 	case *PutUserNameOK:
 		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
 
 		return nil
 
 	case *PutUserNameUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
 	case *PutUserNameNotFound:
 		w.WriteHeader(404)
-		span.SetStatus(codes.Error, http.StatusText(404))
 
 		return nil
 
 	case *PutUserNameNotAcceptable:
 		w.WriteHeader(406)
-		span.SetStatus(codes.Error, http.StatusText(406))
 
 		return nil
 
 	case *PutUserNameConflict:
 		w.WriteHeader(409)
-		span.SetStatus(codes.Error, http.StatusText(409))
 
 		return nil
 
@@ -533,19 +488,16 @@ func encodePutUserRepoResponse(response PutUserRepoRes, w http.ResponseWriter, s
 	switch response := response.(type) {
 	case *PutUserRepoCreated:
 		w.WriteHeader(201)
-		span.SetStatus(codes.Ok, http.StatusText(201))
 
 		return nil
 
 	case *PutUserRepoUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
 
 		return nil
 
 	case *PutUserRepoConflict:
 		w.WriteHeader(409)
-		span.SetStatus(codes.Error, http.StatusText(409))
 
 		return nil
 
@@ -564,19 +516,21 @@ func encodePutUserRepoBranchResponse(response PutUserRepoBranchRes, w http.Respo
 	switch response := response.(type) {
 	case *PutUserRepoBranchCreated:
 		w.WriteHeader(201)
-		span.SetStatus(codes.Ok, http.StatusText(201))
 
 		return nil
 
 	case *PutUserRepoBranchUnauthorized:
 		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
+	case *PutUserRepoBranchNotFound:
+		w.WriteHeader(404)
 
 		return nil
 
 	case *PutUserRepoBranchConflict:
 		w.WriteHeader(409)
-		span.SetStatus(codes.Error, http.StatusText(409))
 
 		return nil
 
