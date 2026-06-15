@@ -78,6 +78,62 @@ func decodeGetPermsResponse(resp *http.Response) (res GetPermsRes, _ error) {
 	return res, validate.UnexpectedStatusCodeWithResponse(resp)
 }
 
+func decodeGetRepoBranchesResponse(resp *http.Response) (res GetRepoBranchesRes, _ error) {
+	switch resp.StatusCode {
+	case 200:
+		// Code 200.
+		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+		if err != nil {
+			return res, errors.Wrap(err, "parse media type")
+		}
+		switch {
+		case ct == "application/json":
+			buf, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return res, err
+			}
+			d := jx.DecodeBytes(buf)
+
+			var response Branches
+			if err := func() error {
+				if err := response.Decode(d); err != nil {
+					return err
+				}
+				if err := d.Skip(); err != io.EOF {
+					return errors.New("unexpected trailing data")
+				}
+				return nil
+			}(); err != nil {
+				err = &ogenerrors.DecodeBodyError{
+					ContentType: ct,
+					Body:        buf,
+					Err:         err,
+				}
+				return res, err
+			}
+			// Validate response.
+			if err := func() error {
+				if err := response.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return res, errors.Wrap(err, "validate")
+			}
+			return &response, nil
+		default:
+			return res, validate.InvalidContentType(ct)
+		}
+	case 401:
+		// Code 401.
+		return &GetRepoBranchesUnauthorized{}, nil
+	case 500:
+		// Code 500.
+		return &GetRepoBranchesInternalServerError{}, nil
+	}
+	return res, validate.UnexpectedStatusCodeWithResponse(resp)
+}
+
 func decodeGetRolePermsResponse(resp *http.Response) (res GetRolePermsRes, _ error) {
 	switch resp.StatusCode {
 	case 200:
@@ -234,6 +290,62 @@ func decodeGetUserResponse(resp *http.Response) (res GetUserRes, _ error) {
 	return res, validate.UnexpectedStatusCodeWithResponse(resp)
 }
 
+func decodeGetUserReposResponse(resp *http.Response) (res GetUserReposRes, _ error) {
+	switch resp.StatusCode {
+	case 200:
+		// Code 200.
+		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+		if err != nil {
+			return res, errors.Wrap(err, "parse media type")
+		}
+		switch {
+		case ct == "application/json":
+			buf, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return res, err
+			}
+			d := jx.DecodeBytes(buf)
+
+			var response Repos
+			if err := func() error {
+				if err := response.Decode(d); err != nil {
+					return err
+				}
+				if err := d.Skip(); err != io.EOF {
+					return errors.New("unexpected trailing data")
+				}
+				return nil
+			}(); err != nil {
+				err = &ogenerrors.DecodeBodyError{
+					ContentType: ct,
+					Body:        buf,
+					Err:         err,
+				}
+				return res, err
+			}
+			// Validate response.
+			if err := func() error {
+				if err := response.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return res, errors.Wrap(err, "validate")
+			}
+			return &response, nil
+		default:
+			return res, validate.InvalidContentType(ct)
+		}
+	case 401:
+		// Code 401.
+		return &GetUserReposUnauthorized{}, nil
+	case 500:
+		// Code 500.
+		return &GetUserReposInternalServerError{}, nil
+	}
+	return res, validate.UnexpectedStatusCodeWithResponse(resp)
+}
+
 func decodeGetUsersResponse(resp *http.Response) (res GetUsersRes, _ error) {
 	switch resp.StatusCode {
 	case 200:
@@ -364,6 +476,24 @@ func decodePostRolesResponse(resp *http.Response) (res PostRolesRes, _ error) {
 	return res, validate.UnexpectedStatusCodeWithResponse(resp)
 }
 
+func decodePostUserRepoBranchSnapshotResponse(resp *http.Response) (res PostUserRepoBranchSnapshotRes, _ error) {
+	switch resp.StatusCode {
+	case 201:
+		// Code 201.
+		return &PostUserRepoBranchSnapshotCreated{}, nil
+	case 401:
+		// Code 401.
+		return &PostUserRepoBranchSnapshotUnauthorized{}, nil
+	case 409:
+		// Code 409.
+		return &PostUserRepoBranchSnapshotConflict{}, nil
+	case 500:
+		// Code 500.
+		return &PostUserRepoBranchSnapshotInternalServerError{}, nil
+	}
+	return res, validate.UnexpectedStatusCodeWithResponse(resp)
+}
+
 func decodePostUsersResponse(resp *http.Response) (res PostUsersRes, _ error) {
 	switch resp.StatusCode {
 	case 201:
@@ -479,6 +609,42 @@ func decodePutUserNameResponse(resp *http.Response) (res PutUserNameRes, _ error
 	case 500:
 		// Code 500.
 		return &PutUserNameInternalServerError{}, nil
+	}
+	return res, validate.UnexpectedStatusCodeWithResponse(resp)
+}
+
+func decodePutUserRepoResponse(resp *http.Response) (res PutUserRepoRes, _ error) {
+	switch resp.StatusCode {
+	case 201:
+		// Code 201.
+		return &PutUserRepoCreated{}, nil
+	case 401:
+		// Code 401.
+		return &PutUserRepoUnauthorized{}, nil
+	case 409:
+		// Code 409.
+		return &PutUserRepoConflict{}, nil
+	case 500:
+		// Code 500.
+		return &PutUserRepoInternalServerError{}, nil
+	}
+	return res, validate.UnexpectedStatusCodeWithResponse(resp)
+}
+
+func decodePutUserRepoBranchResponse(resp *http.Response) (res PutUserRepoBranchRes, _ error) {
+	switch resp.StatusCode {
+	case 201:
+		// Code 201.
+		return &PutUserRepoBranchCreated{}, nil
+	case 401:
+		// Code 401.
+		return &PutUserRepoBranchUnauthorized{}, nil
+	case 409:
+		// Code 409.
+		return &PutUserRepoBranchConflict{}, nil
+	case 500:
+		// Code 500.
+		return &PutUserRepoBranchInternalServerError{}, nil
 	}
 	return res, validate.UnexpectedStatusCodeWithResponse(resp)
 }

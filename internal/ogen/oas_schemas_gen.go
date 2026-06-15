@@ -27,6 +27,10 @@ func (s *BearerAuth) SetRoles(val []string) {
 	s.Roles = val
 }
 
+type Branches []string
+
+func (*Branches) getRepoBranchesRes() {}
+
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
 
@@ -43,6 +47,16 @@ func (*GetPermsOKApplicationJSON) getPermsRes() {}
 type GetPermsUnauthorized struct{}
 
 func (*GetPermsUnauthorized) getPermsRes() {}
+
+// GetRepoBranchesInternalServerError is response for GetRepoBranches operation.
+type GetRepoBranchesInternalServerError struct{}
+
+func (*GetRepoBranchesInternalServerError) getRepoBranchesRes() {}
+
+// GetRepoBranchesUnauthorized is response for GetRepoBranches operation.
+type GetRepoBranchesUnauthorized struct{}
+
+func (*GetRepoBranchesUnauthorized) getRepoBranchesRes() {}
 
 // GetRolePermsInternalServerError is response for GetRolePerms operation.
 type GetRolePermsInternalServerError struct{}
@@ -82,6 +96,16 @@ func (*GetUserInternalServerError) getUserRes() {}
 type GetUserNotFound struct{}
 
 func (*GetUserNotFound) getUserRes() {}
+
+// GetUserReposInternalServerError is response for GetUserRepos operation.
+type GetUserReposInternalServerError struct{}
+
+func (*GetUserReposInternalServerError) getUserReposRes() {}
+
+// GetUserReposUnauthorized is response for GetUserRepos operation.
+type GetUserReposUnauthorized struct{}
+
+func (*GetUserReposUnauthorized) getUserReposRes() {}
 
 // GetUserUnauthorized is response for GetUser operation.
 type GetUserUnauthorized struct{}
@@ -188,6 +212,52 @@ func (o OptRoleName) Get() (v RoleName, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptRoleName) Or(d RoleName) RoleName {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptSnapshotNew returns new OptSnapshotNew with value set to v.
+func NewOptSnapshotNew(v SnapshotNew) OptSnapshotNew {
+	return OptSnapshotNew{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptSnapshotNew is optional SnapshotNew.
+type OptSnapshotNew struct {
+	Value SnapshotNew
+	Set   bool
+}
+
+// IsSet returns true if OptSnapshotNew was set.
+func (o OptSnapshotNew) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptSnapshotNew) Reset() {
+	var v SnapshotNew
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptSnapshotNew) SetTo(v SnapshotNew) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptSnapshotNew) Get() (v SnapshotNew, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptSnapshotNew) Or(d SnapshotNew) SnapshotNew {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -344,6 +414,26 @@ type PostRolesUnauthorized struct{}
 
 func (*PostRolesUnauthorized) postRolesRes() {}
 
+// PostUserRepoBranchSnapshotConflict is response for PostUserRepoBranchSnapshot operation.
+type PostUserRepoBranchSnapshotConflict struct{}
+
+func (*PostUserRepoBranchSnapshotConflict) postUserRepoBranchSnapshotRes() {}
+
+// PostUserRepoBranchSnapshotCreated is response for PostUserRepoBranchSnapshot operation.
+type PostUserRepoBranchSnapshotCreated struct{}
+
+func (*PostUserRepoBranchSnapshotCreated) postUserRepoBranchSnapshotRes() {}
+
+// PostUserRepoBranchSnapshotInternalServerError is response for PostUserRepoBranchSnapshot operation.
+type PostUserRepoBranchSnapshotInternalServerError struct{}
+
+func (*PostUserRepoBranchSnapshotInternalServerError) postUserRepoBranchSnapshotRes() {}
+
+// PostUserRepoBranchSnapshotUnauthorized is response for PostUserRepoBranchSnapshot operation.
+type PostUserRepoBranchSnapshotUnauthorized struct{}
+
+func (*PostUserRepoBranchSnapshotUnauthorized) postUserRepoBranchSnapshotRes() {}
+
 // PostUsersConflict is response for PostUsers operation.
 type PostUsersConflict struct{}
 
@@ -444,6 +534,50 @@ type PutUserNameUnauthorized struct{}
 
 func (*PutUserNameUnauthorized) putUserNameRes() {}
 
+// PutUserRepoBranchConflict is response for PutUserRepoBranch operation.
+type PutUserRepoBranchConflict struct{}
+
+func (*PutUserRepoBranchConflict) putUserRepoBranchRes() {}
+
+// PutUserRepoBranchCreated is response for PutUserRepoBranch operation.
+type PutUserRepoBranchCreated struct{}
+
+func (*PutUserRepoBranchCreated) putUserRepoBranchRes() {}
+
+// PutUserRepoBranchInternalServerError is response for PutUserRepoBranch operation.
+type PutUserRepoBranchInternalServerError struct{}
+
+func (*PutUserRepoBranchInternalServerError) putUserRepoBranchRes() {}
+
+// PutUserRepoBranchUnauthorized is response for PutUserRepoBranch operation.
+type PutUserRepoBranchUnauthorized struct{}
+
+func (*PutUserRepoBranchUnauthorized) putUserRepoBranchRes() {}
+
+// PutUserRepoConflict is response for PutUserRepo operation.
+type PutUserRepoConflict struct{}
+
+func (*PutUserRepoConflict) putUserRepoRes() {}
+
+// PutUserRepoCreated is response for PutUserRepo operation.
+type PutUserRepoCreated struct{}
+
+func (*PutUserRepoCreated) putUserRepoRes() {}
+
+// PutUserRepoInternalServerError is response for PutUserRepo operation.
+type PutUserRepoInternalServerError struct{}
+
+func (*PutUserRepoInternalServerError) putUserRepoRes() {}
+
+// PutUserRepoUnauthorized is response for PutUserRepo operation.
+type PutUserRepoUnauthorized struct{}
+
+func (*PutUserRepoUnauthorized) putUserRepoRes() {}
+
+type Repos []string
+
+func (*Repos) getUserReposRes() {}
+
 // Merged schema.
 // Ref: #/components/schemas/Role
 type Role struct {
@@ -486,6 +620,25 @@ func (s *RoleName) GetRoleName() string {
 // SetRoleName sets the value of RoleName.
 func (s *RoleName) SetRoleName(val string) {
 	s.RoleName = val
+}
+
+type SnapshotFiles []SnapshotFilesItem
+
+type SnapshotFilesItem struct{}
+
+// Ref: #/components/schemas/SnapshotNew
+type SnapshotNew struct {
+	Files SnapshotFiles `json:"files"`
+}
+
+// GetFiles returns the value of Files.
+func (s *SnapshotNew) GetFiles() SnapshotFiles {
+	return s.Files
+}
+
+// SetFiles sets the value of Files.
+func (s *SnapshotNew) SetFiles(val SnapshotFiles) {
+	s.Files = val
 }
 
 // Merged schema.

@@ -5,12 +5,20 @@ type GetPermsRes interface {
 	getPermsRes()
 }
 
+type GetRepoBranchesRes interface {
+	getRepoBranchesRes()
+}
+
 type GetRolePermsRes interface {
 	getRolePermsRes()
 }
 
 type GetRolesRes interface {
 	getRolesRes()
+}
+
+type GetUserReposRes interface {
+	getUserReposRes()
 }
 
 type GetUserRes interface {
@@ -29,6 +37,10 @@ type PostRolesRes interface {
 	postRolesRes()
 }
 
+type PostUserRepoBranchSnapshotRes interface {
+	postUserRepoBranchSnapshotRes()
+}
+
 type PostUsersRes interface {
 	postUsersRes()
 }
@@ -43,4 +55,12 @@ type PutRolePermsRes interface {
 
 type PutUserNameRes interface {
 	putUserNameRes()
+}
+
+type PutUserRepoBranchRes interface {
+	putUserRepoBranchRes()
+}
+
+type PutUserRepoRes interface {
+	putUserRepoRes()
 }

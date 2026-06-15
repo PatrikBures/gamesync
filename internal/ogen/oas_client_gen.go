@@ -40,6 +40,12 @@ type Invoker interface {
 	//
 	// GET /perms
 	GetPerms(ctx context.Context) (GetPermsRes, error)
+	// GetRepoBranches invokes get-repo-branches operation.
+	//
+	// Get all branches in repo.
+	//
+	// GET /users/{userID}/repos/{repoName}/branches
+	GetRepoBranches(ctx context.Context, params GetRepoBranchesParams) (GetRepoBranchesRes, error)
 	// GetRolePerms invokes get-role-perms operation.
 	//
 	// Get all permissions the role has.
@@ -58,6 +64,12 @@ type Invoker interface {
 	//
 	// GET /users/{userID}
 	GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error)
+	// GetUserRepos invokes get-user-repos operation.
+	//
+	// Get all repos owned by userID.
+	//
+	// GET /users/{userID}/repos
+	GetUserRepos(ctx context.Context, params GetUserReposParams) (GetUserReposRes, error)
 	// GetUsers invokes get-users operation.
 	//
 	// Get all users.
@@ -76,6 +88,12 @@ type Invoker interface {
 	//
 	// POST /roles
 	PostRoles(ctx context.Context, request OptRoleName) (PostRolesRes, error)
+	// PostUserRepoBranchSnapshot invokes post-user-repo-branch-snapshot operation.
+	//
+	// Create new snapshot.
+	//
+	// POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
+	PostUserRepoBranchSnapshot(ctx context.Context, request OptSnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error)
 	// PostUsers invokes post-users operation.
 	//
 	// Create new user.
@@ -100,6 +118,18 @@ type Invoker interface {
 	//
 	// PUT /users/{userID}/name
 	PutUserName(ctx context.Context, request OptUserName, params PutUserNameParams) (PutUserNameRes, error)
+	// PutUserRepo invokes put-user-repo operation.
+	//
+	// Create new repo and a default branch "main".
+	//
+	// PUT /users/{userID}/repos/{repoName}
+	PutUserRepo(ctx context.Context, params PutUserRepoParams) (PutUserRepoRes, error)
+	// PutUserRepoBranch invokes put-user-repo-branch operation.
+	//
+	// Create new branch in repo.
+	//
+	// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
+	PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (PutUserRepoBranchRes, error)
 }
 
 // Client implements OAS client.
@@ -317,6 +347,151 @@ func (c *Client) sendGetPerms(ctx context.Context) (res GetPermsRes, err error) 
 
 	stage = "DecodeResponse"
 	result, err := decodeGetPermsResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetRepoBranches invokes get-repo-branches operation.
+//
+// Get all branches in repo.
+//
+// GET /users/{userID}/repos/{repoName}/branches
+func (c *Client) GetRepoBranches(ctx context.Context, params GetRepoBranchesParams) (GetRepoBranchesRes, error) {
+	res, err := c.sendGetRepoBranches(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetRepoBranches(ctx context.Context, params GetRepoBranchesParams) (res GetRepoBranchesRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("get-repo-branches"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.URLTemplateKey.String("/users/{userID}/repos/{repoName}/branches"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, GetRepoBranchesOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [5]string
+	pathParts[0] = "/users/"
+	{
+		// Encode "userID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "userID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int64ToString(params.UserID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/repos/"
+	{
+		// Encode "repoName" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "repoName",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.RepoName))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/branches"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, GetRepoBranchesOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeGetRepoBranchesResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -682,6 +857,132 @@ func (c *Client) sendGetUser(ctx context.Context, params GetUserParams) (res Get
 	return result, nil
 }
 
+// GetUserRepos invokes get-user-repos operation.
+//
+// Get all repos owned by userID.
+//
+// GET /users/{userID}/repos
+func (c *Client) GetUserRepos(ctx context.Context, params GetUserReposParams) (GetUserReposRes, error) {
+	res, err := c.sendGetUserRepos(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetUserRepos(ctx context.Context, params GetUserReposParams) (res GetUserReposRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("get-user-repos"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.URLTemplateKey.String("/users/{userID}/repos"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, GetUserReposOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/users/"
+	{
+		// Encode "userID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "userID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int64ToString(params.UserID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/repos"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, GetUserReposOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeGetUserReposResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetUsers invokes get-users operation.
 //
 // Get all users.
@@ -1021,6 +1322,173 @@ func (c *Client) sendPostRoles(ctx context.Context, request OptRoleName) (res Po
 
 	stage = "DecodeResponse"
 	result, err := decodePostRolesResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PostUserRepoBranchSnapshot invokes post-user-repo-branch-snapshot operation.
+//
+// Create new snapshot.
+//
+// POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
+func (c *Client) PostUserRepoBranchSnapshot(ctx context.Context, request OptSnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error) {
+	res, err := c.sendPostUserRepoBranchSnapshot(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendPostUserRepoBranchSnapshot(ctx context.Context, request OptSnapshotNew, params PostUserRepoBranchSnapshotParams) (res PostUserRepoBranchSnapshotRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("post-user-repo-branch-snapshot"),
+		semconv.HTTPRequestMethodKey.String("POST"),
+		semconv.URLTemplateKey.String("/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, PostUserRepoBranchSnapshotOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [7]string
+	pathParts[0] = "/users/"
+	{
+		// Encode "userID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "userID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int64ToString(params.UserID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/repos/"
+	{
+		// Encode "repoName" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "repoName",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.RepoName))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/branches/"
+	{
+		// Encode "branchName" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "branchName",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.BranchName))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	pathParts[6] = "/snapshots"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePostUserRepoBranchSnapshotRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, PostUserRepoBranchSnapshotOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodePostUserRepoBranchSnapshotResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -1485,6 +1953,313 @@ func (c *Client) sendPutUserName(ctx context.Context, request OptUserName, param
 
 	stage = "DecodeResponse"
 	result, err := decodePutUserNameResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutUserRepo invokes put-user-repo operation.
+//
+// Create new repo and a default branch "main".
+//
+// PUT /users/{userID}/repos/{repoName}
+func (c *Client) PutUserRepo(ctx context.Context, params PutUserRepoParams) (PutUserRepoRes, error) {
+	res, err := c.sendPutUserRepo(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendPutUserRepo(ctx context.Context, params PutUserRepoParams) (res PutUserRepoRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("put-user-repo"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
+		semconv.URLTemplateKey.String("/users/{userID}/repos/{repoName}"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, PutUserRepoOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [4]string
+	pathParts[0] = "/users/"
+	{
+		// Encode "userID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "userID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int64ToString(params.UserID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/repos/"
+	{
+		// Encode "repoName" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "repoName",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.RepoName))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, PutUserRepoOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodePutUserRepoResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// PutUserRepoBranch invokes put-user-repo-branch operation.
+//
+// Create new branch in repo.
+//
+// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
+func (c *Client) PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (PutUserRepoBranchRes, error) {
+	res, err := c.sendPutUserRepoBranch(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendPutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (res PutUserRepoBranchRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("put-user-repo-branch"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
+		semconv.URLTemplateKey.String("/users/{userID}/repos/{repoName}/branches/{branchName}"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, PutUserRepoBranchOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [6]string
+	pathParts[0] = "/users/"
+	{
+		// Encode "userID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "userID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int64ToString(params.UserID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/repos/"
+	{
+		// Encode "repoName" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "repoName",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.RepoName))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/branches/"
+	{
+		// Encode "branchName" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "branchName",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.BranchName))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, PutUserRepoBranchOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodePutUserRepoBranchResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

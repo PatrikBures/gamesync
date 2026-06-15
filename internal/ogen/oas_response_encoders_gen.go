@@ -50,6 +50,38 @@ func encodeGetPermsResponse(response GetPermsRes, w http.ResponseWriter, span tr
 	}
 }
 
+func encodeGetRepoBranchesResponse(response GetRepoBranchesRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *Branches:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *GetRepoBranchesUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
+	case *GetRepoBranchesInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
 func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *PermNameArray:
@@ -150,6 +182,38 @@ func encodeGetUserResponse(response GetUserRes, w http.ResponseWriter, span trac
 		return nil
 
 	case *GetUserInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
+func encodeGetUserReposResponse(response GetUserReposRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *Repos:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *GetUserReposUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
+	case *GetUserReposInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
 
@@ -263,6 +327,37 @@ func encodePostRolesResponse(response PostRolesRes, w http.ResponseWriter, span 
 		return nil
 
 	case *PostRolesInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
+func encodePostUserRepoBranchSnapshotResponse(response PostUserRepoBranchSnapshotRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *PostUserRepoBranchSnapshotCreated:
+		w.WriteHeader(201)
+		span.SetStatus(codes.Ok, http.StatusText(201))
+
+		return nil
+
+	case *PostUserRepoBranchSnapshotUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
+	case *PostUserRepoBranchSnapshotConflict:
+		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
+
+		return nil
+
+	case *PostUserRepoBranchSnapshotInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
 
@@ -424,6 +519,68 @@ func encodePutUserNameResponse(response PutUserNameRes, w http.ResponseWriter, s
 		return nil
 
 	case *PutUserNameInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
+func encodePutUserRepoResponse(response PutUserRepoRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *PutUserRepoCreated:
+		w.WriteHeader(201)
+		span.SetStatus(codes.Ok, http.StatusText(201))
+
+		return nil
+
+	case *PutUserRepoUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
+	case *PutUserRepoConflict:
+		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
+
+		return nil
+
+	case *PutUserRepoInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
+func encodePutUserRepoBranchResponse(response PutUserRepoBranchRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *PutUserRepoBranchCreated:
+		w.WriteHeader(201)
+		span.SetStatus(codes.Ok, http.StatusText(201))
+
+		return nil
+
+	case *PutUserRepoBranchUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
+	case *PutUserRepoBranchConflict:
+		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
+
+		return nil
+
+	case *PutUserRepoBranchInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
 

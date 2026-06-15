@@ -27,6 +27,10 @@ const (
 	PermRolesGet                    Perm = 2000 // list roles, list role perms, get name
 	PermRolesMod                    Perm = 2010 // mod perms/name for existing roles
 	PermRolesDelete                 Perm = 2030 // delete role with no users
+
+	// anything with syncing
+	PermSync                        Perm = 5000
+
 )
 
 var AllPerms Perms = Perms{
@@ -41,4 +45,5 @@ var AllPerms Perms = Perms{
 	PermRolesGet,
 	PermRolesMod,
 	PermRolesDelete,
+	PermSync,
 }

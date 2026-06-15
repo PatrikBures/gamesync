@@ -20,6 +20,12 @@ type Handler interface {
 	//
 	// GET /perms
 	GetPerms(ctx context.Context) (GetPermsRes, error)
+	// GetRepoBranches implements get-repo-branches operation.
+	//
+	// Get all branches in repo.
+	//
+	// GET /users/{userID}/repos/{repoName}/branches
+	GetRepoBranches(ctx context.Context, params GetRepoBranchesParams) (GetRepoBranchesRes, error)
 	// GetRolePerms implements get-role-perms operation.
 	//
 	// Get all permissions the role has.
@@ -38,6 +44,12 @@ type Handler interface {
 	//
 	// GET /users/{userID}
 	GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error)
+	// GetUserRepos implements get-user-repos operation.
+	//
+	// Get all repos owned by userID.
+	//
+	// GET /users/{userID}/repos
+	GetUserRepos(ctx context.Context, params GetUserReposParams) (GetUserReposRes, error)
 	// GetUsers implements get-users operation.
 	//
 	// Get all users.
@@ -56,6 +68,12 @@ type Handler interface {
 	//
 	// POST /roles
 	PostRoles(ctx context.Context, req OptRoleName) (PostRolesRes, error)
+	// PostUserRepoBranchSnapshot implements post-user-repo-branch-snapshot operation.
+	//
+	// Create new snapshot.
+	//
+	// POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
+	PostUserRepoBranchSnapshot(ctx context.Context, req OptSnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error)
 	// PostUsers implements post-users operation.
 	//
 	// Create new user.
@@ -80,6 +98,18 @@ type Handler interface {
 	//
 	// PUT /users/{userID}/name
 	PutUserName(ctx context.Context, req OptUserName, params PutUserNameParams) (PutUserNameRes, error)
+	// PutUserRepo implements put-user-repo operation.
+	//
+	// Create new repo and a default branch "main".
+	//
+	// PUT /users/{userID}/repos/{repoName}
+	PutUserRepo(ctx context.Context, params PutUserRepoParams) (PutUserRepoRes, error)
+	// PutUserRepoBranch implements put-user-repo-branch operation.
+	//
+	// Create new branch in repo.
+	//
+	// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
+	PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (PutUserRepoBranchRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and

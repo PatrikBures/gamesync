@@ -37,8 +37,7 @@ CREATE TABLE branches
 
 CREATE TABLE files
 (
-    file_hash BYTEA NOT NULL PRIMARY KEY,
-    bytes BIGINT NOT NULL
+    file_hash BYTEA NOT NULL PRIMARY KEY
 );
 
 CREATE TABLE snapshot_files
@@ -52,7 +51,8 @@ CREATE INDEX idx_snapshot_files_file_hash ON snapshot_files(file_hash);
 
 CREATE TABLE chunks
 (
-    chunk_hash BYTEA NOT NULL PRIMARY KEY
+    chunk_hash BYTEA NOT NULL PRIMARY KEY,
+    bytes BIGINT NOT NULL
 );
 
 CREATE TABLE file_chunks

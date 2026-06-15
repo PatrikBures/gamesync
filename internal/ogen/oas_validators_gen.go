@@ -6,6 +6,14 @@ import (
 	"github.com/go-faster/errors"
 )
 
+func (s Branches) Validate() error {
+	alias := ([]string)(s)
+	if alias == nil {
+		return errors.New("nil is invalid value")
+	}
+	return nil
+}
+
 func (s GetPermsOKApplicationJSON) Validate() error {
 	alias := ([]PermWithName)(s)
 	if alias == nil {
@@ -24,6 +32,14 @@ func (s GetRolesOKApplicationJSON) Validate() error {
 
 func (s GetUsersOKApplicationJSON) Validate() error {
 	alias := ([]User)(s)
+	if alias == nil {
+		return errors.New("nil is invalid value")
+	}
+	return nil
+}
+
+func (s Repos) Validate() error {
+	alias := ([]string)(s)
 	if alias == nil {
 		return errors.New("nil is invalid value")
 	}

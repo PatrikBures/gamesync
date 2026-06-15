@@ -31,6 +31,15 @@ func (UnimplementedHandler) GetPerms(ctx context.Context) (r GetPermsRes, _ erro
 	return r, ht.ErrNotImplemented
 }
 
+// GetRepoBranches implements get-repo-branches operation.
+//
+// Get all branches in repo.
+//
+// GET /users/{userID}/repos/{repoName}/branches
+func (UnimplementedHandler) GetRepoBranches(ctx context.Context, params GetRepoBranchesParams) (r GetRepoBranchesRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetRolePerms implements get-role-perms operation.
 //
 // Get all permissions the role has.
@@ -58,6 +67,15 @@ func (UnimplementedHandler) GetUser(ctx context.Context, params GetUserParams) (
 	return r, ht.ErrNotImplemented
 }
 
+// GetUserRepos implements get-user-repos operation.
+//
+// Get all repos owned by userID.
+//
+// GET /users/{userID}/repos
+func (UnimplementedHandler) GetUserRepos(ctx context.Context, params GetUserReposParams) (r GetUserReposRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetUsers implements get-users operation.
 //
 // Get all users.
@@ -82,6 +100,15 @@ func (UnimplementedHandler) PatchRolePerms(ctx context.Context, req OptPermDiff,
 //
 // POST /roles
 func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRoleName) (r PostRolesRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// PostUserRepoBranchSnapshot implements post-user-repo-branch-snapshot operation.
+//
+// Create new snapshot.
+//
+// POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
+func (UnimplementedHandler) PostUserRepoBranchSnapshot(ctx context.Context, req OptSnapshotNew, params PostUserRepoBranchSnapshotParams) (r PostUserRepoBranchSnapshotRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -118,5 +145,23 @@ func (UnimplementedHandler) PutRolePerms(ctx context.Context, req PermNameArray,
 //
 // PUT /users/{userID}/name
 func (UnimplementedHandler) PutUserName(ctx context.Context, req OptUserName, params PutUserNameParams) (r PutUserNameRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// PutUserRepo implements put-user-repo operation.
+//
+// Create new repo and a default branch "main".
+//
+// PUT /users/{userID}/repos/{repoName}
+func (UnimplementedHandler) PutUserRepo(ctx context.Context, params PutUserRepoParams) (r PutUserRepoRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// PutUserRepoBranch implements put-user-repo-branch operation.
+//
+// Create new branch in repo.
+//
+// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
+func (UnimplementedHandler) PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (r PutUserRepoBranchRes, _ error) {
 	return r, ht.ErrNotImplemented
 }

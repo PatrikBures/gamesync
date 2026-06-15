@@ -17,11 +17,11 @@ type Branch struct {
 
 type Chunk struct {
 	ChunkHash []byte
+	Bytes     int64
 }
 
 type File struct {
 	FileHash []byte
-	Bytes    int64
 }
 
 type FileChunk struct {

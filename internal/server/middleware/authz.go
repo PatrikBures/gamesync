@@ -27,6 +27,9 @@ var operationPerms = map[string]permissions.Perm{
 	"GetRolePerms":       permissions.PermRolesGet,
 	"PatchRolePerms":     permissions.PermRolesMod,
 	"PutRolePerms":       permissions.PermRolesMod,
+
+	"GetUserRepos":       permissions.PermSync,
+	"PutUserRepo":        permissions.PermSync,
 }
 
 func AuthzMiddleware() middleware.Middleware {
@@ -43,7 +46,7 @@ func AuthzMiddleware() middleware.Middleware {
 
 		ctx := req.Context
 		if err := service.CheckPerm(ctx, perm); err != nil {
-			slog.Error("checking permission", "perm", perm)
+			slog.Warn("checking permission", "perm", perm, "err", err)
 			return middleware.Response{}, err
 		}
 		return next(req)

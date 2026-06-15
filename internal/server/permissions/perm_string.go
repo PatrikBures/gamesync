@@ -19,9 +19,10 @@ func _() {
 	_ = x[PermRolesGet-2000]
 	_ = x[PermRolesMod-2010]
 	_ = x[PermRolesDelete-2030]
+	_ = x[PermSync-5000]
 }
 
-const _Perm_name = "AllAllowedUsersListUserDeleteUserGetUserGetOwnUserNameUpdateUserNameUpdateOwnUserRoleUpdateRolesGetRolesModRolesDelete"
+const _Perm_name = "AllAllowedUsersListUserDeleteUserGetUserGetOwnUserNameUpdateUserNameUpdateOwnUserRoleUpdateRolesGetRolesModRolesDeleteSync"
 
 var _Perm_map = map[Perm]string{
 	10:   _Perm_name[0:10],
@@ -35,6 +36,7 @@ var _Perm_map = map[Perm]string{
 	2000: _Perm_name[91:99],
 	2010: _Perm_name[99:107],
 	2030: _Perm_name[107:118],
+	5000: _Perm_name[118:122],
 }
 
 func (i Perm) String() string {

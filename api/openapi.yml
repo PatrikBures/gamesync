@@ -45,6 +45,22 @@ components:
         type: integer
         format: int32
         minimum: 0
+
+    repoName:
+      name: repoName
+      description: Identify repository
+      in: path
+      required: true
+      schema:
+        type: string
+    branchName:
+      name: branchName
+      description: Identify branch
+      in: path
+      required: true
+      schema:
+        type: string
+
   schemas:
 
     ### base models
@@ -92,6 +108,28 @@ components:
           type: string
       required: [permName]
 
+    _SnapshotFilePath:
+      type: object
+      properties:
+        path:
+          type: string
+      required: [path]
+    _SnapshotFileHash:
+      type: object
+      properties:
+        hash:
+          type: string
+      required: [hash]
+    _ChunkHashes:
+      type: array
+      items: 
+        type: string
+    _SnapshotFile:
+      allOf:
+        - $ref: "#/components/schemas/_SnapshotFilePath"
+        - $ref: "#/components/schemas/_SnapshotFileHash"
+        - $ref: "#/components/schemas/_ChunkHashes"
+
     ### User schemas
     UserNew:
       $ref: "#/components/schemas/_UserName"
@@ -137,6 +175,31 @@ components:
         - add
         - remove
 
+    ### Repo schemas
+    Repos:
+      type: array
+      items:
+        type: string
+
+    ### Branch schemas
+    Branches:
+      type: array
+      items:
+        type: string
+
+    ### Snapshot Schemas
+    SnapshotFiles:
+      type: array
+      items:
+        type: object
+        parameters:
+          allOf:
+            $ref: "#/components/schemas/_SnapshotFile"
+    SnapshotNew:
+      type: object
+      properties:
+        files:
+          $ref: "#/components/schemas/SnapshotFiles"
 
 security:
   - bearerAuth: []
@@ -226,6 +289,93 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/_UserName"
+  /users/{userID}/repos:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+    get:
+      summary: Get all repos owned by userID
+      operationId: get-user-repos
+      tags:
+        - Users
+      responses:
+        "401": {}
+        "200":
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Repos"
+        "500": {}
+
+  /users/{userID}/repos/{repoName}:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+      - $ref: "#/components/parameters/repoName"
+    put:
+      summary: Create new repo and a default branch "main"
+      operationId: put-user-repo
+      tags:
+        - Users
+      responses:
+        "401": {}
+        "409": {}
+        "201": {}
+        "500": {}
+
+  /users/{userID}/repos/{repoName}/branches:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+      - $ref: "#/components/parameters/repoName"
+    get:
+      summary: Get all branches in repo
+      operationId: get-repo-branches
+      tags:
+        - Users
+      responses:
+        "401": {}
+        "200": 
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Branches"
+        "500": {}
+  /users/{userID}/repos/{repoName}/branches/{branchName}:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+      - $ref: "#/components/parameters/repoName"
+      - $ref: "#/components/parameters/branchName"
+    put:
+      summary: Create new branch in repo
+      operationId: put-user-repo-branch
+      tags:
+        - Users
+      responses:
+        "401": {}
+        "409": {}
+        "201": {}
+        "500": {}
+
+  /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+      - $ref: "#/components/parameters/repoName"
+      - $ref: "#/components/parameters/branchName"
+    post:
+      summary: Create new snapshot
+      operationId: post-user-repo-branch-snapshot
+      tags:
+        - Users
+      responses:
+        "401": {}
+        "409": {}
+        "201": {}
+        "500": {}
+      requestBody:
+        content: 
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SnapshotNew"
+
+
 
 
   /roles:
