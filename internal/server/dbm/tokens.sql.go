@@ -24,18 +24,6 @@ func (q *Queries) GetUserFromToken(ctx context.Context, tokenHash []byte) (User,
 	return i, err
 }
 
-const getUserIdFromToken = `-- name: GetUserIdFromToken :one
-SELECT user_id FROM tokens
-WHERE token_hash = $1
-`
-
-func (q *Queries) GetUserIdFromToken(ctx context.Context, tokenHash []byte) (int64, error) {
-	row := q.db.QueryRow(ctx, getUserIdFromToken, tokenHash)
-	var user_id int64
-	err := row.Scan(&user_id)
-	return user_id, err
-}
-
 const insertToken = `-- name: InsertToken :one
 INSERT INTO tokens (user_id, token_hash)
 VALUES ($1, $2)
