@@ -14,14 +14,14 @@ var (
 	rn3AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn12AllowedHeaders = map[string]string{
+	rn7AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
 	rn19AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
-	rn11AllowedHeaders = map[string]string{
+	rn6AllowedHeaders = map[string]string{
 		"GET":   "Authorization",
 		"PATCH": "Authorization,Content-Type",
 		"PUT":   "Authorization,Content-Type",
@@ -30,7 +30,7 @@ var (
 		"GET":  "Authorization",
 		"POST": "Content-Type",
 	}
-	rn5AllowedHeaders = map[string]string{
+	rn9AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn21AllowedHeaders = map[string]string{
@@ -39,10 +39,10 @@ var (
 	rn13AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn7AllowedHeaders = map[string]string{
+	rn11AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
-	rn8AllowedHeaders = map[string]string{
+	rn12AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn16AllowedHeaders = map[string]string{
@@ -171,7 +171,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET,POST",
-							allowedHeaders: rn12AllowedHeaders,
+							allowedHeaders: rn7AllowedHeaders,
 							acceptPost:     "application/json",
 							acceptPatch:    "",
 						})
@@ -266,7 +266,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "GET,PATCH,PUT",
-										allowedHeaders: rn11AllowedHeaders,
+										allowedHeaders: rn6AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "application/json",
 									})
@@ -333,7 +333,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						default:
 							s.notAllowed(w, r, notAllowedParams{
 								allowedMethods: "GET",
-								allowedHeaders: rn5AllowedHeaders,
+								allowedHeaders: rn9AllowedHeaders,
 								acceptPost:     "",
 								acceptPatch:    "",
 							})
@@ -434,7 +434,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									default:
 										s.notAllowed(w, r, notAllowedParams{
 											allowedMethods: "PUT",
-											allowedHeaders: rn7AllowedHeaders,
+											allowedHeaders: rn11AllowedHeaders,
 											acceptPost:     "",
 											acceptPatch:    "",
 										})
@@ -454,14 +454,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									if len(elem) == 0 {
 										switch r.Method {
 										case "GET":
-											s.handleGetRepoBranchesRequest([2]string{
+											s.handleGetUserRepoBranchesRequest([2]string{
 												args[0],
 												args[1],
 											}, elemIsEscaped, w, r)
 										default:
 											s.notAllowed(w, r, notAllowedParams{
 												allowedMethods: "GET",
-												allowedHeaders: rn8AllowedHeaders,
+												allowedHeaders: rn12AllowedHeaders,
 												acceptPost:     "",
 												acceptPatch:    "",
 											})
@@ -1011,9 +1011,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									if len(elem) == 0 {
 										switch method {
 										case "GET":
-											r.name = GetRepoBranchesOperation
+											r.name = GetUserRepoBranchesOperation
 											r.summary = "Get all branches in repo"
-											r.operationID = "get-repo-branches"
+											r.operationID = "get-user-repo-branches"
 											r.operationGroup = ""
 											r.pathPattern = "/users/{userID}/repos/{repoName}/branches"
 											r.args = args

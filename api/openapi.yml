@@ -327,7 +327,7 @@ paths:
       - $ref: "#/components/parameters/repoName"
     get:
       summary: Get all branches in repo
-      operationId: get-repo-branches
+      operationId: get-user-repo-branches
       tags:
         - Users
       responses:

@@ -50,38 +50,6 @@ func encodeGetPermsResponse(response GetPermsRes, w http.ResponseWriter, span tr
 	}
 }
 
-func encodeGetRepoBranchesResponse(response GetRepoBranchesRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *Branches:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
-		span.SetStatus(codes.Ok, http.StatusText(200))
-
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetRepoBranchesUnauthorized:
-		w.WriteHeader(401)
-		span.SetStatus(codes.Error, http.StatusText(401))
-
-		return nil
-
-	case *GetRepoBranchesInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
-	}
-}
-
 func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *PermNameArray:
@@ -182,6 +150,38 @@ func encodeGetUserResponse(response GetUserRes, w http.ResponseWriter, span trac
 		return nil
 
 	case *GetUserInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
+func encodeGetUserRepoBranchesResponse(response GetUserRepoBranchesRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *Branches:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(200)
+		span.SetStatus(codes.Ok, http.StatusText(200))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *GetUserRepoBranchesUnauthorized:
+		w.WriteHeader(401)
+		span.SetStatus(codes.Error, http.StatusText(401))
+
+		return nil
+
+	case *GetUserRepoBranchesInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
 

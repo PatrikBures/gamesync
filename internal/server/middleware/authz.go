@@ -28,8 +28,12 @@ var operationPerms = map[string]permissions.Perm{
 	"PatchRolePerms":     permissions.PermRolesMod,
 	"PutRolePerms":       permissions.PermRolesMod,
 
+
 	"GetUserRepos":       permissions.PermSync,
 	"PutUserRepo":        permissions.PermSync,
+
+	"GetUserRepoBranches":    permissions.PermSync,
+	"PutUserRepoBranch":      permissions.PermSync,
 }
 
 func AuthzMiddleware() middleware.Middleware {

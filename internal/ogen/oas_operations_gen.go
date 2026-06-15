@@ -8,10 +8,10 @@ type OperationName = string
 const (
 	GetHealthOperation                  OperationName = "GetHealth"
 	GetPermsOperation                   OperationName = "GetPerms"
-	GetRepoBranchesOperation            OperationName = "GetRepoBranches"
 	GetRolePermsOperation               OperationName = "GetRolePerms"
 	GetRolesOperation                   OperationName = "GetRoles"
 	GetUserOperation                    OperationName = "GetUser"
+	GetUserRepoBranchesOperation        OperationName = "GetUserRepoBranches"
 	GetUserReposOperation               OperationName = "GetUserRepos"
 	GetUsersOperation                   OperationName = "GetUsers"
 	PatchRolePermsOperation             OperationName = "PatchRolePerms"

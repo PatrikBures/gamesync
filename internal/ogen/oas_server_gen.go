@@ -20,12 +20,6 @@ type Handler interface {
 	//
 	// GET /perms
 	GetPerms(ctx context.Context) (GetPermsRes, error)
-	// GetRepoBranches implements get-repo-branches operation.
-	//
-	// Get all branches in repo.
-	//
-	// GET /users/{userID}/repos/{repoName}/branches
-	GetRepoBranches(ctx context.Context, params GetRepoBranchesParams) (GetRepoBranchesRes, error)
 	// GetRolePerms implements get-role-perms operation.
 	//
 	// Get all permissions the role has.
@@ -44,6 +38,12 @@ type Handler interface {
 	//
 	// GET /users/{userID}
 	GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error)
+	// GetUserRepoBranches implements get-user-repo-branches operation.
+	//
+	// Get all branches in repo.
+	//
+	// GET /users/{userID}/repos/{repoName}/branches
+	GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (GetUserRepoBranchesRes, error)
 	// GetUserRepos implements get-user-repos operation.
 	//
 	// Get all repos owned by userID.

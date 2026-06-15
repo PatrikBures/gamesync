@@ -5,16 +5,16 @@ type GetPermsRes interface {
 	getPermsRes()
 }
 
-type GetRepoBranchesRes interface {
-	getRepoBranchesRes()
-}
-
 type GetRolePermsRes interface {
 	getRolePermsRes()
 }
 
 type GetRolesRes interface {
 	getRolesRes()
+}
+
+type GetUserRepoBranchesRes interface {
+	getUserRepoBranchesRes()
 }
 
 type GetUserReposRes interface {

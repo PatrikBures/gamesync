@@ -31,15 +31,6 @@ func (UnimplementedHandler) GetPerms(ctx context.Context) (r GetPermsRes, _ erro
 	return r, ht.ErrNotImplemented
 }
 
-// GetRepoBranches implements get-repo-branches operation.
-//
-// Get all branches in repo.
-//
-// GET /users/{userID}/repos/{repoName}/branches
-func (UnimplementedHandler) GetRepoBranches(ctx context.Context, params GetRepoBranchesParams) (r GetRepoBranchesRes, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
 // GetRolePerms implements get-role-perms operation.
 //
 // Get all permissions the role has.
@@ -64,6 +55,15 @@ func (UnimplementedHandler) GetRoles(ctx context.Context) (r GetRolesRes, _ erro
 //
 // GET /users/{userID}
 func (UnimplementedHandler) GetUser(ctx context.Context, params GetUserParams) (r GetUserRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// GetUserRepoBranches implements get-user-repo-branches operation.
+//
+// Get all branches in repo.
+//
+// GET /users/{userID}/repos/{repoName}/branches
+func (UnimplementedHandler) GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (r GetUserRepoBranchesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

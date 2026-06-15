@@ -29,7 +29,7 @@ func (s *BearerAuth) SetRoles(val []string) {
 
 type Branches []string
 
-func (*Branches) getRepoBranchesRes() {}
+func (*Branches) getUserRepoBranchesRes() {}
 
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
@@ -47,16 +47,6 @@ func (*GetPermsOKApplicationJSON) getPermsRes() {}
 type GetPermsUnauthorized struct{}
 
 func (*GetPermsUnauthorized) getPermsRes() {}
-
-// GetRepoBranchesInternalServerError is response for GetRepoBranches operation.
-type GetRepoBranchesInternalServerError struct{}
-
-func (*GetRepoBranchesInternalServerError) getRepoBranchesRes() {}
-
-// GetRepoBranchesUnauthorized is response for GetRepoBranches operation.
-type GetRepoBranchesUnauthorized struct{}
-
-func (*GetRepoBranchesUnauthorized) getRepoBranchesRes() {}
 
 // GetRolePermsInternalServerError is response for GetRolePerms operation.
 type GetRolePermsInternalServerError struct{}
@@ -96,6 +86,16 @@ func (*GetUserInternalServerError) getUserRes() {}
 type GetUserNotFound struct{}
 
 func (*GetUserNotFound) getUserRes() {}
+
+// GetUserRepoBranchesInternalServerError is response for GetUserRepoBranches operation.
+type GetUserRepoBranchesInternalServerError struct{}
+
+func (*GetUserRepoBranchesInternalServerError) getUserRepoBranchesRes() {}
+
+// GetUserRepoBranchesUnauthorized is response for GetUserRepoBranches operation.
+type GetUserRepoBranchesUnauthorized struct{}
+
+func (*GetUserRepoBranchesUnauthorized) getUserRepoBranchesRes() {}
 
 // GetUserReposInternalServerError is response for GetUserRepos operation.
 type GetUserReposInternalServerError struct{}
