@@ -8,6 +8,19 @@ INSERT INTO role_permissions (role_id, perm_id)
 VALUES ($1, $2)
 ;
 
+-- name: InsertRolePermsNoConflict :exec
+INSERT INTO role_permissions (role_id, perm_id)
+SELECT $1, unnest(@perm_ids::INTEGER[])
+ON CONFLICT DO NOTHING
+;
+
+
+-- name: DeleteRolePermsWithId :exec
+DELETE FROM role_permissions
+WHERE role_id = $1
+AND perm_id = ANY(sqlc.arg(perm_ids)::INTEGER[])
+;
+
 -- name: ListRolePerms :many
 SELECT * FROM role_permissions
 WHERE role_id = $1

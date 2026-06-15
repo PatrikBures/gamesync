@@ -37,6 +37,31 @@ func (q *Queries) InsertPermission(ctx context.Context, arg InsertPermissionPara
 	return err
 }
 
+const listPermIDsWithNames = `-- name: ListPermIDsWithNames :many
+SELECT perm_id FROM permissions
+WHERE perm_name = ANY($1::VARCHAR[])
+`
+
+func (q *Queries) ListPermIDsWithNames(ctx context.Context, permNames []string) ([]int32, error) {
+	rows, err := q.db.Query(ctx, listPermIDsWithNames, permNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var perm_id int32
+		if err := rows.Scan(&perm_id); err != nil {
+			return nil, err
+		}
+		items = append(items, perm_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPermissions = `-- name: ListPermissions :many
 SELECT perm_id, perm_name FROM permissions
 `

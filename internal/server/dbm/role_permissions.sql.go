@@ -22,6 +22,22 @@ func (q *Queries) DeleteRolePermsLT(ctx context.Context, roleID int32) (int64, e
 	return result.RowsAffected(), nil
 }
 
+const deleteRolePermsWithId = `-- name: DeleteRolePermsWithId :exec
+DELETE FROM role_permissions
+WHERE role_id = $1
+AND perm_id = ANY($2::INTEGER[])
+`
+
+type DeleteRolePermsWithIdParams struct {
+	RoleID  int32
+	PermIds []int32
+}
+
+func (q *Queries) DeleteRolePermsWithId(ctx context.Context, arg DeleteRolePermsWithIdParams) error {
+	_, err := q.db.Exec(ctx, deleteRolePermsWithId, arg.RoleID, arg.PermIds)
+	return err
+}
+
 const deleteRolePermsWithRoleId = `-- name: DeleteRolePermsWithRoleId :exec
 DELETE FROM role_permissions
 WHERE role_id = $1
@@ -35,6 +51,22 @@ func (q *Queries) DeleteRolePermsWithRoleId(ctx context.Context, roleID int32) e
 type InsertRolePermsParams struct {
 	RoleID int32
 	PermID int32
+}
+
+const insertRolePermsNoConflict = `-- name: InsertRolePermsNoConflict :exec
+INSERT INTO role_permissions (role_id, perm_id)
+SELECT $1, unnest($2::INTEGER[])
+ON CONFLICT DO NOTHING
+`
+
+type InsertRolePermsNoConflictParams struct {
+	RoleID  int32
+	PermIds []int32
+}
+
+func (q *Queries) InsertRolePermsNoConflict(ctx context.Context, arg InsertRolePermsNoConflictParams) error {
+	_, err := q.db.Exec(ctx, insertRolePermsNoConflict, arg.RoleID, arg.PermIds)
+	return err
 }
 
 const listRolePermNamesWithName = `-- name: ListRolePermNamesWithName :many

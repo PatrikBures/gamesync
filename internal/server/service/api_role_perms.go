@@ -55,58 +55,68 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 	if ! req.Set {
 		return &api.PatchRolePermsNotAcceptable{}, nil
 	}
-	// permsAdd, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req.Value.Add...)).Find()
-	// if err != nil {
-	// 	return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
-	// }
-	// if len(permsAdd) != len(req.Value.Add) {
-	// 	return &api.PatchRolePermsUnprocessableEntity{}, nil
-	// }
-	//
-	// permsRemove, err := s.q.Permission.WithContext(ctx).Where(s.q.Permission.PermName.In(req.Value.Remove...)).Find()
-	// if err != nil {
-	// 	return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
-	// }
-	// if len(permsRemove) != len(req.Value.Remove) {
-	// 	return &api.PatchRolePermsUnprocessableEntity{}, nil
-	// }
-	//
-	//
-	// tx := s.q.Begin()
-	// defer func() {
-	// 	if recover() != nil || err != nil {
-	// 		if e := tx.Rollback(); e != nil {
-	// 			slog.Error("failed rollback", "error", e)
-	// 		}
-	// 	}
-	// }()
-	//
-	// if len(req.Value.Add) > 0 {
-	// 	rolePerms := permToRolePermInsert(params.RoleID, permsAdd)
-	// 	err = tx.RolePermission.WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(rolePerms...)
-	// 	if err != nil {
-	// 		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
-	// 	}
-	// }
-	//
-	// if len(req.Value.Remove) > 0 {
-	// 	remove := make([]int32, 0, len(req.Value.Remove))
-	// 	for _, pr := range permsRemove {
-	// 		remove = append(remove, pr.PermID)
-	// 	}
-	// 	_, err = tx.RolePermission.WithContext(ctx).
-	// 		Where(
-	// 			s.q.RolePermission.RoleID.Eq(params.RoleID),
-	// 			s.q.RolePermission.PermID.In(remove...),
-	// 		).Delete()
-	// 	if err != nil {
-	// 		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
-	// 	}
-	// }
-	//
-	// if err := tx.Commit(); err != nil {
-	// 	return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
-	// }
+
+	permsAdd, err := s.db.ReadQuery().ListPermIDsWithNames(ctx, req.Value.Add)
+	if err != nil {
+		slog.Error("listing add values", "error", err)
+		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+	}
+	if len(permsAdd) != len(req.Value.Add) {
+		slog.Warn("add perm(s) not found", "expected", len(req.Value.Add), "received", len(permsAdd), "received", permsAdd)
+		return &api.PatchRolePermsUnprocessableEntity{}, nil
+	}
+
+	permsRemove, err := s.db.ReadQuery().ListPermIDsWithNames(ctx, req.Value.Remove)
+	if err != nil {
+		slog.Error("listing remove values", "error", err)
+		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+	}
+	if len(permsRemove) != len(req.Value.Remove) {
+		slog.Warn("remove perm(s) not found", "expectedQty", len(req.Value.Remove), "receivedQty", len(permsRemove), "received", permsRemove)
+		return &api.PatchRolePermsUnprocessableEntity{}, nil
+	}
+
+
+	// i decided to not include the 2 above queries as the permissions table does not really
+	// update during runtime, so it is probably fine. i want to avoid querying the primary
+	// database if not needed.
+	qtx, tx, err := s.db.BeginTX(ctx)
+	if err != nil {
+		slog.Error("starting tx", "error", err)
+		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+	}
+	defer func() {
+		if recover() != nil || err != nil {
+			if e := tx.Rollback(ctx); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
+		}
+	}()
+
+	if len(req.Value.Add) > 0 {
+		if err = qtx.InsertRolePermsNoConflict(ctx, dbm.InsertRolePermsNoConflictParams{
+			RoleID: params.RoleID,
+			PermIds: permsAdd,
+		}); err != nil {
+			slog.Error("adding role perms", "error", err)
+			return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+		}
+	}
+
+	if len(req.Value.Remove) > 0 {
+		if err = qtx.DeleteRolePermsWithId(ctx, dbm.DeleteRolePermsWithIdParams{
+			RoleID: params.RoleID,
+			PermIds: permsRemove,
+		}); err != nil {
+			slog.Error("removing role perms", "error", err)
+			return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+			slog.Error("committing role perms", "error", err)
+		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+	}
 
 	return &api.PatchRolePermsOK{}, nil
 }
@@ -155,6 +165,9 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 	return &api.PutRolePermsOK{}, nil
 }
 
+// converts permissions slice to a slice which can be inserted to database
+//
+// every object in returned slice will have roleID
 func permToRolePermInsert(roleID int32, perms []dbm.Permission) []dbm.InsertRolePermsParams {
 	rolePerms := make([]dbm.InsertRolePermsParams, 0, len(perms))
 	for _, p := range perms {
@@ -165,4 +178,12 @@ func permToRolePermInsert(roleID int32, perms []dbm.Permission) []dbm.InsertRole
 		rolePerms = append(rolePerms, rolePerm)
 	}
 	return rolePerms
+}
+
+func permToSlice(perms []dbm.Permission) []int32 {
+	permsInt32 := make([]int32, 0, len(perms))
+	for _, p := range perms {
+		permsInt32 = append(permsInt32, p.PermID)
+	}
+	return permsInt32
 }
