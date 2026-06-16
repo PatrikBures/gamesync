@@ -15,11 +15,10 @@ func (h HashBytes) Value() (driver.Value, error) {
 	return []byte(h), nil
 }
 
-type contextKey int
-
+type ContextKey int
 const (
-	ckUser contextKey = iota
-	ckRolePerms
+	CkUser ContextKey = iota
+	CkRolePerms
 )
 
 type Service struct {

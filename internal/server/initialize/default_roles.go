@@ -52,13 +52,14 @@ func CreateDefaultRoles(db *dbx.DB, skipRoles []string) error {
 
 func CreateDefaultRolePerms(db *dbx.DB) (err error) {
 	ctx := context.Background()
-	rolePerms := []dbm.InsertRolePermsParams{}
+	rolePerms := []dbm.InsertRolePermsCopyParams{}
 
 	rolePerms = append(rolePerms, permsToRolePermModel(1, permissions.AllPerms)...)
 	rolePerms = append(rolePerms, permsToRolePermModel(50, permissions.Perms{
 		permissions.PermRolesGet,
 		permissions.PermUserGetOwn,
 		permissions.PermUserNameUpdateOwn,
+		permissions.PermSync,
 	})...)
 
 	qtx, tx, err := db.BeginTX(ctx)
@@ -79,7 +80,7 @@ func CreateDefaultRolePerms(db *dbx.DB) (err error) {
 		return err
 	}
 
-	permsInsertedCount, err := qtx.InsertRolePerms(ctx, rolePerms)
+	permsInsertedCount, err := qtx.InsertRolePermsCopy(ctx, rolePerms)
 	if err != nil {
 		return err
 	}
@@ -95,10 +96,10 @@ func CreateDefaultRolePerms(db *dbx.DB) (err error) {
 	return nil
 }
 
-func permsToRolePermModel(roleID int32, perms permissions.Perms) []dbm.InsertRolePermsParams {
-	m := make([]dbm.InsertRolePermsParams, 0, len(perms))
+func permsToRolePermModel(roleID int32, perms permissions.Perms) []dbm.InsertRolePermsCopyParams {
+	m := make([]dbm.InsertRolePermsCopyParams, 0, len(perms))
 	for _, p := range perms {
-		rp := dbm.InsertRolePermsParams{
+		rp := dbm.InsertRolePermsCopyParams{
 			RoleID: roleID,
 			PermID: int32(p),
 		}

@@ -45,7 +45,7 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 		slog.Error("Role has invalid RoleID", "RoleID", user.RoleID)
 	}
 
-	ctx = context.WithValue(ctx, ckUser, user)
-	ctx = context.WithValue(ctx, ckRolePerms, perms)
+	ctx = context.WithValue(ctx, CkUser, user)
+	ctx = context.WithValue(ctx, CkRolePerms, perms)
 	return ctx, nil
 }

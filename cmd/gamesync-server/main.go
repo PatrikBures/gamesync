@@ -61,6 +61,7 @@ func start() error {
 
 	mw := []api.Middleware{
 		middlewares.AuthzMiddleware(),
+		middlewares.UserAuthz(),
 	}
 
 	if c.requestLogs {

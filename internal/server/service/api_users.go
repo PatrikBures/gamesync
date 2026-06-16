@@ -7,8 +7,6 @@ import (
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
-	"gamesync/internal/server/permissions"
-	"log/slog"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -18,17 +16,6 @@ import (
 func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.GetUserRes, error) {
 	// TODO: Seperate endpoint like GET /users/me to get info about the authenticated user
 
-	currentUser, err := isUserSelf(ctx, params.UserID)
-	if errors.Is(err, server.ErrContext) {
-		return &api.GetUserInternalServerError{}, err
-	} else if err == nil {
-		return &api.User{UserID: currentUser.UserID, UserName: currentUser.UserName, RoleID: currentUser.RoleID}, nil
-	}
-
-	if err := CheckPerm(ctx, permissions.PermUserGet); err != nil {
-		slog.Info("")
-		return &api.GetUserUnauthorized{}, nil
-	}
 	user, err := s.db.ReadQuery().GetUser(ctx, params.UserID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -84,14 +71,6 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params api.PutUserNameParams) (api.PutUserNameRes, error) {
 	if !req.Set {
 		return &api.PutUserNameNotAcceptable{}, nil
-	}
-
-	if err := isUserSelfAndPerm(ctx, params.UserID, permissions.PermUserNameUpdate); err != nil {
-		if errors.Is(err, server.ErrContext) {
-			return &api.PutUserNameInternalServerError{}, err
-		} else if errors.Is(err, server.ErrNotAuthorized) {
-			return &api.PutUserNameUnauthorized{}, nil
-		}
 	}
 
 	if err := s.db.WriteQuery().UpdateUserName(ctx, dbm.UpdateUserNameParams{

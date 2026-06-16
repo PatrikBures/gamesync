@@ -63,6 +63,11 @@ func (q *Queries) InsertRolePerms(ctx context.Context, arg InsertRolePermsParams
 	return err
 }
 
+type InsertRolePermsCopyParams struct {
+	RoleID int32
+	PermID int32
+}
+
 const insertRolePermsNoConflict = `-- name: InsertRolePermsNoConflict :exec
 INSERT INTO role_permissions (role_id, perm_id)
 SELECT $1, unnest($2::INTEGER[])

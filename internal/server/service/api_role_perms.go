@@ -164,26 +164,3 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 
 	return &api.PutRolePermsOK{}, nil
 }
-
-// converts permissions slice to a slice which can be inserted to database
-//
-// every object in returned slice will have roleID
-func permToRolePermInsert(roleID int32, perms []dbm.Permission) []dbm.InsertRolePermsParams {
-	rolePerms := make([]dbm.InsertRolePermsParams, 0, len(perms))
-	for _, p := range perms {
-		rolePerm := dbm.InsertRolePermsParams{
-			PermID: p.PermID,
-			RoleID: roleID,
-		}
-		rolePerms = append(rolePerms, rolePerm)
-	}
-	return rolePerms
-}
-
-func permToSlice(perms []dbm.Permission) []int32 {
-	permsInt32 := make([]int32, 0, len(perms))
-	for _, p := range perms {
-		permsInt32 = append(permsInt32, p.PermID)
-	}
-	return permsInt32
-}

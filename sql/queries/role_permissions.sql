@@ -3,11 +3,14 @@ DELETE FROM role_permissions
 WHERE role_id < $1
 ;
 
+-- name: InsertRolePermsCopy :copyfrom
+INSERT INTO role_permissions (role_id, perm_id)
+VALUES ($1, $2)
+;
 -- name: InsertRolePerms :exec
 INSERT INTO role_permissions (role_id, perm_id)
 SELECT $1, unnest(@perm_ids::INTEGER[])
 ;
-
 -- name: InsertRolePermsNoConflict :exec
 INSERT INTO role_permissions (role_id, perm_id)
 SELECT $1, unnest(@perm_ids::INTEGER[])
