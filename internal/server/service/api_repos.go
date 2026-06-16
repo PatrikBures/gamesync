@@ -11,6 +11,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+const defaultBranchName = "main"
+
 func (s *Service) GetUserRepos(ctx context.Context, params api.GetUserReposParams) (api.GetUserReposRes, error) {
 	repos, err := s.db.ReadQuery().ListRepos(ctx, params.UserID)
 	if err != nil {
@@ -23,11 +25,23 @@ func (s *Service) GetUserRepos(ctx context.Context, params api.GetUserReposParam
 	return &reposReturn, nil
 }
 
-func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams) (api.PutUserRepoRes, error) {
-	if err := s.db.WriteQuery().CreateRepo(ctx, dbm.CreateRepoParams{
+func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams) (result api.PutUserRepoRes, err error) {
+	qtx, tx, err := s.db.BeginTX(ctx)
+	if err != nil {
+		return &api.PutUserRepoInternalServerError{}, server.ErrDatabase
+	}
+	defer func() {
+		if recover() != nil || err != nil {
+			if e := tx.Rollback(ctx); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
+		}
+	}()
+	repoID, err := qtx.CreateRepo(ctx, dbm.CreateRepoParams{
 		RepoName: params.RepoName,
 		UserID:   params.UserID,
-	}); err != nil {
+	})
+	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
@@ -37,5 +51,25 @@ func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams)
 		slog.Error("failed creating repo", "RepoName", params.RepoName, "UserID", params.UserID)
 		return &api.PutUserRepoInternalServerError{}, server.ErrDatabase
 	}
+
+	if err = qtx.CreateBranch(ctx, dbm.CreateBranchParams{
+		RepoID: repoID,
+		BranchName: defaultBranchName,
+	}); err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return &api.PutUserRepoConflict{}, nil
+			}
+		}
+		slog.Error("failed creating branch", "RepoID", repoID, "BranchName", defaultBranchName)
+		return &api.PutUserRepoInternalServerError{}, nil
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		slog.Error("committing tx", "error", err)
+		return &api.PutUserRepoInternalServerError{}, server.ErrDatabase
+	}
+
 	return &api.PutUserRepoCreated{}, nil
 }

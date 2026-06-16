@@ -24,7 +24,8 @@ func (s *Service) GetUserRepoBranches(ctx context.Context, params api.GetUserRep
 }
 
 func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoBranchParams) (api.PutUserRepoBranchRes, error) {
-	if err := s.db.WriteQuery().CreateBranch(ctx, dbm.CreateBranchParams{
+	if err := s.db.WriteQuery().CreateBranchWithRepoName(ctx, dbm.CreateBranchWithRepoNameParams{
+		UserID:     params.UserID,
 		RepoName:   params.RepoName,
 		BranchName: params.BranchName,
 	}); err != nil {
@@ -36,7 +37,7 @@ func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoB
 				return &api.PutUserRepoBranchNotFound{}, nil
 			}
 		}
-		slog.Error("failed creating branch", "BranchName", params.BranchName, "RepoName", params.RepoName, "UserID", params.UserID)
+		slog.Error("failed creating branch", "UserID", "RepoName", params.RepoName, params.UserID, "BranchName", params.BranchName)
 		return &api.PutUserRepoBranchInternalServerError{}, server.ErrDatabase
 	}
 

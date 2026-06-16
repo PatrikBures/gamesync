@@ -11,22 +11,38 @@ import (
 
 const createBranch = `-- name: CreateBranch :exec
 INSERT INTO branches (repo_id, branch_name)
-VALUES (
-    (
-        SELECT repo_id FROM repos
-        WHERE repo_name = $1
-    ),
-    $2
-)
+VALUES ($1, $2)
 `
 
 type CreateBranchParams struct {
-	RepoName   string
+	RepoID     int64
 	BranchName string
 }
 
 func (q *Queries) CreateBranch(ctx context.Context, arg CreateBranchParams) error {
-	_, err := q.db.Exec(ctx, createBranch, arg.RepoName, arg.BranchName)
+	_, err := q.db.Exec(ctx, createBranch, arg.RepoID, arg.BranchName)
+	return err
+}
+
+const createBranchWithRepoName = `-- name: CreateBranchWithRepoName :exec
+INSERT INTO branches (repo_id, branch_name)
+VALUES (
+    (
+        SELECT repo_id FROM repos
+        WHERE user_id = $1 AND repo_name = $2
+    ),
+    $3
+)
+`
+
+type CreateBranchWithRepoNameParams struct {
+	UserID     int64
+	RepoName   string
+	BranchName string
+}
+
+func (q *Queries) CreateBranchWithRepoName(ctx context.Context, arg CreateBranchWithRepoNameParams) error {
+	_, err := q.db.Exec(ctx, createBranchWithRepoName, arg.UserID, arg.RepoName, arg.BranchName)
 	return err
 }
 

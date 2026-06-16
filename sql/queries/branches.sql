@@ -8,11 +8,16 @@ WHERE repo_id = (
 
 -- name: CreateBranch :exec
 INSERT INTO branches (repo_id, branch_name)
+VALUES ($1, $2)
+;
+
+-- name: CreateBranchWithRepoName :exec
+INSERT INTO branches (repo_id, branch_name)
 VALUES (
     (
         SELECT repo_id FROM repos
-        WHERE repo_name = $1
+        WHERE user_id = $1 AND repo_name = $2
     ),
-    $2
+    $3
 )
 ;

@@ -16,7 +16,7 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 
 	qtx, tx, err := s.db.BeginReadTX(ctx)
 	if err != nil {
-		return
+		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
 	}
 	defer func() {
 		if recover() != nil || err != nil {

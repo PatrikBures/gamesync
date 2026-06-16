@@ -11,5 +11,6 @@ var (
 	ErrAuth          = errors.New("authentication error")
 	ErrNotAuthorized = errors.New("not authorized")
 	ErrPermNotFound  = errors.New("permission not found")
+	ErrRepoNotFound  = errors.New("repo not found")
 	ErrContext       = errors.New("context error")
 )

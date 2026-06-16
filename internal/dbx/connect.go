@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gamesync/internal/server/dbm"
+	"log/slog"
 	"sync/atomic"
 
 	"github.com/jackc/pgx/v5"
@@ -71,6 +72,7 @@ func (db *DB) WriteQuery() *dbm.Queries {
 func (db *DB) BeginTX(ctx context.Context) (*dbm.Queries, pgx.Tx, error) {
 	tx, err := db.primaryPool.Begin(ctx)
 	if err != nil {
+		slog.Error("starting tx", "error", err)
 		return nil, nil, err
 	}
 	qtx := db.WriteQuery().WithTx(tx)
@@ -82,6 +84,7 @@ func (db *DB) BeginReadTX(ctx context.Context) (*dbm.Queries, pgx.Tx, error) {
 	if len(db.replicaQueries) == 0 {
 		tx, err := db.primaryPool.BeginTx(ctx, opts)
 		if err != nil {
+			slog.Error("starting read tx", "errror", err)
 			return nil, nil, err
 		}
 		qtx := db.primaryQueries.WithTx(tx)

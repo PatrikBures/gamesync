@@ -9,9 +9,10 @@ import (
 	"context"
 )
 
-const createRepo = `-- name: CreateRepo :exec
+const createRepo = `-- name: CreateRepo :one
 INSERT INTO repos (user_id, repo_name)
 VALUES ($1, $2)
+RETURNING user_id
 `
 
 type CreateRepoParams struct {
@@ -19,9 +20,11 @@ type CreateRepoParams struct {
 	RepoName string
 }
 
-func (q *Queries) CreateRepo(ctx context.Context, arg CreateRepoParams) error {
-	_, err := q.db.Exec(ctx, createRepo, arg.UserID, arg.RepoName)
-	return err
+func (q *Queries) CreateRepo(ctx context.Context, arg CreateRepoParams) (int64, error) {
+	row := q.db.QueryRow(ctx, createRepo, arg.UserID, arg.RepoName)
+	var user_id int64
+	err := row.Scan(&user_id)
+	return user_id, err
 }
 
 const listRepos = `-- name: ListRepos :many
