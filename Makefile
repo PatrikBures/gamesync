@@ -113,6 +113,10 @@ lint-apid:
 	vacuum --ext-refs dashboard api/*
 
 
+### format
+fmt:
+	go fmt ./...
+
 
 ### util
 mkbin:
