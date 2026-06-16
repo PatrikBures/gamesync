@@ -75,9 +75,6 @@ build-container: build-state
 	@echo "building container..."
 	docker build ./ -t $(CONTAINER_NAME):$(VERSION)
 
-up-gen:
-	docker compose -f ./docker-compose.pg-gen.yml up --build --remove-orphans -d
-
 psql:
 	docker compose exec -it db psql $(DB_NAME) $(DB_USER) 
 
@@ -88,10 +85,7 @@ down:
 
 
 ### generate code
-gen-all: gen-sql gen-api gen-strings
-
-gen-sqlite: up # should not be used, just the gen-pg one 
-	GAMESYNC_DB_TYPE=sqlite GAMESYNC_DB_URL=./data/sqlite_db/gamesync.sqlite go run ./cmd/gen/main.go
+gen: gen-sql gen-api gen-strings
 
 gen-api:
 	go generate .
@@ -105,6 +99,8 @@ gen-sql:
 
 
 ### linting
+lint: lint-go lint-api
+
 lint-go:
 	golangci-lint run
 lint-api:
