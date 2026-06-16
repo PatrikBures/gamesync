@@ -19,7 +19,7 @@ func newGetCmd(config *config.Config) *getCmd {
 	root := getCmd{}
 
 	cmd := &cobra.Command{
-		Use: "get",
+		Use:   "get",
 		Short: "Get resource",
 	}
 	cmd.AddCommand(
@@ -30,13 +30,12 @@ func newGetCmd(config *config.Config) *getCmd {
 	return &root
 }
 
-
 type getUserCmd struct {
-	cmd *cobra.Command
+	cmd  *cobra.Command
 	opts getUserOpts
 }
 type getUserOpts struct {
-	all bool
+	all    bool
 	userID int64
 }
 
@@ -44,9 +43,9 @@ func newGetUserCmd(config *config.Config) *getUserCmd {
 	root := getUserCmd{}
 
 	cmd := &cobra.Command{
-		Use: "user",
+		Use:   "user",
 		Short: "Get all users or a specific one",
-		Args: cobra.RangeArgs(0, 1),
+		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := client.Client(*config)
 			if err != nil {
@@ -110,7 +109,7 @@ func allUsers(client *api.Client) error {
 
 func oneUser(client *api.Client, userID int64) error {
 	result, err := client.GetUser(
-		context.Background(), 
+		context.Background(),
 		api.GetUserParams{UserID: userID},
 	)
 	if err != nil {

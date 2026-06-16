@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-
 const sliceSeperator = '|'
 
 // Adds a bool flag and env var.
@@ -24,7 +23,7 @@ func AddBoolVar(variable *bool, name string, defaultValue bool, description stri
 	}
 }
 
-// Adds a string flag and env var. 
+// Adds a string flag and env var.
 //
 // The env var is turned uppercase and replaces "-" to "_" and
 // adds "GAMESYNC_" prefix to it.

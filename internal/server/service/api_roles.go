@@ -20,7 +20,7 @@ func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
 	rolesReturn := make(api.GetRolesOKApplicationJSON, 0, len(roles))
 	for _, role := range roles {
 		rolesReturn = append(rolesReturn, api.Role{
-			RoleID: role.RoleID,
+			RoleID:   role.RoleID,
 			RoleName: role.RoleName,
 		})
 	}
@@ -49,7 +49,7 @@ func (s *Service) PutRoleName(ctx context.Context, req api.OptRoleName, params a
 		return &api.PutRoleNameNotAcceptable{}, nil
 	}
 	if err := s.db.WriteQuery().UpdateRoleName(ctx, dbm.UpdateRoleNameParams{
-		RoleID: params.RoleID,
+		RoleID:   params.RoleID,
 		RoleName: req.Value.RoleName,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {

@@ -9,14 +9,13 @@ import (
 	"slices"
 )
 
-
 func CreateDefaultRoles(db *dbx.DB, skipRoles []string) error {
 	ctx := context.Background()
 	roles := []dbm.InsertRoleWithIdParams{
-		{ RoleID:  1, RoleName: "admin" },
-		{ RoleID: 50, RoleName: "standard" },
-		{ RoleID: 60, RoleName: "maintainer" },
-		{ RoleID: 99, RoleName: "none" },
+		{RoleID: 1, RoleName: "admin"},
+		{RoleID: 50, RoleName: "standard"},
+		{RoleID: 60, RoleName: "maintainer"},
+		{RoleID: 99, RoleName: "none"},
 	}
 	for _, role := range roles {
 		existingRoleCount, err := db.ReadQuery().GetRoleWithIdCount(ctx, role.RoleID)
@@ -55,7 +54,6 @@ func CreateDefaultRolePerms(db *dbx.DB) (err error) {
 	ctx := context.Background()
 	rolePerms := []dbm.InsertRolePermsParams{}
 
-	
 	rolePerms = append(rolePerms, permsToRolePermModel(1, permissions.AllPerms)...)
 	rolePerms = append(rolePerms, permsToRolePermModel(50, permissions.Perms{
 		permissions.PermRolesGet,
@@ -85,7 +83,7 @@ func CreateDefaultRolePerms(db *dbx.DB) (err error) {
 	if err != nil {
 		return err
 	}
-	
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		return err

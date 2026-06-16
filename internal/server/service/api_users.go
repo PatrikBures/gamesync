@@ -58,7 +58,7 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 	}
 	user := dbm.InsertUserParams{
 		UserName: req.Value.UserName,
-		RoleID: s.o.DefaultRoleID,
+		RoleID:   s.o.DefaultRoleID,
 	}
 
 	userID, token64, err := dbx.CreateUser(s.db, ctx, user)
@@ -74,13 +74,12 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 	}
 
 	return &api.UserNewReturn{
-		UserID: userID,
+		UserID:   userID,
 		UserName: user.UserName,
-		RoleID: user.RoleID,
-		Token: token64,
+		RoleID:   user.RoleID,
+		Token:    token64,
 	}, nil
 }
-
 
 func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params api.PutUserNameParams) (api.PutUserNameRes, error) {
 	if !req.Set {
@@ -96,7 +95,7 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 	}
 
 	if err := s.db.WriteQuery().UpdateUserName(ctx, dbm.UpdateUserNameParams{
-		UserID: params.UserID,
+		UserID:   params.UserID,
 		UserName: req.Value.UserName,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
@@ -112,4 +111,3 @@ func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params a
 
 	return &api.PutUserNameOK{}, nil
 }
-

@@ -10,14 +10,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 type initCmd struct {
-	cmd *cobra.Command
+	cmd  *cobra.Command
 	opts initCmdOpts
 }
 
 type initCmdOpts struct {
-	name string
+	name    string
 	repoDir string
 }
 
@@ -25,9 +24,9 @@ func newInitCmd(configOpts *config.Config) *initCmd {
 	root := initCmd{}
 
 	cmd := &cobra.Command{
-		Use: "init NAME [DIR]",
+		Use:   "init NAME [DIR]",
 		Short: "Initialize repo",
-		Args: cobra.RangeArgs(1, 2),
+		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := populateInitOpts(&root.opts, args); err != nil {
 				return fmt.Errorf("populating init opts: %w", err)
@@ -71,7 +70,6 @@ func populateInitOpts(opts *initCmdOpts, args []string) error {
 
 	return nil
 }
-
 
 func runInitCmd(opts initCmdOpts, chunkDir string) error {
 	cg := snapshoter.NewChunkGen(chunkDir)

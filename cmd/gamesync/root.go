@@ -9,7 +9,7 @@ import (
 )
 
 type rootCmd struct {
-	cmd *cobra.Command
+	cmd    *cobra.Command
 	config config.Config
 }
 
@@ -17,7 +17,7 @@ func newRootCmd() *rootCmd {
 	root := rootCmd{}
 
 	cmd := &cobra.Command{
-		Use: "gamesync",
+		Use:   "gamesync",
 		Short: "Syncs save games to a server",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			if err := config.LoadConfig(&root.config); err != nil {
@@ -28,7 +28,7 @@ func newRootCmd() *rootCmd {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&root.config.Token,  "token",  "", "Token used to authenticate with server")
+	cmd.PersistentFlags().StringVar(&root.config.Token, "token", "", "Token used to authenticate with server")
 	cmd.PersistentFlags().StringVar(&root.config.Server, "server", "", "Server url")
 
 	cmd.AddCommand(

@@ -22,8 +22,6 @@ func CheckPerm(ctx context.Context, perm permissions.Perm) error {
 	return nil
 }
 
-
-
 func isUserSelf(ctx context.Context, userID int64) (dbm.User, error) {
 	currentUser, ok := ctx.Value(ckUser).(dbm.User)
 	if !ok {
@@ -36,11 +34,10 @@ func isUserSelf(ctx context.Context, userID int64) (dbm.User, error) {
 	return currentUser, nil
 }
 
-
-// checks if the user is trying to access itself, 
+// checks if the user is trying to access itself,
 // if it is it will return nil
 //
-// if it is trying to access a user id which is not itself, 
+// if it is trying to access a user id which is not itself,
 // it will check if it has the perm for that
 //
 // returns either ErrContext, ErrNotAuthorized or nil

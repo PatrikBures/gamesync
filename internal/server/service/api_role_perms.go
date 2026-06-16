@@ -52,7 +52,7 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 }
 
 func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, params api.PatchRolePermsParams) (result api.PatchRolePermsRes, err error) {
-	if ! req.Set {
+	if !req.Set {
 		return &api.PatchRolePermsNotAcceptable{}, nil
 	}
 
@@ -76,7 +76,6 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 		return &api.PatchRolePermsUnprocessableEntity{}, nil
 	}
 
-
 	// i decided to not include the 2 above queries as the permissions table does not really
 	// update during runtime, so it is probably fine. i want to avoid querying the primary
 	// database if not needed.
@@ -95,7 +94,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 
 	if len(req.Value.Add) > 0 {
 		if err = qtx.InsertRolePermsNoConflict(ctx, dbm.InsertRolePermsNoConflictParams{
-			RoleID: params.RoleID,
+			RoleID:  params.RoleID,
 			PermIds: permsAdd,
 		}); err != nil {
 			slog.Error("adding role perms", "error", err)
@@ -105,7 +104,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 
 	if len(req.Value.Remove) > 0 {
 		if err = qtx.DeleteRolePermsWithId(ctx, dbm.DeleteRolePermsWithIdParams{
-			RoleID: params.RoleID,
+			RoleID:  params.RoleID,
 			PermIds: permsRemove,
 		}); err != nil {
 			slog.Error("removing role perms", "error", err)
@@ -114,7 +113,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-			slog.Error("committing role perms", "error", err)
+		slog.Error("committing role perms", "error", err)
 		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
 	}
 
@@ -150,7 +149,7 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 	}
 
 	if err = qtx.InsertRolePerms(ctx, dbm.InsertRolePermsParams{
-		RoleID: params.RoleID,
+		RoleID:  params.RoleID,
 		PermIds: perms,
 	}); err != nil {
 		slog.Error("adding perms to role", "roleID", params.RoleID, "error", err)
@@ -173,7 +172,7 @@ func permToRolePermInsert(roleID int32, perms []dbm.Permission) []dbm.InsertRole
 	rolePerms := make([]dbm.InsertRolePermsParams, 0, len(perms))
 	for _, p := range perms {
 		rolePerm := dbm.InsertRolePermsParams{
-			PermID: p.PermID, 
+			PermID: p.PermID,
 			RoleID: roleID,
 		}
 		rolePerms = append(rolePerms, rolePerm)

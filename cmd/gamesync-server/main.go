@@ -22,11 +22,11 @@ func main() {
 }
 
 type config struct {
-	dbPrimaryUrl    string
-	dbReplicaUrls   string
-	disabledRoles   string
-	defaultRoleID   int
-	requestLogs     bool
+	dbPrimaryUrl  string
+	dbReplicaUrls string
+	disabledRoles string
+	defaultRoleID int
+	requestLogs   bool
 }
 
 func start() error {
@@ -55,11 +55,9 @@ func start() error {
 		return fmt.Errorf("initializing database: %w", err)
 	}
 
-
 	s := service.NewService(db, service.ServiceOpts{
 		DefaultRoleID: int32(c.defaultRoleID),
 	})
-
 
 	mw := []api.Middleware{
 		middlewares.AuthzMiddleware(),

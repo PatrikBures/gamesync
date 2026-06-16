@@ -23,11 +23,10 @@ func (s *Service) GetUserRepos(ctx context.Context, params api.GetUserReposParam
 	return &reposReturn, nil
 }
 
-
 func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams) (api.PutUserRepoRes, error) {
 	if err := s.db.WriteQuery().CreateRepo(ctx, dbm.CreateRepoParams{
 		RepoName: params.RepoName,
-		UserID: params.UserID,
+		UserID:   params.UserID,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {

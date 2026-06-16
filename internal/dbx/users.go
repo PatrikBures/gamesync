@@ -55,7 +55,6 @@ func CreateUser(db *DB, ctx context.Context, user dbm.InsertUserParams) (userID 
 	return
 }
 
-
 func generateToken() ([]byte, error) {
 	b := make([]byte, 33)
 	_, err := rand.Read(b)

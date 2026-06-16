@@ -9,8 +9,6 @@ import (
 	"slices"
 )
 
-
-
 func EnsurePermissions(db *dbx.DB) (err error) {
 	ctx := context.Background()
 
@@ -37,7 +35,8 @@ func EnsurePermissions(db *dbx.DB) (err error) {
 
 	expectedPermsInt32 := make([]int32, 0, len(permissions.AllPerms))
 
-	loop: for _, e := range permissions.AllPerms {
+loop:
+	for _, e := range permissions.AllPerms {
 		i := int32(e)
 		expectedPermsInt32 = append(expectedPermsInt32, i)
 		perm := dbm.Permission{PermID: i, PermName: e.String()}

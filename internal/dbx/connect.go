@@ -11,11 +11,11 @@ import (
 )
 
 type DB struct {
-	primaryPool *pgxpool.Pool
-	replicaPools []*pgxpool.Pool
+	primaryPool    *pgxpool.Pool
+	replicaPools   []*pgxpool.Pool
 	primaryQueries *dbm.Queries
 	replicaQueries []*dbm.Queries
-	readCounter atomic.Int32
+	readCounter    atomic.Int32
 }
 
 func NewDB(ctx context.Context, primaryConnStr string, replicaConnStrs []string) (*DB, error) {
@@ -43,8 +43,8 @@ func NewDB(ctx context.Context, primaryConnStr string, replicaConnStrs []string)
 	}
 
 	return &DB{
-		primaryPool: primaryPool,
-		replicaPools: replicaPools,
+		primaryPool:    primaryPool,
+		replicaPools:   replicaPools,
 		primaryQueries: primaryQueries,
 		replicaQueries: replicaQueries,
 	}, nil

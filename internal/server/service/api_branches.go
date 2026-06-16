@@ -25,7 +25,7 @@ func (s *Service) GetUserRepoBranches(ctx context.Context, params api.GetUserRep
 
 func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoBranchParams) (api.PutUserRepoBranchRes, error) {
 	if err := s.db.WriteQuery().CreateBranch(ctx, dbm.CreateBranchParams{
-		RepoName: params.RepoName,
+		RepoName:   params.RepoName,
 		BranchName: params.BranchName,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {

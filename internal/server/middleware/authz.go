@@ -10,30 +10,28 @@ import (
 )
 
 var operationPerms = map[string]permissions.Perm{
-	"GetHealth":          permissions.PermAllAllowed,
-	"PostUsers":          permissions.PermAllAllowed,
-	"GetPerms":           permissions.PermAllAllowed,
+	"GetHealth": permissions.PermAllAllowed,
+	"PostUsers": permissions.PermAllAllowed,
+	"GetPerms":  permissions.PermAllAllowed,
 
+	"GetUser":  permissions.PermUserGetOwn,
+	"GetUsers": permissions.PermUsersList,
 
-	"GetUser":            permissions.PermUserGetOwn,
-	"GetUsers":           permissions.PermUsersList,
+	"PutUserName": permissions.PermUserNameUpdateOwn,
 
-	"PutUserName":        permissions.PermUserNameUpdateOwn,
+	"GetRoles":  permissions.PermRolesGet,
+	"PostRoles": permissions.PermRolesMod,
 
-	"GetRoles":           permissions.PermRolesGet,
-	"PostRoles":          permissions.PermRolesMod,
+	"PutRoleName":    permissions.PermRolesMod,
+	"GetRolePerms":   permissions.PermRolesGet,
+	"PatchRolePerms": permissions.PermRolesMod,
+	"PutRolePerms":   permissions.PermRolesMod,
 
-	"PutRoleName":        permissions.PermRolesMod,
-	"GetRolePerms":       permissions.PermRolesGet,
-	"PatchRolePerms":     permissions.PermRolesMod,
-	"PutRolePerms":       permissions.PermRolesMod,
+	"GetUserRepos": permissions.PermSync,
+	"PutUserRepo":  permissions.PermSync,
 
-
-	"GetUserRepos":       permissions.PermSync,
-	"PutUserRepo":        permissions.PermSync,
-
-	"GetUserRepoBranches":    permissions.PermSync,
-	"PutUserRepoBranch":      permissions.PermSync,
+	"GetUserRepoBranches": permissions.PermSync,
+	"PutUserRepoBranch":   permissions.PermSync,
 }
 
 func AuthzMiddleware() middleware.Middleware {
@@ -56,4 +54,3 @@ func AuthzMiddleware() middleware.Middleware {
 		return next(req)
 	}
 }
-

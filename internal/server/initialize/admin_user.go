@@ -12,7 +12,7 @@ import (
 func CreateAdmin(db *dbx.DB) (string, error) {
 	user := dbm.InsertUserParams{
 		UserName: "admin",
-		RoleID: 1,
+		RoleID:   1,
 	}
 
 	ctx := context.Background()
@@ -23,7 +23,6 @@ func CreateAdmin(db *dbx.DB) (string, error) {
 	} else if curUser.RoleID > 0 {
 		return "", nil
 	}
-
 
 	_, token, err := dbx.CreateUser(db, ctx, user)
 	if err != nil {

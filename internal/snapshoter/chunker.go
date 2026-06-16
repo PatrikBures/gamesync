@@ -35,10 +35,9 @@ const dirQty = 2
 // 4: asdf/asdf1234
 const dirLen = 2
 
-
 type chunkHash struct {
 	bytes [32]byte
-	hex string
+	hex   string
 }
 
 // handles the generation of chunks
@@ -46,7 +45,7 @@ type chunkHash struct {
 // any chunks created will be in ChunkDir
 type chunkGen struct {
 	chunkDir string
-	Info chunkGenInfo
+	Info     chunkGenInfo
 }
 
 type chunkGenInfo struct {
@@ -57,15 +56,14 @@ type chunkGenInfo struct {
 }
 
 type FileResults struct {
-	Path string
+	Path   string
 	Hashes []chunkHash
-	Err error
+	Err    error
 }
 
-func NewChunkGen(chunkDir string)  *chunkGen {
+func NewChunkGen(chunkDir string) *chunkGen {
 	return &chunkGen{chunkDir: chunkDir}
 }
-
 
 // chunks all files in repoDir
 func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
@@ -93,7 +91,7 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
 		close(results)
 	}()
 
-	var all[]FileResults
+	var all []FileResults
 	for r := range results {
 		if r.Err == nil {
 			cg.Info.FilesChunked++
@@ -102,7 +100,7 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
 		}
 		all = append(all, r)
 	}
-	if gErr := <- waitErr; gErr != nil {
+	if gErr := <-waitErr; gErr != nil {
 		return all, fmt.Errorf("chunking files: %w", gErr)
 	}
 	return all, nil
@@ -150,7 +148,7 @@ func (cg *chunkGen) chunkFile(path string) ([]chunkHash, error) {
 		chunkHashes = append(chunkHashes, chunkHash)
 		atomic.AddInt64(&cg.Info.ChunksCreated, 1)
 	}
-	
+
 	return chunkHashes, nil
 }
 
@@ -192,7 +190,7 @@ func (cg *chunkGen) writeChunk(bytes []byte, out io.Writer) error {
 	if closeErr != nil {
 		closeErr = fmt.Errorf("closing chunk: %w", closeErr)
 	}
-	
+
 	return errors.Join(writeErr, closeErr)
 }
 
@@ -201,12 +199,10 @@ func dirsForChunk(hash string) (dirs string) {
 	a := dirQty * dirLen
 	parts := make([]string, dirQty)
 	for i := 0; i < a; i += dirLen {
-		parts[i/dirLen] = hash[i:i+dirLen]
+		parts[i/dirLen] = hash[i : i+dirLen]
 	}
 	return filepath.Join(parts...)
 }
-
-
 
 func PrintFileResultsErrors(result []FileResults) {
 	for _, r := range result {
