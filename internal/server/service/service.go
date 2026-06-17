@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"gamesync/internal/dbx"
+	"gamesync/internal/server/storage"
 )
 
 const tokenLen = 33
@@ -23,15 +24,17 @@ const (
 
 type Service struct {
 	db *dbx.DB
-	o  ServiceOpts
+	storage storage.Chunk
+	o ServiceOpts
 }
 type ServiceOpts struct {
 	DefaultRoleID int32
 }
 
-func NewService(db *dbx.DB, opts ServiceOpts) *Service {
+func NewService(db *dbx.DB, storage storage.Chunk, opts ServiceOpts) *Service {
 	return &Service{
 		db: db,
+		storage: storage,
 		o:  opts,
 	}
 }

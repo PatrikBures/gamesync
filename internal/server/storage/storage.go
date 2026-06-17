@@ -1,0 +1,20 @@
+package storage
+
+import (
+	"context"
+	"io"
+)
+
+type Chunk interface {
+
+	// Checks if chunk exists.
+	//
+	// if there was an error, then error is not nil and bool is false.
+	Exists(ctx context.Context, hash string) (bool, error)
+
+	// Writes compressed data from reader.
+	//
+	// Checks if the decompressed data hash matches provided hash.
+	Store(ctx context.Context, hash string, data io.Reader) error
+}
+

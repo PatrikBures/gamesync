@@ -33,6 +33,10 @@ type PatchRolePermsRes interface {
 	patchRolePermsRes()
 }
 
+type PostChunkRes interface {
+	postChunkRes()
+}
+
 type PostRolesRes interface {
 	postRolesRes()
 }

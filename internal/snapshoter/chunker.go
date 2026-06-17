@@ -158,21 +158,30 @@ func (cg *chunkGen) createChunk(chunk chunker.Chunk) (chunkHash, *os.File, error
 	ch.bytes = blake3.Sum256(chunk.Data)
 	ch.hex = hex.EncodeToString(ch.bytes[:])
 
-	hashDir := filepath.Join(cg.chunkDir, dirsForChunk(ch.hex))
-	chunkFilePath := filepath.Join(hashDir, ch.hex)
+	chunkFile, err := CreateChunkFile(cg.chunkDir, ch.hex); 
+
+	return ch, chunkFile, err
+}
+
+// creates relative dirs in chunkDir and opens the file.
+//
+// if file already exists, *os.File and error are nil.
+func CreateChunkFile(chunkDir string, chunkHexHash string) (*os.File, error) {
+	hashDir := filepath.Join(chunkDir, DirsForChunk(dirLen, dirQty, chunkHexHash))
+	chunkFilePath := filepath.Join(hashDir, chunkHexHash)
 
 	if err := os.MkdirAll(hashDir, 0775); err != nil {
-		return ch, nil, fmt.Errorf("creating dir '%s': %w", hashDir, err)
+		return nil, err
 	}
 
-	chunkFile, err := os.OpenFile(chunkFilePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0666)
+	chunkFile, err := os.OpenFile(chunkFilePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0664)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
-			return ch, nil, nil
+			return nil, nil
 		}
-		return ch, nil, err
+		return nil, err
 	}
-	return ch, chunkFile, nil
+	return chunkFile, nil
 }
 
 // writes bytes to out compressed using zstd
@@ -195,11 +204,11 @@ func (cg *chunkGen) writeChunk(bytes []byte, out io.Writer) error {
 }
 
 // returns the dirs that the chunk should be in based on dirQty and dirLen
-func dirsForChunk(hash string) (dirs string) {
-	a := dirQty * dirLen
-	parts := make([]string, dirQty)
-	for i := 0; i < a; i += dirLen {
-		parts[i/dirLen] = hash[i : i+dirLen]
+func DirsForChunk(dl int, dq int, hash string) (dirs string) {
+	a := dq * dl
+	parts := make([]string, dq)
+	for i := 0; i < a; i += dl {
+		parts[i/dl] = hash[i : i+dl]
 	}
 	return filepath.Join(parts...)
 }

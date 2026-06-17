@@ -36,6 +36,7 @@ var operationPerms = map[string]permissions.Perm{
 
 	"GetUserRepoBranches": permissions.PermSync,
 	"PutUserRepoBranch":   permissions.PermSync,
+	"PostChunk":           permissions.PermSync,
 }
 
 func AuthzMiddleware() middleware.Middleware {

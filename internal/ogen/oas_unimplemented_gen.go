@@ -94,6 +94,15 @@ func (UnimplementedHandler) PatchRolePerms(ctx context.Context, req OptPermDiff,
 	return r, ht.ErrNotImplemented
 }
 
+// PostChunk implements post-chunk operation.
+//
+// Upload chunk.
+//
+// POST /chunks/{chunkHash}
+func (UnimplementedHandler) PostChunk(ctx context.Context, req PostChunkReq, params PostChunkParams) (r PostChunkRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // PostRoles implements post-roles operation.
 //
 // Create new role.

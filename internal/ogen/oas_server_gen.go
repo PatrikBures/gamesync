@@ -62,6 +62,12 @@ type Handler interface {
 	//
 	// PATCH /roles/{roleID}/perms
 	PatchRolePerms(ctx context.Context, req OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
+	// PostChunk implements post-chunk operation.
+	//
+	// Upload chunk.
+	//
+	// POST /chunks/{chunkHash}
+	PostChunk(ctx context.Context, req PostChunkReq, params PostChunkParams) (PostChunkRes, error)
 	// PostRoles implements post-roles operation.
 	//
 	// Create new role.

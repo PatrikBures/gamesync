@@ -15,6 +15,7 @@ const (
 	GetUserReposOperation               OperationName = "GetUserRepos"
 	GetUsersOperation                   OperationName = "GetUsers"
 	PatchRolePermsOperation             OperationName = "PatchRolePerms"
+	PostChunkOperation                  OperationName = "PostChunk"
 	PostRolesOperation                  OperationName = "PostRoles"
 	PostUserRepoBranchSnapshotOperation OperationName = "PostUserRepoBranchSnapshot"
 	PostUsersOperation                  OperationName = "PostUsers"

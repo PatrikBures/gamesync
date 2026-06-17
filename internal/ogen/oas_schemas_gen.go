@@ -2,6 +2,10 @@
 
 package api
 
+import (
+	"io"
+)
+
 type BearerAuth struct {
 	Token string
 	Roles []string
@@ -393,6 +397,55 @@ func (s *PermWithName) SetPermID(val Perm) {
 func (s *PermWithName) SetPermName(val string) {
 	s.PermName = val
 }
+
+// PostChunkConflict is response for PostChunk operation.
+type PostChunkConflict struct{}
+
+func (*PostChunkConflict) postChunkRes() {}
+
+// PostChunkCreated is response for PostChunk operation.
+type PostChunkCreated struct{}
+
+func (*PostChunkCreated) postChunkRes() {}
+
+// PostChunkInternalServerError is response for PostChunk operation.
+type PostChunkInternalServerError struct{}
+
+func (*PostChunkInternalServerError) postChunkRes() {}
+
+// PostChunkNotAcceptable is response for PostChunk operation.
+type PostChunkNotAcceptable struct{}
+
+func (*PostChunkNotAcceptable) postChunkRes() {}
+
+type PostChunkReq struct {
+	Data io.Reader
+}
+
+// Read reads data from the Data reader.
+//
+// Kept to satisfy the io.Reader interface.
+func (s PostChunkReq) Read(p []byte) (n int, err error) {
+	if s.Data == nil {
+		return 0, io.EOF
+	}
+	return s.Data.Read(p)
+}
+
+// PostChunkRequestEntityTooLarge is response for PostChunk operation.
+type PostChunkRequestEntityTooLarge struct{}
+
+func (*PostChunkRequestEntityTooLarge) postChunkRes() {}
+
+// PostChunkUnauthorized is response for PostChunk operation.
+type PostChunkUnauthorized struct{}
+
+func (*PostChunkUnauthorized) postChunkRes() {}
+
+// PostChunkUnprocessableEntity is response for PostChunk operation.
+type PostChunkUnprocessableEntity struct{}
+
+func (*PostChunkUnprocessableEntity) postChunkRes() {}
 
 // PostRolesConflict is response for PostRoles operation.
 type PostRolesConflict struct{}

@@ -9,16 +9,24 @@ servers:
 tags:
   - name: System
     description: system level stuff like health checks
+
   - name: Users
     description: managing users
     kind: nav
+
   - name: Roles
     description: managing roles
     kind: nav
+
   - name: Permissions
     description: managing permissions for roles
     parent: Roles
     kind: nav
+
+  - name: Chunk
+    description: Upload or download chunk
+    kind: nav
+
 components:
   securitySchemes:
     bearerAuth:
@@ -60,6 +68,15 @@ components:
       required: true
       schema:
         type: string
+    chunkHash:
+      name: chunkHash
+      description: 32 byte chunk blake3 hash, hex encoded
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 64
+        maxLength: 64
 
   schemas:
 
@@ -129,6 +146,9 @@ components:
         - $ref: "#/components/schemas/_SnapshotFilePath"
         - $ref: "#/components/schemas/_SnapshotFileHash"
         - $ref: "#/components/schemas/_ChunkHashes"
+    _Chunk:
+      type: string
+      format: binary
 
     ### User schemas
     UserNew:
@@ -504,5 +524,30 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/PermWithName"
+        "500": {}
+
+  /chunks/{chunkHash}:
+    parameters:
+      - $ref: "#/components/parameters/chunkHash"
+    post:
+      summary: Upload chunk
+      operationId: post-chunk
+      tags:
+        - Chunk
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            $ref: "#/components/schemas/_Chunk"
+      responses:
+        "401": {}
+        "201": {}
+        "406": {}
+        "409":
+          description: Chunk already exists
+        "413":
+          description: Chunk too big
+        "422":
+          description: Generated file hash does not match chunkHash
         "500": {}
 
