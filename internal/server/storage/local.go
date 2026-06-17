@@ -16,8 +16,9 @@ import (
 )
 
 type local struct {
-	baseDir string
-	tmpDir string
+	baseDir       string
+	tmpDir        string
+	maxChunkBytes int64
 }
 
 func (l *local) chunkFilePathDir(chunkFileDir string, hash string) string {
@@ -30,7 +31,7 @@ func (l *local) chunkFileDir(hash string) string {
 	return filepath.Join(l.baseDir, snapshoter.DirsForChunk(2, 2, hash))
 }
 
-func NewLocal(baseDir string) (*local, error) {
+func NewLocal(baseDir string, maxChunkBytes int64) (*local, error) {
 	tmpDir := filepath.Join(baseDir, ".tmp")
 	if err := os.MkdirAll(tmpDir, 0775); err != nil {
 		return nil, err
@@ -38,6 +39,7 @@ func NewLocal(baseDir string) (*local, error) {
 	return &local{
 		baseDir: baseDir,
 		tmpDir: tmpDir,
+		maxChunkBytes: maxChunkBytes,
 	}, nil
 }
 
@@ -75,7 +77,12 @@ func (l *local) Store(ctx context.Context, hash string, data io.Reader) (err err
 		}
 	}()
 
-	actualHashBytes, err := l.writeAndHash(data, tmpFile)
+	limitedData := &maxBytesReader{
+		r: data,
+		max: l.maxChunkBytes,
+	}
+
+	actualHashBytes, err := l.writeAndHash(limitedData, tmpFile)
 	if err != nil {
 		return err // it is fine to return the error here directly as the function handles it
 	}
@@ -129,9 +136,30 @@ func (l *local) writeAndHash(src io.Reader, dst io.Writer) ([]byte, error) {
 	hasher := blake3.New(32, nil)
 
 	if _, err := io.Copy(hasher, decoder); err != nil {
+		if errors.Is(err, server.ErrChunkTooBig) {
+			return nil, err
+		}
 		slog.Error("reading/hashing chunk", "error", err)
 		return nil, server.ErrHashing
 	}
 
 	return hasher.Sum(nil), nil
+}
+
+type maxBytesReader struct {
+	r   io.Reader
+	max int64
+	n   int64
+}
+
+func (m *maxBytesReader) Read(p []byte) (int, error) {
+	n, err := m.r.Read(p)
+	if n > 0 {
+		m.n += int64(n)
+		if m.n > m.max {
+			slog.Warn("chunk too big", "reachedBytes", m.n, "limit", m.max)
+			return n, server.ErrChunkTooBig
+		}
+	}
+	return n, err
 }

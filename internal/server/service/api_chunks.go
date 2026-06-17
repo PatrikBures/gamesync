@@ -27,6 +27,8 @@ func (s *Service) PostChunk(ctx context.Context, req api.PostChunkReq, params ap
 		break
 	case server.ErrHashMismatch: 
 		return &api.PostChunkUnprocessableEntity{}, nil
+	case server.ErrChunkTooBig:
+		return &api.PostChunkRequestEntityTooLarge{}, nil
 	default:
 		return &api.PostChunkInternalServerError{}, err
 	}

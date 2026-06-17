@@ -10,6 +10,7 @@ import (
 	middlewares "gamesync/internal/server/middleware"
 	"gamesync/internal/server/service"
 	"gamesync/internal/server/storage"
+	"gamesync/internal/util/bytesize"
 	"log"
 	"log/slog"
 	"net/http"
@@ -31,7 +32,7 @@ type config struct {
 	requestLogs   bool
 	chunkBaseDir  string
 	chunkTmpDir   string
-
+	maxChunkSize  string
 }
 
 func start() error {
@@ -44,6 +45,7 @@ func start() error {
 	serverConfig.AddStringVar(&c.chunkBaseDir, "chunk-dir", "/var/lib/gamesync/chunks", "Location where chunks are stored")
 	serverConfig.AddIntVar(&c.defaultRoleID, "default-role-id", 50, "Default role id for newly created users. Role needs to exist for creation of new users to work")
 	serverConfig.AddBoolVar(&c.requestLogs, "request-logs", false, "Enable logs for requests")
+	serverConfig.AddStringVar(&c.maxChunkSize, "max-chunk-size", "8Mi", "Max chunk size")
 
 	flag.Parse()
 
@@ -70,7 +72,12 @@ func start() error {
 		return fmt.Errorf("initializing database: %w", err)
 	}
 
-	localStorage, err := storage.NewLocal(c.chunkBaseDir)
+	maxChunkBytes := bytesize.Convert(c.maxChunkSize)
+	if maxChunkBytes < 0 {
+		return fmt.Errorf("invalid size for max chunk size")
+	}
+	slog.Info("max chunk size", "size", c.maxChunkSize, "bytes", maxChunkBytes)
+	localStorage, err := storage.NewLocal(c.chunkBaseDir, maxChunkBytes)
 	if err != nil {
 		return fmt.Errorf("starting new local storage: %w", err)
 	}
