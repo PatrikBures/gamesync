@@ -56,86 +56,82 @@ func (l *local) Exists(ctx context.Context, hash string) (bool, error) {
 }
 
 func (l *local) Store(ctx context.Context, hash string, data io.Reader) (err error) {
+	tmpPath := filepath.Join(l.tmpDir, hash)
 
-	chunkFilePathTmp := filepath.Join(l.tmpDir, hash)
-
-	chunkFileTmp, err := os.OpenFile(chunkFilePathTmp, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0664)
+	tmpFile, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0664)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
 			slog.Warn("multiple uploads of same chunk occured at the same time", "chunkHash", hash)
 			return server.ErrDuplicateKey
 		}
-		slog.Error("opening chunk", "chunkHash", hash, "error", err)
+		slog.Error("creating tmp file", "chunkHash", hash, "error", err)
 		return server.ErrFile
 	}
 	defer func() {
-		if chunkFileTmp != nil {
-			cerr := chunkFileTmp.Close()
-			if cerr != nil {
-				slog.Error("closing chunk file", "error", cerr)
-				err = errors.Join(err, server.ErrFileClose)
+		if err != nil {
+			if rerr := os.Remove(tmpPath); rerr != nil && !os.IsNotExist(rerr) {
+				slog.Error("removing tmp file", "path", tmpPath, "error", rerr)
 			}
 		}
 	}()
 
-	dataCopy := io.TeeReader(data, chunkFileTmp)
+	actualHashBytes, err := l.writeAndHash(data, tmpFile)
+	if err != nil {
+		return err // it is fine to return the error here directly as the function handles it
+	}
+
+	// make sure the entire file is written to disk
+	if err = tmpFile.Sync(); err != nil {
+		slog.Error("syncing tmp file", "error", err)
+		return server.ErrFile
+	}
+
+	if err = tmpFile.Close(); err != nil {
+		slog.Error("closing chunk file", "error", err)
+		return server.ErrFileClose
+	}
+
+	actualHash := hex.EncodeToString(actualHashBytes)
+	if actualHash != hash {
+		slog.Warn("uploaded chunk hash does not match", "chunkHash", hash, "expectedChunkHash", actualHash)
+		return server.ErrHashMismatch
+	}
+
+
+	// move file to chunkdir
+	chunkFileDir := l.chunkFileDir(hash)
+	chunkFilePath := l.chunkFilePathDir(chunkFileDir, hash)
+	if err = os.MkdirAll(chunkFileDir, 0775); err != nil {
+		slog.Error("creating chunk file dir", "error", err)
+		return server.ErrFile
+	}
+	if err = os.Rename(tmpPath, chunkFilePath); err != nil {
+		slog.Error("renaming chunk", "error", err)
+		return server.ErrFile
+	}
+
+	// clear error so defer does not delete file
+	err = nil
+	return nil
+}
+
+// writes src to dst and returns Blake3 hash of zstd decompressed data
+func (l *local) writeAndHash(src io.Reader, dst io.Writer) ([]byte, error) {
+	dataCopy := io.TeeReader(src, dst)
 
 	decoder, err := zstd.NewReader(dataCopy)
 	if err != nil {
-		slog.Error("starting ztsd reader", "chunkHash", hash, "error", err)
-		return server.ErrDecompress
+		slog.Error("initializing ztsd reader", "error", err)
+		return nil, server.ErrDecompress
 	}
 	defer decoder.Close()
 
 	hasher := blake3.New(32, nil)
 
 	if _, err := io.Copy(hasher, decoder); err != nil {
-		slog.Error("reading/hashing chunk", "chunkHash", hash, "error", err)
-		return server.ErrHashing
+		slog.Error("reading/hashing chunk", "error", err)
+		return nil, server.ErrHashing
 	}
 
-	defer func() {
-		if err == nil {
-			return
-		}
-		rerr := os.Remove(chunkFilePathTmp) 
-		if rerr != nil {
-			slog.Error("failed removing file", "error", rerr)
-		}
-	}()
-
-	if err := chunkFileTmp.Sync(); err != nil {
-		slog.Error("syncing tmp file", "error", err)
-		return server.ErrFile
-	}
-
-	if err = chunkFileTmp.Close(); err != nil {
-		slog.Error("closing chunk file", "error", err)
-		return server.ErrFileClose
-	}
-	chunkFileTmp = nil
-
-	hashExpected := hasher.Sum(nil)
-	hashHex := hex.EncodeToString(hashExpected)
-	if hashHex != hash {
-		slog.Warn("uploaded chunk hash does not match", "chunkHash", hash, "expectedChunkHash", hashHex)
-		return server.ErrHashMismatch
-	}
-
-
-	chunkFileDir := l.chunkFileDir(hash)
-	chunkFilePath := l.chunkFilePathDir(chunkFileDir, hash)
-
-	// creates dir and rename file to the correct spot
-	if err := os.MkdirAll(chunkFileDir, 0775); err != nil {
-		slog.Error("creating chunk file dir", "error", err)
-		return server.ErrFile
-	}
-	if err := os.Rename(chunkFilePathTmp, chunkFilePath); err != nil {
-		slog.Error("renaming chunk", "error", err)
-		return server.ErrFile
-	}
-
-	return nil
+	return hasher.Sum(nil), nil
 }
-
