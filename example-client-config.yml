@@ -1,0 +1,12 @@
+server:
+  tokenFile: path/to/token
+  url: https://example.com/api/v1
+syncs:
+  - slug: er
+    repo: elden-ring
+    branch: main
+    path: /path/to/something
+  - slug: hk
+    repo: hollow-knight
+    branch: test2
+    path: /path/to/something-else

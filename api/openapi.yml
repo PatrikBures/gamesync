@@ -125,27 +125,20 @@ components:
           type: string
       required: [permName]
 
-    _SnapshotFilePath:
-      type: object
-      properties:
-        path:
-          type: string
-      required: [path]
-    _SnapshotFileHash:
-      type: object
-      properties:
-        hash:
-          type: string
-      required: [hash]
     _ChunkHashes:
       type: array
       items: 
         type: string
     _SnapshotFile:
-      allOf:
-        - $ref: "#/components/schemas/_SnapshotFilePath"
-        - $ref: "#/components/schemas/_SnapshotFileHash"
-        - $ref: "#/components/schemas/_ChunkHashes"
+      type: object
+      properties:
+        chunkHashes:
+          $ref: "#/components/schemas/_ChunkHashes"
+        hash:
+          type: string
+        path:
+          type: string
+
     _Chunk:
       type: string
       format: binary
@@ -211,10 +204,7 @@ components:
     SnapshotFiles:
       type: array
       items:
-        type: object
-        parameters:
-          allOf:
-            $ref: "#/components/schemas/_SnapshotFile"
+        $ref: "#/components/schemas/_SnapshotFile"
     SnapshotNew:
       type: object
       properties:

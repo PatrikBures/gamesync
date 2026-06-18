@@ -6,6 +6,7 @@ import (
 	"gamesync/internal/client"
 	"gamesync/internal/client/config"
 	api "gamesync/internal/ogen"
+	"hash"
 
 	"github.com/spf13/cobra"
 )
@@ -93,5 +94,61 @@ func runCreateRepoCmd(client *api.Client, opts createRepoOpts, config config.Con
 	default:
 		return fmt.Errorf("unrecognized type %T with result: %v", r, r)
 	} 
+	return nil
+}
+
+
+
+type createSnapshotCmd struct {
+	cmd *cobra.Command
+	opts createSnapshotOpts
+}
+type createSnapshotOpts struct {
+	repoName string
+	branchName string
+}
+
+func newCreateSnapshotCmd(config *config.Config) *createSnapshotCmd {
+	root := createSnapshotCmd{}
+
+	cmd := &cobra.Command{
+		Use: "repo",
+		Short: "Create a new repo",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			client, err := client.Client(*config)
+			if err != nil {
+				return err
+			}
+			if err := populateCreateSnapshotOpts(&root.opts, args); err != nil {
+				return err
+			}
+			if err := runCreateSnapshotCmd(client, root.opts, *config); err != nil {
+				return err
+			}
+			return nil
+		},
+	}
+
+	root.cmd = cmd
+	return &root
+}
+
+func populateCreateSnapshotOpts(opts *createSnapshotOpts, args []string) error {
+	opts.repoName = args[0]
+	opts.branchName = args[1]
+	return nil
+}
+
+func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config config.Config) error {
+	request := api.OptSnapshotNew{}
+
+	request.Value.Files = append(request.Value.Files, api.SnapshotFile{})
+
+	client.PostUserRepoBranchSnapshot(context.Background(), request, api.PostUserRepoBranchSnapshotParams{
+		UserID: config.UserID,
+		RepoName: opts.repoName,
+		BranchName: opts.branchName,
+	})
 	return nil
 }
