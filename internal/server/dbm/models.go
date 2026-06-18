@@ -18,10 +18,13 @@ type Branch struct {
 type Chunk struct {
 	ChunkHash []byte
 	Bytes     int64
+	CreatedAt pgtype.Timestamptz
 }
 
 type File struct {
-	FileHash []byte
+	FileHash  []byte
+	Bytes     int64
+	CreatedAt pgtype.Timestamptz
 }
 
 type FileChunk struct {

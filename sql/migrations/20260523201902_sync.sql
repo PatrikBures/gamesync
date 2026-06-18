@@ -1,43 +1,38 @@
 -- +goose Up
 CREATE TABLE repos
 (
-    repo_id BIGSERIAL NOT NULL,
-    user_id BIGINT NOT NULL,
+    repo_id BIGSERIAL NOT NULL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id),
     repo_name VARCHAR(25) NOT NULL,
 
-    PRIMARY KEY (repo_id),
-    UNIQUE (user_id, repo_name),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    UNIQUE (user_id, repo_name)
 );
 
 CREATE TABLE snapshots
 (
-    snapshot_id BIGSERIAL NOT NULL,
-    parent_snapshot_id BIGINT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-    PRIMARY KEY (snapshot_id),
-    FOREIGN KEY (parent_snapshot_id) REFERENCES snapshots(snapshot_id)
+    snapshot_id BIGSERIAL NOT NULL PRIMARY KEY,
+    parent_snapshot_id BIGINT REFERENCES snapshots(snapshot_id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_snapshots_parent ON snapshots(parent_snapshot_id);
 
 CREATE TABLE branches
 (
-    branch_id BIGSERIAL NOT NULL,
-    repo_id BIGINT NOT NULL,
+    branch_id BIGSERIAL NOT NULL PRIMARY KEY,
+    repo_id BIGINT NOT NULL REFERENCES repos(repo_id),
     branch_name VARCHAR(25) NOT NULL,
     head_snapshot_id BIGINT NULL REFERENCES snapshots(snapshot_id),
 
-    PRIMARY KEY (branch_id),
-    UNIQUE (repo_id, branch_name),
-    FOREIGN KEY (repo_id) REFERENCES repos(repo_id)
+    UNIQUE (repo_id, branch_name)
 );
 
 
 
 CREATE TABLE files
 (
-    file_hash BYTEA NOT NULL PRIMARY KEY
+    file_hash BYTEA NOT NULL PRIMARY KEY,
+    bytes BIGINT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE snapshot_files
@@ -45,6 +40,7 @@ CREATE TABLE snapshot_files
     file_hash BYTEA NOT NULL REFERENCES files(file_hash),
     snapshot_id BIGINT NOT NULL REFERENCES snapshots(snapshot_id),
     file_path VARCHAR(500) NOT NULL,
+
     PRIMARY KEY (snapshot_id, file_path)
 );
 CREATE INDEX idx_snapshot_files_file_hash ON snapshot_files(file_hash);
@@ -52,7 +48,8 @@ CREATE INDEX idx_snapshot_files_file_hash ON snapshot_files(file_hash);
 CREATE TABLE chunks
 (
     chunk_hash BYTEA NOT NULL PRIMARY KEY,
-    bytes BIGINT NOT NULL
+    bytes BIGINT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE file_chunks
@@ -60,6 +57,7 @@ CREATE TABLE file_chunks
     file_hash BYTEA NOT NULL REFERENCES files(file_hash),
     chunk_hash BYTEA NOT NULL REFERENCES chunks(chunk_hash),
     chunk_order SMALLINT NOT NULL,
+
     PRIMARY KEY (file_hash, chunk_order)
 );
 CREATE INDEX idx_file_chunks_chunk_hash ON file_chunks(chunk_hash);

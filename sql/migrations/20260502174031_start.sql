@@ -2,12 +2,8 @@
 
 CREATE TABLE roles
 (
-    role_id SERIAL NOT NULL,
-    role_name VARCHAR(25) NOT NULL,
-
-    PRIMARY KEY (role_id),
-    UNIQUE (role_id),
-    UNIQUE (role_name)
+    role_id SERIAL NOT NULL PRIMARY KEY,
+    role_name VARCHAR(25) NOT NULL UNIQUE
 );
 
 ALTER SEQUENCE roles_role_id_seq RESTART 100;
@@ -15,46 +11,31 @@ ALTER SEQUENCE roles_role_id_seq RESTART 100;
 
 CREATE TABLE users
 (
-    user_id BIGSERIAL NOT NULL,
-    user_name VARCHAR(25) NOT NULL,
-    role_id INTEGER NOT NULL,
-
-    PRIMARY KEY (user_id),
-    UNIQUE (user_id),
-    UNIQUE (user_name),
-    FOREIGN KEY (role_id) REFERENCES roles(role_id)
+    user_id BIGSERIAL NOT NULL PRIMARY KEY,
+    user_name VARCHAR(25) NOT NULL UNIQUE,
+    role_id INTEGER NOT NULL REFERENCES roles(role_id)
 );
 
 CREATE TABLE tokens
 (
-    token_id BIGSERIAL,
-    user_id BIGINT NOT NULL,
-    token_hash BYTEA NOT NULL,
-
-    PRIMARY KEY (token_id),
-    UNIQUE (token_hash),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    token_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id),
+    token_hash BYTEA NOT NULL UNIQUE
 );
 
 CREATE TABLE permissions
 (
-    perm_id SERIAL,
-    perm_name VARCHAR(50) NOT NULL,
-
-    PRIMARY KEY (perm_id),
-    UNIQUE (perm_name)
+    perm_id SERIAL PRIMARY KEY,
+    perm_name VARCHAR(50) NOT NULL UNIQUE
 );
 
 CREATE TABLE role_permissions
 (
-    role_perm_id SERIAL,
-    role_id INTEGER NOT NULL,
-    perm_id INTEGER NOT NULL,
+    role_perm_id SERIAL PRIMARY KEY,
+    role_id INTEGER NOT NULL REFERENCES roles(role_id) ON DELETE CASCADE,
+    perm_id INTEGER NOT NULL REFERENCES permissions(perm_id) ON DELETE CASCADE,
 
-    PRIMARY KEY (role_perm_id),
-    UNIQUE (role_id, perm_id),
-    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE,
-    FOREIGN KEY (perm_id) REFERENCES permissions(perm_id) ON DELETE CASCADE
+    UNIQUE (role_id, perm_id)
 );
 
 -- +goose Down
