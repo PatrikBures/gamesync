@@ -59,6 +59,7 @@ func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams)
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
+				slog.Error("default branch somehow exists on new repo", "UserID", params.UserID, "RepoName", params.RepoName)
 				return &api.PutUserRepoConflict{}, nil
 			}
 		}

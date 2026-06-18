@@ -12,7 +12,7 @@ import (
 const createRepo = `-- name: CreateRepo :one
 INSERT INTO repos (user_id, repo_name)
 VALUES ($1, $2)
-RETURNING user_id
+RETURNING repo_id
 `
 
 type CreateRepoParams struct {
@@ -22,9 +22,9 @@ type CreateRepoParams struct {
 
 func (q *Queries) CreateRepo(ctx context.Context, arg CreateRepoParams) (int64, error) {
 	row := q.db.QueryRow(ctx, createRepo, arg.UserID, arg.RepoName)
-	var user_id int64
-	err := row.Scan(&user_id)
-	return user_id, err
+	var repo_id int64
+	err := row.Scan(&repo_id)
+	return repo_id, err
 }
 
 const listRepos = `-- name: ListRepos :many
