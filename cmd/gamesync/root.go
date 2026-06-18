@@ -30,11 +30,13 @@ func newRootCmd() *rootCmd {
 
 	cmd.PersistentFlags().StringVar(&root.config.Token, "token", "", "Token used to authenticate with server")
 	cmd.PersistentFlags().StringVar(&root.config.Server, "server", "", "Server url")
+	cmd.PersistentFlags().Int64Var(&root.config.UserID, "userid", 0, "User id")
 
 	cmd.AddCommand(
 		newGenDocCmd().cmd,
 		newInitCmd(&root.config).cmd,
 		newGetCmd(&root.config).cmd,
+		newCreateCmd(&root.config).cmd,
 	)
 
 	cmd.DisableAutoGenTag = true

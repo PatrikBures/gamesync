@@ -9,6 +9,7 @@ type Config struct {
 	ChunkDir string
 	Token    string
 	Server   string // example: http://localhost:8080, https://example.org
+	UserID   int64
 }
 
 const projectName = "gamesync"
