@@ -10,3 +10,4 @@ server/gamesync-state
 **/.env
 cpu.prof
 trace.out
+asdf*

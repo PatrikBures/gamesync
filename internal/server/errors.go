@@ -19,4 +19,5 @@ var (
 	ErrFileClose     = errors.New("closing file failed")
 	ErrHashMismatch  = errors.New("hashes do not match")
 	ErrChunkTooBig   = errors.New("chunk is too big")
+	ErrInvalidHash   = errors.New("invalid hash")
 )
