@@ -1,6 +1,7 @@
 -- name: CreateChunk :exec
 INSERT INTO chunks (chunk_hash, bytes)
 VALUES ($1, $2)
+ON CONFLICT DO NOTHING
 ;
 
 -- name: CheckChunk :one
