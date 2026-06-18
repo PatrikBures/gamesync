@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	rn16AllowedHeaders = map[string]string{
-		"POST": "Authorization,Content-Type",
+	rn19AllowedHeaders = map[string]string{
+		"PUT": "Authorization,Content-Type",
 	}
 	rn3AllowedHeaders = map[string]string{
 		"GET": "Authorization",
@@ -48,10 +48,10 @@ var (
 	rn12AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn18AllowedHeaders = map[string]string{
+	rn16AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
-	rn19AllowedHeaders = map[string]string{
+	rn17AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
 )
@@ -127,15 +127,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				if len(elem) == 0 {
 					// Leaf node.
 					switch r.Method {
-					case "POST":
-						s.handlePostChunkRequest([1]string{
+					case "PUT":
+						s.handlePutChunkRequest([1]string{
 							args[0],
 						}, elemIsEscaped, w, r)
 					default:
 						s.notAllowed(w, r, notAllowedParams{
-							allowedMethods: "POST",
-							allowedHeaders: rn16AllowedHeaders,
-							acceptPost:     "application/octet-stream",
+							allowedMethods: "PUT",
+							allowedHeaders: rn19AllowedHeaders,
+							acceptPost:     "",
 							acceptPatch:    "",
 						})
 					}
@@ -537,7 +537,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 											default:
 												s.notAllowed(w, r, notAllowedParams{
 													allowedMethods: "PUT",
-													allowedHeaders: rn18AllowedHeaders,
+													allowedHeaders: rn16AllowedHeaders,
 													acceptPost:     "",
 													acceptPatch:    "",
 												})
@@ -566,7 +566,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 												default:
 													s.notAllowed(w, r, notAllowedParams{
 														allowedMethods: "POST",
-														allowedHeaders: rn19AllowedHeaders,
+														allowedHeaders: rn17AllowedHeaders,
 														acceptPost:     "application/json",
 														acceptPatch:    "",
 													})
@@ -709,10 +709,10 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				if len(elem) == 0 {
 					// Leaf node.
 					switch method {
-					case "POST":
-						r.name = PostChunkOperation
+					case "PUT":
+						r.name = PutChunkOperation
 						r.summary = "Upload chunk"
-						r.operationID = "post-chunk"
+						r.operationID = "put-chunk"
 						r.operationGroup = ""
 						r.pathPattern = "/chunks/{chunkHash}"
 						r.args = args

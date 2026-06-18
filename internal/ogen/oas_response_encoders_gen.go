@@ -272,49 +272,6 @@ func encodePatchRolePermsResponse(response PatchRolePermsRes, w http.ResponseWri
 	}
 }
 
-func encodePostChunkResponse(response PostChunkRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *PostChunkCreated:
-		w.WriteHeader(201)
-
-		return nil
-
-	case *PostChunkUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *PostChunkNotAcceptable:
-		w.WriteHeader(406)
-
-		return nil
-
-	case *PostChunkConflict:
-		w.WriteHeader(409)
-
-		return nil
-
-	case *PostChunkRequestEntityTooLarge:
-		w.WriteHeader(413)
-
-		return nil
-
-	case *PostChunkUnprocessableEntity:
-		w.WriteHeader(422)
-
-		return nil
-
-	case *PostChunkInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
-	}
-}
-
 func encodePostRolesResponse(response PostRolesRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *Role:
@@ -408,6 +365,49 @@ func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span 
 		return nil
 
 	case *PostUsersInternalServerError:
+		w.WriteHeader(500)
+		span.SetStatus(codes.Error, http.StatusText(500))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
+func encodePutChunkResponse(response PutChunkRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *PutChunkCreated:
+		w.WriteHeader(201)
+
+		return nil
+
+	case *PutChunkUnauthorized:
+		w.WriteHeader(401)
+
+		return nil
+
+	case *PutChunkNotAcceptable:
+		w.WriteHeader(406)
+
+		return nil
+
+	case *PutChunkConflict:
+		w.WriteHeader(409)
+
+		return nil
+
+	case *PutChunkRequestEntityTooLarge:
+		w.WriteHeader(413)
+
+		return nil
+
+	case *PutChunkUnprocessableEntity:
+		w.WriteHeader(422)
+
+		return nil
+
+	case *PutChunkInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
 

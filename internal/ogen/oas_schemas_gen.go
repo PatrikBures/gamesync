@@ -398,55 +398,6 @@ func (s *PermWithName) SetPermName(val string) {
 	s.PermName = val
 }
 
-// PostChunkConflict is response for PostChunk operation.
-type PostChunkConflict struct{}
-
-func (*PostChunkConflict) postChunkRes() {}
-
-// PostChunkCreated is response for PostChunk operation.
-type PostChunkCreated struct{}
-
-func (*PostChunkCreated) postChunkRes() {}
-
-// PostChunkInternalServerError is response for PostChunk operation.
-type PostChunkInternalServerError struct{}
-
-func (*PostChunkInternalServerError) postChunkRes() {}
-
-// PostChunkNotAcceptable is response for PostChunk operation.
-type PostChunkNotAcceptable struct{}
-
-func (*PostChunkNotAcceptable) postChunkRes() {}
-
-type PostChunkReq struct {
-	Data io.Reader
-}
-
-// Read reads data from the Data reader.
-//
-// Kept to satisfy the io.Reader interface.
-func (s PostChunkReq) Read(p []byte) (n int, err error) {
-	if s.Data == nil {
-		return 0, io.EOF
-	}
-	return s.Data.Read(p)
-}
-
-// PostChunkRequestEntityTooLarge is response for PostChunk operation.
-type PostChunkRequestEntityTooLarge struct{}
-
-func (*PostChunkRequestEntityTooLarge) postChunkRes() {}
-
-// PostChunkUnauthorized is response for PostChunk operation.
-type PostChunkUnauthorized struct{}
-
-func (*PostChunkUnauthorized) postChunkRes() {}
-
-// PostChunkUnprocessableEntity is response for PostChunk operation.
-type PostChunkUnprocessableEntity struct{}
-
-func (*PostChunkUnprocessableEntity) postChunkRes() {}
-
 // PostRolesConflict is response for PostRoles operation.
 type PostRolesConflict struct{}
 
@@ -501,6 +452,55 @@ func (*PostUsersInternalServerError) postUsersRes() {}
 type PostUsersNotAcceptable struct{}
 
 func (*PostUsersNotAcceptable) postUsersRes() {}
+
+// PutChunkConflict is response for PutChunk operation.
+type PutChunkConflict struct{}
+
+func (*PutChunkConflict) putChunkRes() {}
+
+// PutChunkCreated is response for PutChunk operation.
+type PutChunkCreated struct{}
+
+func (*PutChunkCreated) putChunkRes() {}
+
+// PutChunkInternalServerError is response for PutChunk operation.
+type PutChunkInternalServerError struct{}
+
+func (*PutChunkInternalServerError) putChunkRes() {}
+
+// PutChunkNotAcceptable is response for PutChunk operation.
+type PutChunkNotAcceptable struct{}
+
+func (*PutChunkNotAcceptable) putChunkRes() {}
+
+type PutChunkReq struct {
+	Data io.Reader
+}
+
+// Read reads data from the Data reader.
+//
+// Kept to satisfy the io.Reader interface.
+func (s PutChunkReq) Read(p []byte) (n int, err error) {
+	if s.Data == nil {
+		return 0, io.EOF
+	}
+	return s.Data.Read(p)
+}
+
+// PutChunkRequestEntityTooLarge is response for PutChunk operation.
+type PutChunkRequestEntityTooLarge struct{}
+
+func (*PutChunkRequestEntityTooLarge) putChunkRes() {}
+
+// PutChunkUnauthorized is response for PutChunk operation.
+type PutChunkUnauthorized struct{}
+
+func (*PutChunkUnauthorized) putChunkRes() {}
+
+// PutChunkUnprocessableEntity is response for PutChunk operation.
+type PutChunkUnprocessableEntity struct{}
+
+func (*PutChunkUnprocessableEntity) putChunkRes() {}
 
 // PutRoleNameConflict is response for PutRoleName operation.
 type PutRoleNameConflict struct{}

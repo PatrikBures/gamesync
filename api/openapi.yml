@@ -529,9 +529,9 @@ paths:
   /chunks/{chunkHash}:
     parameters:
       - $ref: "#/components/parameters/chunkHash"
-    post:
+    put:
       summary: Upload chunk
-      operationId: post-chunk
+      operationId: put-chunk
       tags:
         - Chunk
       requestBody:

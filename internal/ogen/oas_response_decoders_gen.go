@@ -423,33 +423,6 @@ func decodePatchRolePermsResponse(resp *http.Response) (res PatchRolePermsRes, _
 	return res, validate.UnexpectedStatusCodeWithResponse(resp)
 }
 
-func decodePostChunkResponse(resp *http.Response) (res PostChunkRes, _ error) {
-	switch resp.StatusCode {
-	case 201:
-		// Code 201.
-		return &PostChunkCreated{}, nil
-	case 401:
-		// Code 401.
-		return &PostChunkUnauthorized{}, nil
-	case 406:
-		// Code 406.
-		return &PostChunkNotAcceptable{}, nil
-	case 409:
-		// Code 409.
-		return &PostChunkConflict{}, nil
-	case 413:
-		// Code 413.
-		return &PostChunkRequestEntityTooLarge{}, nil
-	case 422:
-		// Code 422.
-		return &PostChunkUnprocessableEntity{}, nil
-	case 500:
-		// Code 500.
-		return &PostChunkInternalServerError{}, nil
-	}
-	return res, validate.UnexpectedStatusCodeWithResponse(resp)
-}
-
 func decodePostRolesResponse(resp *http.Response) (res PostRolesRes, _ error) {
 	switch resp.StatusCode {
 	case 201:
@@ -567,6 +540,33 @@ func decodePostUsersResponse(resp *http.Response) (res PostUsersRes, _ error) {
 	case 500:
 		// Code 500.
 		return &PostUsersInternalServerError{}, nil
+	}
+	return res, validate.UnexpectedStatusCodeWithResponse(resp)
+}
+
+func decodePutChunkResponse(resp *http.Response) (res PutChunkRes, _ error) {
+	switch resp.StatusCode {
+	case 201:
+		// Code 201.
+		return &PutChunkCreated{}, nil
+	case 401:
+		// Code 401.
+		return &PutChunkUnauthorized{}, nil
+	case 406:
+		// Code 406.
+		return &PutChunkNotAcceptable{}, nil
+	case 409:
+		// Code 409.
+		return &PutChunkConflict{}, nil
+	case 413:
+		// Code 413.
+		return &PutChunkRequestEntityTooLarge{}, nil
+	case 422:
+		// Code 422.
+		return &PutChunkUnprocessableEntity{}, nil
+	case 500:
+		// Code 500.
+		return &PutChunkInternalServerError{}, nil
 	}
 	return res, validate.UnexpectedStatusCodeWithResponse(resp)
 }

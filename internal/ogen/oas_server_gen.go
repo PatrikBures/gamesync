@@ -62,12 +62,6 @@ type Handler interface {
 	//
 	// PATCH /roles/{roleID}/perms
 	PatchRolePerms(ctx context.Context, req OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
-	// PostChunk implements post-chunk operation.
-	//
-	// Upload chunk.
-	//
-	// POST /chunks/{chunkHash}
-	PostChunk(ctx context.Context, req PostChunkReq, params PostChunkParams) (PostChunkRes, error)
 	// PostRoles implements post-roles operation.
 	//
 	// Create new role.
@@ -86,6 +80,12 @@ type Handler interface {
 	//
 	// POST /users
 	PostUsers(ctx context.Context, req OptUserName) (PostUsersRes, error)
+	// PutChunk implements put-chunk operation.
+	//
+	// Upload chunk.
+	//
+	// PUT /chunks/{chunkHash}
+	PutChunk(ctx context.Context, req PutChunkReq, params PutChunkParams) (PutChunkRes, error)
 	// PutRoleName implements put-role-name operation.
 	//
 	// Update role name.

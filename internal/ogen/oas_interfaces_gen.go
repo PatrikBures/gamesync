@@ -33,10 +33,6 @@ type PatchRolePermsRes interface {
 	patchRolePermsRes()
 }
 
-type PostChunkRes interface {
-	postChunkRes()
-}
-
 type PostRolesRes interface {
 	postRolesRes()
 }
@@ -47,6 +43,10 @@ type PostUserRepoBranchSnapshotRes interface {
 
 type PostUsersRes interface {
 	postUsersRes()
+}
+
+type PutChunkRes interface {
+	putChunkRes()
 }
 
 type PutRoleNameRes interface {

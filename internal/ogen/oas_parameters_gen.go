@@ -488,92 +488,6 @@ func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Reques
 	return params, nil
 }
 
-// PostChunkParams is parameters of post-chunk operation.
-type PostChunkParams struct {
-	// 32 byte chunk blake3 hash, hex encoded.
-	ChunkHash string
-}
-
-func unpackPostChunkParams(packed middleware.Parameters) (params PostChunkParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "chunkHash",
-			In:   "path",
-		}
-		params.ChunkHash = packed[key].(string)
-	}
-	return params
-}
-
-func decodePostChunkParams(args [1]string, argsEscaped bool, r *http.Request) (params PostChunkParams, _ error) {
-	// Decode path: chunkHash.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "chunkHash",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.ChunkHash = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := (validate.String{
-					MinLength:     64,
-					MinLengthSet:  true,
-					MaxLength:     64,
-					MaxLengthSet:  true,
-					Email:         false,
-					Hostname:      false,
-					Regex:         nil,
-					MinNumeric:    0,
-					MinNumericSet: false,
-					MaxNumeric:    0,
-					MaxNumericSet: false,
-				}).Validate(string(params.ChunkHash)); err != nil {
-					return errors.Wrap(err, "string")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "chunkHash",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
 // PostUserRepoBranchSnapshotParams is parameters of post-user-repo-branch-snapshot operation.
 type PostUserRepoBranchSnapshotParams struct {
 	// Used to identify a user.
@@ -759,6 +673,92 @@ func decodePostUserRepoBranchSnapshotParams(args [3]string, argsEscaped bool, r 
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "branchName",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PutChunkParams is parameters of put-chunk operation.
+type PutChunkParams struct {
+	// 32 byte chunk blake3 hash, hex encoded.
+	ChunkHash string
+}
+
+func unpackPutChunkParams(packed middleware.Parameters) (params PutChunkParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "chunkHash",
+			In:   "path",
+		}
+		params.ChunkHash = packed[key].(string)
+	}
+	return params
+}
+
+func decodePutChunkParams(args [1]string, argsEscaped bool, r *http.Request) (params PutChunkParams, _ error) {
+	// Decode path: chunkHash.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "chunkHash",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.ChunkHash = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.String{
+					MinLength:     64,
+					MinLengthSet:  true,
+					MaxLength:     64,
+					MaxLengthSet:  true,
+					Email:         false,
+					Hostname:      false,
+					Regex:         nil,
+					MinNumeric:    0,
+					MinNumericSet: false,
+					MaxNumeric:    0,
+					MaxNumericSet: false,
+				}).Validate(string(params.ChunkHash)); err != nil {
+					return errors.Wrap(err, "string")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "chunkHash",
 			In:   "path",
 			Err:  err,
 		}

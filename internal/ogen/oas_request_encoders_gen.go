@@ -30,16 +30,6 @@ func encodePatchRolePermsRequest(
 	return nil
 }
 
-func encodePostChunkRequest(
-	req PostChunkReq,
-	r *http.Request,
-) error {
-	const contentType = "application/octet-stream"
-	body := req
-	ht.SetBody(r, body, contentType)
-	return nil
-}
-
 func encodePostRolesRequest(
 	req OptRoleName,
 	r *http.Request,
@@ -97,6 +87,16 @@ func encodePostUsersRequest(
 	}
 	encoded := e.Bytes()
 	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
+func encodePutChunkRequest(
+	req PutChunkReq,
+	r *http.Request,
+) error {
+	const contentType = "application/octet-stream"
+	body := req
+	ht.SetBody(r, body, contentType)
 	return nil
 }
 

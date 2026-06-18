@@ -10,35 +10,35 @@ import (
 )
 
 
-func (s *Service) PostChunk(ctx context.Context, req api.PostChunkReq, params api.PostChunkParams) (api.PostChunkRes, error)  {
+func (s *Service) PutChunk(ctx context.Context, req api.PutChunkReq, params api.PutChunkParams) (api.PutChunkRes, error)  {
 	if req.Data == nil {
 		slog.Warn("got nil chunk", "chunkHash", params.ChunkHash)
-		return &api.PostChunkNotAcceptable{}, nil
+		return &api.PutChunkNotAcceptable{}, nil
 	}
 
 	hash, err := hex.DecodeString(params.ChunkHash)
 	if err != nil {
 		slog.Warn("invalid chunk hash received", "error", err)
-		return &api.PostChunkNotAcceptable{}, nil
+		return &api.PutChunkNotAcceptable{}, nil
 	}
 
 	chunkExists, err := s.storage.Exists(ctx, params.ChunkHash)
 	if err != nil {
-		return &api.PostChunkInternalServerError{}, server.ErrFile
+		return &api.PutChunkInternalServerError{}, server.ErrFile
 	}
 	if chunkExists {
-		return &api.PostChunkConflict{}, nil
+		return &api.PutChunkConflict{}, nil
 	}
 	bytes, err := s.storage.Store(ctx, params.ChunkHash, req.Data)
 	switch err {
 	case nil:
 		break
 	case server.ErrHashMismatch: 
-		return &api.PostChunkUnprocessableEntity{}, nil
+		return &api.PutChunkUnprocessableEntity{}, nil
 	case server.ErrChunkTooBig:
-		return &api.PostChunkRequestEntityTooLarge{}, nil
+		return &api.PutChunkRequestEntityTooLarge{}, nil
 	default:
-		return &api.PostChunkInternalServerError{}, err
+		return &api.PutChunkInternalServerError{}, err
 	}
 
 
@@ -49,6 +49,6 @@ func (s *Service) PostChunk(ctx context.Context, req api.PostChunkReq, params ap
 
 	slog.Info("stored chunk", "chunkHash", params.ChunkHash[:8], "bytes", bytes)
 
-	return &api.PostChunkCreated{}, nil
+	return &api.PutChunkCreated{}, nil
 }
 
