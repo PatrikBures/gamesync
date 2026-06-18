@@ -377,6 +377,11 @@ func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span 
 
 func encodePutChunkResponse(response PutChunkRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
+	case *PutChunkOK:
+		w.WriteHeader(200)
+
+		return nil
+
 	case *PutChunkCreated:
 		w.WriteHeader(201)
 
@@ -389,11 +394,6 @@ func encodePutChunkResponse(response PutChunkRes, w http.ResponseWriter, span tr
 
 	case *PutChunkNotAcceptable:
 		w.WriteHeader(406)
-
-		return nil
-
-	case *PutChunkConflict:
-		w.WriteHeader(409)
 
 		return nil
 

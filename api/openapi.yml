@@ -542,9 +542,9 @@ paths:
       responses:
         "401": {}
         "201": {}
-        "406": {}
-        "409":
+        "200":
           description: Chunk already exists
+        "406": {}
         "413":
           description: Chunk too big
         "422":

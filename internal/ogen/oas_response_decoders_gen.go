@@ -546,6 +546,9 @@ func decodePostUsersResponse(resp *http.Response) (res PostUsersRes, _ error) {
 
 func decodePutChunkResponse(resp *http.Response) (res PutChunkRes, _ error) {
 	switch resp.StatusCode {
+	case 200:
+		// Code 200.
+		return &PutChunkOK{}, nil
 	case 201:
 		// Code 201.
 		return &PutChunkCreated{}, nil
@@ -555,9 +558,6 @@ func decodePutChunkResponse(resp *http.Response) (res PutChunkRes, _ error) {
 	case 406:
 		// Code 406.
 		return &PutChunkNotAcceptable{}, nil
-	case 409:
-		// Code 409.
-		return &PutChunkConflict{}, nil
 	case 413:
 		// Code 413.
 		return &PutChunkRequestEntityTooLarge{}, nil

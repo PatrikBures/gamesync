@@ -11,10 +11,6 @@ import (
 
 
 func (s *Service) PutChunk(ctx context.Context, req api.PutChunkReq, params api.PutChunkParams) (api.PutChunkRes, error)  {
-	if req.Data == nil {
-		slog.Warn("got nil chunk", "chunkHash", params.ChunkHash)
-		return &api.PutChunkNotAcceptable{}, nil
-	}
 
 	hash, err := hex.DecodeString(params.ChunkHash)
 	if err != nil {
@@ -22,13 +18,15 @@ func (s *Service) PutChunk(ctx context.Context, req api.PutChunkReq, params api.
 		return &api.PutChunkNotAcceptable{}, nil
 	}
 
-	chunkExists, err := s.storage.Exists(ctx, params.ChunkHash)
+	chunkExists, err := s.db.ReadQuery().CheckChunk(ctx, hash)
 	if err != nil {
+		slog.Error("failed checking if chunk exists", "chunkHash", params.ChunkHash, "error", err)
 		return &api.PutChunkInternalServerError{}, server.ErrFile
 	}
 	if chunkExists {
-		return &api.PutChunkConflict{}, nil
+		return &api.PutChunkOK{}, nil
 	}
+
 	bytes, err := s.storage.Store(ctx, params.ChunkHash, req.Data)
 	switch err {
 	case nil:

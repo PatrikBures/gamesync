@@ -9,6 +9,19 @@ import (
 	"context"
 )
 
+const checkChunk = `-- name: CheckChunk :one
+SELECT COUNT(*) > 0 FROM chunks
+WHERE chunk_hash = $1
+LIMIT 1
+`
+
+func (q *Queries) CheckChunk(ctx context.Context, chunkHash []byte) (bool, error) {
+	row := q.db.QueryRow(ctx, checkChunk, chunkHash)
+	var column_1 bool
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const createChunk = `-- name: CreateChunk :exec
 INSERT INTO chunks (chunk_hash, bytes)
 VALUES ($1, $2)

@@ -453,11 +453,6 @@ type PostUsersNotAcceptable struct{}
 
 func (*PostUsersNotAcceptable) postUsersRes() {}
 
-// PutChunkConflict is response for PutChunk operation.
-type PutChunkConflict struct{}
-
-func (*PutChunkConflict) putChunkRes() {}
-
 // PutChunkCreated is response for PutChunk operation.
 type PutChunkCreated struct{}
 
@@ -472,6 +467,11 @@ func (*PutChunkInternalServerError) putChunkRes() {}
 type PutChunkNotAcceptable struct{}
 
 func (*PutChunkNotAcceptable) putChunkRes() {}
+
+// PutChunkOK is response for PutChunk operation.
+type PutChunkOK struct{}
+
+func (*PutChunkOK) putChunkRes() {}
 
 type PutChunkReq struct {
 	Data io.Reader
