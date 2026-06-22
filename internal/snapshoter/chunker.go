@@ -131,6 +131,12 @@ func (cg *chunkGen) chunkFile(path string) (string, []string, error) {
 		if err != nil {
 			return "", nil, err
 		}
+
+		if _, err := fileHash.Write(hashBytes); err != nil {
+			return "", nil, fmt.Errorf("hashing chunk to form file hash: %w", err)
+		}
+		chunkHashes = append(chunkHashes, hashHex)
+
 		// this means the chunk already exists
 		if chunkFile == nil {
 			atomic.AddInt64(&cg.Info.ChunksSkipped, 1)
@@ -144,10 +150,6 @@ func (cg *chunkGen) chunkFile(path string) (string, []string, error) {
 		if err != nil {
 			return "", nil, fmt.Errorf("creating chunk for file %s, chunk nr %d, hash %s: %w", path, chunkCount+1, hashHex, err)
 		}
-		if _, err := fileHash.Write(hashBytes); err != nil {
-			return "", nil, fmt.Errorf("hashing chunk to form file hash: %w", err)
-		}
-		chunkHashes = append(chunkHashes, hashHex)
 		atomic.AddInt64(&cg.Info.ChunksCreated, 1)
 	}
 	
