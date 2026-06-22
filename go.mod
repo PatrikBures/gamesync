@@ -1,8 +1,9 @@
 module gamesync
 
-go 1.26.2
+go 1.26.4
 
 require (
+	git.pabu.dev/PatrikBures/ini v0.0.0-20260622093507-a2f7d83de14a
 	github.com/go-faster/errors v0.7.1
 	github.com/go-faster/jx v1.2.0
 	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6

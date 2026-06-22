@@ -20,7 +20,7 @@ type initCmdOpts struct {
 	repoDir string
 }
 
-func newInitCmd(configOpts *config.Config) *initCmd {
+func newInitCmd(config *config.Config) *initCmd {
 	root := initCmd{}
 
 	cmd := &cobra.Command{
@@ -32,7 +32,7 @@ func newInitCmd(configOpts *config.Config) *initCmd {
 				return fmt.Errorf("populating init opts: %w", err)
 			}
 
-			if err := runInitCmd(root.opts, configOpts.ChunkDir); err != nil {
+			if err := runInitCmd(root.opts, config.Global.ChunkDir); err != nil {
 				return fmt.Errorf("initializing repo: %w", err)
 			}
 

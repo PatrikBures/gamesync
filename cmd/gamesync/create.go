@@ -6,7 +6,6 @@ import (
 	"gamesync/internal/client"
 	"gamesync/internal/client/config"
 	api "gamesync/internal/ogen"
-	"hash"
 
 	"github.com/spf13/cobra"
 )
@@ -76,7 +75,7 @@ func populateCreateRepoOpts(opts *createRepoOpts, args []string) error {
 
 func runCreateRepoCmd(client *api.Client, opts createRepoOpts, config config.Config) error {
 	result, err := client.PutUserRepo(context.Background(), api.PutUserRepoParams{
-		UserID: config.UserID,
+		UserID: config.Server.UserID,
 		RepoName: opts.repoName,
 	})
 	if err != nil {
@@ -146,7 +145,7 @@ func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config co
 	request.Value.Files = append(request.Value.Files, api.SnapshotFile{})
 
 	client.PostUserRepoBranchSnapshot(context.Background(), request, api.PostUserRepoBranchSnapshotParams{
-		UserID: config.UserID,
+		UserID: config.Server.UserID,
 		RepoName: opts.repoName,
 		BranchName: opts.branchName,
 	})
