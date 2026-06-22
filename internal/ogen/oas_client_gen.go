@@ -94,7 +94,7 @@ type Invoker interface {
 	// Create new snapshot.
 	//
 	// POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
-	PostUserRepoBranchSnapshot(ctx context.Context, request OptSnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error)
+	PostUserRepoBranchSnapshot(ctx context.Context, request *SnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error)
 	// PostUsers invokes post-users operation.
 	//
 	// Create new user.
@@ -1401,12 +1401,12 @@ func (c *Client) sendPostRoles(ctx context.Context, request OptRoleName) (res Po
 // Create new snapshot.
 //
 // POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
-func (c *Client) PostUserRepoBranchSnapshot(ctx context.Context, request OptSnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error) {
+func (c *Client) PostUserRepoBranchSnapshot(ctx context.Context, request *SnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error) {
 	res, err := c.sendPostUserRepoBranchSnapshot(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPostUserRepoBranchSnapshot(ctx context.Context, request OptSnapshotNew, params PostUserRepoBranchSnapshotParams) (res PostUserRepoBranchSnapshotRes, err error) {
+func (c *Client) sendPostUserRepoBranchSnapshot(ctx context.Context, request *SnapshotNew, params PostUserRepoBranchSnapshotParams) (res PostUserRepoBranchSnapshotRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("post-user-repo-branch-snapshot"),
 		semconv.HTTPRequestMethodKey.String("POST"),

@@ -108,7 +108,7 @@ func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRoleName) (r P
 // Create new snapshot.
 //
 // POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
-func (UnimplementedHandler) PostUserRepoBranchSnapshot(ctx context.Context, req OptSnapshotNew, params PostUserRepoBranchSnapshotParams) (r PostUserRepoBranchSnapshotRes, _ error) {
+func (UnimplementedHandler) PostUserRepoBranchSnapshot(ctx context.Context, req *SnapshotNew, params PostUserRepoBranchSnapshotParams) (r PostUserRepoBranchSnapshotRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

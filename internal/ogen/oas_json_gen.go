@@ -63,6 +63,148 @@ func (s *Branches) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *File) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *File) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("chunkHashes")
+		e.ArrStart()
+		for _, elem := range s.ChunkHashes {
+			e.Str(elem)
+		}
+		e.ArrEnd()
+	}
+	{
+		e.FieldStart("hash")
+		e.Str(s.Hash)
+	}
+	{
+		e.FieldStart("path")
+		e.Str(s.Path)
+	}
+}
+
+var jsonFieldsNameOfFile = [3]string{
+	0: "chunkHashes",
+	1: "hash",
+	2: "path",
+}
+
+// Decode decodes File from json.
+func (s *File) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode File to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "chunkHashes":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				s.ChunkHashes = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.ChunkHashes = append(s.ChunkHashes, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"chunkHashes\"")
+			}
+		case "hash":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Hash = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"hash\"")
+			}
+		case "path":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.Path = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"path\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode File")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfFile) {
+					name = jsonFieldsNameOfFile[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *File) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *File) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes GetPermsOKApplicationJSON as json.
 func (s GetPermsOKApplicationJSON) Encode(e *jx.Encoder) {
 	unwrapped := []PermWithName(s)
@@ -275,39 +417,6 @@ func (s OptRoleName) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptRoleName) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes SnapshotNew as json.
-func (o OptSnapshotNew) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes SnapshotNew from json.
-func (o *OptSnapshotNew) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptSnapshotNew to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptSnapshotNew) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptSnapshotNew) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -666,6 +775,82 @@ func (s *PermWithName) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *PostUserRepoBranchSnapshotFailedDependency) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *PostUserRepoBranchSnapshotFailedDependency) encodeFields(e *jx.Encoder) {
+	{
+		if s.ChunkHashes != nil {
+			e.FieldStart("chunkHashes")
+			e.ArrStart()
+			for _, elem := range s.ChunkHashes {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfPostUserRepoBranchSnapshotFailedDependency = [1]string{
+	0: "chunkHashes",
+}
+
+// Decode decodes PostUserRepoBranchSnapshotFailedDependency from json.
+func (s *PostUserRepoBranchSnapshotFailedDependency) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PostUserRepoBranchSnapshotFailedDependency to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "chunkHashes":
+			if err := func() error {
+				s.ChunkHashes = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.ChunkHashes = append(s.ChunkHashes, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"chunkHashes\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode PostUserRepoBranchSnapshotFailedDependency")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *PostUserRepoBranchSnapshotFailedDependency) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PostUserRepoBranchSnapshotFailedDependency) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes Repos as json.
 func (s Repos) Encode(e *jx.Encoder) {
 	unwrapped := []string(s)
@@ -928,102 +1113,66 @@ func (s *RoleName) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s *SnapshotFile) Encode(e *jx.Encoder) {
+func (s *SnapshotNew) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *SnapshotFile) encodeFields(e *jx.Encoder) {
+func (s *SnapshotNew) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("chunkHashes")
+		e.FieldStart("files")
 		e.ArrStart()
-		for _, elem := range s.ChunkHashes {
-			e.Str(elem)
+		for _, elem := range s.Files {
+			elem.Encode(e)
 		}
 		e.ArrEnd()
 	}
-	{
-		e.FieldStart("hash")
-		e.Str(s.Hash)
-	}
-	{
-		e.FieldStart("path")
-		e.Str(s.Path)
-	}
 }
 
-var jsonFieldsNameOfSnapshotFile = [3]string{
-	0: "chunkHashes",
-	1: "hash",
-	2: "path",
+var jsonFieldsNameOfSnapshotNew = [1]string{
+	0: "files",
 }
 
-// Decode decodes SnapshotFile from json.
-func (s *SnapshotFile) Decode(d *jx.Decoder) error {
+// Decode decodes SnapshotNew from json.
+func (s *SnapshotNew) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode SnapshotFile to nil")
+		return errors.New("invalid: unable to decode SnapshotNew to nil")
 	}
 	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "chunkHashes":
+		case "files":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				s.ChunkHashes = make([]string, 0)
+				s.Files = make([]File, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem string
-					v, err := d.Str()
-					elem = string(v)
-					if err != nil {
+					var elem File
+					if err := elem.Decode(d); err != nil {
 						return err
 					}
-					s.ChunkHashes = append(s.ChunkHashes, elem)
+					s.Files = append(s.Files, elem)
 					return nil
 				}); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"chunkHashes\"")
-			}
-		case "hash":
-			requiredBitSet[0] |= 1 << 1
-			if err := func() error {
-				v, err := d.Str()
-				s.Hash = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"hash\"")
-			}
-		case "path":
-			requiredBitSet[0] |= 1 << 2
-			if err := func() error {
-				v, err := d.Str()
-				s.Path = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"path\"")
+				return errors.Wrap(err, "decode field \"files\"")
 			}
 		default:
 			return d.Skip()
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode SnapshotFile")
+		return errors.Wrap(err, "decode SnapshotNew")
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00000001,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -1035,8 +1184,8 @@ func (s *SnapshotFile) Decode(d *jx.Decoder) error {
 				bitIdx := bits.TrailingZeros8(result)
 				fieldIdx := i*8 + bitIdx
 				var name string
-				if fieldIdx < len(jsonFieldsNameOfSnapshotFile) {
-					name = jsonFieldsNameOfSnapshotFile[fieldIdx]
+				if fieldIdx < len(jsonFieldsNameOfSnapshotNew) {
+					name = jsonFieldsNameOfSnapshotNew[fieldIdx]
 				} else {
 					name = strconv.Itoa(fieldIdx)
 				}
@@ -1051,123 +1200,6 @@ func (s *SnapshotFile) Decode(d *jx.Decoder) error {
 	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s *SnapshotFile) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *SnapshotFile) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes SnapshotFiles as json.
-func (s SnapshotFiles) Encode(e *jx.Encoder) {
-	unwrapped := []SnapshotFile(s)
-	if unwrapped == nil {
-		e.ArrEmpty()
-		return
-	}
-	if unwrapped != nil {
-		e.ArrStart()
-		for _, elem := range unwrapped {
-			elem.Encode(e)
-		}
-		e.ArrEnd()
-	}
-}
-
-// Decode decodes SnapshotFiles from json.
-func (s *SnapshotFiles) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode SnapshotFiles to nil")
-	}
-	var unwrapped []SnapshotFile
-	if err := func() error {
-		unwrapped = make([]SnapshotFile, 0)
-		if err := d.Arr(func(d *jx.Decoder) error {
-			var elem SnapshotFile
-			if err := elem.Decode(d); err != nil {
-				return err
-			}
-			unwrapped = append(unwrapped, elem)
-			return nil
-		}); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		return errors.Wrap(err, "alias")
-	}
-	*s = SnapshotFiles(unwrapped)
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s SnapshotFiles) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *SnapshotFiles) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
-func (s *SnapshotNew) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields encodes fields.
-func (s *SnapshotNew) encodeFields(e *jx.Encoder) {
-	{
-		if s.Files != nil {
-			e.FieldStart("files")
-			s.Files.Encode(e)
-		}
-	}
-}
-
-var jsonFieldsNameOfSnapshotNew = [1]string{
-	0: "files",
-}
-
-// Decode decodes SnapshotNew from json.
-func (s *SnapshotNew) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode SnapshotNew to nil")
-	}
-
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		switch string(k) {
-		case "files":
-			if err := func() error {
-				if err := s.Files.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"files\"")
-			}
-		default:
-			return d.Skip()
-		}
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode SnapshotNew")
 	}
 
 	return nil

@@ -125,21 +125,6 @@ components:
           type: string
       required: [permName]
 
-    _SnapshotFile:
-      type: object
-      properties:
-        chunkHashes:
-          type: array
-          items: 
-            type: string
-        hash:
-          type: string
-        path:
-          type: string
-      required:
-        - chunkHashes
-        - hash
-        - path
 
     _Chunk:
       type: string
@@ -203,15 +188,26 @@ components:
         type: string
 
     ### Snapshot Schemas
-    SnapshotFiles:
-      type: array
-      items:
-        $ref: "#/components/schemas/_SnapshotFile"
+    _File:
+      type: object
+      properties:
+        chunkHashes:
+          type: array
+          items: 
+            type: string
+        hash:
+          type: string
+        path:
+          type: string
+      required: [chunkHashes, hash, path]
     SnapshotNew:
       type: object
       properties:
         files:
-          $ref: "#/components/schemas/SnapshotFiles"
+          type: array
+          items:
+            $ref: "#/components/schemas/_File"
+      required: ["files"]
 
 security:
   - bearerAuth: []
@@ -379,11 +375,25 @@ paths:
       tags:
         - Users
       responses:
+        "201": {}
         "401": {}
         "409": {}
-        "201": {}
+        "422":
+          description: Invalid hashes
+        "424": 
+          description: Some of the provided chunks are missing which are returned
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chunkHashes:
+                    type: array
+                    items: 
+                      type: string
         "500": {}
       requestBody:
+        required: true
         content: 
           application/json:
             schema:
@@ -530,7 +540,8 @@ paths:
         required: true
         content:
           application/octet-stream:
-            $ref: "#/components/schemas/_Chunk"
+            schema:
+              $ref: "#/components/schemas/_Chunk"
       responses:
         "401": {}
         "201": {}

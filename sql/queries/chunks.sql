@@ -9,3 +9,9 @@ SELECT COUNT(*) > 0 FROM chunks
 WHERE chunk_hash = $1
 LIMIT 1
 ;
+
+-- name: GetChunkHashes :many
+SELECT chunk_hash FROM chunks
+WHERE chunk_hash = ANY(sqlc.arg(chunk_hash)::BYTEA[])
+ORDER BY chunk_hash ASC
+;

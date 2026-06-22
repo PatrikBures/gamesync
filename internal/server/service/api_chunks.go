@@ -40,12 +40,14 @@ func (s *Service) PutChunk(ctx context.Context, req api.PutChunkReq, params api.
 	}
 
 
-	s.db.WriteQuery().CreateChunk(ctx, dbm.CreateChunkParams{
+	if err := s.db.WriteQuery().CreateChunk(ctx, dbm.CreateChunkParams{
 		ChunkHash: hash,
 		Bytes: bytes,
-	})
-
-	slog.Info("stored chunk", "chunkHash", params.ChunkHash[:8], "bytes", bytes)
+	}); err != nil {
+		slog.Error("inserting chunk to database", "chunkHash", params.ChunkHash, "error", err)
+		return &api.PutChunkInternalServerError{}, server.ErrDatabase
+		// TODO: should also delete the chunk file
+	}
 
 	return &api.PutChunkCreated{}, nil
 }

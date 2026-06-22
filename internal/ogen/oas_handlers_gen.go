@@ -1989,7 +1989,7 @@ func (s *Server) handlePostUserRepoBranchSnapshotRequest(args [3]string, argsEsc
 		}
 
 		type (
-			Request  = OptSnapshotNew
+			Request  = *SnapshotNew
 			Params   = PostUserRepoBranchSnapshotParams
 			Response = PostUserRepoBranchSnapshotRes
 		)

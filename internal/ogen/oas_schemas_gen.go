@@ -35,6 +35,43 @@ type Branches []string
 
 func (*Branches) getUserRepoBranchesRes() {}
 
+// Ref: #/components/schemas/_File
+type File struct {
+	ChunkHashes []string `json:"chunkHashes"`
+	Hash        string   `json:"hash"`
+	Path        string   `json:"path"`
+}
+
+// GetChunkHashes returns the value of ChunkHashes.
+func (s *File) GetChunkHashes() []string {
+	return s.ChunkHashes
+}
+
+// GetHash returns the value of Hash.
+func (s *File) GetHash() string {
+	return s.Hash
+}
+
+// GetPath returns the value of Path.
+func (s *File) GetPath() string {
+	return s.Path
+}
+
+// SetChunkHashes sets the value of ChunkHashes.
+func (s *File) SetChunkHashes(val []string) {
+	s.ChunkHashes = val
+}
+
+// SetHash sets the value of Hash.
+func (s *File) SetHash(val string) {
+	s.Hash = val
+}
+
+// SetPath sets the value of Path.
+func (s *File) SetPath(val string) {
+	s.Path = val
+}
+
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
 
@@ -222,52 +259,6 @@ func (o OptRoleName) Or(d RoleName) RoleName {
 	return d
 }
 
-// NewOptSnapshotNew returns new OptSnapshotNew with value set to v.
-func NewOptSnapshotNew(v SnapshotNew) OptSnapshotNew {
-	return OptSnapshotNew{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptSnapshotNew is optional SnapshotNew.
-type OptSnapshotNew struct {
-	Value SnapshotNew
-	Set   bool
-}
-
-// IsSet returns true if OptSnapshotNew was set.
-func (o OptSnapshotNew) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptSnapshotNew) Reset() {
-	var v SnapshotNew
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptSnapshotNew) SetTo(v SnapshotNew) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptSnapshotNew) Get() (v SnapshotNew, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptSnapshotNew) Or(d SnapshotNew) SnapshotNew {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptUserName returns new OptUserName with value set to v.
 func NewOptUserName(v UserName) OptUserName {
 	return OptUserName{
@@ -428,6 +419,22 @@ type PostUserRepoBranchSnapshotCreated struct{}
 
 func (*PostUserRepoBranchSnapshotCreated) postUserRepoBranchSnapshotRes() {}
 
+type PostUserRepoBranchSnapshotFailedDependency struct {
+	ChunkHashes []string `json:"chunkHashes"`
+}
+
+// GetChunkHashes returns the value of ChunkHashes.
+func (s *PostUserRepoBranchSnapshotFailedDependency) GetChunkHashes() []string {
+	return s.ChunkHashes
+}
+
+// SetChunkHashes sets the value of ChunkHashes.
+func (s *PostUserRepoBranchSnapshotFailedDependency) SetChunkHashes(val []string) {
+	s.ChunkHashes = val
+}
+
+func (*PostUserRepoBranchSnapshotFailedDependency) postUserRepoBranchSnapshotRes() {}
+
 // PostUserRepoBranchSnapshotInternalServerError is response for PostUserRepoBranchSnapshot operation.
 type PostUserRepoBranchSnapshotInternalServerError struct{}
 
@@ -437,6 +444,11 @@ func (*PostUserRepoBranchSnapshotInternalServerError) postUserRepoBranchSnapshot
 type PostUserRepoBranchSnapshotUnauthorized struct{}
 
 func (*PostUserRepoBranchSnapshotUnauthorized) postUserRepoBranchSnapshotRes() {}
+
+// PostUserRepoBranchSnapshotUnprocessableEntity is response for PostUserRepoBranchSnapshot operation.
+type PostUserRepoBranchSnapshotUnprocessableEntity struct{}
+
+func (*PostUserRepoBranchSnapshotUnprocessableEntity) postUserRepoBranchSnapshotRes() {}
 
 // PostUsersConflict is response for PostUsers operation.
 type PostUsersConflict struct{}
@@ -473,6 +485,7 @@ type PutChunkOK struct{}
 
 func (*PutChunkOK) putChunkRes() {}
 
+// Ref: #/components/schemas/_Chunk
 type PutChunkReq struct {
 	Data io.Reader
 }
@@ -680,57 +693,18 @@ func (s *RoleName) SetRoleName(val string) {
 	s.RoleName = val
 }
 
-// Ref: #/components/schemas/_SnapshotFile
-type SnapshotFile struct {
-	ChunkHashes []string `json:"chunkHashes"`
-	Hash        string   `json:"hash"`
-	Path        string   `json:"path"`
-}
-
-// GetChunkHashes returns the value of ChunkHashes.
-func (s *SnapshotFile) GetChunkHashes() []string {
-	return s.ChunkHashes
-}
-
-// GetHash returns the value of Hash.
-func (s *SnapshotFile) GetHash() string {
-	return s.Hash
-}
-
-// GetPath returns the value of Path.
-func (s *SnapshotFile) GetPath() string {
-	return s.Path
-}
-
-// SetChunkHashes sets the value of ChunkHashes.
-func (s *SnapshotFile) SetChunkHashes(val []string) {
-	s.ChunkHashes = val
-}
-
-// SetHash sets the value of Hash.
-func (s *SnapshotFile) SetHash(val string) {
-	s.Hash = val
-}
-
-// SetPath sets the value of Path.
-func (s *SnapshotFile) SetPath(val string) {
-	s.Path = val
-}
-
-type SnapshotFiles []SnapshotFile
-
 // Ref: #/components/schemas/SnapshotNew
 type SnapshotNew struct {
-	Files SnapshotFiles `json:"files"`
+	Files []File `json:"files"`
 }
 
 // GetFiles returns the value of Files.
-func (s *SnapshotNew) GetFiles() SnapshotFiles {
+func (s *SnapshotNew) GetFiles() []File {
 	return s.Files
 }
 
 // SetFiles sets the value of Files.
-func (s *SnapshotNew) SetFiles(val SnapshotFiles) {
+func (s *SnapshotNew) SetFiles(val []File) {
 	s.Files = val
 }
 

@@ -100,7 +100,7 @@ func loadToken(config *Config) error {
 		config.Server.Token = string(token)
 	}
 	if config.Server.Token == "" {
-		return fmt.Errorf("Token can not be empty")
+		return fmt.Errorf("token can not be empty")
 	}
 	return nil
 }

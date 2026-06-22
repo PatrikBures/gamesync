@@ -37,3 +37,29 @@ func (q *Queries) CreateChunk(ctx context.Context, arg CreateChunkParams) error 
 	_, err := q.db.Exec(ctx, createChunk, arg.ChunkHash, arg.Bytes)
 	return err
 }
+
+const getChunkHashes = `-- name: GetChunkHashes :many
+SELECT chunk_hash FROM chunks
+WHERE chunk_hash = ANY($1::BYTEA[])
+ORDER BY chunk_hash ASC
+`
+
+func (q *Queries) GetChunkHashes(ctx context.Context, chunkHash [][]byte) ([][]byte, error) {
+	rows, err := q.db.Query(ctx, getChunkHashes, chunkHash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items [][]byte
+	for rows.Next() {
+		var chunk_hash []byte
+		if err := rows.Scan(&chunk_hash); err != nil {
+			return nil, err
+		}
+		items = append(items, chunk_hash)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

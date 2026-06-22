@@ -329,6 +329,23 @@ func encodePostUserRepoBranchSnapshotResponse(response PostUserRepoBranchSnapsho
 
 		return nil
 
+	case *PostUserRepoBranchSnapshotUnprocessableEntity:
+		w.WriteHeader(422)
+
+		return nil
+
+	case *PostUserRepoBranchSnapshotFailedDependency:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(424)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	case *PostUserRepoBranchSnapshotInternalServerError:
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))

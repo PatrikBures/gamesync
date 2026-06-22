@@ -7,6 +7,8 @@ import (
 	"gamesync/internal/client/config"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/snapshoter"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -70,7 +72,7 @@ func newCreateRepoCmd(config *config.Config) *createRepoCmd {
 func populateCreateRepoOpts(opts *createRepoOpts, args []string) error {
 	opts.repoName = args[0]
 	if opts.repoName == "" {
-		return fmt.Errorf("Repo name can not be empty")
+		return fmt.Errorf("repo name can not be empty")
 	}
 	return nil
 }
@@ -85,9 +87,9 @@ func runCreateRepoCmd(client *api.Client, opts createRepoOpts, config config.Con
 	}
 	switch r := result.(type) {
 	case *api.PutUserRepoCreated:
-		fmt.Printf("Repo named '%s' created\n", opts.repoName)
+		fmt.Printf("repo named '%s' created\n", opts.repoName)
 	case *api.PutUserRepoConflict:
-		return fmt.Errorf("Repo named '%s' already exists", opts.repoName)
+		return fmt.Errorf("repo named '%s' already exists", opts.repoName)
 	case *api.PutUserRepoUnauthorized:
 		return fmt.Errorf("unauthorized")
 	case *api.PutUserRepoInternalServerError:
@@ -157,33 +159,63 @@ func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config co
 		return fmt.Errorf("generating chunks: %w", err)
 	}
 
-	request := api.OptSnapshotNew{}
-	// make capacity big enough for all files
-	request.Value.Files = make(api.SnapshotFiles, 0, len(files))
+	uploadChunks(client, files, api.PostUserRepoBranchSnapshotParams{
+		UserID: config.Server.UserID,
+		RepoName: opts.repoName,
+		BranchName: opts.branchName,
+	}, config)
 
+	return nil
+}
+
+func uploadChunks(client *api.Client, files []snapshoter.FileResults, params api.PostUserRepoBranchSnapshotParams, config config.Config) error {
+	request := api.SnapshotNew{}
+	// make capacity big enough for all files
+	request.Files = make([]api.File, 0, len(files))
 	for _, f := range files {
-		request.Value.Files = append(request.Value.Files, api.SnapshotFile{
+		request.Files = append(request.Files, api.File{
 			Path: f.Path,
 			Hash: f.Hash,
 			ChunkHashes: f.Hashes,
 		})
 	}
-
-	for _, f := range request.Value.Files {
-		fmt.Println()
-		fmt.Println("path:", f.Path)
-		fmt.Println("hash:", f.Hash)
-		fmt.Println("files:", len(f.ChunkHashes))
-		for _, c := range f.ChunkHashes {
-			fmt.Println(c)
+	for range 2 {
+		result, err := client.PostUserRepoBranchSnapshot(context.Background(), &request, params)
+		if err != nil {
+			return err
 		}
-
+		switch r := result.(type) {
+		case *api.PostUserRepoBranchSnapshotFailedDependency:
+			if err := uploadMissing(context.Background(), client, r.ChunkHashes, config.Global.ChunkDir); err != nil {
+				return err
+			}
+		case *api.PostUserRepoBranchSnapshotCreated:
+			fmt.Printf("Created snapshot for '%s' repo on branch '%s'\n", params.RepoName, params.BranchName)
+			return nil
+		default:
+			return fmt.Errorf("unrecognized type %T with result: %v", r, r)
+		}
 	}
+	return nil
+}
 
-	client.PostUserRepoBranchSnapshot(context.Background(), request, api.PostUserRepoBranchSnapshotParams{
-		UserID: config.Server.UserID,
-		RepoName: opts.repoName,
-		BranchName: opts.branchName,
-	})
+func uploadMissing(ctx context.Context, client *api.Client, chunkHashes []string, chunkDir string) error {
+	for i, ch := range chunkHashes {
+		path := filepath.Join(chunkDir, snapshoter.DirsForChunk(2, 2, ch), ch)
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		result, err := client.PutChunk(ctx, api.PutChunkReq{Data: f}, api.PutChunkParams{ChunkHash: ch})
+		if err != nil {
+			return err
+		}
+		switch r := result.(type) {
+		case *api.PutChunkOK, *api.PutChunkCreated:
+			fmt.Printf("uploaded chunk %d/%d\n", i+1, len(chunkHashes))
+		default:
+			return fmt.Errorf("uploading chunk: unrecognized type %T with result: %v", r, r)
+		}
+	}
 	return nil
 }
