@@ -35,11 +35,6 @@ const dirQty = 2
 // 4: asdf/asdf1234
 const dirLen = 2
 
-type chunkHash struct {
-	bytes [32]byte
-	hex   string
-}
-
 // handles the generation of chunks
 //
 // any chunks created will be in ChunkDir
@@ -55,12 +50,15 @@ type chunkGenInfo struct {
 	ChunksSkipped int64
 }
 
+// contains the path, hashes and error obtained when chunking file
 type FileResults struct {
+	Hash   string
 	Path   string
-	Hashes []chunkHash
+	Hashes []string
 	Err    error
 }
 
+// used to generate chunks
 func NewChunkGen(chunkDir string) *chunkGen {
 	return &chunkGen{chunkDir: chunkDir}
 }
@@ -77,8 +75,8 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
 			return nil
 		}
 		g.Go(func() error {
-			hashes, err := cg.chunkFile(path)
-			results <- FileResults{Path: path, Hashes: hashes, Err: err}
+			fileHash, hashes, err := cg.chunkFile(path)
+			results <- FileResults{Path: path, Hash: fileHash, Hashes: hashes, Err: err}
 			return err
 		})
 
@@ -108,34 +106,35 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
 
 // creates chunks from the file at path to chunkDir
 //
-// and returns a slice of the chunk hashes, including already existing ones
-func (cg *chunkGen) chunkFile(path string) ([]chunkHash, error) {
+// and returns file hash and slice of the chunk hashes, including already existing ones
+func (cg *chunkGen) chunkFile(path string) (string, []string, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	c := chunker.New(f, chunker.Pol(0x3DA3358B4DC173))
 
 	buf := make([]byte, 8*1024*1024)
 
-	chunkHashes := []chunkHash{}
+	chunkHashes := []string{}
+	fileHash := blake3.New(32, nil)
 
 	for chunkCount := 0; ; chunkCount++ {
 		chunk, err := c.Next(buf)
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return nil, err
+			return "", nil, err
 		}
 
-		chunkHash, chunkFile, err := cg.createChunk(chunk)
+		hashBytes, hashHex, chunkFile, err := cg.createChunk(chunk)
 		if err != nil {
-			return nil, err
+			return "", nil, err
 		}
 		// this means the chunk already exists
 		if chunkFile == nil {
 			atomic.AddInt64(&cg.Info.ChunksSkipped, 1)
-			chunkHashes = append(chunkHashes, chunkHash)
+			chunkHashes = append(chunkHashes, hashHex)
 			continue
 		}
 
@@ -143,24 +142,27 @@ func (cg *chunkGen) chunkFile(path string) ([]chunkHash, error) {
 		cerr := chunkFile.Close()
 		err = errors.Join(werr, cerr)
 		if err != nil {
-			return nil, fmt.Errorf("creating chunk for file %s, chunk nr %d, hash %s: %w", path, chunkCount+1, chunkHash.hex, err)
+			return "", nil, fmt.Errorf("creating chunk for file %s, chunk nr %d, hash %s: %w", path, chunkCount+1, hashHex, err)
 		}
-		chunkHashes = append(chunkHashes, chunkHash)
+		if _, err := fileHash.Write(hashBytes); err != nil {
+			return "", nil, fmt.Errorf("hashing chunk to form file hash: %w", err)
+		}
+		chunkHashes = append(chunkHashes, hashHex)
 		atomic.AddInt64(&cg.Info.ChunksCreated, 1)
 	}
-
-	return chunkHashes, nil
+	
+	return hex.EncodeToString(fileHash.Sum(nil)), chunkHashes, nil
 }
 
 // hashes chunk, creates the relative dirs, and opens the file (does not put any data in)
-func (cg *chunkGen) createChunk(chunk chunker.Chunk) (chunkHash, *os.File, error) {
-	ch := chunkHash{}
-	ch.bytes = blake3.Sum256(chunk.Data)
-	ch.hex = hex.EncodeToString(ch.bytes[:])
+func (cg *chunkGen) createChunk(chunk chunker.Chunk) ([]byte, string, *os.File, error) {
+	hashBytes := blake3.Sum256(chunk.Data)
+	hashSlice := hashBytes[:]
+	hashHex := hex.EncodeToString(hashSlice)
 
-	chunkFile, err := CreateChunkFile(cg.chunkDir, ch.hex); 
+	chunkFile, err := CreateChunkFile(cg.chunkDir, hashHex); 
 
-	return ch, chunkFile, err
+	return hashSlice, hashHex, chunkFile, err
 }
 
 // creates relative dirs in chunkDir and opens the file.

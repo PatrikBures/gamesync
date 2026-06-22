@@ -35,8 +35,6 @@ type Branches []string
 
 func (*Branches) getUserRepoBranchesRes() {}
 
-type ChunkHashes []string
-
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
 
@@ -264,52 +262,6 @@ func (o OptSnapshotNew) Get() (v SnapshotNew, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptSnapshotNew) Or(d SnapshotNew) SnapshotNew {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptString returns new OptString with value set to v.
-func NewOptString(v string) OptString {
-	return OptString{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptString is optional string.
-type OptString struct {
-	Value string
-	Set   bool
-}
-
-// IsSet returns true if OptString was set.
-func (o OptString) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptString) Reset() {
-	var v string
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptString) SetTo(v string) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptString) Get() (v string, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptString) Or(d string) string {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -730,38 +682,38 @@ func (s *RoleName) SetRoleName(val string) {
 
 // Ref: #/components/schemas/_SnapshotFile
 type SnapshotFile struct {
-	ChunkHashes ChunkHashes `json:"chunkHashes"`
-	Hash        OptString   `json:"hash"`
-	Path        OptString   `json:"path"`
+	ChunkHashes []string `json:"chunkHashes"`
+	Hash        string   `json:"hash"`
+	Path        string   `json:"path"`
 }
 
 // GetChunkHashes returns the value of ChunkHashes.
-func (s *SnapshotFile) GetChunkHashes() ChunkHashes {
+func (s *SnapshotFile) GetChunkHashes() []string {
 	return s.ChunkHashes
 }
 
 // GetHash returns the value of Hash.
-func (s *SnapshotFile) GetHash() OptString {
+func (s *SnapshotFile) GetHash() string {
 	return s.Hash
 }
 
 // GetPath returns the value of Path.
-func (s *SnapshotFile) GetPath() OptString {
+func (s *SnapshotFile) GetPath() string {
 	return s.Path
 }
 
 // SetChunkHashes sets the value of ChunkHashes.
-func (s *SnapshotFile) SetChunkHashes(val ChunkHashes) {
+func (s *SnapshotFile) SetChunkHashes(val []string) {
 	s.ChunkHashes = val
 }
 
 // SetHash sets the value of Hash.
-func (s *SnapshotFile) SetHash(val OptString) {
+func (s *SnapshotFile) SetHash(val string) {
 	s.Hash = val
 }
 
 // SetPath sets the value of Path.
-func (s *SnapshotFile) SetPath(val OptString) {
+func (s *SnapshotFile) SetPath(val string) {
 	s.Path = val
 }
 

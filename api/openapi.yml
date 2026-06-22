@@ -125,19 +125,21 @@ components:
           type: string
       required: [permName]
 
-    _ChunkHashes:
-      type: array
-      items: 
-        type: string
     _SnapshotFile:
       type: object
       properties:
         chunkHashes:
-          $ref: "#/components/schemas/_ChunkHashes"
+          type: array
+          items: 
+            type: string
         hash:
           type: string
         path:
           type: string
+      required:
+        - chunkHashes
+        - hash
+        - path
 
     _Chunk:
       type: string

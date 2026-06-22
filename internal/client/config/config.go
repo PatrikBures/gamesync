@@ -111,7 +111,7 @@ func cache(config *Config) error {
 		return err
 	}
 
-	config.Global.ChunkDir = filepath.Join(cacheDir, projectName)
+	config.Global.ChunkDir = filepath.Join(cacheDir, projectName, "chunks")
 
 	if err := createDirs([]string{
 		config.Global.ChunkDir,

@@ -6,6 +6,7 @@ import (
 	"gamesync/internal/client"
 	"gamesync/internal/client/config"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/snapshoter"
 
 	"github.com/spf13/cobra"
 )
@@ -24,6 +25,7 @@ func newCreateCmd(config *config.Config) *createCmd {
 	}
 	cmd.AddCommand(
 		newCreateRepoCmd(config).cmd,
+		newCreateSnapshotCmd(config).cmd,
 	)
 
 	root.cmd = cmd
@@ -105,15 +107,16 @@ type createSnapshotCmd struct {
 type createSnapshotOpts struct {
 	repoName string
 	branchName string
+	dir string
 }
 
 func newCreateSnapshotCmd(config *config.Config) *createSnapshotCmd {
 	root := createSnapshotCmd{}
 
 	cmd := &cobra.Command{
-		Use: "repo",
-		Short: "Create a new repo",
-		Args: cobra.ExactArgs(2),
+		Use: "snapshot",
+		Short: "Create a new snapshot",
+		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := client.Client(*config)
 			if err != nil {
@@ -129,20 +132,53 @@ func newCreateSnapshotCmd(config *config.Config) *createSnapshotCmd {
 		},
 	}
 
+	cmd.Flags().StringVarP(&root.opts.repoName, "repo", "r", "", "Repo where snapshot will be created at")
+	cmd.Flags().StringVarP(&root.opts.branchName, "branch", "b", "", "Branch for the snapshot")
+	cmd.Flags().StringVarP(&root.opts.dir, "dir", "d", "", "Directory which will be snapshoted")
+
+	cmd.MarkFlagRequired("repo")
+	cmd.MarkFlagRequired("branch")
+	cmd.MarkFlagRequired("dir")
+
 	root.cmd = cmd
 	return &root
 }
 
 func populateCreateSnapshotOpts(opts *createSnapshotOpts, args []string) error {
-	opts.repoName = args[0]
-	opts.branchName = args[1]
 	return nil
 }
 
 func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config config.Config) error {
-	request := api.OptSnapshotNew{}
 
-	request.Value.Files = append(request.Value.Files, api.SnapshotFile{})
+	chunkGen := snapshoter.NewChunkGen(config.Global.ChunkDir)
+	files, err := chunkGen.ChunkFilesInDir(opts.dir)
+	if err != nil {
+		snapshoter.PrintFileResultsErrors(files)
+		return fmt.Errorf("generating chunks: %w", err)
+	}
+
+	request := api.OptSnapshotNew{}
+	// make capacity big enough for all files
+	request.Value.Files = make(api.SnapshotFiles, 0, len(files))
+
+	for _, f := range files {
+		request.Value.Files = append(request.Value.Files, api.SnapshotFile{
+			Path: f.Path,
+			Hash: f.Hash,
+			ChunkHashes: f.Hashes,
+		})
+	}
+
+	for _, f := range request.Value.Files {
+		fmt.Println()
+		fmt.Println("path:", f.Path)
+		fmt.Println("hash:", f.Hash)
+		fmt.Println("files:", len(f.ChunkHashes))
+		for _, c := range f.ChunkHashes {
+			fmt.Println(c)
+		}
+
+	}
 
 	client.PostUserRepoBranchSnapshot(context.Background(), request, api.PostUserRepoBranchSnapshotParams{
 		UserID: config.Server.UserID,
