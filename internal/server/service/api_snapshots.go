@@ -42,12 +42,9 @@ func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.Snaps
 	}
 
 	allChunkHashes = deleteExistingChunks(allChunkHashes, existingChunks)
-	slog.Info("ach", "len", len(allChunkHashes))
 	if len(allChunkHashes) > 0 {
 		return &api.PostUserRepoBranchSnapshotFailedDependency{ChunkHashes: bytesToHex(allChunkHashes)}, nil
 	}
-
-	slog.Info("number of chunks in db", "chunks", len(existingChunks))
 
 	return &api.PostUserRepoBranchSnapshotCreated{}, nil
 }
