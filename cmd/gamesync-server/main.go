@@ -92,6 +92,7 @@ func start() error {
 	mw := []api.Middleware{
 		middlewares.AuthzMiddleware(),
 		middlewares.UserAuthz(),
+		middlewares.RepoBranch(db),
 	}
 
 	if c.requestLogs {

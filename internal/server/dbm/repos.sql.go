@@ -27,6 +27,24 @@ func (q *Queries) CreateRepo(ctx context.Context, arg CreateRepoParams) (int64, 
 	return repo_id, err
 }
 
+const getRepoWithName = `-- name: GetRepoWithName :one
+SELECT repo_id, user_id, repo_name FROM repos
+WHERE user_id = $1
+AND repo_name = $2
+`
+
+type GetRepoWithNameParams struct {
+	UserID   int64
+	RepoName string
+}
+
+func (q *Queries) GetRepoWithName(ctx context.Context, arg GetRepoWithNameParams) (Repo, error) {
+	row := q.db.QueryRow(ctx, getRepoWithName, arg.UserID, arg.RepoName)
+	var i Repo
+	err := row.Scan(&i.RepoID, &i.UserID, &i.RepoName)
+	return i, err
+}
+
 const listRepos = `-- name: ListRepos :many
 SELECT repo_id, user_id, repo_name FROM repos
 WHERE user_id = $1

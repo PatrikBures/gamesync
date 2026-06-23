@@ -6,6 +6,13 @@ WHERE repo_id = (
 )
 ;
 
+-- name: GetBranchWithName :one
+SELECT * FROM branches
+WHERE repo_id = $1
+AND branch_name = $2
+LIMIT 1
+;
+
 -- name: CreateBranch :exec
 INSERT INTO branches (repo_id, branch_name)
 VALUES ($1, $2)

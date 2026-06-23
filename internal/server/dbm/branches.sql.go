@@ -46,6 +46,29 @@ func (q *Queries) CreateBranchWithRepoName(ctx context.Context, arg CreateBranch
 	return err
 }
 
+const getBranchWithName = `-- name: GetBranchWithName :one
+SELECT branch_id, repo_id, branch_name, head_snapshot_id FROM branches
+WHERE repo_id = $1
+AND branch_name = $2
+`
+
+type GetBranchWithNameParams struct {
+	RepoID     int64
+	BranchName string
+}
+
+func (q *Queries) GetBranchWithName(ctx context.Context, arg GetBranchWithNameParams) (Branch, error) {
+	row := q.db.QueryRow(ctx, getBranchWithName, arg.RepoID, arg.BranchName)
+	var i Branch
+	err := row.Scan(
+		&i.BranchID,
+		&i.RepoID,
+		&i.BranchName,
+		&i.HeadSnapshotID,
+	)
+	return i, err
+}
+
 const listBranches = `-- name: ListBranches :many
 SELECT branch_id, repo_id, branch_name, head_snapshot_id FROM branches
 WHERE repo_id = (
