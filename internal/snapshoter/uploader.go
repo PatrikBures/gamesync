@@ -16,9 +16,8 @@ type uploader struct {
 	attempts int
 }
 
-type UploaderOpts struct {
-}
 
+// attempts needs to be at least 1, else it sets it to 1.
 func NewUploader(client *api.Client, params api.PostUserRepoBranchSnapshotParams, chunkDir string, attempts int) uploader {
 	if attempts < 1 {
 		attempts = 1
@@ -47,7 +46,7 @@ func (u *uploader) CreateSnapshot(files []FileResults) error {
 			ChunkHashes: f.Hashes,
 		})
 	}
-	for range 2 {
+	for range u.attempts {
 		result, err := u.client.PostUserRepoBranchSnapshot(context.Background(), &request, u.params)
 		if err != nil {
 			return err
@@ -60,11 +59,13 @@ func (u *uploader) CreateSnapshot(files []FileResults) error {
 		case *api.PostUserRepoBranchSnapshotCreated:
 			fmt.Printf("Created snapshot for '%s' repo on branch '%s'\n", u.params.RepoName, u.params.BranchName)
 			return nil
+		case *api.PostUserRepoBranchSnapshotUnprocessableEntity:
+			return fmt.Errorf("at least one of the provided hashes is not a valid")
 		default:
 			return fmt.Errorf("unrecognized type %T with result: %v", r, r)
 		}
 	}
-	return nil
+	return fmt.Errorf("did not succeed uploading snapshot in %d attempts", u.attempts)
 }
 
 func (s *uploader) uploadMissing(ctx context.Context, chunkHashes []string) error {
