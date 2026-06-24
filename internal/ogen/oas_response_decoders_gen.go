@@ -484,6 +484,9 @@ func decodePostUserRepoBranchSnapshotResponse(resp *http.Response) (res PostUser
 	case 401:
 		// Code 401.
 		return &PostUserRepoBranchSnapshotUnauthorized{}, nil
+	case 404:
+		// Code 404.
+		return &NotFound{}, nil
 	case 409:
 		// Code 409.
 		return &PostUserRepoBranchSnapshotConflict{}, nil

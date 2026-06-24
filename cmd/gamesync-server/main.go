@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/server"
 	serverConfig "gamesync/internal/server/config"
 	initServer "gamesync/internal/server/initialize"
 	middlewares "gamesync/internal/server/middleware"
@@ -104,6 +105,7 @@ func start() error {
 		s,
 		s,
 		api.WithMiddleware(mw...),
+		api.WithErrorHandler(server.ErrorHandler),
 		api.WithPathPrefix("/api/v1"),
 	)
 	if err != nil {

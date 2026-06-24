@@ -2,12 +2,14 @@ package middlewares
 
 import (
 	"context"
+	"errors"
 	"gamesync/internal/dbx"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
 	"gamesync/internal/server/service"
 	"log/slog"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/ogen-go/ogen/middleware"
 )
 
@@ -40,11 +42,11 @@ func RepoBranch(db *dbx.DB) middleware.Middleware {
 			RepoName: repoName,
 		})
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return middleware.Response{}, server.ErrRepoNotFound
+			}
 			slog.Error("getting repo", "userID", user.UserID, "repoName", repoName, "error", err)
 			return middleware.Response{}, server.ErrDatabase
-		}
-		if user.UserID < 1 {
-			return middleware.Response{}, server.ErrRepoNotFound
 		}
 		context.WithValue(req.Context, service.CkRepoID, repo.RepoID)
 
@@ -73,11 +75,11 @@ func RepoBranch(db *dbx.DB) middleware.Middleware {
 			BranchName: branchName,
 		})
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return middleware.Response{}, server.ErrBranchNotFound
+			}
 			slog.Error("getting branch", "repoID", repo.RepoID, "branchName", branchName, "error", err)
 			return middleware.Response{}, server.ErrDatabase
-		}
-		if branch.BranchID < 1 {
-			return middleware.Response{}, server.ErrBranchNotFound
 		}
 		context.WithValue(req.Context, service.CkBranchID, branch.BranchID)
 		

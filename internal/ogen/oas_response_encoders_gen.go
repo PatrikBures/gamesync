@@ -324,6 +324,11 @@ func encodePostUserRepoBranchSnapshotResponse(response PostUserRepoBranchSnapsho
 
 		return nil
 
+	case *NotFound:
+		w.WriteHeader(404)
+
+		return nil
+
 	case *PostUserRepoBranchSnapshotConflict:
 		w.WriteHeader(409)
 

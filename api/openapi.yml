@@ -28,6 +28,9 @@ tags:
     kind: nav
 
 components:
+  responses:
+    NotFound:
+      description: resource not found
   securitySchemes:
     bearerAuth:
       type: http
@@ -377,6 +380,8 @@ paths:
       responses:
         "201": {}
         "401": {}
+        "404":
+          $ref: "#/components/responses/NotFound"
         "409": {}
         "422":
           description: Invalid hashes

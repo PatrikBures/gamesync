@@ -49,7 +49,7 @@ func (u *uploader) CreateSnapshot(files []FileResults) error {
 	for range u.attempts {
 		result, err := u.client.PostUserRepoBranchSnapshot(context.Background(), &request, u.params)
 		if err != nil {
-			return err
+			return fmt.Errorf("posting snapshot: %w", err)
 		}
 		switch r := result.(type) {
 		case *api.PostUserRepoBranchSnapshotFailedDependency:
@@ -59,6 +59,8 @@ func (u *uploader) CreateSnapshot(files []FileResults) error {
 		case *api.PostUserRepoBranchSnapshotCreated:
 			fmt.Printf("Created snapshot for '%s' repo on branch '%s'\n", u.params.RepoName, u.params.BranchName)
 			return nil
+		case *api.NotFound:
+			return fmt.Errorf("either repo or branch does not exist")
 		case *api.PostUserRepoBranchSnapshotUnprocessableEntity:
 			return fmt.Errorf("at least one of the provided hashes is not a valid")
 		default:

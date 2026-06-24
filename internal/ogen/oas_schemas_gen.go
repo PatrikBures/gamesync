@@ -167,6 +167,11 @@ type GetUsersUnauthorized struct{}
 
 func (*GetUsersUnauthorized) getUsersRes() {}
 
+// Ref: #/components/responses/NotFound
+type NotFound struct{}
+
+func (*NotFound) postUserRepoBranchSnapshotRes() {}
+
 // NewOptPermDiff returns new OptPermDiff with value set to v.
 func NewOptPermDiff(v PermDiff) OptPermDiff {
 	return OptPermDiff{
