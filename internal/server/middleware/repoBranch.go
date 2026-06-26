@@ -7,7 +7,6 @@ import (
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
 	"gamesync/internal/server/service"
-	"log/slog"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/ogen-go/ogen/middleware"
@@ -32,8 +31,7 @@ func RepoBranch(db *dbx.DB) middleware.Middleware {
 		case string:
 			repoName = i
 		default:
-			slog.Error("repoName is not string", "path", req.Raw.URL.Path)
-			return middleware.Response{}, server.ErrAuth
+			return middleware.Response{}, server.NewInternalError(nil, "repoName is not string", "path", req.Raw.URL.Path)
 		}
 
 		user := req.Context.Value(service.CkUser).(dbm.User)
@@ -45,8 +43,10 @@ func RepoBranch(db *dbx.DB) middleware.Middleware {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return middleware.Response{}, server.ErrRepoNotFound
 			}
-			slog.Error("getting repo", "userID", user.UserID, "repoName", repoName, "error", err)
-			return middleware.Response{}, server.ErrDatabase
+			return middleware.Response{}, server.NewInternalError(err, "failed getting repo",
+				"userID", user.UserID,
+				"repoName", "repoName",
+			)
 		}
 		context.WithValue(req.Context, service.CkRepoID, repo.RepoID)
 
@@ -66,8 +66,7 @@ func RepoBranch(db *dbx.DB) middleware.Middleware {
 		case string:
 			branchName = i
 		default:
-			slog.Error("branchName is not string", "path", req.Raw.URL.Path)
-			return middleware.Response{}, server.ErrAuth
+			return middleware.Response{}, server.NewInternalError(nil, "branchName is not string", "path", req.Raw.URL.Path)
 		}
 
 		branch, err := db.ReadQuery().GetBranchWithName(req.Context, dbm.GetBranchWithNameParams{
@@ -78,8 +77,11 @@ func RepoBranch(db *dbx.DB) middleware.Middleware {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return middleware.Response{}, server.ErrBranchNotFound
 			}
-			slog.Error("getting branch", "repoID", repo.RepoID, "branchName", branchName, "error", err)
-			return middleware.Response{}, server.ErrDatabase
+			return middleware.Response{}, server.NewInternalError(err, "failed getting branch",
+				"userID", user.UserID,
+				"repoID", repo.RepoID,
+				"branchName", branchName,
+			)
 		}
 		context.WithValue(req.Context, service.CkBranchID, branch.BranchID)
 		

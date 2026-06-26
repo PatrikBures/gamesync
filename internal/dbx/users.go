@@ -8,14 +8,16 @@ import (
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
 	"log/slog"
+
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
-// error can be: ErrDatabase, ErrToken, ErrDuplicateKey or nil
+// error can be: InternalError, ErrUserNameConflict or nil
 func CreateUser(db *DB, ctx context.Context, user dbm.InsertUserParams) (userID int64, token64 string, err error) {
 	qtx, tx, err := db.BeginTX(ctx)
 	if err != nil {
-		slog.Error("starting tx", "error", err)
-		return
+		return 0, "", server.NewInternalError(err, "failed starting tx")
 	}
 
 	defer func() {
@@ -28,14 +30,19 @@ func CreateUser(db *DB, ctx context.Context, user dbm.InsertUserParams) (userID 
 
 	userID, err = qtx.InsertUser(ctx, user)
 	if err != nil {
-		slog.Error("inserting user", "user", user, "error", err)
-		return 0, "", server.ErrDatabase
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return 0, "", server.ErrUserNameConflict
+			}
+		}
+
+		return 0, "", server.NewInternalError(err, "failed inserting new user")
 	}
 
 	token, err := generateToken()
 	if err != nil {
-		slog.Error("generating token", "error", err)
-		return 0, "", server.ErrToken
+		return 0, "", server.NewInternalError(err, "failed generating new token", "userID", userID)
 	}
 	token64 = base64.URLEncoding.EncodeToString(token)
 	tokenHash := sha256.Sum256(token)
@@ -43,13 +50,11 @@ func CreateUser(db *DB, ctx context.Context, user dbm.InsertUserParams) (userID 
 	t := dbm.InsertTokenParams{UserID: userID, TokenHash: tokenHash[:]}
 	_, err = qtx.InsertToken(ctx, t)
 	if err != nil {
-		slog.Error("inserting token", "token", t, "error", err)
-		return 0, "", server.ErrDatabase
+		return 0, "", server.NewInternalError(err, "failed inserting token", "userID", userID)
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		slog.Error("commiting tx", "error", err)
-		return 0, "", server.ErrDatabase
+		return 0, "", server.NewInternalError(err, "committing tx when creating user", "userID", userID)
 	}
 
 	return

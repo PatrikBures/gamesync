@@ -6,7 +6,6 @@ import (
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
-	"log/slog"
 )
 
 
@@ -14,14 +13,12 @@ func (s *Service) PutChunk(ctx context.Context, req api.PutChunkReq, params api.
 
 	hash, err := hex.DecodeString(params.ChunkHash)
 	if err != nil {
-		slog.Warn("invalid chunk hash received", "error", err)
-		return &api.PutChunkNotAcceptable{}, nil
+		return nil, server.ErrInvalidHash
 	}
 
 	chunkExists, err := s.db.ReadQuery().CheckChunk(ctx, hash)
 	if err != nil {
-		slog.Error("failed checking if chunk exists", "chunkHash", params.ChunkHash, "error", err)
-		return &api.PutChunkInternalServerError{}, server.ErrFile
+		return nil, server.NewInternalError(err, "failed checking if chunk exists", "chunkHash", params.ChunkHash, "error", err)
 	}
 	if chunkExists {
 		return &api.PutChunkOK{}, nil
@@ -31,12 +28,10 @@ func (s *Service) PutChunk(ctx context.Context, req api.PutChunkReq, params api.
 	switch err {
 	case nil:
 		break
-	case server.ErrHashMismatch: 
-		return &api.PutChunkUnprocessableEntity{}, nil
-	case server.ErrChunkTooBig:
-		return &api.PutChunkRequestEntityTooLarge{}, nil
+	case server.ErrHashMismatch, server.ErrChunkTooBig: 
+		return nil, err
 	default:
-		return &api.PutChunkInternalServerError{}, err
+		return nil, server.NewInternalError(err, "failed storing chunk", "chunkHash", params.ChunkHash, "error", err)
 	}
 
 
@@ -44,8 +39,7 @@ func (s *Service) PutChunk(ctx context.Context, req api.PutChunkReq, params api.
 		ChunkHash: hash,
 		Bytes: bytes,
 	}); err != nil {
-		slog.Error("inserting chunk to database", "chunkHash", params.ChunkHash, "error", err)
-		return &api.PutChunkInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed inserting chunk to database", "chunkHash", params.ChunkHash, "error", err)
 		// TODO: should also delete the chunk file
 	}
 

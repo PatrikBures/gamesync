@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
-	"log/slog"
 	"slices"
 )
 
@@ -23,7 +22,7 @@ func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.Snaps
 		for _, c := range f.ChunkHashes {
 			s, err := hex.DecodeString(c)
 			if err != nil {
-				return &api.PostUserRepoBranchSnapshotUnprocessableEntity{}, nil
+				return nil, server.ErrInvalidHash
 			}
 			allChunkHashes = append(allChunkHashes, s)
 		}
@@ -37,8 +36,7 @@ func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.Snaps
 
 	existingChunks, err := s.db.ReadQuery().GetChunkHashes(ctx, allChunkHashes)
 	if err != nil {
-		slog.Error("getting existing chunks", "error", err)
-		return &api.PostUserRepoBranchSnapshotInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "getting existing chunks")
 	}
 
 	allChunkHashes = deleteExistingChunks(allChunkHashes, existingChunks)

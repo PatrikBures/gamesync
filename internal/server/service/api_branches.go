@@ -5,25 +5,27 @@ import (
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
-	"log/slog"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func (s *Service) GetUserRepoBranches(ctx context.Context, params api.GetUserRepoBranchesParams) (api.GetUserRepoBranchesRes, error) {
+func (s *Service) GetUserRepoBranches(ctx context.Context, params api.GetUserRepoBranchesParams) (api.Branches, error) {
 	branches, err := s.db.ReadQuery().ListBranches(ctx, params.RepoName)
 	if err != nil {
-		return &api.GetUserRepoBranchesInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed listing branches",
+			"userID", params.UserID,
+			"repoName", params.RepoName,
+		)
 	}
 	branchesReturn := make(api.Branches, 0, len(branches))
 	for _, b := range branches {
 		branchesReturn = append(branchesReturn, b.BranchName)
 	}
-	return &branchesReturn, nil
+	return branchesReturn, nil
 }
 
-func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoBranchParams) (api.PutUserRepoBranchRes, error) {
+func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoBranchParams) error {
 	if err := s.db.WriteQuery().CreateBranchWithRepoName(ctx, dbm.CreateBranchWithRepoNameParams{
 		UserID:     params.UserID,
 		RepoName:   params.RepoName,
@@ -32,14 +34,17 @@ func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoB
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return &api.PutUserRepoBranchConflict{}, nil
+				return server.ErrBranchNameConflict
 			case pgerrcode.ForeignKeyViolation:
-				return &api.PutUserRepoBranchNotFound{}, nil
+				return server.ErrBranchNotFound
 			}
 		}
-		slog.Error("failed creating branch", "UserID", "RepoName", params.RepoName, params.UserID, "BranchName", params.BranchName)
-		return &api.PutUserRepoBranchInternalServerError{}, server.ErrDatabase
+		return server.NewInternalError(err, "failed creating branch",
+			"userID", params.UserID,
+			"repoName", params.RepoName,
+			"branchName", params.BranchName,
+		)
 	}
 
-	return &api.PutUserRepoBranchCreated{}, nil
+	return nil
 }

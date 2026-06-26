@@ -27,7 +27,7 @@ func (UnimplementedHandler) GetHealth(ctx context.Context) error {
 // Get all available permissions.
 //
 // GET /perms
-func (UnimplementedHandler) GetPerms(ctx context.Context) (r GetPermsRes, _ error) {
+func (UnimplementedHandler) GetPerms(ctx context.Context) (r []PermWithName, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -36,7 +36,7 @@ func (UnimplementedHandler) GetPerms(ctx context.Context) (r GetPermsRes, _ erro
 // Get all permissions the role has.
 //
 // GET /roles/{roleID}/perms
-func (UnimplementedHandler) GetRolePerms(ctx context.Context, params GetRolePermsParams) (r GetRolePermsRes, _ error) {
+func (UnimplementedHandler) GetRolePerms(ctx context.Context, params GetRolePermsParams) (r PermNameArray, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -45,7 +45,7 @@ func (UnimplementedHandler) GetRolePerms(ctx context.Context, params GetRolePerm
 // Get all roles.
 //
 // GET /roles
-func (UnimplementedHandler) GetRoles(ctx context.Context) (r GetRolesRes, _ error) {
+func (UnimplementedHandler) GetRoles(ctx context.Context) (r []Role, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -54,7 +54,7 @@ func (UnimplementedHandler) GetRoles(ctx context.Context) (r GetRolesRes, _ erro
 // Get info about user.
 //
 // GET /users/{userID}
-func (UnimplementedHandler) GetUser(ctx context.Context, params GetUserParams) (r GetUserRes, _ error) {
+func (UnimplementedHandler) GetUser(ctx context.Context, params GetUserParams) (r *User, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -63,7 +63,7 @@ func (UnimplementedHandler) GetUser(ctx context.Context, params GetUserParams) (
 // Get all branches in repo.
 //
 // GET /users/{userID}/repos/{repoName}/branches
-func (UnimplementedHandler) GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (r GetUserRepoBranchesRes, _ error) {
+func (UnimplementedHandler) GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (r Branches, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -72,7 +72,7 @@ func (UnimplementedHandler) GetUserRepoBranches(ctx context.Context, params GetU
 // Get all repos owned by userID.
 //
 // GET /users/{userID}/repos
-func (UnimplementedHandler) GetUserRepos(ctx context.Context, params GetUserReposParams) (r GetUserReposRes, _ error) {
+func (UnimplementedHandler) GetUserRepos(ctx context.Context, params GetUserReposParams) (r Repos, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -81,7 +81,7 @@ func (UnimplementedHandler) GetUserRepos(ctx context.Context, params GetUserRepo
 // Get all users.
 //
 // GET /users
-func (UnimplementedHandler) GetUsers(ctx context.Context) (r GetUsersRes, _ error) {
+func (UnimplementedHandler) GetUsers(ctx context.Context) (r []User, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -90,7 +90,7 @@ func (UnimplementedHandler) GetUsers(ctx context.Context) (r GetUsersRes, _ erro
 // Patch perms for role.
 //
 // PATCH /roles/{roleID}/perms
-func (UnimplementedHandler) PatchRolePerms(ctx context.Context, req OptPermDiff, params PatchRolePermsParams) (r PatchRolePermsRes, _ error) {
+func (UnimplementedHandler) PatchRolePerms(ctx context.Context, req *PermDiff, params PatchRolePermsParams) (r PatchRolePermsRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -99,7 +99,7 @@ func (UnimplementedHandler) PatchRolePerms(ctx context.Context, req OptPermDiff,
 // Create new role.
 //
 // POST /roles
-func (UnimplementedHandler) PostRoles(ctx context.Context, req OptRoleName) (r PostRolesRes, _ error) {
+func (UnimplementedHandler) PostRoles(ctx context.Context, req *RoleName) (r *Role, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -117,7 +117,7 @@ func (UnimplementedHandler) PostUserRepoBranchSnapshot(ctx context.Context, req 
 // Create new user.
 //
 // POST /users
-func (UnimplementedHandler) PostUsers(ctx context.Context, req OptUserName) (r PostUsersRes, _ error) {
+func (UnimplementedHandler) PostUsers(ctx context.Context, req *UserName) (r *UserNewReturn, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -135,8 +135,8 @@ func (UnimplementedHandler) PutChunk(ctx context.Context, req PutChunkReq, param
 // Update role name.
 //
 // PUT /roles/{roleID}/name
-func (UnimplementedHandler) PutRoleName(ctx context.Context, req OptRoleName, params PutRoleNameParams) (r PutRoleNameRes, _ error) {
-	return r, ht.ErrNotImplemented
+func (UnimplementedHandler) PutRoleName(ctx context.Context, req *RoleName, params PutRoleNameParams) error {
+	return ht.ErrNotImplemented
 }
 
 // PutRolePerms implements put-role-perms operation.
@@ -153,8 +153,8 @@ func (UnimplementedHandler) PutRolePerms(ctx context.Context, req PermNameArray,
 // Change username of user.
 //
 // PUT /users/{userID}/name
-func (UnimplementedHandler) PutUserName(ctx context.Context, req OptUserName, params PutUserNameParams) (r PutUserNameRes, _ error) {
-	return r, ht.ErrNotImplemented
+func (UnimplementedHandler) PutUserName(ctx context.Context, req *UserName, params PutUserNameParams) error {
+	return ht.ErrNotImplemented
 }
 
 // PutUserRepo implements put-user-repo operation.
@@ -162,8 +162,8 @@ func (UnimplementedHandler) PutUserName(ctx context.Context, req OptUserName, pa
 // Create new repo and a default branch "main".
 //
 // PUT /users/{userID}/repos/{repoName}
-func (UnimplementedHandler) PutUserRepo(ctx context.Context, params PutUserRepoParams) (r PutUserRepoRes, _ error) {
-	return r, ht.ErrNotImplemented
+func (UnimplementedHandler) PutUserRepo(ctx context.Context, params PutUserRepoParams) error {
+	return ht.ErrNotImplemented
 }
 
 // PutUserRepoBranch implements put-user-repo-branch operation.
@@ -171,6 +171,14 @@ func (UnimplementedHandler) PutUserRepo(ctx context.Context, params PutUserRepoP
 // Create new branch in repo.
 //
 // PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-func (UnimplementedHandler) PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (r PutUserRepoBranchRes, _ error) {
-	return r, ht.ErrNotImplemented
+func (UnimplementedHandler) PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) error {
+	return ht.ErrNotImplemented
+}
+
+// NewError creates *GlobalErrorStatusCode from error returned by handler.
+//
+// Used for common default response.
+func (UnimplementedHandler) NewError(ctx context.Context, err error) (r *GlobalErrorStatusCode) {
+	r = new(GlobalErrorStatusCode)
+	return r
 }

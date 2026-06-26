@@ -5,62 +5,54 @@ import (
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
-	"log/slog"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func (s *Service) GetRoles(ctx context.Context) (api.GetRolesRes, error) {
+func (s *Service) GetRoles(ctx context.Context) ([]api.Role, error) {
 	roles, err := s.db.ReadQuery().ListRoles(ctx)
 	if err != nil {
-		slog.Error("listing roles", "error", err)
-		return &api.GetRolesInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed listing roles")
 	}
-	rolesReturn := make(api.GetRolesOKApplicationJSON, 0, len(roles))
+	rolesReturn := make([]api.Role, 0, len(roles))
 	for _, role := range roles {
 		rolesReturn = append(rolesReturn, api.Role{
 			RoleID:   role.RoleID,
 			RoleName: role.RoleName,
 		})
 	}
-	return &rolesReturn, nil
+	return rolesReturn, nil
 }
 
-func (s *Service) PostRoles(ctx context.Context, req api.OptRoleName) (api.PostRolesRes, error) {
-	if !req.Set {
-		return &api.PostRolesNotAcceptable{}, nil
-	}
-	roleID, err := s.db.WriteQuery().InsertRole(ctx, req.Value.RoleName)
+func (s *Service) PostRoles(ctx context.Context, req *api.RoleName) (*api.Role, error) {
+	roleID, err := s.db.WriteQuery().InsertRole(ctx, req.RoleName)
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return &api.PostRolesConflict{}, nil
+				return nil, server.ErrRoleNameConflict
 			}
 		}
-		return &api.PostRolesInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed inserting role", "roleName", req.RoleName)
 	}
-	return &api.Role{RoleID: roleID, RoleName: req.Value.RoleName}, nil
+	return &api.Role{RoleID: roleID, RoleName: req.RoleName}, nil
 }
 
-func (s *Service) PutRoleName(ctx context.Context, req api.OptRoleName, params api.PutRoleNameParams) (api.PutRoleNameRes, error) {
-	if !req.Set {
-		return &api.PutRoleNameNotAcceptable{}, nil
-	}
+func (s *Service) PutRoleName(ctx context.Context, req *api.RoleName, params api.PutRoleNameParams) (error) {
 	if err := s.db.WriteQuery().UpdateRoleName(ctx, dbm.UpdateRoleNameParams{
 		RoleID:   params.RoleID,
-		RoleName: req.Value.RoleName,
+		RoleName: req.RoleName,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return &api.PutRoleNameConflict{}, nil
+				return server.ErrRoleNameConflict
 			case pgerrcode.ForeignKeyViolation:
-				return &api.PutRoleNameNotFound{}, nil
+				return server.ErrRoleNotFound
 			}
 		}
-		return &api.PutRoleNameInternalServerError{}, server.ErrDatabase
+		return server.NewInternalError(err, "failed updating role name", "roleID", params.RoleID, "newRoleName", req.RoleName)
 	}
-	return &api.PutRoleNameOK{}, nil
+	return nil
 }

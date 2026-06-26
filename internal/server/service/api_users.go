@@ -13,51 +13,41 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (api.GetUserRes, error) {
+func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (*api.User, error) {
 	// TODO: Seperate endpoint like GET /users/me to get info about the authenticated user
 
 	user, err := s.db.ReadQuery().GetUser(ctx, params.UserID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return &api.GetUserNotFound{}, nil
+			return nil, server.ErrUserNotFound
 		}
-		return &api.GetUserInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed getting user", "userID", params.UserID)
 	}
 	return &api.User{UserID: user.UserID, UserName: user.UserName, RoleID: user.RoleID}, nil
 }
 
-func (s *Service) GetUsers(ctx context.Context) (api.GetUsersRes, error) {
+func (s *Service) GetUsers(ctx context.Context) ([]api.User, error) {
 	users, err := s.db.ReadQuery().ListUsers(ctx)
 	if err != nil {
-		return &api.GetUsersInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed getting users")
 	}
-	usersReturn := make(api.GetUsersOKApplicationJSON, 0, len(users))
+	usersReturn := make([]api.User, 0, len(users))
 	for _, user := range users {
 		usersReturn = append(usersReturn, api.User{UserID: user.UserID, UserName: user.UserName, RoleID: user.RoleID})
 	}
 
-	return &usersReturn, nil
+	return usersReturn, nil
 }
 
-func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result api.PostUsersRes, err error) {
-	if !req.Set {
-		return &api.PostUsersNotAcceptable{}, nil
-	}
+func (s *Service) PostUsers(ctx context.Context, req *api.UserName) (result *api.UserNewReturn, err error) {
 	user := dbm.InsertUserParams{
-		UserName: req.Value.UserName,
+		UserName: req.UserName,
 		RoleID:   s.o.DefaultRoleID,
 	}
 
 	userID, token64, err := dbx.CreateUser(s.db, ctx, user)
 	if err != nil {
-		switch err {
-		case server.ErrDatabase:
-			return &api.PostUsersInternalServerError{}, err
-		case server.ErrDuplicateKey:
-			return &api.PostUsersConflict{}, nil
-		case server.ErrToken:
-			return &api.PostUsersInternalServerError{}, nil
-		}
+		return nil, err
 	}
 
 	return &api.UserNewReturn{
@@ -68,25 +58,21 @@ func (s *Service) PostUsers(ctx context.Context, req api.OptUserName) (result ap
 	}, nil
 }
 
-func (s *Service) PutUserName(ctx context.Context, req api.OptUserName, params api.PutUserNameParams) (api.PutUserNameRes, error) {
-	if !req.Set {
-		return &api.PutUserNameNotAcceptable{}, nil
-	}
-
+func (s *Service) PutUserName(ctx context.Context, req *api.UserName, params api.PutUserNameParams) error {
 	if err := s.db.WriteQuery().UpdateUserName(ctx, dbm.UpdateUserNameParams{
 		UserID:   params.UserID,
-		UserName: req.Value.UserName,
+		UserName: req.UserName,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return &api.PutUserNameConflict{}, nil
+				return server.ErrUserNameConflict
 			case pgerrcode.ForeignKeyViolation:
-				return &api.PutUserNameNotFound{}, nil
+				return server.ErrUserNotFound
 			}
 		}
-		return &api.PutUserNameInternalServerError{}, server.ErrDatabase
+		return server.NewInternalError(err, "failed updating user name", "userID", params.UserID, "newUserName", req.UserName)
 	}
 
-	return &api.PutUserNameOK{}, nil
+	return nil
 }

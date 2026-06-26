@@ -20,8 +20,7 @@ func UserAuthz() middleware.Middleware {
 		case int64:
 			userID = i
 		default:
-			slog.Error("user id is not int64", "path", req.Raw.URL.Path)
-			return middleware.Response{}, server.ErrAuth
+			return middleware.Response{}, server.NewInternalError(nil, "userID is somehow not int64", "path", req.Raw.URL)
 		}
 
 		ctx := req.Context
@@ -29,17 +28,17 @@ func UserAuthz() middleware.Middleware {
 		switch req.OperationName {
 		case "PutUserName":
 			if err := UserOrPerm(ctx, userID, permissions.PermUserNameUpdate); err != nil {
-				return middleware.Response{}, server.ErrAuth
+				return middleware.Response{}, server.ErrNotAuthorized
 			}
 		case "GetUser":
 			if err := UserOrPerm(ctx, userID, permissions.PermUserGet); err != nil {
-				return middleware.Response{}, server.ErrAuth
+				return middleware.Response{}, server.ErrNotAuthorized
 			}
 		case "asdfasdf":
 			slog.Info("change role")
 		default:
 			if _, err := UserSelf(ctx, userID); err != nil {
-				return middleware.Response{}, server.ErrAuth
+				return middleware.Response{}, server.ErrNotAuthorized
 			}
 		}
 		return next(req)

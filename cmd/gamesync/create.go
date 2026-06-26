@@ -76,25 +76,14 @@ func populateCreateRepoOpts(opts *createRepoOpts, args []string) error {
 }
 
 func runCreateRepoCmd(client *api.Client, opts createRepoOpts, config config.Config) error {
-	result, err := client.PutUserRepo(context.Background(), api.PutUserRepoParams{
+	err := client.PutUserRepo(context.Background(), api.PutUserRepoParams{
 		UserID: config.Server.UserID,
 		RepoName: opts.repoName,
 	})
-	if err != nil {
+	if err := errHandler(err); err != nil {
 		return err
 	}
-	switch r := result.(type) {
-	case *api.PutUserRepoCreated:
-		fmt.Printf("repo named '%s' created\n", opts.repoName)
-	case *api.PutUserRepoConflict:
-		return fmt.Errorf("repo named '%s' already exists", opts.repoName)
-	case *api.PutUserRepoUnauthorized:
-		return fmt.Errorf("unauthorized")
-	case *api.PutUserRepoInternalServerError:
-		return fmt.Errorf("server error: %v", r)
-	default:
-		return fmt.Errorf("unrecognized type %T with result: %v", r, r)
-	} 
+	fmt.Printf("repo named '%s' created\n", opts.repoName)
 	return nil
 }
 

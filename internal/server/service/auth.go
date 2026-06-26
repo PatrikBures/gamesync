@@ -4,19 +4,22 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/permissions"
 	"log/slog"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.OperationName, t api.BearerAuth) (context.Context, error) {
 	tokenRaw := make([]byte, tokenLen)
 	if _, err := base64.URLEncoding.Decode(tokenRaw, []byte(t.Token)); err != nil {
-		return ctx, server.ErrToken
+		return ctx, server.ErrBase64
 	}
 	if len(tokenRaw) != tokenLen {
-		return ctx, server.ErrToken
+		return ctx, server.ErrTokenLength
 	}
 
 	tokenHash := sha256.Sum256(tokenRaw)
@@ -24,12 +27,14 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 
 	user, err := s.db.ReadQuery().GetUserFromToken(ctx, tokenHashSlice)
 	if err != nil {
-		slog.Warn("authorizing user, getting user", "user", user, "error", err)
-		return ctx, server.ErrNotAuthorized
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ctx, server.ErrNotAuthorized
+		}
+		return ctx, server.NewInternalError(err, "failed authorizing user", "userID", user.UserID)
 	}
 	userRolePerms, err := s.db.ReadQuery().ListRolePerms(ctx, user.RoleID)
 	if err != nil {
-		return ctx, server.ErrDatabase
+		return ctx, server.NewInternalError(err, "failed listing role perms", "roleID", user.RoleID)
 	}
 	perms := make(permissions.Perms, 0, len(userRolePerms))
 	for _, perm := range permissions.AllPerms {
@@ -42,7 +47,7 @@ func (s *Service) HandleBearerAuth(ctx context.Context, operationName api.Operat
 		}
 	}
 	if len(perms) != len(userRolePerms) {
-		slog.Error("Role has invalid RoleID", "RoleID", user.RoleID)
+		slog.Error("Role has unmapped permID(s)", "RoleID", user.RoleID)
 	}
 
 	ctx = context.WithValue(ctx, CkUser, user)

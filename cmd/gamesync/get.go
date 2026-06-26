@@ -88,45 +88,24 @@ func runGetUserCmd(client *api.Client, opts getUserOpts) (err error) {
 }
 
 func allUsers(client *api.Client) error {
-	result, err := client.GetUsers(context.Background())
-	if err != nil {
+	users, err := client.GetUsers(context.Background())
+	if err := errHandler(err); err != nil {
 		return err
 	}
-	switch r := result.(type) {
-	case *api.GetUsersOKApplicationJSON:
-		for _, user := range *r {
-			fmt.Println("name:", user.UserName, "ID:", user.UserID, "roleID:", user.RoleID)
-		}
-	case *api.GetUsersUnauthorized:
-		return fmt.Errorf("unauthorized")
-	case *api.GetUsersInternalServerError:
-		return fmt.Errorf("server error: %v", r)
-	default:
-		return fmt.Errorf("unrecognized type %T with result: %v", r, r)
+	for _, user := range users {
+		fmt.Println("name:", user.UserName, "ID:", user.UserID, "roleID:", user.RoleID)
 	}
 	return nil
 }
 
 func oneUser(client *api.Client, userID int64) error {
-	result, err := client.GetUser(
+	user, err := client.GetUser(
 		context.Background(),
 		api.GetUserParams{UserID: userID},
 	)
-	if err != nil {
+	if err := errHandler(err); err != nil {
 		return err
 	}
-	switch r := result.(type) {
-	case *api.User:
-		user := *r
-		fmt.Println("name:", user.UserName, "ID:", user.UserID, "roleID:", user.RoleID)
-	case *api.GetUserUnauthorized:
-		return fmt.Errorf("unauthorized")
-	case *api.GetUserNotFound:
-		return fmt.Errorf("user not found")
-	case *api.GetUserInternalServerError:
-		return fmt.Errorf("server error: %v", r)
-	default:
-		return fmt.Errorf("unrecognized type %T with result: %v", r, r)
-	}
+	fmt.Println("name:", user.UserName, "ID:", user.UserID, "roleID:", user.RoleID)
 	return nil
 }

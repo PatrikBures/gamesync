@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-faster/errors"
 	"github.com/go-faster/jx"
+	ht "github.com/ogen-go/ogen/http"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -17,226 +18,107 @@ func encodeGetHealthResponse(response *GetHealthOK, w http.ResponseWriter, span 
 	return nil
 }
 
-func encodeGetPermsResponse(response GetPermsRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *GetPermsOKApplicationJSON:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
+func encodeGetPermsResponse(response []PermWithName, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
 
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetPermsUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *GetPermsInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+	e := new(jx.Encoder)
+	e.ArrStart()
+	for _, elem := range response {
+		elem.Encode(e)
 	}
+	e.ArrEnd()
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
 }
 
-func encodeGetRolePermsResponse(response GetRolePermsRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *PermNameArray:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
+func encodeGetRolePermsResponse(response PermNameArray, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
 
-		e := new(jx.Encoder)
-		if response != nil {
-			response.Encode(e)
-		}
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetRolePermsUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *GetRolePermsNotFound:
-		w.WriteHeader(404)
-
-		return nil
-
-	case *GetRolePermsInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
 	}
+
+	return nil
 }
 
-func encodeGetRolesResponse(response GetRolesRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *GetRolesOKApplicationJSON:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
+func encodeGetRolesResponse(response []Role, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
 
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetRolesUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *GetRolesInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+	e := new(jx.Encoder)
+	e.ArrStart()
+	for _, elem := range response {
+		elem.Encode(e)
 	}
+	e.ArrEnd()
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
 }
 
-func encodeGetUserResponse(response GetUserRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *User:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
+func encodeGetUserResponse(response *User, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
 
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetUserUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *GetUserNotFound:
-		w.WriteHeader(404)
-
-		return nil
-
-	case *GetUserInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
 	}
+
+	return nil
 }
 
-func encodeGetUserRepoBranchesResponse(response GetUserRepoBranchesRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *Branches:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
+func encodeGetUserRepoBranchesResponse(response Branches, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
 
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetUserRepoBranchesUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *GetUserRepoBranchesInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
 	}
+
+	return nil
 }
 
-func encodeGetUserReposResponse(response GetUserReposRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *Repos:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
+func encodeGetUserReposResponse(response Repos, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
 
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetUserReposUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *GetUserReposInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
 	}
+
+	return nil
 }
 
-func encodeGetUsersResponse(response GetUsersRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *GetUsersOKApplicationJSON:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
+func encodeGetUsersResponse(response []User, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
 
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetUsersUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *GetUsersInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+	e := new(jx.Encoder)
+	e.ArrStart()
+	for _, elem := range response {
+		elem.Encode(e)
 	}
+	e.ArrEnd()
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
 }
 
 func encodePatchRolePermsResponse(response PatchRolePermsRes, w http.ResponseWriter, span trace.Span) error {
@@ -246,25 +128,27 @@ func encodePatchRolePermsResponse(response PatchRolePermsRes, w http.ResponseWri
 
 		return nil
 
-	case *PatchRolePermsUnauthorized:
-		w.WriteHeader(401)
+	case *GlobalErrorStatusCode:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		code := response.StatusCode
+		if code == 0 {
+			// Set default status code.
+			code = http.StatusOK
+		}
+		w.WriteHeader(code)
+		if code >= http.StatusInternalServerError {
+			span.SetStatus(codes.Error, http.StatusText(code))
+		}
 
-		return nil
+		e := new(jx.Encoder)
+		response.Response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
 
-	case *PatchRolePermsNotAcceptable:
-		w.WriteHeader(406)
-
-		return nil
-
-	case *PatchRolePermsUnprocessableEntity:
-		w.WriteHeader(422)
-
-		return nil
-
-	case *PatchRolePermsInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
+		if code >= http.StatusInternalServerError {
+			return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
+		}
 		return nil
 
 	default:
@@ -272,70 +156,23 @@ func encodePatchRolePermsResponse(response PatchRolePermsRes, w http.ResponseWri
 	}
 }
 
-func encodePostRolesResponse(response PostRolesRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *Role:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(201)
+func encodePostRolesResponse(response *Role, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(201)
 
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *PostRolesUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *PostRolesNotAcceptable:
-		w.WriteHeader(406)
-
-		return nil
-
-	case *PostRolesConflict:
-		w.WriteHeader(409)
-
-		return nil
-
-	case *PostRolesInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
 	}
+
+	return nil
 }
 
 func encodePostUserRepoBranchSnapshotResponse(response PostUserRepoBranchSnapshotRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *PostUserRepoBranchSnapshotCreated:
 		w.WriteHeader(201)
-
-		return nil
-
-	case *PostUserRepoBranchSnapshotUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *NotFound:
-		w.WriteHeader(404)
-
-		return nil
-
-	case *PostUserRepoBranchSnapshotConflict:
-		w.WriteHeader(409)
-
-		return nil
-
-	case *PostUserRepoBranchSnapshotUnprocessableEntity:
-		w.WriteHeader(422)
 
 		return nil
 
@@ -351,50 +188,22 @@ func encodePostUserRepoBranchSnapshotResponse(response PostUserRepoBranchSnapsho
 
 		return nil
 
-	case *PostUserRepoBranchSnapshotInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
 }
 
-func encodePostUsersResponse(response PostUsersRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *UserNewReturn:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(201)
+func encodePostUsersResponse(response *UserNewReturn, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(201)
 
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *PostUsersNotAcceptable:
-		w.WriteHeader(406)
-
-		return nil
-
-	case *PostUsersConflict:
-		w.WriteHeader(409)
-
-		return nil
-
-	case *PostUsersInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
 	}
+
+	return nil
 }
 
 func encodePutChunkResponse(response PutChunkRes, w http.ResponseWriter, span trace.Span) error {
@@ -409,73 +218,15 @@ func encodePutChunkResponse(response PutChunkRes, w http.ResponseWriter, span tr
 
 		return nil
 
-	case *PutChunkUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *PutChunkNotAcceptable:
-		w.WriteHeader(406)
-
-		return nil
-
-	case *PutChunkRequestEntityTooLarge:
-		w.WriteHeader(413)
-
-		return nil
-
-	case *PutChunkUnprocessableEntity:
-		w.WriteHeader(422)
-
-		return nil
-
-	case *PutChunkInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
 }
 
-func encodePutRoleNameResponse(response PutRoleNameRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *PutRoleNameOK:
-		w.WriteHeader(200)
+func encodePutRoleNameResponse(response *PutRoleNameOK, w http.ResponseWriter, span trace.Span) error {
+	w.WriteHeader(200)
 
-		return nil
-
-	case *PutRoleNameUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *PutRoleNameNotFound:
-		w.WriteHeader(404)
-
-		return nil
-
-	case *PutRoleNameNotAcceptable:
-		w.WriteHeader(406)
-
-		return nil
-
-	case *PutRoleNameConflict:
-		w.WriteHeader(409)
-
-		return nil
-
-	case *PutRoleNameInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
-	}
+	return nil
 }
 
 func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter, span trace.Span) error {
@@ -485,62 +236,15 @@ func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter,
 
 		return nil
 
-	case *PutRolePermsUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *PutRolePermsNotAcceptable:
-		w.WriteHeader(406)
-
-		return nil
-
-	case *PutRolePermsUnprocessableEntity:
+	case *Error:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(422)
 
-		return nil
-
-	case *PutRolePermsInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
-	}
-}
-
-func encodePutUserNameResponse(response PutUserNameRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *PutUserNameOK:
-		w.WriteHeader(200)
-
-		return nil
-
-	case *PutUserNameUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *PutUserNameNotFound:
-		w.WriteHeader(404)
-
-		return nil
-
-	case *PutUserNameNotAcceptable:
-		w.WriteHeader(406)
-
-		return nil
-
-	case *PutUserNameConflict:
-		w.WriteHeader(409)
-
-		return nil
-
-	case *PutUserNameInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
 
 		return nil
 
@@ -549,63 +253,45 @@ func encodePutUserNameResponse(response PutUserNameRes, w http.ResponseWriter, s
 	}
 }
 
-func encodePutUserRepoResponse(response PutUserRepoRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *PutUserRepoCreated:
-		w.WriteHeader(201)
+func encodePutUserNameResponse(response *PutUserNameOK, w http.ResponseWriter, span trace.Span) error {
+	w.WriteHeader(200)
 
-		return nil
-
-	case *PutUserRepoUnauthorized:
-		w.WriteHeader(401)
-
-		return nil
-
-	case *PutUserRepoConflict:
-		w.WriteHeader(409)
-
-		return nil
-
-	case *PutUserRepoInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
-	}
+	return nil
 }
 
-func encodePutUserRepoBranchResponse(response PutUserRepoBranchRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *PutUserRepoBranchCreated:
-		w.WriteHeader(201)
+func encodePutUserRepoResponse(response *PutUserRepoCreated, w http.ResponseWriter, span trace.Span) error {
+	w.WriteHeader(201)
 
-		return nil
+	return nil
+}
 
-	case *PutUserRepoBranchUnauthorized:
-		w.WriteHeader(401)
+func encodePutUserRepoBranchResponse(response *PutUserRepoBranchCreated, w http.ResponseWriter, span trace.Span) error {
+	w.WriteHeader(201)
 
-		return nil
+	return nil
+}
 
-	case *PutUserRepoBranchNotFound:
-		w.WriteHeader(404)
-
-		return nil
-
-	case *PutUserRepoBranchConflict:
-		w.WriteHeader(409)
-
-		return nil
-
-	case *PutUserRepoBranchInternalServerError:
-		w.WriteHeader(500)
-		span.SetStatus(codes.Error, http.StatusText(500))
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
+func encodeErrorResponse(response *GlobalErrorStatusCode, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	code := response.StatusCode
+	if code == 0 {
+		// Set default status code.
+		code = http.StatusOK
 	}
+	w.WriteHeader(code)
+	if code >= http.StatusInternalServerError {
+		span.SetStatus(codes.Error, http.StatusText(code))
+	}
+
+	e := new(jx.Encoder)
+	response.Response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	if code >= http.StatusInternalServerError {
+		return errors.Wrapf(ht.ErrInternalServerErrorResponse, "code: %d, message: %s", code, http.StatusText(code))
+	}
+	return nil
+
 }

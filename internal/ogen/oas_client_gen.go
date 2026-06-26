@@ -40,55 +40,55 @@ type Invoker interface {
 	// Get all available permissions.
 	//
 	// GET /perms
-	GetPerms(ctx context.Context) (GetPermsRes, error)
+	GetPerms(ctx context.Context) ([]PermWithName, error)
 	// GetRolePerms invokes get-role-perms operation.
 	//
 	// Get all permissions the role has.
 	//
 	// GET /roles/{roleID}/perms
-	GetRolePerms(ctx context.Context, params GetRolePermsParams) (GetRolePermsRes, error)
+	GetRolePerms(ctx context.Context, params GetRolePermsParams) (PermNameArray, error)
 	// GetRoles invokes get-roles operation.
 	//
 	// Get all roles.
 	//
 	// GET /roles
-	GetRoles(ctx context.Context) (GetRolesRes, error)
+	GetRoles(ctx context.Context) ([]Role, error)
 	// GetUser invokes get-user operation.
 	//
 	// Get info about user.
 	//
 	// GET /users/{userID}
-	GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error)
+	GetUser(ctx context.Context, params GetUserParams) (*User, error)
 	// GetUserRepoBranches invokes get-user-repo-branches operation.
 	//
 	// Get all branches in repo.
 	//
 	// GET /users/{userID}/repos/{repoName}/branches
-	GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (GetUserRepoBranchesRes, error)
+	GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (Branches, error)
 	// GetUserRepos invokes get-user-repos operation.
 	//
 	// Get all repos owned by userID.
 	//
 	// GET /users/{userID}/repos
-	GetUserRepos(ctx context.Context, params GetUserReposParams) (GetUserReposRes, error)
+	GetUserRepos(ctx context.Context, params GetUserReposParams) (Repos, error)
 	// GetUsers invokes get-users operation.
 	//
 	// Get all users.
 	//
 	// GET /users
-	GetUsers(ctx context.Context) (GetUsersRes, error)
+	GetUsers(ctx context.Context) ([]User, error)
 	// PatchRolePerms invokes patch-role-perms operation.
 	//
 	// Patch perms for role.
 	//
 	// PATCH /roles/{roleID}/perms
-	PatchRolePerms(ctx context.Context, request OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
+	PatchRolePerms(ctx context.Context, request *PermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
 	// PostRoles invokes post-roles operation.
 	//
 	// Create new role.
 	//
 	// POST /roles
-	PostRoles(ctx context.Context, request OptRoleName) (PostRolesRes, error)
+	PostRoles(ctx context.Context, request *RoleName) (*Role, error)
 	// PostUserRepoBranchSnapshot invokes post-user-repo-branch-snapshot operation.
 	//
 	// Create new snapshot.
@@ -100,7 +100,7 @@ type Invoker interface {
 	// Create new user.
 	//
 	// POST /users
-	PostUsers(ctx context.Context, request OptUserName) (PostUsersRes, error)
+	PostUsers(ctx context.Context, request *UserName) (*UserNewReturn, error)
 	// PutChunk invokes put-chunk operation.
 	//
 	// Upload chunk.
@@ -112,7 +112,7 @@ type Invoker interface {
 	// Update role name.
 	//
 	// PUT /roles/{roleID}/name
-	PutRoleName(ctx context.Context, request OptRoleName, params PutRoleNameParams) (PutRoleNameRes, error)
+	PutRoleName(ctx context.Context, request *RoleName, params PutRoleNameParams) error
 	// PutRolePerms invokes put-role-perms operation.
 	//
 	// Set perms for role.
@@ -124,19 +124,19 @@ type Invoker interface {
 	// Change username of user.
 	//
 	// PUT /users/{userID}/name
-	PutUserName(ctx context.Context, request OptUserName, params PutUserNameParams) (PutUserNameRes, error)
+	PutUserName(ctx context.Context, request *UserName, params PutUserNameParams) error
 	// PutUserRepo invokes put-user-repo operation.
 	//
 	// Create new repo and a default branch "main".
 	//
 	// PUT /users/{userID}/repos/{repoName}
-	PutUserRepo(ctx context.Context, params PutUserRepoParams) (PutUserRepoRes, error)
+	PutUserRepo(ctx context.Context, params PutUserRepoParams) error
 	// PutUserRepoBranch invokes put-user-repo-branch operation.
 	//
 	// Create new branch in repo.
 	//
 	// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-	PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (PutUserRepoBranchRes, error)
+	PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) error
 }
 
 // Client implements OAS client.
@@ -265,12 +265,12 @@ func (c *Client) sendGetHealth(ctx context.Context) (res *GetHealthOK, err error
 // Get all available permissions.
 //
 // GET /perms
-func (c *Client) GetPerms(ctx context.Context) (GetPermsRes, error) {
+func (c *Client) GetPerms(ctx context.Context) ([]PermWithName, error) {
 	res, err := c.sendGetPerms(ctx)
 	return res, err
 }
 
-func (c *Client) sendGetPerms(ctx context.Context) (res GetPermsRes, err error) {
+func (c *Client) sendGetPerms(ctx context.Context) (res []PermWithName, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-perms"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -378,12 +378,12 @@ func (c *Client) sendGetPerms(ctx context.Context) (res GetPermsRes, err error) 
 // Get all permissions the role has.
 //
 // GET /roles/{roleID}/perms
-func (c *Client) GetRolePerms(ctx context.Context, params GetRolePermsParams) (GetRolePermsRes, error) {
+func (c *Client) GetRolePerms(ctx context.Context, params GetRolePermsParams) (PermNameArray, error) {
 	res, err := c.sendGetRolePerms(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetRolePerms(ctx context.Context, params GetRolePermsParams) (res GetRolePermsRes, err error) {
+func (c *Client) sendGetRolePerms(ctx context.Context, params GetRolePermsParams) (res PermNameArray, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-role-perms"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -510,12 +510,12 @@ func (c *Client) sendGetRolePerms(ctx context.Context, params GetRolePermsParams
 // Get all roles.
 //
 // GET /roles
-func (c *Client) GetRoles(ctx context.Context) (GetRolesRes, error) {
+func (c *Client) GetRoles(ctx context.Context) ([]Role, error) {
 	res, err := c.sendGetRoles(ctx)
 	return res, err
 }
 
-func (c *Client) sendGetRoles(ctx context.Context) (res GetRolesRes, err error) {
+func (c *Client) sendGetRoles(ctx context.Context) (res []Role, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-roles"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -623,12 +623,12 @@ func (c *Client) sendGetRoles(ctx context.Context) (res GetRolesRes, err error) 
 // Get info about user.
 //
 // GET /users/{userID}
-func (c *Client) GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error) {
+func (c *Client) GetUser(ctx context.Context, params GetUserParams) (*User, error) {
 	res, err := c.sendGetUser(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetUser(ctx context.Context, params GetUserParams) (res GetUserRes, err error) {
+func (c *Client) sendGetUser(ctx context.Context, params GetUserParams) (res *User, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-user"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -754,12 +754,12 @@ func (c *Client) sendGetUser(ctx context.Context, params GetUserParams) (res Get
 // Get all branches in repo.
 //
 // GET /users/{userID}/repos/{repoName}/branches
-func (c *Client) GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (GetUserRepoBranchesRes, error) {
+func (c *Client) GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (Branches, error) {
 	res, err := c.sendGetUserRepoBranches(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (res GetUserRepoBranchesRes, err error) {
+func (c *Client) sendGetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (res Branches, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-user-repo-branches"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -905,12 +905,12 @@ func (c *Client) sendGetUserRepoBranches(ctx context.Context, params GetUserRepo
 // Get all repos owned by userID.
 //
 // GET /users/{userID}/repos
-func (c *Client) GetUserRepos(ctx context.Context, params GetUserReposParams) (GetUserReposRes, error) {
+func (c *Client) GetUserRepos(ctx context.Context, params GetUserReposParams) (Repos, error) {
 	res, err := c.sendGetUserRepos(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetUserRepos(ctx context.Context, params GetUserReposParams) (res GetUserReposRes, err error) {
+func (c *Client) sendGetUserRepos(ctx context.Context, params GetUserReposParams) (res Repos, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-user-repos"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -1037,12 +1037,12 @@ func (c *Client) sendGetUserRepos(ctx context.Context, params GetUserReposParams
 // Get all users.
 //
 // GET /users
-func (c *Client) GetUsers(ctx context.Context) (GetUsersRes, error) {
+func (c *Client) GetUsers(ctx context.Context) ([]User, error) {
 	res, err := c.sendGetUsers(ctx)
 	return res, err
 }
 
-func (c *Client) sendGetUsers(ctx context.Context) (res GetUsersRes, err error) {
+func (c *Client) sendGetUsers(ctx context.Context) (res []User, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-users"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -1150,12 +1150,12 @@ func (c *Client) sendGetUsers(ctx context.Context) (res GetUsersRes, err error) 
 // Patch perms for role.
 //
 // PATCH /roles/{roleID}/perms
-func (c *Client) PatchRolePerms(ctx context.Context, request OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error) {
+func (c *Client) PatchRolePerms(ctx context.Context, request *PermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error) {
 	res, err := c.sendPatchRolePerms(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPatchRolePerms(ctx context.Context, request OptPermDiff, params PatchRolePermsParams) (res PatchRolePermsRes, err error) {
+func (c *Client) sendPatchRolePerms(ctx context.Context, request *PermDiff, params PatchRolePermsParams) (res PatchRolePermsRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("patch-role-perms"),
 		semconv.HTTPRequestMethodKey.String("PATCH"),
@@ -1285,12 +1285,12 @@ func (c *Client) sendPatchRolePerms(ctx context.Context, request OptPermDiff, pa
 // Create new role.
 //
 // POST /roles
-func (c *Client) PostRoles(ctx context.Context, request OptRoleName) (PostRolesRes, error) {
+func (c *Client) PostRoles(ctx context.Context, request *RoleName) (*Role, error) {
 	res, err := c.sendPostRoles(ctx, request)
 	return res, err
 }
 
-func (c *Client) sendPostRoles(ctx context.Context, request OptRoleName) (res PostRolesRes, err error) {
+func (c *Client) sendPostRoles(ctx context.Context, request *RoleName) (res *Role, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("post-roles"),
 		semconv.HTTPRequestMethodKey.String("POST"),
@@ -1574,12 +1574,12 @@ func (c *Client) sendPostUserRepoBranchSnapshot(ctx context.Context, request *Sn
 // Create new user.
 //
 // POST /users
-func (c *Client) PostUsers(ctx context.Context, request OptUserName) (PostUsersRes, error) {
+func (c *Client) PostUsers(ctx context.Context, request *UserName) (*UserNewReturn, error) {
 	res, err := c.sendPostUsers(ctx, request)
 	return res, err
 }
 
-func (c *Client) sendPostUsers(ctx context.Context, request OptUserName) (res PostUsersRes, err error) {
+func (c *Client) sendPostUsers(ctx context.Context, request *UserName) (res *UserNewReturn, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("post-users"),
 		semconv.HTTPRequestMethodKey.String("POST"),
@@ -1791,12 +1791,12 @@ func (c *Client) sendPutChunk(ctx context.Context, request PutChunkReq, params P
 // Update role name.
 //
 // PUT /roles/{roleID}/name
-func (c *Client) PutRoleName(ctx context.Context, request OptRoleName, params PutRoleNameParams) (PutRoleNameRes, error) {
-	res, err := c.sendPutRoleName(ctx, request, params)
-	return res, err
+func (c *Client) PutRoleName(ctx context.Context, request *RoleName, params PutRoleNameParams) error {
+	_, err := c.sendPutRoleName(ctx, request, params)
+	return err
 }
 
-func (c *Client) sendPutRoleName(ctx context.Context, request OptRoleName, params PutRoleNameParams) (res PutRoleNameRes, err error) {
+func (c *Client) sendPutRoleName(ctx context.Context, request *RoleName, params PutRoleNameParams) (res *PutRoleNameOK, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("put-role-name"),
 		semconv.HTTPRequestMethodKey.String("PUT"),
@@ -2061,12 +2061,12 @@ func (c *Client) sendPutRolePerms(ctx context.Context, request PermNameArray, pa
 // Change username of user.
 //
 // PUT /users/{userID}/name
-func (c *Client) PutUserName(ctx context.Context, request OptUserName, params PutUserNameParams) (PutUserNameRes, error) {
-	res, err := c.sendPutUserName(ctx, request, params)
-	return res, err
+func (c *Client) PutUserName(ctx context.Context, request *UserName, params PutUserNameParams) error {
+	_, err := c.sendPutUserName(ctx, request, params)
+	return err
 }
 
-func (c *Client) sendPutUserName(ctx context.Context, request OptUserName, params PutUserNameParams) (res PutUserNameRes, err error) {
+func (c *Client) sendPutUserName(ctx context.Context, request *UserName, params PutUserNameParams) (res *PutUserNameOK, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("put-user-name"),
 		semconv.HTTPRequestMethodKey.String("PUT"),
@@ -2196,12 +2196,12 @@ func (c *Client) sendPutUserName(ctx context.Context, request OptUserName, param
 // Create new repo and a default branch "main".
 //
 // PUT /users/{userID}/repos/{repoName}
-func (c *Client) PutUserRepo(ctx context.Context, params PutUserRepoParams) (PutUserRepoRes, error) {
-	res, err := c.sendPutUserRepo(ctx, params)
-	return res, err
+func (c *Client) PutUserRepo(ctx context.Context, params PutUserRepoParams) error {
+	_, err := c.sendPutUserRepo(ctx, params)
+	return err
 }
 
-func (c *Client) sendPutUserRepo(ctx context.Context, params PutUserRepoParams) (res PutUserRepoRes, err error) {
+func (c *Client) sendPutUserRepo(ctx context.Context, params PutUserRepoParams) (res *PutUserRepoCreated, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("put-user-repo"),
 		semconv.HTTPRequestMethodKey.String("PUT"),
@@ -2346,12 +2346,12 @@ func (c *Client) sendPutUserRepo(ctx context.Context, params PutUserRepoParams) 
 // Create new branch in repo.
 //
 // PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-func (c *Client) PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (PutUserRepoBranchRes, error) {
-	res, err := c.sendPutUserRepoBranch(ctx, params)
-	return res, err
+func (c *Client) PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) error {
+	_, err := c.sendPutUserRepoBranch(ctx, params)
+	return err
 }
 
-func (c *Client) sendPutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (res PutUserRepoBranchRes, err error) {
+func (c *Client) sendPutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (res *PutUserRepoBranchCreated, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("put-user-repo-branch"),
 		semconv.HTTPRequestMethodKey.String("PUT"),

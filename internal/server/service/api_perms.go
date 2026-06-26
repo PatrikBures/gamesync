@@ -6,17 +6,17 @@ import (
 	"gamesync/internal/server"
 )
 
-func (s *Service) GetPerms(ctx context.Context) (api.GetPermsRes, error) {
+func (s *Service) GetPerms(ctx context.Context) ([]api.PermWithName, error) {
 	perms, err := s.db.ReadQuery().ListPermissions(ctx)
 	if err != nil {
-		return &api.GetPermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed listing permissions", "error", err)
 	}
-	permsReturn := make(api.GetPermsOKApplicationJSON, 0, len(perms))
+	permsReturn := make([]api.PermWithName, 0, len(perms))
 	for _, perm := range perms {
 		permsReturn = append(permsReturn, api.PermWithName{
 			PermID:   api.Perm(perm.PermID),
 			PermName: perm.PermName,
 		})
 	}
-	return &permsReturn, nil
+	return permsReturn, nil
 }

@@ -47,8 +47,7 @@ func (l *local) Exists(ctx context.Context, hash string) (bool, error) {
 	chunkFilePath := l.chunkFilePath(hash)
 	d, err := os.Stat(chunkFilePath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		slog.Error("stating chunk file", "error", err)
-		return false, server.ErrFile
+		return false, server.NewInternalError(err, "failed stating chunk file")
 	}
 	if d != nil {
 		return true, nil
@@ -63,11 +62,11 @@ func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompr
 	tmpFile, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0664)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
-			slog.Warn("multiple uploads of same chunk occured at the same time", "chunkHash", hash)
-			return 0, server.ErrDuplicateKey
+			// the file is already being uploaded so return no error
+			return 0, nil
 		}
 		slog.Error("creating tmp file", "chunkHash", hash, "error", err)
-		return 0, server.ErrFile
+		return 0, server.NewInternalError(err, "failed creating tmp file", "chunkHash", hash)
 	}
 	defer func() {
 		if err != nil {
@@ -80,18 +79,17 @@ func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompr
 
 	uncompressedBytes, actualHashBytes, err := l.writeAndHash(data, tmpFile)
 	if err != nil {
-		return 0, err // it is fine to return the error here directly as the function handles it
+		return 0, err // it is fine to return the error here directly
 	}
 
 	// make sure the entire file is written to disk
 	if err = tmpFile.Sync(); err != nil {
-		slog.Error("syncing tmp file", "error", err)
-		return 0, server.ErrFile
+		return 0, server.NewInternalError(err, "failed syncing tmp chunk file")
 	}
 
 	if err = tmpFile.Close(); err != nil {
 		slog.Error("closing chunk file", "error", err)
-		return 0, server.ErrFileClose
+		return 0, server.NewInternalError(err, "failed closing chunk file")
 	}
 
 	actualHash := hex.EncodeToString(actualHashBytes)
@@ -105,15 +103,13 @@ func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompr
 	chunkFileDir := l.chunkFileDir(hash)
 	chunkFilePath := l.chunkFilePathDir(chunkFileDir, hash)
 	if err = os.MkdirAll(chunkFileDir, 0775); err != nil {
-		slog.Error("creating chunk file dir", "error", err)
-		return 0, server.ErrFile
+		return 0, server.NewInternalError(err, "failed creating chunk file dir")
 	}
 	if err = os.Rename(tmpPath, chunkFilePath); err != nil {
-		slog.Error("renaming chunk", "error", err)
-		return 0, server.ErrFile
+		return 0, server.NewInternalError(err, "failed renaming chunk file to correct path")
 	}
 
-	// clear error so defer does not delete file
+	// clear error just in case, so defer does not delete file
 	err = nil
 	return
 }
@@ -124,8 +120,7 @@ func (l *local) writeAndHash(src io.Reader, dst io.Writer) (int64, []byte, error
 
 	decoder, err := zstd.NewReader(dataCopy)
 	if err != nil {
-		slog.Error("initializing ztsd reader", "error", err)
-		return 0, nil, server.ErrDecompress
+		return 0, nil, server.NewInternalError(err, "initializing zstd reader")
 	}
 	defer decoder.Close()
 
@@ -140,8 +135,7 @@ func (l *local) writeAndHash(src io.Reader, dst io.Writer) (int64, []byte, error
 		if errors.Is(err, server.ErrChunkTooBig) {
 			return 0, nil, err
 		}
-		slog.Error("reading/hashing chunk", "error", err)
-		return 0, nil, server.ErrHashing
+		return 0, nil, server.NewInternalError(err, "reading/hashing chunk")
 	}
 
 	return limitedData.n, hasher.Sum(nil), nil

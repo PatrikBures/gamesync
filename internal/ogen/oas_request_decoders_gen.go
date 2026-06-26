@@ -15,7 +15,7 @@ import (
 )
 
 func (s *Server) decodePatchRolePermsRequest(r *http.Request) (
-	req OptPermDiff,
+	req *PermDiff,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -35,9 +35,6 @@ func (s *Server) decodePatchRolePermsRequest(r *http.Request) (
 			rerr = errors.Join(rerr, close())
 		}
 	}()
-	if _, ok := r.Header["Content-Type"]; !ok && r.ContentLength == 0 {
-		return req, rawBody, close, nil
-	}
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
 		return req, rawBody, close, errors.Wrap(err, "parse media type")
@@ -45,7 +42,7 @@ func (s *Server) decodePatchRolePermsRequest(r *http.Request) (
 	switch {
 	case ct == "application/json":
 		if r.ContentLength == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 		buf, err := io.ReadAll(r.Body)
 		defer func() {
@@ -59,15 +56,14 @@ func (s *Server) decodePatchRolePermsRequest(r *http.Request) (
 		r.Body = io.NopCloser(bytes.NewBuffer(buf))
 
 		if len(buf) == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request OptPermDiff
+		var request PermDiff
 		if err := func() error {
-			request.Reset()
 			if err := request.Decode(d); err != nil {
 				return err
 			}
@@ -83,14 +79,22 @@ func (s *Server) decodePatchRolePermsRequest(r *http.Request) (
 			}
 			return req, rawBody, close, err
 		}
-		return request, rawBody, close, nil
+		if err := func() error {
+			if err := request.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return req, rawBody, close, errors.Wrap(err, "validate")
+		}
+		return &request, rawBody, close, nil
 	default:
 		return req, rawBody, close, validate.InvalidContentType(ct)
 	}
 }
 
 func (s *Server) decodePostRolesRequest(r *http.Request) (
-	req OptRoleName,
+	req *RoleName,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -110,9 +114,6 @@ func (s *Server) decodePostRolesRequest(r *http.Request) (
 			rerr = errors.Join(rerr, close())
 		}
 	}()
-	if _, ok := r.Header["Content-Type"]; !ok && r.ContentLength == 0 {
-		return req, rawBody, close, nil
-	}
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
 		return req, rawBody, close, errors.Wrap(err, "parse media type")
@@ -120,7 +121,7 @@ func (s *Server) decodePostRolesRequest(r *http.Request) (
 	switch {
 	case ct == "application/json":
 		if r.ContentLength == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 		buf, err := io.ReadAll(r.Body)
 		defer func() {
@@ -134,15 +135,14 @@ func (s *Server) decodePostRolesRequest(r *http.Request) (
 		r.Body = io.NopCloser(bytes.NewBuffer(buf))
 
 		if len(buf) == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request OptRoleName
+		var request RoleName
 		if err := func() error {
-			request.Reset()
 			if err := request.Decode(d); err != nil {
 				return err
 			}
@@ -158,7 +158,7 @@ func (s *Server) decodePostRolesRequest(r *http.Request) (
 			}
 			return req, rawBody, close, err
 		}
-		return request, rawBody, close, nil
+		return &request, rawBody, close, nil
 	default:
 		return req, rawBody, close, validate.InvalidContentType(ct)
 	}
@@ -244,7 +244,7 @@ func (s *Server) decodePostUserRepoBranchSnapshotRequest(r *http.Request) (
 }
 
 func (s *Server) decodePostUsersRequest(r *http.Request) (
-	req OptUserName,
+	req *UserName,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -264,9 +264,6 @@ func (s *Server) decodePostUsersRequest(r *http.Request) (
 			rerr = errors.Join(rerr, close())
 		}
 	}()
-	if _, ok := r.Header["Content-Type"]; !ok && r.ContentLength == 0 {
-		return req, rawBody, close, nil
-	}
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
 		return req, rawBody, close, errors.Wrap(err, "parse media type")
@@ -274,7 +271,7 @@ func (s *Server) decodePostUsersRequest(r *http.Request) (
 	switch {
 	case ct == "application/json":
 		if r.ContentLength == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 		buf, err := io.ReadAll(r.Body)
 		defer func() {
@@ -288,15 +285,14 @@ func (s *Server) decodePostUsersRequest(r *http.Request) (
 		r.Body = io.NopCloser(bytes.NewBuffer(buf))
 
 		if len(buf) == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request OptUserName
+		var request UserName
 		if err := func() error {
-			request.Reset()
 			if err := request.Decode(d); err != nil {
 				return err
 			}
@@ -312,7 +308,7 @@ func (s *Server) decodePostUsersRequest(r *http.Request) (
 			}
 			return req, rawBody, close, err
 		}
-		return request, rawBody, close, nil
+		return &request, rawBody, close, nil
 	default:
 		return req, rawBody, close, validate.InvalidContentType(ct)
 	}
@@ -354,7 +350,7 @@ func (s *Server) decodePutChunkRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutRoleNameRequest(r *http.Request) (
-	req OptRoleName,
+	req *RoleName,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -374,9 +370,6 @@ func (s *Server) decodePutRoleNameRequest(r *http.Request) (
 			rerr = errors.Join(rerr, close())
 		}
 	}()
-	if _, ok := r.Header["Content-Type"]; !ok && r.ContentLength == 0 {
-		return req, rawBody, close, nil
-	}
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
 		return req, rawBody, close, errors.Wrap(err, "parse media type")
@@ -384,7 +377,7 @@ func (s *Server) decodePutRoleNameRequest(r *http.Request) (
 	switch {
 	case ct == "application/json":
 		if r.ContentLength == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 		buf, err := io.ReadAll(r.Body)
 		defer func() {
@@ -398,15 +391,14 @@ func (s *Server) decodePutRoleNameRequest(r *http.Request) (
 		r.Body = io.NopCloser(bytes.NewBuffer(buf))
 
 		if len(buf) == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request OptRoleName
+		var request RoleName
 		if err := func() error {
-			request.Reset()
 			if err := request.Decode(d); err != nil {
 				return err
 			}
@@ -422,7 +414,7 @@ func (s *Server) decodePutRoleNameRequest(r *http.Request) (
 			}
 			return req, rawBody, close, err
 		}
-		return request, rawBody, close, nil
+		return &request, rawBody, close, nil
 	default:
 		return req, rawBody, close, validate.InvalidContentType(ct)
 	}
@@ -449,9 +441,6 @@ func (s *Server) decodePutRolePermsRequest(r *http.Request) (
 			rerr = errors.Join(rerr, close())
 		}
 	}()
-	if _, ok := r.Header["Content-Type"]; !ok && r.ContentLength == 0 {
-		return req, rawBody, close, nil
-	}
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
 		return req, rawBody, close, errors.Wrap(err, "parse media type")
@@ -459,7 +448,7 @@ func (s *Server) decodePutRolePermsRequest(r *http.Request) (
 	switch {
 	case ct == "application/json":
 		if r.ContentLength == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 		buf, err := io.ReadAll(r.Body)
 		defer func() {
@@ -473,7 +462,7 @@ func (s *Server) decodePutRolePermsRequest(r *http.Request) (
 		r.Body = io.NopCloser(bytes.NewBuffer(buf))
 
 		if len(buf) == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 
 		rawBody = append(rawBody, buf...)
@@ -496,6 +485,14 @@ func (s *Server) decodePutRolePermsRequest(r *http.Request) (
 			}
 			return req, rawBody, close, err
 		}
+		if err := func() error {
+			if err := request.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return req, rawBody, close, errors.Wrap(err, "validate")
+		}
 		return request, rawBody, close, nil
 	default:
 		return req, rawBody, close, validate.InvalidContentType(ct)
@@ -503,7 +500,7 @@ func (s *Server) decodePutRolePermsRequest(r *http.Request) (
 }
 
 func (s *Server) decodePutUserNameRequest(r *http.Request) (
-	req OptUserName,
+	req *UserName,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -523,9 +520,6 @@ func (s *Server) decodePutUserNameRequest(r *http.Request) (
 			rerr = errors.Join(rerr, close())
 		}
 	}()
-	if _, ok := r.Header["Content-Type"]; !ok && r.ContentLength == 0 {
-		return req, rawBody, close, nil
-	}
 	ct, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil {
 		return req, rawBody, close, errors.Wrap(err, "parse media type")
@@ -533,7 +527,7 @@ func (s *Server) decodePutUserNameRequest(r *http.Request) (
 	switch {
 	case ct == "application/json":
 		if r.ContentLength == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 		buf, err := io.ReadAll(r.Body)
 		defer func() {
@@ -547,15 +541,14 @@ func (s *Server) decodePutUserNameRequest(r *http.Request) (
 		r.Body = io.NopCloser(bytes.NewBuffer(buf))
 
 		if len(buf) == 0 {
-			return req, rawBody, close, nil
+			return req, rawBody, close, validate.ErrBodyRequired
 		}
 
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request OptUserName
+		var request UserName
 		if err := func() error {
-			request.Reset()
 			if err := request.Decode(d); err != nil {
 				return err
 			}
@@ -571,7 +564,7 @@ func (s *Server) decodePutUserNameRequest(r *http.Request) (
 			}
 			return req, rawBody, close, err
 		}
-		return request, rawBody, close, nil
+		return &request, rawBody, close, nil
 	default:
 		return req, rawBody, close, validate.InvalidContentType(ct)
 	}

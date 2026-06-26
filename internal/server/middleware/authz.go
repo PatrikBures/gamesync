@@ -69,8 +69,7 @@ func AuthzMiddleware() middleware.Middleware {
 func CheckPerm(ctx context.Context, perm permissions.Perm) error {
 	perms, ok := ctx.Value(service.CkRolePerms).(permissions.Perms)
 	if !ok {
-		slog.Error("failed mapping role perms context")
-		return server.ErrContext
+		return server.NewInternalError(nil, "failed mapping role perms context")
 	}
 	if !slices.Contains(perms, perm) {
 		return server.ErrNotAuthorized
@@ -81,15 +80,13 @@ func CheckPerm(ctx context.Context, perm permissions.Perm) error {
 func UserSelf(ctx context.Context, userID int64) (dbm.User, error) {
 	currentUser, ok := ctx.Value(service.CkUser).(dbm.User)
 	if !ok {
-		slog.Error("failed mapping user context", "UserID", userID)
-		return dbm.User{}, server.ErrContext
+		return dbm.User{}, server.NewInternalError(nil, "failed mapping role perms context", "userID", userID)
 	}
 	if userID != currentUser.UserID {
 		return currentUser, server.ErrNotAuthorized
 	}
 	return currentUser, nil
 }
-// func UserSelf(u)
 
 // checks if the user is trying to access itself,
 // if it is it will return nil
@@ -97,22 +94,15 @@ func UserSelf(ctx context.Context, userID int64) (dbm.User, error) {
 // if it is trying to access a user id which is not itself,
 // it will check if it has the perm for that
 //
-// returns either ErrContext, ErrNotAuthorized or nil
+// returns either InternalError, ErrNotAuthorized or nil
 func UserOrPerm(ctx context.Context, userID int64, perm permissions.Perm) error {
 	_, errUser := UserSelf(ctx, userID)
-	if errors.Is(errUser, server.ErrContext) {
-		return errUser
-	} else if errUser == nil {
+	if errUser == nil {
 		return nil
+	} else if !errors.Is(errUser, server.ErrNotAuthorized) {
+		return errUser
 	}
 
-	errPerm := CheckPerm(ctx, perm)
-	if errors.Is(errPerm, server.ErrContext) {
-		return errPerm
-	} else if errPerm != nil {
-		return server.ErrNotAuthorized
-	}
-
-	return nil
+	return CheckPerm(ctx, perm) 
 }
 

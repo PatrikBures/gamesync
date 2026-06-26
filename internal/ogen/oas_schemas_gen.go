@@ -3,8 +3,13 @@
 package api
 
 import (
+	"fmt"
 	"io"
 )
+
+func (s *GlobalErrorStatusCode) Error() string {
+	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
+}
 
 type BearerAuth struct {
 	Token string
@@ -33,7 +38,33 @@ func (s *BearerAuth) SetRoles(val []string) {
 
 type Branches []string
 
-func (*Branches) getUserRepoBranchesRes() {}
+// Ref: #/components/schemas/Error
+type Error struct {
+	Code    int32  `json:"code"`
+	Message string `json:"message"`
+}
+
+// GetCode returns the value of Code.
+func (s *Error) GetCode() int32 {
+	return s.Code
+}
+
+// GetMessage returns the value of Message.
+func (s *Error) GetMessage() string {
+	return s.Message
+}
+
+// SetCode sets the value of Code.
+func (s *Error) SetCode(val int32) {
+	s.Code = val
+}
+
+// SetMessage sets the value of Message.
+func (s *Error) SetMessage(val string) {
+	s.Message = val
+}
+
+func (*Error) putRolePermsRes() {}
 
 // Ref: #/components/schemas/_File
 type File struct {
@@ -75,265 +106,38 @@ func (s *File) SetPath(val string) {
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
 
-// GetPermsInternalServerError is response for GetPerms operation.
-type GetPermsInternalServerError struct{}
-
-func (*GetPermsInternalServerError) getPermsRes() {}
-
-type GetPermsOKApplicationJSON []PermWithName
-
-func (*GetPermsOKApplicationJSON) getPermsRes() {}
-
-// GetPermsUnauthorized is response for GetPerms operation.
-type GetPermsUnauthorized struct{}
-
-func (*GetPermsUnauthorized) getPermsRes() {}
-
-// GetRolePermsInternalServerError is response for GetRolePerms operation.
-type GetRolePermsInternalServerError struct{}
-
-func (*GetRolePermsInternalServerError) getRolePermsRes() {}
-
-// GetRolePermsNotFound is response for GetRolePerms operation.
-type GetRolePermsNotFound struct{}
-
-func (*GetRolePermsNotFound) getRolePermsRes() {}
-
-// GetRolePermsUnauthorized is response for GetRolePerms operation.
-type GetRolePermsUnauthorized struct{}
-
-func (*GetRolePermsUnauthorized) getRolePermsRes() {}
-
-// GetRolesInternalServerError is response for GetRoles operation.
-type GetRolesInternalServerError struct{}
-
-func (*GetRolesInternalServerError) getRolesRes() {}
-
-type GetRolesOKApplicationJSON []Role
-
-func (*GetRolesOKApplicationJSON) getRolesRes() {}
-
-// GetRolesUnauthorized is response for GetRoles operation.
-type GetRolesUnauthorized struct{}
-
-func (*GetRolesUnauthorized) getRolesRes() {}
-
-// GetUserInternalServerError is response for GetUser operation.
-type GetUserInternalServerError struct{}
-
-func (*GetUserInternalServerError) getUserRes() {}
-
-// GetUserNotFound is response for GetUser operation.
-type GetUserNotFound struct{}
-
-func (*GetUserNotFound) getUserRes() {}
-
-// GetUserRepoBranchesInternalServerError is response for GetUserRepoBranches operation.
-type GetUserRepoBranchesInternalServerError struct{}
-
-func (*GetUserRepoBranchesInternalServerError) getUserRepoBranchesRes() {}
-
-// GetUserRepoBranchesUnauthorized is response for GetUserRepoBranches operation.
-type GetUserRepoBranchesUnauthorized struct{}
-
-func (*GetUserRepoBranchesUnauthorized) getUserRepoBranchesRes() {}
-
-// GetUserReposInternalServerError is response for GetUserRepos operation.
-type GetUserReposInternalServerError struct{}
-
-func (*GetUserReposInternalServerError) getUserReposRes() {}
-
-// GetUserReposUnauthorized is response for GetUserRepos operation.
-type GetUserReposUnauthorized struct{}
-
-func (*GetUserReposUnauthorized) getUserReposRes() {}
-
-// GetUserUnauthorized is response for GetUser operation.
-type GetUserUnauthorized struct{}
-
-func (*GetUserUnauthorized) getUserRes() {}
-
-// GetUsersInternalServerError is response for GetUsers operation.
-type GetUsersInternalServerError struct{}
-
-func (*GetUsersInternalServerError) getUsersRes() {}
-
-type GetUsersOKApplicationJSON []User
-
-func (*GetUsersOKApplicationJSON) getUsersRes() {}
-
-// GetUsersUnauthorized is response for GetUsers operation.
-type GetUsersUnauthorized struct{}
-
-func (*GetUsersUnauthorized) getUsersRes() {}
-
-// Ref: #/components/responses/NotFound
-type NotFound struct{}
-
-func (*NotFound) postUserRepoBranchSnapshotRes() {}
-
-// NewOptPermDiff returns new OptPermDiff with value set to v.
-func NewOptPermDiff(v PermDiff) OptPermDiff {
-	return OptPermDiff{
-		Value: v,
-		Set:   true,
-	}
+// GlobalErrorStatusCode wraps Error with StatusCode.
+type GlobalErrorStatusCode struct {
+	StatusCode int
+	Response   Error
 }
 
-// OptPermDiff is optional PermDiff.
-type OptPermDiff struct {
-	Value PermDiff
-	Set   bool
+// GetStatusCode returns the value of StatusCode.
+func (s *GlobalErrorStatusCode) GetStatusCode() int {
+	return s.StatusCode
 }
 
-// IsSet returns true if OptPermDiff was set.
-func (o OptPermDiff) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptPermDiff) Reset() {
-	var v PermDiff
-	o.Value = v
-	o.Set = false
+// GetResponse returns the value of Response.
+func (s *GlobalErrorStatusCode) GetResponse() Error {
+	return s.Response
 }
 
-// SetTo sets value to v.
-func (o *OptPermDiff) SetTo(v PermDiff) {
-	o.Set = true
-	o.Value = v
+// SetStatusCode sets the value of StatusCode.
+func (s *GlobalErrorStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
 }
 
-// Get returns value and boolean that denotes whether value was set.
-func (o OptPermDiff) Get() (v PermDiff, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
+// SetResponse sets the value of Response.
+func (s *GlobalErrorStatusCode) SetResponse(val Error) {
+	s.Response = val
 }
 
-// Or returns value if set, or given parameter if does not.
-func (o OptPermDiff) Or(d PermDiff) PermDiff {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptRoleName returns new OptRoleName with value set to v.
-func NewOptRoleName(v RoleName) OptRoleName {
-	return OptRoleName{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptRoleName is optional RoleName.
-type OptRoleName struct {
-	Value RoleName
-	Set   bool
-}
-
-// IsSet returns true if OptRoleName was set.
-func (o OptRoleName) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptRoleName) Reset() {
-	var v RoleName
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptRoleName) SetTo(v RoleName) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptRoleName) Get() (v RoleName, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptRoleName) Or(d RoleName) RoleName {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptUserName returns new OptUserName with value set to v.
-func NewOptUserName(v UserName) OptUserName {
-	return OptUserName{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptUserName is optional UserName.
-type OptUserName struct {
-	Value UserName
-	Set   bool
-}
-
-// IsSet returns true if OptUserName was set.
-func (o OptUserName) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptUserName) Reset() {
-	var v UserName
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptUserName) SetTo(v UserName) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptUserName) Get() (v UserName, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptUserName) Or(d UserName) UserName {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// PatchRolePermsInternalServerError is response for PatchRolePerms operation.
-type PatchRolePermsInternalServerError struct{}
-
-func (*PatchRolePermsInternalServerError) patchRolePermsRes() {}
-
-// PatchRolePermsNotAcceptable is response for PatchRolePerms operation.
-type PatchRolePermsNotAcceptable struct{}
-
-func (*PatchRolePermsNotAcceptable) patchRolePermsRes() {}
+func (*GlobalErrorStatusCode) patchRolePermsRes() {}
 
 // PatchRolePermsOK is response for PatchRolePerms operation.
 type PatchRolePermsOK struct{}
 
 func (*PatchRolePermsOK) patchRolePermsRes() {}
-
-// PatchRolePermsUnauthorized is response for PatchRolePerms operation.
-type PatchRolePermsUnauthorized struct{}
-
-func (*PatchRolePermsUnauthorized) patchRolePermsRes() {}
-
-// PatchRolePermsUnprocessableEntity is response for PatchRolePerms operation.
-type PatchRolePermsUnprocessableEntity struct{}
-
-func (*PatchRolePermsUnprocessableEntity) patchRolePermsRes() {}
 
 type Perm int32
 
@@ -365,8 +169,6 @@ func (s *PermDiff) SetRemove(val PermNameArray) {
 
 type PermNameArray []string
 
-func (*PermNameArray) getRolePermsRes() {}
-
 // Merged schema.
 // Ref: #/components/schemas/PermWithName
 type PermWithName struct {
@@ -394,31 +196,6 @@ func (s *PermWithName) SetPermName(val string) {
 	s.PermName = val
 }
 
-// PostRolesConflict is response for PostRoles operation.
-type PostRolesConflict struct{}
-
-func (*PostRolesConflict) postRolesRes() {}
-
-// PostRolesInternalServerError is response for PostRoles operation.
-type PostRolesInternalServerError struct{}
-
-func (*PostRolesInternalServerError) postRolesRes() {}
-
-// PostRolesNotAcceptable is response for PostRoles operation.
-type PostRolesNotAcceptable struct{}
-
-func (*PostRolesNotAcceptable) postRolesRes() {}
-
-// PostRolesUnauthorized is response for PostRoles operation.
-type PostRolesUnauthorized struct{}
-
-func (*PostRolesUnauthorized) postRolesRes() {}
-
-// PostUserRepoBranchSnapshotConflict is response for PostUserRepoBranchSnapshot operation.
-type PostUserRepoBranchSnapshotConflict struct{}
-
-func (*PostUserRepoBranchSnapshotConflict) postUserRepoBranchSnapshotRes() {}
-
 // PostUserRepoBranchSnapshotCreated is response for PostUserRepoBranchSnapshot operation.
 type PostUserRepoBranchSnapshotCreated struct{}
 
@@ -440,50 +217,10 @@ func (s *PostUserRepoBranchSnapshotFailedDependency) SetChunkHashes(val []string
 
 func (*PostUserRepoBranchSnapshotFailedDependency) postUserRepoBranchSnapshotRes() {}
 
-// PostUserRepoBranchSnapshotInternalServerError is response for PostUserRepoBranchSnapshot operation.
-type PostUserRepoBranchSnapshotInternalServerError struct{}
-
-func (*PostUserRepoBranchSnapshotInternalServerError) postUserRepoBranchSnapshotRes() {}
-
-// PostUserRepoBranchSnapshotUnauthorized is response for PostUserRepoBranchSnapshot operation.
-type PostUserRepoBranchSnapshotUnauthorized struct{}
-
-func (*PostUserRepoBranchSnapshotUnauthorized) postUserRepoBranchSnapshotRes() {}
-
-// PostUserRepoBranchSnapshotUnprocessableEntity is response for PostUserRepoBranchSnapshot operation.
-type PostUserRepoBranchSnapshotUnprocessableEntity struct{}
-
-func (*PostUserRepoBranchSnapshotUnprocessableEntity) postUserRepoBranchSnapshotRes() {}
-
-// PostUsersConflict is response for PostUsers operation.
-type PostUsersConflict struct{}
-
-func (*PostUsersConflict) postUsersRes() {}
-
-// PostUsersInternalServerError is response for PostUsers operation.
-type PostUsersInternalServerError struct{}
-
-func (*PostUsersInternalServerError) postUsersRes() {}
-
-// PostUsersNotAcceptable is response for PostUsers operation.
-type PostUsersNotAcceptable struct{}
-
-func (*PostUsersNotAcceptable) postUsersRes() {}
-
 // PutChunkCreated is response for PutChunk operation.
 type PutChunkCreated struct{}
 
 func (*PutChunkCreated) putChunkRes() {}
-
-// PutChunkInternalServerError is response for PutChunk operation.
-type PutChunkInternalServerError struct{}
-
-func (*PutChunkInternalServerError) putChunkRes() {}
-
-// PutChunkNotAcceptable is response for PutChunk operation.
-type PutChunkNotAcceptable struct{}
-
-func (*PutChunkNotAcceptable) putChunkRes() {}
 
 // PutChunkOK is response for PutChunk operation.
 type PutChunkOK struct{}
@@ -505,154 +242,24 @@ func (s PutChunkReq) Read(p []byte) (n int, err error) {
 	return s.Data.Read(p)
 }
 
-// PutChunkRequestEntityTooLarge is response for PutChunk operation.
-type PutChunkRequestEntityTooLarge struct{}
-
-func (*PutChunkRequestEntityTooLarge) putChunkRes() {}
-
-// PutChunkUnauthorized is response for PutChunk operation.
-type PutChunkUnauthorized struct{}
-
-func (*PutChunkUnauthorized) putChunkRes() {}
-
-// PutChunkUnprocessableEntity is response for PutChunk operation.
-type PutChunkUnprocessableEntity struct{}
-
-func (*PutChunkUnprocessableEntity) putChunkRes() {}
-
-// PutRoleNameConflict is response for PutRoleName operation.
-type PutRoleNameConflict struct{}
-
-func (*PutRoleNameConflict) putRoleNameRes() {}
-
-// PutRoleNameInternalServerError is response for PutRoleName operation.
-type PutRoleNameInternalServerError struct{}
-
-func (*PutRoleNameInternalServerError) putRoleNameRes() {}
-
-// PutRoleNameNotAcceptable is response for PutRoleName operation.
-type PutRoleNameNotAcceptable struct{}
-
-func (*PutRoleNameNotAcceptable) putRoleNameRes() {}
-
-// PutRoleNameNotFound is response for PutRoleName operation.
-type PutRoleNameNotFound struct{}
-
-func (*PutRoleNameNotFound) putRoleNameRes() {}
-
 // PutRoleNameOK is response for PutRoleName operation.
 type PutRoleNameOK struct{}
-
-func (*PutRoleNameOK) putRoleNameRes() {}
-
-// PutRoleNameUnauthorized is response for PutRoleName operation.
-type PutRoleNameUnauthorized struct{}
-
-func (*PutRoleNameUnauthorized) putRoleNameRes() {}
-
-// PutRolePermsInternalServerError is response for PutRolePerms operation.
-type PutRolePermsInternalServerError struct{}
-
-func (*PutRolePermsInternalServerError) putRolePermsRes() {}
-
-// PutRolePermsNotAcceptable is response for PutRolePerms operation.
-type PutRolePermsNotAcceptable struct{}
-
-func (*PutRolePermsNotAcceptable) putRolePermsRes() {}
 
 // PutRolePermsOK is response for PutRolePerms operation.
 type PutRolePermsOK struct{}
 
 func (*PutRolePermsOK) putRolePermsRes() {}
 
-// PutRolePermsUnauthorized is response for PutRolePerms operation.
-type PutRolePermsUnauthorized struct{}
-
-func (*PutRolePermsUnauthorized) putRolePermsRes() {}
-
-// PutRolePermsUnprocessableEntity is response for PutRolePerms operation.
-type PutRolePermsUnprocessableEntity struct{}
-
-func (*PutRolePermsUnprocessableEntity) putRolePermsRes() {}
-
-// PutUserNameConflict is response for PutUserName operation.
-type PutUserNameConflict struct{}
-
-func (*PutUserNameConflict) putUserNameRes() {}
-
-// PutUserNameInternalServerError is response for PutUserName operation.
-type PutUserNameInternalServerError struct{}
-
-func (*PutUserNameInternalServerError) putUserNameRes() {}
-
-// PutUserNameNotAcceptable is response for PutUserName operation.
-type PutUserNameNotAcceptable struct{}
-
-func (*PutUserNameNotAcceptable) putUserNameRes() {}
-
-// PutUserNameNotFound is response for PutUserName operation.
-type PutUserNameNotFound struct{}
-
-func (*PutUserNameNotFound) putUserNameRes() {}
-
 // PutUserNameOK is response for PutUserName operation.
 type PutUserNameOK struct{}
-
-func (*PutUserNameOK) putUserNameRes() {}
-
-// PutUserNameUnauthorized is response for PutUserName operation.
-type PutUserNameUnauthorized struct{}
-
-func (*PutUserNameUnauthorized) putUserNameRes() {}
-
-// PutUserRepoBranchConflict is response for PutUserRepoBranch operation.
-type PutUserRepoBranchConflict struct{}
-
-func (*PutUserRepoBranchConflict) putUserRepoBranchRes() {}
 
 // PutUserRepoBranchCreated is response for PutUserRepoBranch operation.
 type PutUserRepoBranchCreated struct{}
 
-func (*PutUserRepoBranchCreated) putUserRepoBranchRes() {}
-
-// PutUserRepoBranchInternalServerError is response for PutUserRepoBranch operation.
-type PutUserRepoBranchInternalServerError struct{}
-
-func (*PutUserRepoBranchInternalServerError) putUserRepoBranchRes() {}
-
-// PutUserRepoBranchNotFound is response for PutUserRepoBranch operation.
-type PutUserRepoBranchNotFound struct{}
-
-func (*PutUserRepoBranchNotFound) putUserRepoBranchRes() {}
-
-// PutUserRepoBranchUnauthorized is response for PutUserRepoBranch operation.
-type PutUserRepoBranchUnauthorized struct{}
-
-func (*PutUserRepoBranchUnauthorized) putUserRepoBranchRes() {}
-
-// PutUserRepoConflict is response for PutUserRepo operation.
-type PutUserRepoConflict struct{}
-
-func (*PutUserRepoConflict) putUserRepoRes() {}
-
 // PutUserRepoCreated is response for PutUserRepo operation.
 type PutUserRepoCreated struct{}
 
-func (*PutUserRepoCreated) putUserRepoRes() {}
-
-// PutUserRepoInternalServerError is response for PutUserRepo operation.
-type PutUserRepoInternalServerError struct{}
-
-func (*PutUserRepoInternalServerError) putUserRepoRes() {}
-
-// PutUserRepoUnauthorized is response for PutUserRepo operation.
-type PutUserRepoUnauthorized struct{}
-
-func (*PutUserRepoUnauthorized) putUserRepoRes() {}
-
 type Repos []string
-
-func (*Repos) getUserReposRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/Role
@@ -680,8 +287,6 @@ func (s *Role) SetRoleID(val int32) {
 func (s *Role) SetRoleName(val string) {
 	s.RoleName = val
 }
-
-func (*Role) postRolesRes() {}
 
 // Ref: #/components/schemas/_RoleName
 type RoleName struct {
@@ -751,8 +356,6 @@ func (s *User) SetRoleID(val int32) {
 	s.RoleID = val
 }
 
-func (*User) getUserRes() {}
-
 // Ref: #/components/schemas/_UserName
 type UserName struct {
 	UserName string `json:"userName"`
@@ -816,5 +419,3 @@ func (s *UserNewReturn) SetRoleID(val int32) {
 func (s *UserNewReturn) SetToken(val string) {
 	s.Token = val
 }
-
-func (*UserNewReturn) postUsersRes() {}

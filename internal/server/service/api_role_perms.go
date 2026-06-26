@@ -2,21 +2,21 @@ package service
 
 import (
 	"context"
+	"fmt"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
 	"gamesync/internal/server/dbm"
 	"log/slog"
+	"net/http"
+	"slices"
 )
 
-type GetRolePermsResult struct {
-	PermName string
-}
 
-func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParams) (result api.GetRolePermsRes, err error) {
+func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParams) (result api.PermNameArray, err error) {
 
 	qtx, tx, err := s.db.BeginReadTX(ctx)
 	if err != nil {
-		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed starting tx")
 	}
 	defer func() {
 		if recover() != nil || err != nil {
@@ -31,49 +31,54 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 	// even though the role does not exist.
 	roleCount, err := qtx.GetRoleWithIdCount(ctx, params.RoleID)
 	if err != nil {
-		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed checking if role exists", "roleID", params.RoleID)
 	}
 	if roleCount < 1 {
-		return &api.GetRolePermsNotFound{}, nil
+		return nil, server.ErrRolePermsNotFound
 	}
 
 	permNames, err := qtx.ListRolePermNamesWithName(ctx, params.RoleID)
 	if err != nil {
-		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed listing perms for role", "roleID", params.RoleID)
 	}
-	permNamesReturn := make(api.PermNameArray, 0, len(permNames))
+	slices.Grow(result, len(permNames))
 	for _, n := range permNames {
-		permNamesReturn = append(permNamesReturn, n)
+		result = append(result, n)
 	}
 	if err = tx.Commit(ctx); err != nil {
-		return &api.GetRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed committing tx")
 	}
-	return &permNamesReturn, nil
+	return result, nil
 }
 
-func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, params api.PatchRolePermsParams) (result api.PatchRolePermsRes, err error) {
-	if !req.Set {
-		return &api.PatchRolePermsNotAcceptable{}, nil
+func (s *Service) PatchRolePerms(ctx context.Context, req *api.PermDiff, params api.PatchRolePermsParams) (result api.PatchRolePermsRes, err error) {
+
+	permsAdd, err := s.db.ReadQuery().ListPermIDsWithNames(ctx, req.Add)
+	if err != nil {
+		return nil, server.NewInternalError(err, "failed listing 'add' perm names", "roleID", params.RoleID)
+	}
+	if len(permsAdd) != len(req.Add) {
+		return nil, &api.GlobalErrorStatusCode{
+			StatusCode: http.StatusUnprocessableEntity,
+			Response: api.Error{
+				Code: http.StatusUnprocessableEntity,
+				Message: fmt.Sprintf("There are %d invalid permission names in the add array", len(req.Add) - len(permsAdd)),
+			},
+		}
 	}
 
-	permsAdd, err := s.db.ReadQuery().ListPermIDsWithNames(ctx, req.Value.Add)
+	permsRemove, err := s.db.ReadQuery().ListPermIDsWithNames(ctx, req.Remove)
 	if err != nil {
-		slog.Error("listing add values", "error", err)
-		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed listing 'delete' perm names", "roleID", params.RoleID)
 	}
-	if len(permsAdd) != len(req.Value.Add) {
-		slog.Warn("add perm(s) not found", "expected", len(req.Value.Add), "received", len(permsAdd), "received", permsAdd)
-		return &api.PatchRolePermsUnprocessableEntity{}, nil
-	}
-
-	permsRemove, err := s.db.ReadQuery().ListPermIDsWithNames(ctx, req.Value.Remove)
-	if err != nil {
-		slog.Error("listing remove values", "error", err)
-		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
-	}
-	if len(permsRemove) != len(req.Value.Remove) {
-		slog.Warn("remove perm(s) not found", "expectedQty", len(req.Value.Remove), "receivedQty", len(permsRemove), "received", permsRemove)
-		return &api.PatchRolePermsUnprocessableEntity{}, nil
+	if len(permsRemove) != len(req.Remove) {
+		return nil, &api.GlobalErrorStatusCode{
+			StatusCode: http.StatusUnprocessableEntity,
+			Response: api.Error{
+				Code: http.StatusUnprocessableEntity,
+				Message: fmt.Sprintf("There are %d invalid permission names in the delete array", len(req.Add) - len(permsAdd)),
+			},
+		}
 	}
 
 	// i decided to not include the 2 above queries as the permissions table does not really
@@ -81,8 +86,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 	// database if not needed.
 	qtx, tx, err := s.db.BeginTX(ctx)
 	if err != nil {
-		slog.Error("starting tx", "error", err)
-		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed starting tx while patching role perms")
 	}
 	defer func() {
 		if recover() != nil || err != nil {
@@ -92,29 +96,26 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 		}
 	}()
 
-	if len(req.Value.Add) > 0 {
+	if len(req.Add) > 0 {
 		if err = qtx.InsertRolePermsNoConflict(ctx, dbm.InsertRolePermsNoConflictParams{
 			RoleID:  params.RoleID,
 			PermIds: permsAdd,
 		}); err != nil {
-			slog.Error("adding role perms", "error", err)
-			return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+			return nil, server.NewInternalError(err, "failed adding perms to role", "roleID", params.RoleID)
 		}
 	}
 
-	if len(req.Value.Remove) > 0 {
+	if len(req.Remove) > 0 {
 		if err = qtx.DeleteRolePermsWithId(ctx, dbm.DeleteRolePermsWithIdParams{
 			RoleID:  params.RoleID,
 			PermIds: permsRemove,
 		}); err != nil {
-			slog.Error("removing role perms", "error", err)
-			return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+			return nil, server.NewInternalError(err, "failed removing perms from role", "roleID", params.RoleID)
 		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		slog.Error("committing role perms", "error", err)
-		return &api.PatchRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed committing perms for role")
 	}
 
 	return &api.PatchRolePermsOK{}, nil
@@ -123,8 +124,7 @@ func (s *Service) PatchRolePerms(ctx context.Context, req api.OptPermDiff, param
 func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, params api.PutRolePermsParams) (result api.PutRolePermsRes, err error) {
 	qtx, tx, err := s.db.BeginTX(ctx)
 	if err != nil {
-		slog.Error("starting tx", "error", err)
-		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed starting tx while setting role perms")
 	}
 	defer func() {
 		if recover() != nil || err != nil {
@@ -136,16 +136,21 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 
 	perms, err := qtx.ListPermIDsWithNames(ctx, req)
 	if err != nil {
-		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed listing perm names while setting role perms", "roleID", params.RoleID)
 	}
 	if len(perms) != len(req) {
-		return &api.PutRolePermsUnprocessableEntity{}, nil
+		return nil, &api.GlobalErrorStatusCode{
+			StatusCode: http.StatusUnprocessableEntity,
+			Response: api.Error{
+				Code: http.StatusUnprocessableEntity,
+				Message: fmt.Sprintf("There are %d invalid permission names in the array", len(perms) - len(req)),
+			},
+		}
 	}
 
 	err = qtx.DeleteRolePermsWithRoleId(ctx, params.RoleID)
 	if err != nil {
-		slog.Error("deleting all perms from role", "roleID", params.RoleID, "error", err)
-		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed deleting all perms for role", "roleID", params.RoleID) 
 	}
 
 	if err = qtx.InsertRolePerms(ctx, dbm.InsertRolePermsParams{
@@ -153,13 +158,12 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 		PermIds: perms,
 	}); err != nil {
 		slog.Error("adding perms to role", "roleID", params.RoleID, "error", err)
-		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed adding perms to role", "roleID", params.RoleID)
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		slog.Error("commiting transaction", "error", err)
-		return &api.PutRolePermsInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed committing tx while setting perms for role", "roleID", params.RoleID)
 	}
 
 	return &api.PutRolePermsOK{}, nil

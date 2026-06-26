@@ -40,24 +40,42 @@ func (s *File) Validate() error {
 	return nil
 }
 
-func (s GetPermsOKApplicationJSON) Validate() error {
-	alias := ([]PermWithName)(s)
-	if alias == nil {
-		return errors.New("nil is invalid value")
+func (s *PermDiff) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Add.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "add",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Remove.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "remove",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
 	}
 	return nil
 }
 
-func (s GetRolesOKApplicationJSON) Validate() error {
-	alias := ([]Role)(s)
-	if alias == nil {
-		return errors.New("nil is invalid value")
-	}
-	return nil
-}
-
-func (s GetUsersOKApplicationJSON) Validate() error {
-	alias := ([]User)(s)
+func (s PermNameArray) Validate() error {
+	alias := ([]string)(s)
 	if alias == nil {
 		return errors.New("nil is invalid value")
 	}

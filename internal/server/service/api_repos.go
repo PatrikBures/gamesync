@@ -13,22 +13,22 @@ import (
 
 const defaultBranchName = "main"
 
-func (s *Service) GetUserRepos(ctx context.Context, params api.GetUserReposParams) (api.GetUserReposRes, error) {
+func (s *Service) GetUserRepos(ctx context.Context, params api.GetUserReposParams) (api.Repos, error) {
 	repos, err := s.db.ReadQuery().ListRepos(ctx, params.UserID)
 	if err != nil {
-		return &api.GetUserReposInternalServerError{}, server.ErrDatabase
+		return nil, server.NewInternalError(err, "failed listing repos", "userID", params.UserID)
 	}
 	reposReturn := make(api.Repos, 0, len(repos))
 	for _, r := range repos {
 		reposReturn = append(reposReturn, r.RepoName)
 	}
-	return &reposReturn, nil
+	return reposReturn, nil
 }
 
-func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams) (result api.PutUserRepoRes, err error) {
+func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams) (err error) {
 	qtx, tx, err := s.db.BeginTX(ctx)
 	if err != nil {
-		return &api.PutUserRepoInternalServerError{}, server.ErrDatabase
+		return server.NewInternalError(err, "failed starting tx")
 	}
 	defer func() {
 		if recover() != nil || err != nil {
@@ -45,11 +45,10 @@ func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams)
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				return &api.PutUserRepoConflict{}, nil
+				return server.ErrRepoNameConflict
 			}
 		}
-		slog.Error("failed creating repo", "RepoName", params.RepoName, "UserID", params.UserID)
-		return &api.PutUserRepoInternalServerError{}, server.ErrDatabase
+		return server.NewInternalError(err, "failed creating repo", "userID", params.UserID, "repoName", params.RepoName)
 	}
 
 	if err = qtx.CreateBranch(ctx, dbm.CreateBranchParams{
@@ -59,18 +58,15 @@ func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams)
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
-				slog.Error("default branch somehow exists on new repo", "UserID", params.UserID, "RepoName", params.RepoName)
-				return &api.PutUserRepoConflict{}, nil
+				return server.NewInternalError(err, "default branch already exists on new branch", "userID", params.UserID, "repoName", params.RepoName)
 			}
 		}
-		slog.Error("failed creating branch", "RepoID", repoID, "BranchName", defaultBranchName)
-		return &api.PutUserRepoInternalServerError{}, nil
+		return server.NewInternalError(err, "failed creating branch", "repoID", repoID, "branchName", defaultBranchName)
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		slog.Error("committing tx", "error", err)
-		return &api.PutUserRepoInternalServerError{}, server.ErrDatabase
+		return server.NewInternalError(err, "failed committing tx")
 	}
 
-	return &api.PutUserRepoCreated{}, nil
+	return nil
 }

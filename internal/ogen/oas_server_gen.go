@@ -19,55 +19,55 @@ type Handler interface {
 	// Get all available permissions.
 	//
 	// GET /perms
-	GetPerms(ctx context.Context) (GetPermsRes, error)
+	GetPerms(ctx context.Context) ([]PermWithName, error)
 	// GetRolePerms implements get-role-perms operation.
 	//
 	// Get all permissions the role has.
 	//
 	// GET /roles/{roleID}/perms
-	GetRolePerms(ctx context.Context, params GetRolePermsParams) (GetRolePermsRes, error)
+	GetRolePerms(ctx context.Context, params GetRolePermsParams) (PermNameArray, error)
 	// GetRoles implements get-roles operation.
 	//
 	// Get all roles.
 	//
 	// GET /roles
-	GetRoles(ctx context.Context) (GetRolesRes, error)
+	GetRoles(ctx context.Context) ([]Role, error)
 	// GetUser implements get-user operation.
 	//
 	// Get info about user.
 	//
 	// GET /users/{userID}
-	GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error)
+	GetUser(ctx context.Context, params GetUserParams) (*User, error)
 	// GetUserRepoBranches implements get-user-repo-branches operation.
 	//
 	// Get all branches in repo.
 	//
 	// GET /users/{userID}/repos/{repoName}/branches
-	GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (GetUserRepoBranchesRes, error)
+	GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (Branches, error)
 	// GetUserRepos implements get-user-repos operation.
 	//
 	// Get all repos owned by userID.
 	//
 	// GET /users/{userID}/repos
-	GetUserRepos(ctx context.Context, params GetUserReposParams) (GetUserReposRes, error)
+	GetUserRepos(ctx context.Context, params GetUserReposParams) (Repos, error)
 	// GetUsers implements get-users operation.
 	//
 	// Get all users.
 	//
 	// GET /users
-	GetUsers(ctx context.Context) (GetUsersRes, error)
+	GetUsers(ctx context.Context) ([]User, error)
 	// PatchRolePerms implements patch-role-perms operation.
 	//
 	// Patch perms for role.
 	//
 	// PATCH /roles/{roleID}/perms
-	PatchRolePerms(ctx context.Context, req OptPermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
+	PatchRolePerms(ctx context.Context, req *PermDiff, params PatchRolePermsParams) (PatchRolePermsRes, error)
 	// PostRoles implements post-roles operation.
 	//
 	// Create new role.
 	//
 	// POST /roles
-	PostRoles(ctx context.Context, req OptRoleName) (PostRolesRes, error)
+	PostRoles(ctx context.Context, req *RoleName) (*Role, error)
 	// PostUserRepoBranchSnapshot implements post-user-repo-branch-snapshot operation.
 	//
 	// Create new snapshot.
@@ -79,7 +79,7 @@ type Handler interface {
 	// Create new user.
 	//
 	// POST /users
-	PostUsers(ctx context.Context, req OptUserName) (PostUsersRes, error)
+	PostUsers(ctx context.Context, req *UserName) (*UserNewReturn, error)
 	// PutChunk implements put-chunk operation.
 	//
 	// Upload chunk.
@@ -91,7 +91,7 @@ type Handler interface {
 	// Update role name.
 	//
 	// PUT /roles/{roleID}/name
-	PutRoleName(ctx context.Context, req OptRoleName, params PutRoleNameParams) (PutRoleNameRes, error)
+	PutRoleName(ctx context.Context, req *RoleName, params PutRoleNameParams) error
 	// PutRolePerms implements put-role-perms operation.
 	//
 	// Set perms for role.
@@ -103,19 +103,23 @@ type Handler interface {
 	// Change username of user.
 	//
 	// PUT /users/{userID}/name
-	PutUserName(ctx context.Context, req OptUserName, params PutUserNameParams) (PutUserNameRes, error)
+	PutUserName(ctx context.Context, req *UserName, params PutUserNameParams) error
 	// PutUserRepo implements put-user-repo operation.
 	//
 	// Create new repo and a default branch "main".
 	//
 	// PUT /users/{userID}/repos/{repoName}
-	PutUserRepo(ctx context.Context, params PutUserRepoParams) (PutUserRepoRes, error)
+	PutUserRepo(ctx context.Context, params PutUserRepoParams) error
 	// PutUserRepoBranch implements put-user-repo-branch operation.
 	//
 	// Create new branch in repo.
 	//
 	// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-	PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) (PutUserRepoBranchRes, error)
+	PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) error
+	// NewError creates *GlobalErrorStatusCode from error returned by handler.
+	//
+	// Used for common default response.
+	NewError(ctx context.Context, err error) *GlobalErrorStatusCode
 }
 
 // Server implements http server based on OpenAPI v3 specification and
