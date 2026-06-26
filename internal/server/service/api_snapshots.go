@@ -4,34 +4,33 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"errors"
+	"gamesync/internal/dbx"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/server"
+	"gamesync/internal/server/dbm"
+	"log/slog"
 	"slices"
+
+	"github.com/jackc/pgx/v5"
 )
 
-func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.SnapshotNew, params api.PostUserRepoBranchSnapshotParams) (api.PostUserRepoBranchSnapshotRes, error) {
+func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.SnapshotNew, params api.PostUserRepoBranchSnapshotParams) (result api.PostUserRepoBranchSnapshotRes, err error) {
 
-	totalChunkAmount := 0
-	for _, f := range req.Files {
-		totalChunkAmount += len(f.ChunkHashes)
+	files, chunkCount, err := reqFilesStruct(req.Files)
+	if err != nil {
+		return nil, err
 	}
 
-	allChunkHashes := make([][]byte, 0, totalChunkAmount)
-
-	for _, f := range req.Files {
-		for _, c := range f.ChunkHashes {
-			s, err := hex.DecodeString(c)
-			if err != nil {
-				return nil, server.ErrInvalidHash
-			}
-			allChunkHashes = append(allChunkHashes, s)
-		}
+	allChunkHashes := make([][]byte, 0, chunkCount)
+	for _, f := range files {
+		allChunkHashes = append(allChunkHashes, f.chunkHashes...)
 	}
-
+	
 	// sorts and removes duplicate chunks
 	slices.SortFunc(allChunkHashes, bytes.Compare)
 	allChunkHashes = slices.CompactFunc(allChunkHashes, func(a []byte, b []byte) bool {
-		return bytes.Compare(a, b) == 0
+		return bytes.Equal(a, b)
 	})
 
 	existingChunks, err := s.db.ReadQuery().GetChunkHashes(ctx, allChunkHashes)
@@ -44,7 +43,147 @@ func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.Snaps
 		return &api.PostUserRepoBranchSnapshotFailedDependency{ChunkHashes: bytesToHex(allChunkHashes)}, nil
 	}
 
+	if err := createSnapshot(s.db, files, ctx); err != nil {
+		return nil, err
+	}
+
 	return &api.PostUserRepoBranchSnapshotCreated{}, nil
+}
+
+type file struct {
+	path        string
+	hash        []byte
+	chunkHashes [][]byte
+}
+
+func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
+	repoID, branchID, err := repoBranch(ctx)
+	if err != nil {
+		return err
+	}
+
+	qtx, tx, err := db.BeginTX(ctx)
+	if err != nil {
+		return server.NewInternalError(err, "failed starting tx")
+	}
+	defer func() {
+		if recover() != nil || err != nil {
+			if e := tx.Rollback(ctx); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
+		}
+	}()
+
+	snapshotID, err := qtx.CreateSnapshot(ctx, dbm.CreateSnapshotParams{
+		RepoID: repoID,
+		BranchID: branchID,
+	})
+	if err != nil {
+		return server.NewInternalError(err, "failed creating new snapshot row", "repoID", repoID, "branchID", branchID)
+	}
+
+	connectSnapshotParams := make([]dbm.ConnectSnapshotWithFilesParams, 0, len(files))
+	fileHashes := make([][]byte, 0, len(files))
+	for _, f := range files {
+		fileHashes = append(fileHashes, f.hash)
+	}
+	fileHashes, err = qtx.ListFileHashes(ctx, fileHashes)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			fileHashes = fileHashes[:0]
+		} else {
+			return server.NewInternalError(err, "failed listing existing file hashes")
+		}
+	}
+
+	for _, f := range files {
+		connectSnapshotParams = append(connectSnapshotParams, dbm.ConnectSnapshotWithFilesParams{
+			SnapshotID: snapshotID,
+			FileHash: f.hash,
+			FilePath: f.path,
+		})
+
+		if slices.ContainsFunc(fileHashes, func(item []byte) bool {
+			return bytes.Equal(item, f.hash)
+		}) {
+			continue
+		}
+
+		if err := qtx.CreateFile(ctx, dbm.CreateFileParams{
+			FileHash: f.hash,
+			ChunkHash: f.chunkHashes,
+		}); err != nil {
+			return server.NewInternalError(err, "failed inserting file", "fileHash", hex.EncodeToString(f.hash))
+		}
+
+		if _, err := qtx.ConnectFileWithChunks(ctx, connectFileChunksParams(f.hash, f.chunkHashes)); err != nil {
+			return server.NewInternalError(err, "failed connecting file with chunks", "fileHash", hex.EncodeToString(f.hash))
+		}
+		fileHashes = append(fileHashes, f.hash)
+	}
+
+	if _, err := qtx.ConnectSnapshotWithFiles(ctx, connectSnapshotParams); err != nil {
+		return server.NewInternalError(err, "failed connecting snapshot with files", "snapshotID", snapshotID)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return server.NewInternalError(err, "failed committing creation of snapshot", "repoID", repoID, "branchID", branchID)
+	}
+
+	return nil
+}
+
+
+func connectFileChunksParams(fileHash []byte, chunkHashes [][]byte) []dbm.ConnectFileWithChunksParams {
+	s := make([]dbm.ConnectFileWithChunksParams, 0, len(chunkHashes))
+	for i := int16(0); i < int16(len(chunkHashes)); i++ {
+		s = append(s, dbm.ConnectFileWithChunksParams{
+			FileHash: fileHash,
+			ChunkHash: chunkHashes[i],
+			ChunkOrder: i+1,
+		})
+	}
+	return s
+}
+
+func reqFilesStruct(reqFiles []api.File) ([]file, int, error) {
+	files := make([]file, 0, len(reqFiles))
+	chunkCount := 0
+
+	for _, f := range reqFiles {
+		nf := file{
+			path: f.Path,
+			chunkHashes: make([][]byte, 0, len(f.ChunkHashes)),
+		}
+		h, err := hex.DecodeString(f.Hash)
+		if err != nil {
+			return nil, 0, server.ErrInvalidHash
+		}
+		nf.hash = h
+		for _, c := range f.ChunkHashes {
+			h, err := hex.DecodeString(c)
+			if err != nil {
+				return nil, 0, server.ErrInvalidHash
+			}
+			nf.chunkHashes = append(nf.chunkHashes, h)
+			chunkCount++
+		}
+		files = append(files, nf)
+	}
+	return files, chunkCount, nil
+}
+
+func repoBranch(ctx context.Context) (repoID int64, branchID int64, err error) {
+	var ok bool
+	if repoID, ok = ctx.Value(CkRepoID).(int64); !ok {
+		err = server.NewInternalError(nil, "repoID is not mapped", "repoID", repoID)
+		return
+	}
+	if branchID, ok = ctx.Value(CkBranchID).(int64); !ok {
+		err = server.NewInternalError(nil, "branchID is not mapped", "branchID", branchID)
+		return
+	}
+	return
 }
 
 

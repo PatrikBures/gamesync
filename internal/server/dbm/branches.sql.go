@@ -50,6 +50,7 @@ const getBranchWithName = `-- name: GetBranchWithName :one
 SELECT branch_id, repo_id, branch_name, head_snapshot_id FROM branches
 WHERE repo_id = $1
 AND branch_name = $2
+LIMIT 1
 `
 
 type GetBranchWithNameParams struct {

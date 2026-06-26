@@ -31,6 +31,7 @@ const getRepoWithName = `-- name: GetRepoWithName :one
 SELECT repo_id, user_id, repo_name FROM repos
 WHERE user_id = $1
 AND repo_name = $2
+LIMIT 1
 `
 
 type GetRepoWithNameParams struct {

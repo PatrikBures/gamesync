@@ -41,7 +41,7 @@ func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParam
 	if err != nil {
 		return nil, server.NewInternalError(err, "failed listing perms for role", "roleID", params.RoleID)
 	}
-	slices.Grow(result, len(permNames))
+	result = slices.Grow(result, len(permNames))
 	for _, n := range permNames {
 		result = append(result, n)
 	}

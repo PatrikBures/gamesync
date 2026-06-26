@@ -9,6 +9,75 @@ import (
 	"context"
 )
 
+// iteratorForConnectFileWithChunks implements pgx.CopyFromSource.
+type iteratorForConnectFileWithChunks struct {
+	rows                 []ConnectFileWithChunksParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForConnectFileWithChunks) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForConnectFileWithChunks) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].FileHash,
+		r.rows[0].ChunkHash,
+		r.rows[0].ChunkOrder,
+	}, nil
+}
+
+func (r iteratorForConnectFileWithChunks) Err() error {
+	return nil
+}
+
+// connects files with chunks with the chunk order
+func (q *Queries) ConnectFileWithChunks(ctx context.Context, arg []ConnectFileWithChunksParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"file_chunks"}, []string{"file_hash", "chunk_hash", "chunk_order"}, &iteratorForConnectFileWithChunks{rows: arg})
+}
+
+// iteratorForConnectSnapshotWithFiles implements pgx.CopyFromSource.
+type iteratorForConnectSnapshotWithFiles struct {
+	rows                 []ConnectSnapshotWithFilesParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForConnectSnapshotWithFiles) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForConnectSnapshotWithFiles) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].FileHash,
+		r.rows[0].SnapshotID,
+		r.rows[0].FilePath,
+	}, nil
+}
+
+func (r iteratorForConnectSnapshotWithFiles) Err() error {
+	return nil
+}
+
+func (q *Queries) ConnectSnapshotWithFiles(ctx context.Context, arg []ConnectSnapshotWithFilesParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"snapshot_files"}, []string{"file_hash", "snapshot_id", "file_path"}, &iteratorForConnectSnapshotWithFiles{rows: arg})
+}
+
 // iteratorForInsertRolePermsCopy implements pgx.CopyFromSource.
 type iteratorForInsertRolePermsCopy struct {
 	rows                 []InsertRolePermsCopyParams

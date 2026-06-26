@@ -19,7 +19,7 @@ CREATE INDEX idx_snapshots_parent ON snapshots(parent_snapshot_id);
 CREATE TABLE branches
 (
     branch_id BIGSERIAL NOT NULL PRIMARY KEY,
-    repo_id BIGINT NOT NULL REFERENCES repos(repo_id),
+    repo_id BIGINT NOT NULL REFERENCES repos(repo_id) ON DELETE CASCADE,
     branch_name VARCHAR(25) NOT NULL,
     head_snapshot_id BIGINT NULL REFERENCES snapshots(snapshot_id),
 
@@ -38,7 +38,7 @@ CREATE TABLE files
 CREATE TABLE snapshot_files
 (
     file_hash BYTEA NOT NULL REFERENCES files(file_hash),
-    snapshot_id BIGINT NOT NULL REFERENCES snapshots(snapshot_id),
+    snapshot_id BIGINT NOT NULL REFERENCES snapshots(snapshot_id) ON DELETE CASCADE,
     file_path VARCHAR(500) NOT NULL,
 
     PRIMARY KEY (snapshot_id, file_path)
@@ -54,7 +54,7 @@ CREATE TABLE chunks
 
 CREATE TABLE file_chunks
 (
-    file_hash BYTEA NOT NULL REFERENCES files(file_hash),
+    file_hash BYTEA NOT NULL REFERENCES files(file_hash) ON DELETE CASCADE,
     chunk_hash BYTEA NOT NULL REFERENCES chunks(chunk_hash),
     chunk_order SMALLINT NOT NULL,
 

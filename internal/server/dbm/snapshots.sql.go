@@ -9,18 +9,46 @@ import (
 	"context"
 )
 
+type ConnectFileWithChunksParams struct {
+	FileHash   []byte
+	ChunkHash  []byte
+	ChunkOrder int16
+}
+
+type ConnectSnapshotWithFilesParams struct {
+	FileHash   []byte
+	SnapshotID int64
+	FilePath   string
+}
+
+const createFile = `-- name: CreateFile :exec
+INSERT INTO files (file_hash, bytes)
+VALUES (
+    $1,
+    (
+        SELECT SUM(bytes) FROM chunks
+        WHERE chunk_hash = ANY($2::BYTEA[])
+    )
+)
+`
+
+type CreateFileParams struct {
+	FileHash  []byte
+	ChunkHash [][]byte
+}
+
+func (q *Queries) CreateFile(ctx context.Context, arg CreateFileParams) error {
+	_, err := q.db.Exec(ctx, createFile, arg.FileHash, arg.ChunkHash)
+	return err
+}
+
 const createSnapshot = `-- name: CreateSnapshot :one
 INSERT INTO snapshots (parent_snapshot_id)
 VALUES (
     (
         SELECT head_snapshot_id FROM branches 
-        WHERE repo_id = (
-            SELECT repo_id FROM repos
-            WHERE user_id = $1
-            AND repo_name = $2
-            LIMIT 1
-        )
-        AND branch_name = $3
+        WHERE repo_id = $1
+        AND branch_id = $2
         LIMIT 1
     )
 )
@@ -28,14 +56,42 @@ RETURNING snapshot_id
 `
 
 type CreateSnapshotParams struct {
-	UserID     int64
-	RepoName   string
-	BranchName string
+	RepoID   int64
+	BranchID int64
 }
 
+// returns the new snapshot_id
+//
+// accepts repo_id and branch_id to find the parent snapshot
+// using head snapshot id from branches
 func (q *Queries) CreateSnapshot(ctx context.Context, arg CreateSnapshotParams) (int64, error) {
-	row := q.db.QueryRow(ctx, createSnapshot, arg.UserID, arg.RepoName, arg.BranchName)
+	row := q.db.QueryRow(ctx, createSnapshot, arg.RepoID, arg.BranchID)
 	var snapshot_id int64
 	err := row.Scan(&snapshot_id)
 	return snapshot_id, err
+}
+
+const listFileHashes = `-- name: ListFileHashes :many
+SELECT file_hash FROM files
+WHERE file_hash = ANY($1::BYTEA[])
+`
+
+func (q *Queries) ListFileHashes(ctx context.Context, fileHash [][]byte) ([][]byte, error) {
+	rows, err := q.db.Query(ctx, listFileHashes, fileHash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items [][]byte
+	for rows.Next() {
+		var file_hash []byte
+		if err := rows.Scan(&file_hash); err != nil {
+			return nil, err
+		}
+		items = append(items, file_hash)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
