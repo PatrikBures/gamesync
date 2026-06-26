@@ -13,6 +13,7 @@ import (
 	"slices"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.SnapshotNew, params api.PostUserRepoBranchSnapshotParams) (result api.PostUserRepoBranchSnapshotRes, err error) {
@@ -124,6 +125,13 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 
 	if _, err := qtx.ConnectSnapshotWithFiles(ctx, connectSnapshotParams); err != nil {
 		return server.NewInternalError(err, "failed connecting snapshot with files", "snapshotID", snapshotID)
+	}
+
+	if err := qtx.UpdateBranchHead(ctx, dbm.UpdateBranchHeadParams{
+		BranchID: branchID,
+		HeadSnapshotID: pgtype.Int8{Int64: snapshotID, Valid: true},
+	}); err != nil {
+		return server.NewInternalError(err, "failed updating branch head", "branchID", branchID, "newSnapshotID", snapshotID)
 	}
 
 	if err := tx.Commit(ctx); err != nil {

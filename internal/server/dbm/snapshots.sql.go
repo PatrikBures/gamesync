@@ -7,6 +7,8 @@ package dbm
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type ConnectFileWithChunksParams struct {
@@ -94,4 +96,20 @@ func (q *Queries) ListFileHashes(ctx context.Context, fileHash [][]byte) ([][]by
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateBranchHead = `-- name: UpdateBranchHead :exec
+UPDATE branches
+SET head_snapshot_id = $2
+WHERE branch_id = $1
+`
+
+type UpdateBranchHeadParams struct {
+	BranchID       int64
+	HeadSnapshotID pgtype.Int8
+}
+
+func (q *Queries) UpdateBranchHead(ctx context.Context, arg UpdateBranchHeadParams) error {
+	_, err := q.db.Exec(ctx, updateBranchHead, arg.BranchID, arg.HeadSnapshotID)
+	return err
 }

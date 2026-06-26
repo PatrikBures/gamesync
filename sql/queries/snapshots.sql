@@ -43,3 +43,10 @@ VALUES ($1, $2, $3)
 INSERT INTO snapshot_files (file_hash, snapshot_id, file_path)
 VALUES ($1, $2, $3)
 ;
+
+
+-- name: UpdateBranchHead :exec
+UPDATE branches
+SET head_snapshot_id = $2
+WHERE branch_id = $1
+;
