@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.pabu.dev/PatrikBures/ini"
+	"go.pabu.dev/ini"
 )
 
 type Config struct {
