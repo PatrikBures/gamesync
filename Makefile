@@ -83,6 +83,9 @@ up:
 down:
 	docker compose down -v
 
+dev:
+	docker compose up --build --watch
+
 
 ### generate code
 gen: gen-sql gen-api gen-strings

@@ -12,6 +12,13 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+    develop:
+      watch:
+        - path: "./"
+          include: "**/*.go"
+          action: rebuild
+        - path: "./go.mod"
+          action: rebuild
   db:
     image: postgres:18-alpine
     environment:
