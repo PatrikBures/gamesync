@@ -22,6 +22,15 @@ func (UnimplementedHandler) GetHealth(ctx context.Context) error {
 	return ht.ErrNotImplemented
 }
 
+// GetMe implements get-me operation.
+//
+// Get id of the token bearer.
+//
+// GET /users/me
+func (UnimplementedHandler) GetMe(ctx context.Context) (r *User, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetPerms implements get-perms operation.
 //
 // Get all available permissions.

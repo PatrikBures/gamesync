@@ -76,3 +76,12 @@ func (s *Service) PutUserName(ctx context.Context, req *api.UserName, params api
 
 	return nil
 }
+
+func (s *Service) GetMe(ctx context.Context) (*api.User, error) {
+	user := ctx.Value(CkUser).(dbm.User)
+	return &api.User{
+		UserID:   user.UserID,
+		UserName: user.UserName,
+		RoleID:   user.RoleID,
+	}, nil
+}

@@ -14,6 +14,12 @@ type Handler interface {
 	//
 	// GET /health
 	GetHealth(ctx context.Context) error
+	// GetMe implements get-me operation.
+	//
+	// Get id of the token bearer.
+	//
+	// GET /users/me
+	GetMe(ctx context.Context) (*User, error)
 	// GetPerms implements get-perms operation.
 	//
 	// Get all available permissions.

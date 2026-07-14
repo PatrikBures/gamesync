@@ -279,6 +279,21 @@ paths:
                 $ref: "#/components/schemas/UserNewReturn"
         default:
           $ref: "#/components/responses/GlobalError"
+  /users/me:
+    get:
+      summary: Get id of the token bearer
+      operationId: get-me
+      tags:
+        - Users
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        default:
+          $ref: "#/components/responses/GlobalError"
+
   /users/{userID}:
     parameters:
       - $ref: "#/components/parameters/userID"

@@ -55,7 +55,7 @@ func LoadConfig(config *Config, configFile string) error {
 	if err := loadToken(config); err != nil {
 		return err
 	}
-	if err := cache(config); err != nil {
+	if err := cacheDir(config); err != nil {
 		return err
 	}
 	return nil
@@ -105,7 +105,7 @@ func loadToken(config *Config) error {
 	return nil
 }
 
-func cache(config *Config) error {
+func cacheDir(config *Config) error {
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
 		return err

@@ -49,7 +49,7 @@ func newCreateRepoCmd(config *config.Config) *createRepoCmd {
 		Short: "Create a new repo",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := client.Client(*config)
+			client, err := client.Client(config)
 			if err != nil {
 				return err
 			}
@@ -107,7 +107,7 @@ func newCreateSnapshotCmd(config *config.Config) *createSnapshotCmd {
 		Short: "Create a new snapshot",
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := client.Client(*config)
+			client, err := client.Client(config)
 			if err != nil {
 				return err
 			}

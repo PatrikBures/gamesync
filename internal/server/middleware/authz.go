@@ -17,6 +17,7 @@ var operationPerms = map[string]permissions.Perm{
 	"GetHealth": permissions.PermAllAllowed,
 	"PostUsers": permissions.PermAllAllowed,
 	"GetPerms":  permissions.PermAllAllowed,
+	"GetMe":     permissions.PermAllAllowed,
 
 	"GetUser":  permissions.PermUserGetOwn,
 	"GetUsers": permissions.PermUsersList,
