@@ -48,3 +48,14 @@ func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoB
 
 	return nil
 }
+
+func (s *Service) GetBranchHead(ctx context.Context, params api.GetBranchHeadParams) (result api.GetBranchHeadRes, err error) {
+	branch, err := branchFromCtx(ctx)
+	if err != nil { return }
+
+	if !branch.HeadSnapshotID.Valid {
+		return &api.GetBranchHeadNotFound{}, nil
+	}
+	return &api.SnapshotIDObject{SnapshotID: api.SnapshotID(branch.HeadSnapshotID.Int64)}, nil
+
+}

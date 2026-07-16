@@ -8,6 +8,12 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
+	// GetBranchHead implements get-branch-head operation.
+	//
+	// Get current snapshot the branch points to.
+	//
+	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/current
+	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error)
 	// GetHealth implements get-health operation.
 	//
 	// Get health of server.

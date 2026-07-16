@@ -83,7 +83,7 @@ func RepoBranch(db *dbx.DB) middleware.Middleware {
 				"branchName", branchName,
 			)
 		}
-		req.Context = context.WithValue(req.Context, service.CkBranchID, branch.BranchID)
+		req.Context = context.WithValue(req.Context, service.CkBranch, branch)
 		
 		return next(req)
 	}

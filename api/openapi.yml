@@ -78,6 +78,16 @@ components:
         minLength: 64
         maxLength: 64
 
+    snapshotID:
+      name: snapshotID
+      description: ID of a snapshot
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+
   responses:
     GlobalError:
       description: An error occured
@@ -85,6 +95,8 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+  # any object except Error starts with '__'
+  # any other types start with '_' except the "main" ones
   schemas:
     Error:
       type: object
@@ -98,28 +110,28 @@ components:
 
 
     ### base models
-    _UserID:
+    __UserID:
       type: object
       properties:
         userID:
           type: integer
           format: int64
       required: [userID]
-    _UserName:
+    __UserName:
       type: object
       properties:
         userName:
           type: string
       required: [userName]
 
-    _RoleID:
+    __RoleID:
       type: object
       properties:
         roleID:
           type: integer
           format: int32
       required: [roleID]
-    _RoleName:
+    __RoleName:
       type: object
       properties:
         roleName:
@@ -129,13 +141,13 @@ components:
     _Perm:
       type: integer
       format: int32
-    _PermID:
+    __PermID:
       type: object
       properties:
         permID:
           $ref: "#/components/schemas/_Perm"
       required: [permID]
-    _PermName:
+    __PermName:
       type: object
       properties:
         permName:
@@ -149,12 +161,12 @@ components:
 
     ### User schemas
     UserNew:
-      $ref: "#/components/schemas/_UserName"
+      $ref: "#/components/schemas/__UserName"
     User:
       allOf:
-        - $ref: "#/components/schemas/_UserID"
-        - $ref: "#/components/schemas/_UserName"
-        - $ref: "#/components/schemas/_RoleID"
+        - $ref: "#/components/schemas/__UserID"
+        - $ref: "#/components/schemas/__UserName"
+        - $ref: "#/components/schemas/__RoleID"
     UserNewReturn:
       allOf:
         - $ref: "#/components/schemas/User"
@@ -166,17 +178,17 @@ components:
 
     ### Role schemas
     RoleNew:
-      $ref: "#/components/schemas/_RoleName"
+      $ref: "#/components/schemas/__RoleName"
     Role:
       allOf:
-        - $ref: "#/components/schemas/_RoleID"
-        - $ref: "#/components/schemas/_RoleName"
+        - $ref: "#/components/schemas/__RoleID"
+        - $ref: "#/components/schemas/__RoleName"
 
     ### Permission schemas
     PermWithName:
       allOf:
-        - $ref: "#/components/schemas/_PermID"
-        - $ref: "#/components/schemas/_PermName"
+        - $ref: "#/components/schemas/__PermID"
+        - $ref: "#/components/schemas/__PermName"
     PermNameArray:
       type: array
       items: 
@@ -188,9 +200,7 @@ components:
           $ref: "#/components/schemas/PermNameArray" 
         remove:
           $ref: "#/components/schemas/PermNameArray" 
-      required:
-        - add
-        - remove
+      required: [add, remove]
 
     ### Repo schemas
     Repos:
@@ -205,7 +215,25 @@ components:
         type: string
 
     ### Snapshot Schemas
-    _File:
+    _SnapshotID:
+      type: integer
+      format: int64
+      minimum: 0
+    __SnapshotIDObject: # ogen removes '_' which would make it conflict with _SnapshotID so added Object
+      type: object
+      properties:
+        snapshotID:
+          $ref: "#/components/schemas/_SnapshotID"
+      required: [snapshotID]
+    __ParentSnapshotID:
+      type: object
+      properties:
+        parentSnapshotID:
+          $ref: "#/components/schemas/_SnapshotID"
+      required: [snapshotID]
+
+
+    __File:
       type: object
       properties:
         chunkHashes:
@@ -223,8 +251,12 @@ components:
         files:
           type: array
           items:
-            $ref: "#/components/schemas/_File"
+            $ref: "#/components/schemas/__File"
       required: ["files"]
+    Snapshot:
+      allOf:
+        - $ref: "#/components/schemas/__SnapshotIDObject"
+        - $ref: "#/components/schemas/__ParentSnapshotID"
 
 security:
   - bearerAuth: []
@@ -327,7 +359,7 @@ paths:
         content: 
           application/json:
             schema:
-              $ref: "#/components/schemas/_UserName"
+              $ref: "#/components/schemas/__UserName"
   /users/{userID}/repos:
     parameters:
       - $ref: "#/components/parameters/userID"
@@ -388,6 +420,27 @@ paths:
         - Users
       responses:
         "201": {}
+        default:
+          $ref: "#/components/responses/GlobalError"
+
+  /users/{userID}/repos/{repoName}/branches/{branchName}/current:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+      - $ref: "#/components/parameters/repoName"
+      - $ref: "#/components/parameters/branchName"
+    get:
+      summary: Get current snapshot the branch points to
+      operationId: get-branch-head
+      tags:
+        - Users
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/__SnapshotIDObject"
+        "404":
+          description: The branch does not have a head
         default:
           $ref: "#/components/responses/GlobalError"
 
@@ -480,7 +533,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/_RoleName"
+              $ref: "#/components/schemas/__RoleName"
 
 
   /roles/{roleID}/perms:

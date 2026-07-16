@@ -58,7 +58,7 @@ type file struct {
 }
 
 func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
-	repoID, branchID, err := repoBranch(ctx)
+	repoID, branch, err := repoBranchFromCtx(ctx)
 	if err != nil {
 		return err
 	}
@@ -77,10 +77,10 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 
 	snapshotID, err := qtx.CreateSnapshot(ctx, dbm.CreateSnapshotParams{
 		RepoID: repoID,
-		BranchID: branchID,
+		BranchID: branch.BranchID,
 	})
 	if err != nil {
-		return server.NewInternalError(err, "failed creating new snapshot row", "repoID", repoID, "branchID", branchID)
+		return server.NewInternalError(err, "failed creating new snapshot row", "repoID", repoID, "branchID", branch.BranchID)
 	}
 
 	connectSnapshotParams := make([]dbm.ConnectSnapshotWithFilesParams, 0, len(files))
@@ -128,14 +128,14 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 	}
 
 	if err := qtx.UpdateBranchHead(ctx, dbm.UpdateBranchHeadParams{
-		BranchID: branchID,
+		BranchID: branch.BranchID,
 		HeadSnapshotID: pgtype.Int8{Int64: snapshotID, Valid: true},
 	}); err != nil {
-		return server.NewInternalError(err, "failed updating branch head", "branchID", branchID, "newSnapshotID", snapshotID)
+		return server.NewInternalError(err, "failed updating branch head", "branchID", branch.BranchID, "newSnapshotID", snapshotID)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return server.NewInternalError(err, "failed committing creation of snapshot", "repoID", repoID, "branchID", branchID)
+		return server.NewInternalError(err, "failed committing creation of snapshot", "repoID", repoID, "branchID", branch.BranchID)
 	}
 
 	return nil
@@ -181,15 +181,27 @@ func reqFilesStruct(reqFiles []api.File) ([]file, int, error) {
 	return files, chunkCount, nil
 }
 
-func repoBranch(ctx context.Context) (repoID int64, branchID int64, err error) {
-	var ok bool
-	if repoID, ok = ctx.Value(CkRepoID).(int64); !ok {
-		err = server.NewInternalError(nil, "repoID is not mapped", "repoID", repoID)
-		return
+// err is ServerError
+func repoBranchFromCtx(ctx context.Context) (repoID int64, branch dbm.Branch, err error) {
+	repoID, err = repoFromCtx(ctx)
+	if err != nil { return }
+	branch, err = branchFromCtx(ctx)
+	return
+}
+
+// err is ServerError
+func branchFromCtx(ctx context.Context) (branch dbm.Branch, err error) {
+	branch, ok := ctx.Value(CkBranch).(dbm.Branch)
+	if !ok {
+		err = server.NewInternalError(nil, "branchID is not mapped", "branchID", branch.BranchID)
 	}
-	if branchID, ok = ctx.Value(CkBranchID).(int64); !ok {
-		err = server.NewInternalError(nil, "branchID is not mapped", "branchID", branchID)
-		return
+	return
+}
+
+func repoFromCtx(ctx context.Context) (repoID int64, err error) {
+	repoID, ok := ctx.Value(CkRepoID).(int64)
+	if !ok {
+		err = server.NewInternalError(nil, "repoID is not mapped", "repoID", repoID)
 	}
 	return
 }

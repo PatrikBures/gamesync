@@ -66,7 +66,7 @@ func (s *Error) SetMessage(val string) {
 
 func (*Error) putRolePermsRes() {}
 
-// Ref: #/components/schemas/_File
+// Ref: #/components/schemas/__File
 type File struct {
 	ChunkHashes []string `json:"chunkHashes"`
 	Hash        string   `json:"hash"`
@@ -102,6 +102,11 @@ func (s *File) SetHash(val string) {
 func (s *File) SetPath(val string) {
 	s.Path = val
 }
+
+// GetBranchHeadNotFound is response for GetBranchHead operation.
+type GetBranchHeadNotFound struct{}
+
+func (*GetBranchHeadNotFound) getBranchHeadRes() {}
 
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
@@ -288,7 +293,7 @@ func (s *Role) SetRoleName(val string) {
 	s.RoleName = val
 }
 
-// Ref: #/components/schemas/_RoleName
+// Ref: #/components/schemas/__RoleName
 type RoleName struct {
 	RoleName string `json:"roleName"`
 }
@@ -302,6 +307,25 @@ func (s *RoleName) GetRoleName() string {
 func (s *RoleName) SetRoleName(val string) {
 	s.RoleName = val
 }
+
+type SnapshotID int64
+
+// Ref: #/components/schemas/__SnapshotIDObject
+type SnapshotIDObject struct {
+	SnapshotID SnapshotID `json:"snapshotID"`
+}
+
+// GetSnapshotID returns the value of SnapshotID.
+func (s *SnapshotIDObject) GetSnapshotID() SnapshotID {
+	return s.SnapshotID
+}
+
+// SetSnapshotID sets the value of SnapshotID.
+func (s *SnapshotIDObject) SetSnapshotID(val SnapshotID) {
+	s.SnapshotID = val
+}
+
+func (*SnapshotIDObject) getBranchHeadRes() {}
 
 // Ref: #/components/schemas/SnapshotNew
 type SnapshotNew struct {
@@ -356,7 +380,7 @@ func (s *User) SetRoleID(val int32) {
 	s.RoleID = val
 }
 
-// Ref: #/components/schemas/_UserName
+// Ref: #/components/schemas/__UserName
 type UserName struct {
 	UserName string `json:"userName"`
 }

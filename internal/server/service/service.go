@@ -13,7 +13,7 @@ const (
 	CkUser ContextKey = iota
 	CkRolePerms
 	CkRepoID
-	CkBranchID
+	CkBranch
 )
 
 type Service struct {

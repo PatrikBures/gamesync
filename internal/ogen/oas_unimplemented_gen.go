@@ -13,6 +13,15 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
+// GetBranchHead implements get-branch-head operation.
+//
+// Get current snapshot the branch points to.
+//
+// GET /users/{userID}/repos/{repoName}/branches/{branchName}/current
+func (UnimplementedHandler) GetBranchHead(ctx context.Context, params GetBranchHeadParams) (r GetBranchHeadRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetHealth implements get-health operation.
 //
 // Get health of server.
