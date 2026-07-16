@@ -12,6 +12,11 @@ import (
 	"go.pabu.dev/ini"
 )
 
+type CacheNames string
+const (
+	CacheNameUserID CacheNames = "user_id"
+)
+
 type Config struct {
 	Global Global
 	Server Server
@@ -19,6 +24,7 @@ type Config struct {
 
 type Global struct {
 	ChunkDir string
+	CacheDir string
 }
 
 type Server struct {
@@ -58,12 +64,11 @@ func LoadConfig(config *Config, configFile string) error {
 	if err := loadToken(config); err != nil {
 		return err
 	}
-	cache, err := cacheDir(config)
-	if err != nil {
+	if err := cacheDir(config); err != nil {
 		return err
 	}
 
-	if err := loadCachedItem(cache, "user_id", &config.Server.UserID); err != nil {
+	if err := loadCachedItem(config.Global.CacheDir, CacheNameUserID, &config.Server.UserID); err != nil {
 		return err
 	}
 	return nil
@@ -113,8 +118,8 @@ func loadToken(config *Config) error {
 	return nil
 }
 
-func loadCachedItem[T int | int32 | int64 | string](cacheDir string, name string, target *T) (error) {
-	p := filepath.Join(cacheDir, name)
+func loadCachedItem[T int | int32 | int64 | string](cacheDir string, name CacheNames, target *T) (error) {
+	p := filepath.Join(cacheDir, string(name))
 	
 	var valueString string
 	if content, err := os.ReadFile(p); err != nil {
@@ -150,21 +155,58 @@ func loadCachedItem[T int | int32 | int64 | string](cacheDir string, name string
 	return nil
 }
 
-func cacheDir(config *Config) (string, error) {
-	cacheDir, err := os.UserCacheDir()
+func SetCacheItem[T int | int32 | int64 | string](cacheDir string, name CacheNames, value T) error {
+	p := filepath.Join(cacheDir, string(name))
+	
+	f, err := os.OpenFile(p, os.O_CREATE | os.O_WRONLY, 0664)
 	if err != nil {
-		return "", err
+		return err
+	}
+	defer f.Close()
+
+	var valueString string
+
+	switch t := any(value).(type) {
+	case int, int32, int64:
+		i := t.(int64)
+		valueString = strconv.FormatInt(i, 10)
+	case string:
+		valueString = t
+	}
+	if _, err := f.WriteString(valueString); err != nil {
+		return err
 	}
 
-	projectCache := filepath.Join(cacheDir, projectName)
-	config.Global.ChunkDir = filepath.Join(projectCache, "chunks")
+	fmt.Printf("set cache '%s' to '%s'\n", string(name), valueString)
+
+	return nil
+}
+
+func cacheDir(config *Config) error {
+	if config.Global.CacheDir == "" {
+		cd, err := os.UserCacheDir()
+		if err != nil {
+			return err
+		}
+		config.Global.CacheDir = filepath.Join(cd, projectName)
+	}
+
+	s, err := os.Stat(config.Global.CacheDir)
+	if err != nil {
+		return err
+	}
+	if !s.IsDir() {
+		return fmt.Errorf("cache dir is not a dir: %s", config.Global.CacheDir)
+	}
+
+	config.Global.ChunkDir = filepath.Join(config.Global.CacheDir, "chunks")
 
 	if err := createDirs([]string{
 		config.Global.ChunkDir,
 	}); err != nil {
-		return "", err
+		return err
 	}
-	return projectCache, nil
+	return nil
 }
 
 func createDirs(dirs []string) error {

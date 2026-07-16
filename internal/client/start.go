@@ -9,19 +9,20 @@ import (
 )
 
 // if UserID in config is < 1, request one from server
-func Client(config *config.Config) (*api.Client, error) {
+func Client(c *config.Config) (*api.Client, error) {
 	client, err := api.NewClient(
-		config.Server.Url,
-		clientAuth.NewAuth(config.Server.Token))
+		c.Server.Url,
+		clientAuth.NewAuth(c.Server.Token))
 	if err != nil {
 		return nil, fmt.Errorf("create client: %w", err)
 	}
-	if config.Server.UserID < 1 {
+	if c.Server.UserID < 1 {
 		user, err := client.GetMe(context.Background())
 		if err != nil {
 			return nil, fmt.Errorf("getting userid: %w", err)
 		}
-		config.Server.UserID = user.UserID
+		c.Server.UserID = user.UserID
+		config.SetCacheItem(c.Global.CacheDir, config.CacheNameUserID, user.UserID)
 	}
 	return client, nil
 }
