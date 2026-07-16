@@ -22,7 +22,9 @@ func Client(c *config.Config) (*api.Client, error) {
 			return nil, fmt.Errorf("getting userid: %w", err)
 		}
 		c.Server.UserID = user.UserID
-		config.SetCacheItem(c.Global.CacheDir, config.CacheNameUserID, user.UserID)
+		if err := config.SetCacheItem(c.Global.CacheDir, config.CacheNameUserID, user.UserID); err != nil {
+			return nil, err
+		}
 	}
 	return client, nil
 }

@@ -155,14 +155,16 @@ func loadCachedItem[T int | int32 | int64 | string](cacheDir string, name CacheN
 	return nil
 }
 
-func SetCacheItem[T int | int32 | int64 | string](cacheDir string, name CacheNames, value T) error {
+func SetCacheItem[T int | int32 | int64 | string](cacheDir string, name CacheNames, value T) (err error) {
 	p := filepath.Join(cacheDir, string(name))
 	
 	f, err := os.OpenFile(p, os.O_CREATE | os.O_WRONLY, 0664)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		err = errors.Join(err, f.Close())
+	}()
 
 	var valueString string
 
@@ -173,7 +175,7 @@ func SetCacheItem[T int | int32 | int64 | string](cacheDir string, name CacheNam
 	case string:
 		valueString = t
 	}
-	if _, err := f.WriteString(valueString); err != nil {
+	if _, err = f.WriteString(valueString); err != nil {
 		return err
 	}
 
