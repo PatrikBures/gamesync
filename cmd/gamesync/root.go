@@ -25,7 +25,7 @@ func newRootCmd() *rootCmd {
 		Use:   "gamesync",
 		Short: "Syncs save games to a server",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := config.LoadConfig(&root.config, root.opts.configPath); err != nil {
+			if err := config.Load(&root.config, root.opts.configPath); err != nil {
 				return fmt.Errorf("loading config: %w", err)
 			}
 
