@@ -21,7 +21,6 @@ func Client(config *config.Config) (*api.Client, error) {
 		if err != nil {
 			return nil, fmt.Errorf("getting userid: %w", err)
 		}
-		fmt.Println("got uid:", user.UserID)
 		config.Server.UserID = user.UserID
 	}
 	return client, nil

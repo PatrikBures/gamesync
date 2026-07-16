@@ -1,9 +1,12 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"math/bits"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"go.pabu.dev/ini"
@@ -55,7 +58,12 @@ func LoadConfig(config *Config, configFile string) error {
 	if err := loadToken(config); err != nil {
 		return err
 	}
-	if err := cacheDir(config); err != nil {
+	cache, err := cacheDir(config)
+	if err != nil {
+		return err
+	}
+
+	if err := loadCachedItem(cache, "user_id", &config.Server.UserID); err != nil {
 		return err
 	}
 	return nil
@@ -105,20 +113,58 @@ func loadToken(config *Config) error {
 	return nil
 }
 
-func cacheDir(config *Config) error {
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
+func loadCachedItem[T int | int32 | int64 | string](cacheDir string, name string, target *T) (error) {
+	p := filepath.Join(cacheDir, name)
+	
+	var valueString string
+	if content, err := os.ReadFile(p); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			fmt.Println("did not find:", p)
+			return nil
+		}
 		return err
+	} else {
+		valueString = string(content)
+		valueString = strings.TrimSpace(valueString)
 	}
 
-	config.Global.ChunkDir = filepath.Join(cacheDir, projectName, "chunks")
+	errMsg := fmt.Errorf("loading cache '%s'", p)
+	switch t := any(target).(type) {
+	case *int:
+		i, err := strconv.ParseInt(valueString, 10, bits.UintSize)
+		if err != nil { return errors.Join(errMsg, err) }
+		*t = int(i)
+	case *int32:
+		i, err := strconv.ParseInt(valueString, 10, 32)
+		if err != nil { return errors.Join(errMsg, err) }
+		*t = int32(i)
+	case *int64:
+		i, err := strconv.ParseInt(valueString, 10, 64)
+		if err != nil { return errors.Join(errMsg, err) }
+		*t = int64(i)
+	case *string:
+		*t = valueString
+	default:
+		panic(fmt.Sprintf("undefined type when loading cache: %T", target))
+	}
+	return nil
+}
+
+func cacheDir(config *Config) (string, error) {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+
+	projectCache := filepath.Join(cacheDir, projectName)
+	config.Global.ChunkDir = filepath.Join(projectCache, "chunks")
 
 	if err := createDirs([]string{
 		config.Global.ChunkDir,
 	}); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return projectCache, nil
 }
 
 func createDirs(dirs []string) error {
