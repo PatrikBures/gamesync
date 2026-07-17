@@ -12,6 +12,7 @@ const (
 	GetPermsOperation                   OperationName = "GetPerms"
 	GetRolePermsOperation               OperationName = "GetRolePerms"
 	GetRolesOperation                   OperationName = "GetRoles"
+	GetSnapshotOperation                OperationName = "GetSnapshot"
 	GetUserOperation                    OperationName = "GetUser"
 	GetUserRepoBranchesOperation        OperationName = "GetUserRepoBranches"
 	GetUserReposOperation               OperationName = "GetUserRepos"

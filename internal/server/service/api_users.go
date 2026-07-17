@@ -14,8 +14,6 @@ import (
 )
 
 func (s *Service) GetUser(ctx context.Context, params api.GetUserParams) (*api.User, error) {
-	// TODO: Seperate endpoint like GET /users/me to get info about the authenticated user
-
 	user, err := s.db.ReadQuery().GetUser(ctx, params.UserID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

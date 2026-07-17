@@ -65,6 +65,12 @@ type Invoker interface {
 	//
 	// GET /roles
 	GetRoles(ctx context.Context) ([]Role, error)
+	// GetSnapshot invokes get-snapshot operation.
+	//
+	// Get all files and chunks for snapshot.
+	//
+	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}
+	GetSnapshot(ctx context.Context, params GetSnapshotParams) (*SnapshotFiles, error)
 	// GetUser invokes get-user operation.
 	//
 	// Get info about user.
@@ -106,7 +112,7 @@ type Invoker interface {
 	// Create new snapshot.
 	//
 	// POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
-	PostUserRepoBranchSnapshot(ctx context.Context, request *SnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error)
+	PostUserRepoBranchSnapshot(ctx context.Context, request *Files, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error)
 	// PostUsers invokes post-users operation.
 	//
 	// Create new user.
@@ -913,6 +919,194 @@ func (c *Client) sendGetRoles(ctx context.Context) (res []Role, err error) {
 	return result, nil
 }
 
+// GetSnapshot invokes get-snapshot operation.
+//
+// Get all files and chunks for snapshot.
+//
+// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}
+func (c *Client) GetSnapshot(ctx context.Context, params GetSnapshotParams) (*SnapshotFiles, error) {
+	res, err := c.sendGetSnapshot(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetSnapshot(ctx context.Context, params GetSnapshotParams) (res *SnapshotFiles, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("get-snapshot"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.URLTemplateKey.String("/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, GetSnapshotOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [8]string
+	pathParts[0] = "/users/"
+	{
+		// Encode "userID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "userID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int64ToString(params.UserID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/repos/"
+	{
+		// Encode "repoName" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "repoName",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.RepoName))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/branches/"
+	{
+		// Encode "branchName" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "branchName",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.BranchName))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	pathParts[6] = "/snapshots/"
+	{
+		// Encode "snapshotID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "snapshotID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int64ToString(params.SnapshotID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[7] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, GetSnapshotOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	stage = "DecodeResponse"
+	result, err := decodeGetSnapshotResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetUser invokes get-user operation.
 //
 // Get info about user.
@@ -1696,12 +1890,12 @@ func (c *Client) sendPostRoles(ctx context.Context, request *RoleName) (res *Rol
 // Create new snapshot.
 //
 // POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
-func (c *Client) PostUserRepoBranchSnapshot(ctx context.Context, request *SnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error) {
+func (c *Client) PostUserRepoBranchSnapshot(ctx context.Context, request *Files, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error) {
 	res, err := c.sendPostUserRepoBranchSnapshot(ctx, request, params)
 	return res, err
 }
 
-func (c *Client) sendPostUserRepoBranchSnapshot(ctx context.Context, request *SnapshotNew, params PostUserRepoBranchSnapshotParams) (res PostUserRepoBranchSnapshotRes, err error) {
+func (c *Client) sendPostUserRepoBranchSnapshot(ctx context.Context, request *Files, params PostUserRepoBranchSnapshotParams) (res PostUserRepoBranchSnapshotRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("post-user-repo-branch-snapshot"),
 		semconv.HTTPRequestMethodKey.String("POST"),

@@ -39,7 +39,7 @@ func encodePostRolesRequest(
 }
 
 func encodePostUserRepoBranchSnapshotRequest(
-	req *SnapshotNew,
+	req *Files,
 	r *http.Request,
 ) error {
 	const contentType = "application/json"

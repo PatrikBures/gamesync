@@ -16,7 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.SnapshotNew, params api.PostUserRepoBranchSnapshotParams) (result api.PostUserRepoBranchSnapshotRes, err error) {
+func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.Files, params api.PostUserRepoBranchSnapshotParams) (result api.PostUserRepoBranchSnapshotRes, err error) {
 
 	files, chunkCount, err := reqFilesStruct(req.Files)
 	if err != nil {
@@ -144,7 +144,7 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 
 func connectFileChunksParams(fileHash []byte, chunkHashes [][]byte) []dbm.ConnectFileWithChunksParams {
 	s := make([]dbm.ConnectFileWithChunksParams, 0, len(chunkHashes))
-	for i := int16(0); i < int16(len(chunkHashes)); i++ {
+	for i := int32(0); i < int32(len(chunkHashes)); i++ {
 		s = append(s, dbm.ConnectFileWithChunksParams{
 			FileHash: fileHash,
 			ChunkHash: chunkHashes[i],
@@ -181,31 +181,6 @@ func reqFilesStruct(reqFiles []api.File) ([]file, int, error) {
 	return files, chunkCount, nil
 }
 
-// err is ServerError
-func repoBranchFromCtx(ctx context.Context) (repoID int64, branch dbm.Branch, err error) {
-	repoID, err = repoFromCtx(ctx)
-	if err != nil { return }
-	branch, err = branchFromCtx(ctx)
-	return
-}
-
-// err is ServerError
-func branchFromCtx(ctx context.Context) (branch dbm.Branch, err error) {
-	branch, ok := ctx.Value(CkBranch).(dbm.Branch)
-	if !ok {
-		err = server.NewInternalError(nil, "branchID is not mapped", "branchID", branch.BranchID)
-	}
-	return
-}
-
-func repoFromCtx(ctx context.Context) (repoID int64, err error) {
-	repoID, ok := ctx.Value(CkRepoID).(int64)
-	if !ok {
-		err = server.NewInternalError(nil, "repoID is not mapped", "repoID", repoID)
-	}
-	return
-}
-
 
 
 // removes every []byte from a if it exists in b
@@ -235,4 +210,57 @@ func bytesToHex(bytes [][]byte) []string {
 		s = append(s, hex.EncodeToString(b))
 	}
 	return s
+}
+
+
+
+func (s *Service) GetSnapshot(ctx context.Context, params api.GetSnapshotParams) (result *api.SnapshotFiles, err error) {
+	snapshot, err := snapshotFromCtx(ctx)
+	if err != nil { return nil, err }
+
+	qtx, tx, err := s.db.BeginReadTX(ctx)
+	if err != nil {
+		return nil, server.NewInternalError(err, "failed starting tx")
+	}
+	defer func() {
+		if recover() != nil || err != nil {
+			if e := tx.Rollback(ctx); e != nil {
+				slog.Error("failed rollback", "error", e)
+			}
+		}
+	}()
+
+
+	snapshotFiles, err := qtx.GetSnapshotFiles(ctx, snapshot.SnapshotID)
+	if err != nil {
+		return nil, server.NewInternalError(err, "failed listing snapshot files")
+	}
+
+	result = &api.SnapshotFiles{
+		Files: make([]api.File, 0, len(snapshotFiles)),
+	}
+
+	if snapshot.ParentSnapshotID.Valid {
+		result.ParentSnapshotID = snapshot.ParentSnapshotID.Int64
+	}
+
+	for _, sf := range snapshotFiles {
+		chunkHashes, err := qtx.GetFileChunkHashes(ctx, sf.FileHash)
+		if err != nil {
+			return nil, server.NewInternalError(err, "failed listing file chunk hashes", "snapshotID", snapshot.SnapshotID, "fileHash", sf.FileHash)
+		}
+
+		ChunkHashesHex := make([]string, 0, len(chunkHashes))
+		for _, ch := range chunkHashes {
+			ChunkHashesHex = append(ChunkHashesHex, hex.EncodeToString(ch))
+		}
+
+		result.Files = append(result.Files, api.File{
+			ChunkHashes: ChunkHashesHex,
+			Hash: hex.EncodeToString(sf.FileHash),
+			Path: sf.FilePath,
+		})
+	}
+
+	return result, nil
 }

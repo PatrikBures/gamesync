@@ -14,7 +14,7 @@ import (
 type ConnectFileWithChunksParams struct {
 	FileHash   []byte
 	ChunkHash  []byte
-	ChunkOrder int16
+	ChunkOrder int32
 }
 
 type ConnectSnapshotWithFilesParams struct {
@@ -28,7 +28,7 @@ INSERT INTO files (file_hash, bytes)
 VALUES (
     $1,
     (
-        SELECT SUM(bytes) FROM chunks
+        SELECT COALESCE(SUM(bytes), 0) FROM chunks
         WHERE chunk_hash = ANY($2::BYTEA[])
     )
 )
@@ -71,6 +71,69 @@ func (q *Queries) CreateSnapshot(ctx context.Context, arg CreateSnapshotParams) 
 	var snapshot_id int64
 	err := row.Scan(&snapshot_id)
 	return snapshot_id, err
+}
+
+const getFileChunkHashes = `-- name: GetFileChunkHashes :many
+SELECT chunk_hash FROM file_chunks
+WHERE file_hash = $1
+ORDER BY chunk_order
+`
+
+func (q *Queries) GetFileChunkHashes(ctx context.Context, fileHash []byte) ([][]byte, error) {
+	rows, err := q.db.Query(ctx, getFileChunkHashes, fileHash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items [][]byte
+	for rows.Next() {
+		var chunk_hash []byte
+		if err := rows.Scan(&chunk_hash); err != nil {
+			return nil, err
+		}
+		items = append(items, chunk_hash)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSnapshot = `-- name: GetSnapshot :one
+SELECT snapshot_id, parent_snapshot_id, created_at FROM snapshots
+WHERE snapshot_id = $1
+`
+
+func (q *Queries) GetSnapshot(ctx context.Context, snapshotID int64) (Snapshot, error) {
+	row := q.db.QueryRow(ctx, getSnapshot, snapshotID)
+	var i Snapshot
+	err := row.Scan(&i.SnapshotID, &i.ParentSnapshotID, &i.CreatedAt)
+	return i, err
+}
+
+const getSnapshotFiles = `-- name: GetSnapshotFiles :many
+SELECT file_hash, snapshot_id, file_path FROM snapshot_files
+WHERE snapshot_id = $1
+`
+
+func (q *Queries) GetSnapshotFiles(ctx context.Context, snapshotID int64) ([]SnapshotFile, error) {
+	rows, err := q.db.Query(ctx, getSnapshotFiles, snapshotID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SnapshotFile
+	for rows.Next() {
+		var i SnapshotFile
+		if err := rows.Scan(&i.FileHash, &i.SnapshotID, &i.FilePath); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listFileHashes = `-- name: ListFileHashes :many

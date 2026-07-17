@@ -44,6 +44,12 @@ type Handler interface {
 	//
 	// GET /roles
 	GetRoles(ctx context.Context) ([]Role, error)
+	// GetSnapshot implements get-snapshot operation.
+	//
+	// Get all files and chunks for snapshot.
+	//
+	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}
+	GetSnapshot(ctx context.Context, params GetSnapshotParams) (*SnapshotFiles, error)
 	// GetUser implements get-user operation.
 	//
 	// Get info about user.
@@ -85,7 +91,7 @@ type Handler interface {
 	// Create new snapshot.
 	//
 	// POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
-	PostUserRepoBranchSnapshot(ctx context.Context, req *SnapshotNew, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error)
+	PostUserRepoBranchSnapshot(ctx context.Context, req *Files, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error)
 	// PostUsers implements post-users operation.
 	//
 	// Create new user.

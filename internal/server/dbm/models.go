@@ -30,7 +30,7 @@ type File struct {
 type FileChunk struct {
 	FileHash   []byte
 	ChunkHash  []byte
-	ChunkOrder int16
+	ChunkOrder int32
 }
 
 type Permission struct {

@@ -56,6 +56,6 @@ func (s *Service) GetBranchHead(ctx context.Context, params api.GetBranchHeadPar
 	if !branch.HeadSnapshotID.Valid {
 		return &api.GetBranchHeadNotFound{}, nil
 	}
-	return &api.SnapshotIDObject{SnapshotID: api.SnapshotID(branch.HeadSnapshotID.Int64)}, nil
+	return &api.SnapshotIDObject{SnapshotID: branch.HeadSnapshotID.Int64}, nil
 
 }

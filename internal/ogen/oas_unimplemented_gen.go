@@ -67,6 +67,15 @@ func (UnimplementedHandler) GetRoles(ctx context.Context) (r []Role, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
+// GetSnapshot implements get-snapshot operation.
+//
+// Get all files and chunks for snapshot.
+//
+// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}
+func (UnimplementedHandler) GetSnapshot(ctx context.Context, params GetSnapshotParams) (r *SnapshotFiles, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetUser implements get-user operation.
 //
 // Get info about user.
@@ -126,7 +135,7 @@ func (UnimplementedHandler) PostRoles(ctx context.Context, req *RoleName) (r *Ro
 // Create new snapshot.
 //
 // POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
-func (UnimplementedHandler) PostUserRepoBranchSnapshot(ctx context.Context, req *SnapshotNew, params PostUserRepoBranchSnapshotParams) (r PostUserRepoBranchSnapshotRes, _ error) {
+func (UnimplementedHandler) PostUserRepoBranchSnapshot(ctx context.Context, req *Files, params PostUserRepoBranchSnapshotParams) (r PostUserRepoBranchSnapshotRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

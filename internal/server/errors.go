@@ -20,6 +20,8 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrUserNameConflict   = errors.New("user name already exists")
 
+	ErrSnapshotNotFound   = errors.New("snapshot not found")
+
 	ErrTokenLength        = errors.New("token is too long or short")
 
 	ErrBase64             = errors.New("could not decode base64")

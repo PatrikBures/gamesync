@@ -41,6 +41,9 @@ func (s *Service) NewError(ctx context.Context, err error) *api.GlobalErrorStatu
 	case server.ErrRoleNotFound:
 		code = http.StatusNotFound
 		msg = "Role not found"
+	case server.ErrSnapshotNotFound:
+		code = http.StatusNotFound
+		msg = "Snapshot not found"
 
 	case server.ErrUserNameConflict:
 		code = http.StatusConflict

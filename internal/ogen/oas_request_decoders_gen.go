@@ -165,7 +165,7 @@ func (s *Server) decodePostRolesRequest(r *http.Request) (
 }
 
 func (s *Server) decodePostUserRepoBranchSnapshotRequest(r *http.Request) (
-	req *SnapshotNew,
+	req *Files,
 	rawBody []byte,
 	close func() error,
 	rerr error,
@@ -212,7 +212,7 @@ func (s *Server) decodePostUserRepoBranchSnapshotRequest(r *http.Request) (
 		rawBody = append(rawBody, buf...)
 		d := jx.DecodeBytes(buf)
 
-		var request SnapshotNew
+		var request Files
 		if err := func() error {
 			if err := request.Decode(d); err != nil {
 				return err

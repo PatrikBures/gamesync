@@ -12,7 +12,8 @@ import (
 	"github.com/ogen-go/ogen/middleware"
 )
 
-func RepoBranch(db *dbx.DB) middleware.Middleware {
+// loads all values in path into context
+func LoadPathData(db *dbx.DB) middleware.Middleware {
 	return func(req middleware.Request, next middleware.Next) (middleware.Response, error) {
 
 		// skip checking if repo exists when creating one 
@@ -84,6 +85,35 @@ func RepoBranch(db *dbx.DB) middleware.Middleware {
 			)
 		}
 		req.Context = context.WithValue(req.Context, service.CkBranch, branch)
+
+
+
+
+		targetSnapshotID, ok := req.Params.Path("snapshotID")
+		if !ok {
+			return next(req)
+		}
+		var snapshotID int64
+		switch i := targetSnapshotID.(type) {
+		case int64:
+			snapshotID = i
+		default:
+			return middleware.Response{}, server.NewInternalError(nil, "snapshotID is not int64", "path", req.Raw.URL.Path)
+		}
+
+		snapshot, err := db.ReadQuery().GetSnapshot(req.Context, snapshotID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return middleware.Response{}, server.ErrSnapshotNotFound
+			}
+			return middleware.Response{}, server.NewInternalError(err, "failed getting snapshot",
+				"userID", user.UserID,
+				"repoID", repo.RepoID,
+				"branchID", branch.BranchID,
+				"snapshotID", snapshotID,
+			)
+		}
+		req.Context = context.WithValue(req.Context, service.CkSnapshot, snapshot)
 		
 		return next(req)
 	}

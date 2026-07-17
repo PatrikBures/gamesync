@@ -14,6 +14,7 @@ const (
 	CkRolePerms
 	CkRepoID
 	CkBranch
+	CkSnapshot
 )
 
 type Service struct {

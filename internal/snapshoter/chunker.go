@@ -67,25 +67,36 @@ func NewChunkGen(chunkDir string) *chunkGen {
 func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
 	g := errgroup.Group{}
 	g.SetLimit(runtime.NumCPU())
+
 	results := make(chan FileResults, 10)
-	waitErr := make(chan error, 1)
+	walkDone := make(chan struct{})
 
-	if err := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
-			return nil
-		}
-		g.Go(func() error {
-			fileHash, hashes, err := cg.chunkFile(path)
-			results <- FileResults{Path: path, Hash: fileHash, Hashes: hashes, Err: err}
-			return err
-		})
+	var walkErr error
+	var groupErr error
 
-		return nil
-	}); err != nil {
-		return nil, err
-	}
 	go func() {
-		waitErr <- g.Wait()
+		walkErr = filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			g.Go(func() error {
+				fileHash, hashes, cerr := cg.chunkFile(path)
+				relPath, ferr := filepath.Rel(repoDir, path)
+				err := errors.Join(cerr, ferr)
+				results <- FileResults{Path: relPath, Hash: fileHash, Hashes: hashes, Err: err}
+				return err
+			})
+			return nil
+		})
+		close(walkDone)
+	}()
+
+	go func() {
+		<- walkDone
+		groupErr = g.Wait()
 		close(results)
 	}()
 
@@ -98,8 +109,11 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
 		}
 		all = append(all, r)
 	}
-	if gErr := <-waitErr; gErr != nil {
-		return all, fmt.Errorf("chunking files: %w", gErr)
+	if walkErr != nil {
+		return all, fmt.Errorf("walking directory: %w", walkErr)
+	}
+	if groupErr != nil {
+		return all, fmt.Errorf("chunking files: %w", groupErr)
 	}
 	return all, nil
 }
@@ -140,7 +154,6 @@ func (cg *chunkGen) chunkFile(path string) (string, []string, error) {
 		// this means the chunk already exists
 		if chunkFile == nil {
 			atomic.AddInt64(&cg.Info.ChunksSkipped, 1)
-			chunkHashes = append(chunkHashes, hashHex)
 			continue
 		}
 

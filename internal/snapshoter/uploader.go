@@ -37,10 +37,13 @@ func NewUploader(client *api.Client, params api.PostUserRepoBranchSnapshotParams
 // try again if there are more than one 'attempts'
 func (u *uploader) CreateSnapshot(files []FileResults) error {
 
-	request := api.SnapshotNew{}
+	request := api.Files{}
 	// make capacity big enough for all files
 	request.Files = make([]api.File, 0, len(files))
 	for _, f := range files {
+		if f.Hash == "" {
+			return fmt.Errorf("file hash is empty: %s", f.Path)
+		}
 		request.Files = append(request.Files, api.File{
 			Path: f.Path,
 			Hash: f.Hash,

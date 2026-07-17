@@ -100,7 +100,7 @@ func start() error {
 	}
 
 	mw = append(mw, 
-		middlewares.RepoBranch(db),
+		middlewares.LoadPathData(db),
 	)
 
 	srv, err := api.NewServer(

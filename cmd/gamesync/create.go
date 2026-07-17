@@ -155,7 +155,7 @@ func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config co
 	uploader := snapshoter.NewUploader(client, params, config.Global.ChunkDir, 2)
 
 	if err := uploader.CreateSnapshot(files); err != nil {
-		return fmt.Errorf("creating chunk: %w", err)
+		return fmt.Errorf("creating snapshot: %w", err)
 	}
 
 	return nil

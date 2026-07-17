@@ -103,6 +103,21 @@ func (s *File) SetPath(val string) {
 	s.Path = val
 }
 
+// Ref: #/components/schemas/Files
+type Files struct {
+	Files []File `json:"files"`
+}
+
+// GetFiles returns the value of Files.
+func (s *Files) GetFiles() []File {
+	return s.Files
+}
+
+// SetFiles sets the value of Files.
+func (s *Files) SetFiles(val []File) {
+	s.Files = val
+}
+
 // GetBranchHeadNotFound is response for GetBranchHead operation.
 type GetBranchHeadNotFound struct{}
 
@@ -308,39 +323,49 @@ func (s *RoleName) SetRoleName(val string) {
 	s.RoleName = val
 }
 
-type SnapshotID int64
+// Merged schema.
+// Ref: #/components/schemas/SnapshotFiles
+type SnapshotFiles struct {
+	Files            []File `json:"files"`
+	ParentSnapshotID int64  `json:"parentSnapshotID"`
+}
+
+// GetFiles returns the value of Files.
+func (s *SnapshotFiles) GetFiles() []File {
+	return s.Files
+}
+
+// GetParentSnapshotID returns the value of ParentSnapshotID.
+func (s *SnapshotFiles) GetParentSnapshotID() int64 {
+	return s.ParentSnapshotID
+}
+
+// SetFiles sets the value of Files.
+func (s *SnapshotFiles) SetFiles(val []File) {
+	s.Files = val
+}
+
+// SetParentSnapshotID sets the value of ParentSnapshotID.
+func (s *SnapshotFiles) SetParentSnapshotID(val int64) {
+	s.ParentSnapshotID = val
+}
 
 // Ref: #/components/schemas/__SnapshotIDObject
 type SnapshotIDObject struct {
-	SnapshotID SnapshotID `json:"snapshotID"`
+	SnapshotID int64 `json:"snapshotID"`
 }
 
 // GetSnapshotID returns the value of SnapshotID.
-func (s *SnapshotIDObject) GetSnapshotID() SnapshotID {
+func (s *SnapshotIDObject) GetSnapshotID() int64 {
 	return s.SnapshotID
 }
 
 // SetSnapshotID sets the value of SnapshotID.
-func (s *SnapshotIDObject) SetSnapshotID(val SnapshotID) {
+func (s *SnapshotIDObject) SetSnapshotID(val int64) {
 	s.SnapshotID = val
 }
 
 func (*SnapshotIDObject) getBranchHeadRes() {}
-
-// Ref: #/components/schemas/SnapshotNew
-type SnapshotNew struct {
-	Files []File `json:"files"`
-}
-
-// GetFiles returns the value of Files.
-func (s *SnapshotNew) GetFiles() []File {
-	return s.Files
-}
-
-// SetFiles sets the value of Files.
-func (s *SnapshotNew) SetFiles(val []File) {
-	s.Files = val
-}
 
 // Merged schema.
 // Ref: #/components/schemas/User

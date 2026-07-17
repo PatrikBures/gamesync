@@ -215,22 +215,20 @@ components:
         type: string
 
     ### Snapshot Schemas
-    _SnapshotID:
-      type: integer
-      format: int64
-      minimum: 0
     __SnapshotIDObject: # ogen removes '_' which would make it conflict with _SnapshotID so added Object
       type: object
       properties:
         snapshotID:
-          $ref: "#/components/schemas/_SnapshotID"
+          type: integer
+          format: int64
       required: [snapshotID]
     __ParentSnapshotID:
       type: object
       properties:
         parentSnapshotID:
-          $ref: "#/components/schemas/_SnapshotID"
-      required: [snapshotID]
+          type: integer
+          format: int64
+      required: [parentSnapshotID]
 
 
     __File:
@@ -245,7 +243,7 @@ components:
         path:
           type: string
       required: [chunkHashes, hash, path]
-    SnapshotNew:
+    Files:
       type: object
       properties:
         files:
@@ -253,9 +251,12 @@ components:
           items:
             $ref: "#/components/schemas/__File"
       required: ["files"]
-    Snapshot:
+
+    SnapshotNew:
+      $ref: "#/components/schemas/Files"
+    SnapshotFiles:
       allOf:
-        - $ref: "#/components/schemas/__SnapshotIDObject"
+        - $ref: "#/components/schemas/Files"
         - $ref: "#/components/schemas/__ParentSnapshotID"
 
 security:
@@ -475,6 +476,28 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/SnapshotNew"
+
+  /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+      - $ref: "#/components/parameters/repoName"
+      - $ref: "#/components/parameters/branchName"
+      - $ref: "#/components/parameters/snapshotID"
+    get:
+      summary: Get all files and chunks for snapshot
+      operationId: get-snapshot
+      tags:
+        - Users
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SnapshotFiles"
+        default:
+          $ref: "#/components/responses/GlobalError"
+
+
 
 
 

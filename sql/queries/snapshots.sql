@@ -27,7 +27,7 @@ INSERT INTO files (file_hash, bytes)
 VALUES (
     $1,
     (
-        SELECT SUM(bytes) FROM chunks
+        SELECT COALESCE(SUM(bytes), 0) FROM chunks
         WHERE chunk_hash = ANY(sqlc.arg(chunk_hash)::BYTEA[])
     )
 )
@@ -50,3 +50,21 @@ UPDATE branches
 SET head_snapshot_id = $2
 WHERE branch_id = $1
 ;
+
+-- name: GetSnapshot :one
+SELECT * FROM snapshots
+WHERE snapshot_id = $1
+;
+
+
+-- name: GetSnapshotFiles :many
+SELECT * FROM snapshot_files
+WHERE snapshot_id = $1
+;
+
+-- name: GetFileChunkHashes :many
+SELECT chunk_hash FROM file_chunks
+WHERE file_hash = $1
+ORDER BY chunk_order
+;
+

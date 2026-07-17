@@ -56,7 +56,7 @@ CREATE TABLE file_chunks
 (
     file_hash BYTEA NOT NULL REFERENCES files(file_hash) ON DELETE CASCADE,
     chunk_hash BYTEA NOT NULL REFERENCES chunks(chunk_hash),
-    chunk_order SMALLINT NOT NULL,
+    chunk_order INT NOT NULL,
 
     PRIMARY KEY (file_hash, chunk_order)
 );
