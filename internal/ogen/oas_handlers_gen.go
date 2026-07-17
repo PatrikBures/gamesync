@@ -37,14 +37,14 @@ func (c *codeRecorder) Unwrap() http.ResponseWriter {
 //
 // Get current snapshot the branch points to.
 //
-// GET /users/{userID}/repos/{repoName}/branches/{branchName}/current
+// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
 func (s *Server) handleGetBranchHeadRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-branch-head"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/users/{userID}/repos/{repoName}/branches/{branchName}/current"),
+		semconv.HTTPRouteKey.String("/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current"),
 	}
 	// Add attributes from config.
 	otelAttrs = append(otelAttrs, s.cfg.Attributes...)

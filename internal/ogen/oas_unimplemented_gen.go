@@ -17,7 +17,7 @@ var _ Handler = UnimplementedHandler{}
 //
 // Get current snapshot the branch points to.
 //
-// GET /users/{userID}/repos/{repoName}/branches/{branchName}/current
+// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
 func (UnimplementedHandler) GetBranchHead(ctx context.Context, params GetBranchHeadParams) (r GetBranchHeadRes, _ error) {
 	return r, ht.ErrNotImplemented
 }

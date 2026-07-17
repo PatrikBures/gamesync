@@ -424,27 +424,6 @@ paths:
         default:
           $ref: "#/components/responses/GlobalError"
 
-  /users/{userID}/repos/{repoName}/branches/{branchName}/current:
-    parameters:
-      - $ref: "#/components/parameters/userID"
-      - $ref: "#/components/parameters/repoName"
-      - $ref: "#/components/parameters/branchName"
-    get:
-      summary: Get current snapshot the branch points to
-      operationId: get-branch-head
-      tags:
-        - Users
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/__SnapshotIDObject"
-        "404":
-          description: The branch does not have a head
-        default:
-          $ref: "#/components/responses/GlobalError"
-
   /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots:
     parameters:
       - $ref: "#/components/parameters/userID"
@@ -476,6 +455,28 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/SnapshotNew"
+
+  /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+      - $ref: "#/components/parameters/repoName"
+      - $ref: "#/components/parameters/branchName"
+    get:
+      summary: Get current snapshot the branch points to
+      operationId: get-branch-head
+      tags:
+        - Users
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/__SnapshotIDObject"
+        "404":
+          description: The branch does not have a head
+        default:
+          $ref: "#/components/responses/GlobalError"
+
 
   /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}:
     parameters:

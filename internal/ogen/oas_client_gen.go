@@ -33,7 +33,7 @@ type Invoker interface {
 	//
 	// Get current snapshot the branch points to.
 	//
-	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/current
+	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
 	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error)
 	// GetHealth invokes get-health operation.
 	//
@@ -202,7 +202,7 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 //
 // Get current snapshot the branch points to.
 //
-// GET /users/{userID}/repos/{repoName}/branches/{branchName}/current
+// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
 func (c *Client) GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error) {
 	res, err := c.sendGetBranchHead(ctx, params)
 	return res, err
@@ -212,7 +212,7 @@ func (c *Client) sendGetBranchHead(ctx context.Context, params GetBranchHeadPara
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-branch-head"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.URLTemplateKey.String("/users/{userID}/repos/{repoName}/branches/{branchName}/current"),
+		semconv.URLTemplateKey.String("/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -303,7 +303,7 @@ func (c *Client) sendGetBranchHead(ctx context.Context, params GetBranchHeadPara
 		}
 		pathParts[5] = encoded
 	}
-	pathParts[6] = "/current"
+	pathParts[6] = "/snapshots/current"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"

@@ -12,7 +12,7 @@ type Handler interface {
 	//
 	// Get current snapshot the branch points to.
 	//
-	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/current
+	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
 	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error)
 	// GetHealth implements get-health operation.
 	//

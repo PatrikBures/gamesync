@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	rn24AllowedHeaders = map[string]string{
+	rn23AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
 	rn11AllowedHeaders = map[string]string{
@@ -21,7 +21,7 @@ var (
 		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
-	rn26AllowedHeaders = map[string]string{
+	rn25AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
 	rn14AllowedHeaders = map[string]string{
@@ -29,7 +29,7 @@ var (
 		"PATCH": "Authorization,Content-Type",
 		"PUT":   "Authorization,Content-Type",
 	}
-	rn21AllowedHeaders = map[string]string{
+	rn20AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
 		"POST": "Content-Type",
 	}
@@ -39,28 +39,28 @@ var (
 	rn2AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn28AllowedHeaders = map[string]string{
+	rn27AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
-	rn20AllowedHeaders = map[string]string{
+	rn19AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn4AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
-	rn19AllowedHeaders = map[string]string{
+	rn18AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn6AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
+	rn21AllowedHeaders = map[string]string{
+		"POST": "Authorization,Content-Type",
+	}
 	rn7AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn22AllowedHeaders = map[string]string{
-		"POST": "Authorization,Content-Type",
-	}
-	rn18AllowedHeaders = map[string]string{
+	rn17AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 )
@@ -143,7 +143,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "PUT",
-							allowedHeaders: rn24AllowedHeaders,
+							allowedHeaders: rn23AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -279,7 +279,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "PUT",
-										allowedHeaders: rn26AllowedHeaders,
+										allowedHeaders: rn25AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -346,7 +346,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET,POST",
-							allowedHeaders: rn21AllowedHeaders,
+							allowedHeaders: rn20AllowedHeaders,
 							acceptPost:     "application/json",
 							acceptPatch:    "",
 						})
@@ -451,7 +451,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "PUT",
-										allowedHeaders: rn28AllowedHeaders,
+										allowedHeaders: rn27AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -477,7 +477,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "GET",
-										allowedHeaders: rn20AllowedHeaders,
+										allowedHeaders: rn19AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -540,7 +540,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 										default:
 											s.notAllowed(w, r, notAllowedParams{
 												allowedMethods: "GET",
-												allowedHeaders: rn19AllowedHeaders,
+												allowedHeaders: rn18AllowedHeaders,
 												acceptPost:     "",
 												acceptPatch:    "",
 											})
@@ -586,106 +586,67 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 											return
 										}
 										switch elem[0] {
-										case '/': // Prefix: "/"
+										case '/': // Prefix: "/snapshots"
 
-											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+											if l := len("/snapshots"); len(elem) >= l && elem[0:l] == "/snapshots" {
 												elem = elem[l:]
 											} else {
 												break
 											}
 
 											if len(elem) == 0 {
-												break
+												switch r.Method {
+												case "POST":
+													s.handlePostUserRepoBranchSnapshotRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												default:
+													s.notAllowed(w, r, notAllowedParams{
+														allowedMethods: "POST",
+														allowedHeaders: rn21AllowedHeaders,
+														acceptPost:     "application/json",
+														acceptPatch:    "",
+													})
+												}
+
+												return
 											}
 											switch elem[0] {
-											case 'c': // Prefix: "current"
+											case '/': // Prefix: "/"
 
-												if l := len("current"); len(elem) >= l && elem[0:l] == "current" {
+												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 													elem = elem[l:]
 												} else {
 													break
 												}
 
 												if len(elem) == 0 {
-													// Leaf node.
-													switch r.Method {
-													case "GET":
-														s.handleGetBranchHeadRequest([3]string{
-															args[0],
-															args[1],
-															args[2],
-														}, elemIsEscaped, w, r)
-													default:
-														s.notAllowed(w, r, notAllowedParams{
-															allowedMethods: "GET",
-															allowedHeaders: rn7AllowedHeaders,
-															acceptPost:     "",
-															acceptPatch:    "",
-														})
-													}
-
-													return
-												}
-
-											case 's': // Prefix: "snapshots"
-
-												if l := len("snapshots"); len(elem) >= l && elem[0:l] == "snapshots" {
-													elem = elem[l:]
-												} else {
 													break
-												}
-
-												if len(elem) == 0 {
-													switch r.Method {
-													case "POST":
-														s.handlePostUserRepoBranchSnapshotRequest([3]string{
-															args[0],
-															args[1],
-															args[2],
-														}, elemIsEscaped, w, r)
-													default:
-														s.notAllowed(w, r, notAllowedParams{
-															allowedMethods: "POST",
-															allowedHeaders: rn22AllowedHeaders,
-															acceptPost:     "application/json",
-															acceptPatch:    "",
-														})
-													}
-
-													return
 												}
 												switch elem[0] {
-												case '/': // Prefix: "/"
-
-													if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												case 'c': // Prefix: "current"
+													origElem := elem
+													if l := len("current"); len(elem) >= l && elem[0:l] == "current" {
 														elem = elem[l:]
 													} else {
 														break
 													}
 
-													// Param: "snapshotID"
-													// Leaf parameter, slashes are prohibited
-													idx := strings.IndexByte(elem, '/')
-													if idx >= 0 {
-														break
-													}
-													args[3] = elem
-													elem = ""
-
 													if len(elem) == 0 {
 														// Leaf node.
 														switch r.Method {
 														case "GET":
-															s.handleGetSnapshotRequest([4]string{
+															s.handleGetBranchHeadRequest([3]string{
 																args[0],
 																args[1],
 																args[2],
-																args[3],
 															}, elemIsEscaped, w, r)
 														default:
 															s.notAllowed(w, r, notAllowedParams{
 																allowedMethods: "GET",
-																allowedHeaders: rn18AllowedHeaders,
+																allowedHeaders: rn7AllowedHeaders,
 																acceptPost:     "",
 																acceptPatch:    "",
 															})
@@ -694,6 +655,37 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 														return
 													}
 
+													elem = origElem
+												}
+												// Param: "snapshotID"
+												// Leaf parameter, slashes are prohibited
+												idx := strings.IndexByte(elem, '/')
+												if idx >= 0 {
+													break
+												}
+												args[3] = elem
+												elem = ""
+
+												if len(elem) == 0 {
+													// Leaf node.
+													switch r.Method {
+													case "GET":
+														s.handleGetSnapshotRequest([4]string{
+															args[0],
+															args[1],
+															args[2],
+															args[3],
+														}, elemIsEscaped, w, r)
+													default:
+														s.notAllowed(w, r, notAllowedParams{
+															allowedMethods: "GET",
+															allowedHeaders: rn17AllowedHeaders,
+															acceptPost:     "",
+															acceptPatch:    "",
+														})
+													}
+
+													return
 												}
 
 											}
@@ -1284,101 +1276,93 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											}
 										}
 										switch elem[0] {
-										case '/': // Prefix: "/"
+										case '/': // Prefix: "/snapshots"
 
-											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+											if l := len("/snapshots"); len(elem) >= l && elem[0:l] == "/snapshots" {
 												elem = elem[l:]
 											} else {
 												break
 											}
 
 											if len(elem) == 0 {
-												break
+												switch method {
+												case "POST":
+													r.name = PostUserRepoBranchSnapshotOperation
+													r.summary = "Create new snapshot"
+													r.operationID = "post-user-repo-branch-snapshot"
+													r.operationGroup = ""
+													r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots"
+													r.args = args
+													r.count = 3
+													return r, true
+												default:
+													return
+												}
 											}
 											switch elem[0] {
-											case 'c': // Prefix: "current"
+											case '/': // Prefix: "/"
 
-												if l := len("current"); len(elem) >= l && elem[0:l] == "current" {
+												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 													elem = elem[l:]
 												} else {
 													break
 												}
 
 												if len(elem) == 0 {
-													// Leaf node.
-													switch method {
-													case "GET":
-														r.name = GetBranchHeadOperation
-														r.summary = "Get current snapshot the branch points to"
-														r.operationID = "get-branch-head"
-														r.operationGroup = ""
-														r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/current"
-														r.args = args
-														r.count = 3
-														return r, true
-													default:
-														return
-													}
-												}
-
-											case 's': // Prefix: "snapshots"
-
-												if l := len("snapshots"); len(elem) >= l && elem[0:l] == "snapshots" {
-													elem = elem[l:]
-												} else {
 													break
-												}
-
-												if len(elem) == 0 {
-													switch method {
-													case "POST":
-														r.name = PostUserRepoBranchSnapshotOperation
-														r.summary = "Create new snapshot"
-														r.operationID = "post-user-repo-branch-snapshot"
-														r.operationGroup = ""
-														r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots"
-														r.args = args
-														r.count = 3
-														return r, true
-													default:
-														return
-													}
 												}
 												switch elem[0] {
-												case '/': // Prefix: "/"
-
-													if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												case 'c': // Prefix: "current"
+													origElem := elem
+													if l := len("current"); len(elem) >= l && elem[0:l] == "current" {
 														elem = elem[l:]
 													} else {
 														break
 													}
 
-													// Param: "snapshotID"
-													// Leaf parameter, slashes are prohibited
-													idx := strings.IndexByte(elem, '/')
-													if idx >= 0 {
-														break
-													}
-													args[3] = elem
-													elem = ""
-
 													if len(elem) == 0 {
 														// Leaf node.
 														switch method {
 														case "GET":
-															r.name = GetSnapshotOperation
-															r.summary = "Get all files and chunks for snapshot"
-															r.operationID = "get-snapshot"
+															r.name = GetBranchHeadOperation
+															r.summary = "Get current snapshot the branch points to"
+															r.operationID = "get-branch-head"
 															r.operationGroup = ""
-															r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}"
+															r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current"
 															r.args = args
-															r.count = 4
+															r.count = 3
 															return r, true
 														default:
 															return
 														}
 													}
 
+													elem = origElem
+												}
+												// Param: "snapshotID"
+												// Leaf parameter, slashes are prohibited
+												idx := strings.IndexByte(elem, '/')
+												if idx >= 0 {
+													break
+												}
+												args[3] = elem
+												elem = ""
+
+												if len(elem) == 0 {
+													// Leaf node.
+													switch method {
+													case "GET":
+														r.name = GetSnapshotOperation
+														r.summary = "Get all files and chunks for snapshot"
+														r.operationID = "get-snapshot"
+														r.operationGroup = ""
+														r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}"
+														r.args = args
+														r.count = 4
+														return r, true
+													default:
+														return
+													}
 												}
 
 											}
