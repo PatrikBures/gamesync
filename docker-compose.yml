@@ -12,6 +12,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+    volumes:
+      - gamesync_data:/var/lib/gamesync
     develop:
       watch:
         - path: "./"
@@ -57,3 +59,4 @@ services:
 
 volumes:
   db:
+  gamesync_data:

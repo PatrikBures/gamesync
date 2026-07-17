@@ -46,3 +46,24 @@ func (s *Service) PutChunk(ctx context.Context, req api.PutChunkReq, params api.
 	return &api.PutChunkCreated{}, nil
 }
 
+func (s *Service) GetChunk(ctx context.Context, params api.GetChunkParams) (api.GetChunkOK, error) {
+	hash, err := hex.DecodeString(params.ChunkHash)
+	if err != nil {
+		return api.GetChunkOK{}, server.ErrInvalidHash
+	}
+
+	chunkExists, err := s.db.ReadQuery().CheckChunk(ctx, hash)
+	if err != nil {
+		return api.GetChunkOK{}, server.NewInternalError(err, "failed checking if chunk exists", "chunkHash", params.ChunkHash, "error", err)
+	}
+	if !chunkExists {
+		return api.GetChunkOK{}, server.ErrChunkNotFound
+	}
+
+	reader, err := s.storage.Download(ctx, params.ChunkHash)
+	if err != nil {
+		return api.GetChunkOK{}, err
+	}
+
+	return api.GetChunkOK{Data: reader}, nil
+}

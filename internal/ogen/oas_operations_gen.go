@@ -7,6 +7,7 @@ type OperationName = string
 
 const (
 	GetBranchHeadOperation              OperationName = "GetBranchHead"
+	GetChunkOperation                   OperationName = "GetChunk"
 	GetHealthOperation                  OperationName = "GetHealth"
 	GetMeOperation                      OperationName = "GetMe"
 	GetPermsOperation                   OperationName = "GetPerms"

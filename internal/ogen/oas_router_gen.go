@@ -11,29 +11,30 @@ import (
 )
 
 var (
-	rn23AllowedHeaders = map[string]string{
+	rn10AllowedHeaders = map[string]string{
+		"GET": "Authorization",
 		"PUT": "Authorization,Content-Type",
 	}
-	rn11AllowedHeaders = map[string]string{
+	rn13AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn15AllowedHeaders = map[string]string{
+	rn17AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
 	rn25AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
-	rn14AllowedHeaders = map[string]string{
+	rn16AllowedHeaders = map[string]string{
 		"GET":   "Authorization",
 		"PATCH": "Authorization,Content-Type",
 		"PUT":   "Authorization,Content-Type",
 	}
-	rn20AllowedHeaders = map[string]string{
+	rn22AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
 		"POST": "Content-Type",
 	}
-	rn10AllowedHeaders = map[string]string{
+	rn12AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn2AllowedHeaders = map[string]string{
@@ -42,25 +43,25 @@ var (
 	rn27AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
-	rn19AllowedHeaders = map[string]string{
+	rn21AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn4AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
-	rn18AllowedHeaders = map[string]string{
+	rn20AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn6AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
-	rn21AllowedHeaders = map[string]string{
+	rn23AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
 	rn7AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn17AllowedHeaders = map[string]string{
+	rn19AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 )
@@ -136,14 +137,18 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				if len(elem) == 0 {
 					// Leaf node.
 					switch r.Method {
+					case "GET":
+						s.handleGetChunkRequest([1]string{
+							args[0],
+						}, elemIsEscaped, w, r)
 					case "PUT":
 						s.handlePutChunkRequest([1]string{
 							args[0],
 						}, elemIsEscaped, w, r)
 					default:
 						s.notAllowed(w, r, notAllowedParams{
-							allowedMethods: "PUT",
-							allowedHeaders: rn23AllowedHeaders,
+							allowedMethods: "GET,PUT",
+							allowedHeaders: rn10AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -193,7 +198,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn11AllowedHeaders,
+							allowedHeaders: rn13AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -219,7 +224,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET,POST",
-							allowedHeaders: rn15AllowedHeaders,
+							allowedHeaders: rn17AllowedHeaders,
 							acceptPost:     "application/json",
 							acceptPatch:    "",
 						})
@@ -314,7 +319,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "GET,PATCH,PUT",
-										allowedHeaders: rn14AllowedHeaders,
+										allowedHeaders: rn16AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "application/json",
 									})
@@ -346,7 +351,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET,POST",
-							allowedHeaders: rn20AllowedHeaders,
+							allowedHeaders: rn22AllowedHeaders,
 							acceptPost:     "application/json",
 							acceptPatch:    "",
 						})
@@ -383,7 +388,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							default:
 								s.notAllowed(w, r, notAllowedParams{
 									allowedMethods: "GET",
-									allowedHeaders: rn10AllowedHeaders,
+									allowedHeaders: rn12AllowedHeaders,
 									acceptPost:     "",
 									acceptPatch:    "",
 								})
@@ -477,7 +482,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "GET",
-										allowedHeaders: rn19AllowedHeaders,
+										allowedHeaders: rn21AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -540,7 +545,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 										default:
 											s.notAllowed(w, r, notAllowedParams{
 												allowedMethods: "GET",
-												allowedHeaders: rn18AllowedHeaders,
+												allowedHeaders: rn20AllowedHeaders,
 												acceptPost:     "",
 												acceptPatch:    "",
 											})
@@ -605,7 +610,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 												default:
 													s.notAllowed(w, r, notAllowedParams{
 														allowedMethods: "POST",
-														allowedHeaders: rn21AllowedHeaders,
+														allowedHeaders: rn23AllowedHeaders,
 														acceptPost:     "application/json",
 														acceptPatch:    "",
 													})
@@ -679,7 +684,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 													default:
 														s.notAllowed(w, r, notAllowedParams{
 															allowedMethods: "GET",
-															allowedHeaders: rn17AllowedHeaders,
+															allowedHeaders: rn19AllowedHeaders,
 															acceptPost:     "",
 															acceptPatch:    "",
 														})
@@ -824,6 +829,15 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				if len(elem) == 0 {
 					// Leaf node.
 					switch method {
+					case "GET":
+						r.name = GetChunkOperation
+						r.summary = "Download chunk"
+						r.operationID = "get-chunk"
+						r.operationGroup = ""
+						r.pathPattern = "/chunks/{chunkHash}"
+						r.args = args
+						r.count = 1
+						return r, true
 					case "PUT":
 						r.name = PutChunkOperation
 						r.summary = "Upload chunk"

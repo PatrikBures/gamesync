@@ -114,6 +114,17 @@ func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompr
 	return
 }
 
+func (l *local) Download(ctx context.Context, hash string) (io.Reader, error) {
+	path := l.chunkFilePath(hash)
+	f, err := os.Open(path)
+	if err != nil {
+		// do not add a specific check for if file exists, because the file should exist if it exists in db
+		return nil, server.NewInternalError(err, "failed opening chunk file", "path", path)
+	}
+	return f, nil
+}
+
+
 // writes src to dst and returns Blake3 hash of zstd decompressed data, and the uncompressed amount of bytes
 func (l *local) writeAndHash(src io.Reader, dst io.Writer) (int64, []byte, error) {
 	dataCopy := io.TeeReader(src, dst)

@@ -18,5 +18,8 @@ type Chunk interface {
 	//
 	// Returns number of uncompressed bytes the chunk has
 	Store(ctx context.Context, hash string, data io.Reader) (int64, error)
+
+	// Provides a reader for chunk
+	Download(ctx context.Context, hash string) (io.Reader, error)
 }
 

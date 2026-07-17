@@ -3,6 +3,7 @@
 package api
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/go-faster/errors"
@@ -34,6 +35,21 @@ func encodeGetBranchHeadResponse(response GetBranchHeadRes, w http.ResponseWrite
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
+}
+
+func encodeGetChunkResponse(response GetChunkOK, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.WriteHeader(200)
+
+	writer := w
+	if closer, ok := response.Data.(io.Closer); ok {
+		defer closer.Close()
+	}
+	if _, err := io.Copy(writer, response); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
 }
 
 func encodeGetHealthResponse(response *GetHealthOK, w http.ResponseWriter, span trace.Span) error {

@@ -123,6 +123,21 @@ type GetBranchHeadNotFound struct{}
 
 func (*GetBranchHeadNotFound) getBranchHeadRes() {}
 
+// Ref: #/components/schemas/_Chunk
+type GetChunkOK struct {
+	Data io.Reader
+}
+
+// Read reads data from the Data reader.
+//
+// Kept to satisfy the io.Reader interface.
+func (s GetChunkOK) Read(p []byte) (n int, err error) {
+	if s.Data == nil {
+		return 0, io.EOF
+	}
+	return s.Data.Read(p)
+}
+
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
 

@@ -656,4 +656,16 @@ paths:
         "201": {}
         default:
           $ref: "#/components/responses/GlobalError"
-
+    get:
+      summary: Download chunk
+      operationId: get-chunk
+      tags:
+        - Chunk
+      responses:
+        "200":
+          content:
+            application/octet-stream:
+              schema:
+                $ref: "#/components/schemas/_Chunk"
+        default:
+          $ref: "#/components/responses/GlobalError"

@@ -206,6 +206,92 @@ func decodeGetBranchHeadParams(args [3]string, argsEscaped bool, r *http.Request
 	return params, nil
 }
 
+// GetChunkParams is parameters of get-chunk operation.
+type GetChunkParams struct {
+	// 32 byte chunk blake3 hash, hex encoded.
+	ChunkHash string
+}
+
+func unpackGetChunkParams(packed middleware.Parameters) (params GetChunkParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "chunkHash",
+			In:   "path",
+		}
+		params.ChunkHash = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetChunkParams(args [1]string, argsEscaped bool, r *http.Request) (params GetChunkParams, _ error) {
+	// Decode path: chunkHash.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "chunkHash",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.ChunkHash = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.String{
+					MinLength:     64,
+					MinLengthSet:  true,
+					MaxLength:     64,
+					MaxLengthSet:  true,
+					Email:         false,
+					Hostname:      false,
+					Regex:         nil,
+					MinNumeric:    0,
+					MinNumericSet: false,
+					MaxNumeric:    0,
+					MaxNumericSet: false,
+				}).Validate(string(params.ChunkHash)); err != nil {
+					return errors.Wrap(err, "string")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "chunkHash",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetRolePermsParams is parameters of get-role-perms operation.
 type GetRolePermsParams struct {
 	// Identify role.

@@ -22,6 +22,15 @@ func (UnimplementedHandler) GetBranchHead(ctx context.Context, params GetBranchH
 	return r, ht.ErrNotImplemented
 }
 
+// GetChunk implements get-chunk operation.
+//
+// Download chunk.
+//
+// GET /chunks/{chunkHash}
+func (UnimplementedHandler) GetChunk(ctx context.Context, params GetChunkParams) (r GetChunkOK, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetHealth implements get-health operation.
 //
 // Get health of server.

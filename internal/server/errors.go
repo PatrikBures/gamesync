@@ -30,4 +30,5 @@ var (
 	ErrInvalidHash        = errors.New("invalid hash")
 
 	ErrChunkTooBig        = errors.New("chunk is too big")
+	ErrChunkNotFound      = errors.New("chunk not found")
 )

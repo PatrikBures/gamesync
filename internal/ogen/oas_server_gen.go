@@ -14,6 +14,12 @@ type Handler interface {
 	//
 	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
 	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error)
+	// GetChunk implements get-chunk operation.
+	//
+	// Download chunk.
+	//
+	// GET /chunks/{chunkHash}
+	GetChunk(ctx context.Context, params GetChunkParams) (GetChunkOK, error)
 	// GetHealth implements get-health operation.
 	//
 	// Get health of server.
