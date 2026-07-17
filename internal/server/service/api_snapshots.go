@@ -240,9 +240,8 @@ func (s *Service) GetSnapshot(ctx context.Context, params api.GetSnapshotParams)
 		Files: make([]api.File, 0, len(snapshotFiles)),
 	}
 
-	if snapshot.ParentSnapshotID.Valid {
-		result.ParentSnapshotID = snapshot.ParentSnapshotID.Int64
-	}
+	result.ParentSnapshotID.Value = snapshot.ParentSnapshotID.Int64
+	result.ParentSnapshotID.Null  = !snapshot.ParentSnapshotID.Valid
 
 	for _, sf := range snapshotFiles {
 		chunkHashes, err := qtx.GetFileChunkHashes(ctx, sf.FileHash)

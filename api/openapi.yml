@@ -215,7 +215,7 @@ components:
         type: string
 
     ### Snapshot Schemas
-    __SnapshotIDObject: # ogen removes '_' which would make it conflict with _SnapshotID so added Object
+    __SnapshotID:
       type: object
       properties:
         snapshotID:
@@ -226,9 +226,15 @@ components:
       type: object
       properties:
         parentSnapshotID:
-          type: integer
+          type: [integer, "null"]
           format: int64
       required: [parentSnapshotID]
+
+    __Snapshot:
+      allOf:
+        - $ref: "#/components/schemas/__SnapshotID"
+        - $ref: "#/components/schemas/__ParentSnapshotID"
+
 
 
     __File:
@@ -471,7 +477,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/__SnapshotIDObject"
+                $ref: "#/components/schemas/__Snapshot"
         "404":
           description: The branch does not have a head
         default:

@@ -169,6 +169,51 @@ func (s *GlobalErrorStatusCode) SetResponse(val Error) {
 
 func (*GlobalErrorStatusCode) patchRolePermsRes() {}
 
+// NewNilInt64 returns new NilInt64 with value set to v.
+func NewNilInt64(v int64) NilInt64 {
+	return NilInt64{
+		Value: v,
+	}
+}
+
+// NilInt64 is nullable int64.
+type NilInt64 struct {
+	Value int64
+	Null  bool
+}
+
+// SetTo sets value to v.
+func (o *NilInt64) SetTo(v int64) {
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o NilInt64) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *NilInt64) SetToNull() {
+	o.Null = true
+	var v int64
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o NilInt64) Get() (v int64, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o NilInt64) Or(d int64) int64 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // PatchRolePermsOK is response for PatchRolePerms operation.
 type PatchRolePermsOK struct{}
 
@@ -339,10 +384,39 @@ func (s *RoleName) SetRoleName(val string) {
 }
 
 // Merged schema.
+// Ref: #/components/schemas/__Snapshot
+type Snapshot struct {
+	SnapshotID       int64    `json:"snapshotID"`
+	ParentSnapshotID NilInt64 `json:"parentSnapshotID"`
+}
+
+// GetSnapshotID returns the value of SnapshotID.
+func (s *Snapshot) GetSnapshotID() int64 {
+	return s.SnapshotID
+}
+
+// GetParentSnapshotID returns the value of ParentSnapshotID.
+func (s *Snapshot) GetParentSnapshotID() NilInt64 {
+	return s.ParentSnapshotID
+}
+
+// SetSnapshotID sets the value of SnapshotID.
+func (s *Snapshot) SetSnapshotID(val int64) {
+	s.SnapshotID = val
+}
+
+// SetParentSnapshotID sets the value of ParentSnapshotID.
+func (s *Snapshot) SetParentSnapshotID(val NilInt64) {
+	s.ParentSnapshotID = val
+}
+
+func (*Snapshot) getBranchHeadRes() {}
+
+// Merged schema.
 // Ref: #/components/schemas/SnapshotFiles
 type SnapshotFiles struct {
-	Files            []File `json:"files"`
-	ParentSnapshotID int64  `json:"parentSnapshotID"`
+	Files            []File   `json:"files"`
+	ParentSnapshotID NilInt64 `json:"parentSnapshotID"`
 }
 
 // GetFiles returns the value of Files.
@@ -351,7 +425,7 @@ func (s *SnapshotFiles) GetFiles() []File {
 }
 
 // GetParentSnapshotID returns the value of ParentSnapshotID.
-func (s *SnapshotFiles) GetParentSnapshotID() int64 {
+func (s *SnapshotFiles) GetParentSnapshotID() NilInt64 {
 	return s.ParentSnapshotID
 }
 
@@ -361,26 +435,9 @@ func (s *SnapshotFiles) SetFiles(val []File) {
 }
 
 // SetParentSnapshotID sets the value of ParentSnapshotID.
-func (s *SnapshotFiles) SetParentSnapshotID(val int64) {
+func (s *SnapshotFiles) SetParentSnapshotID(val NilInt64) {
 	s.ParentSnapshotID = val
 }
-
-// Ref: #/components/schemas/__SnapshotIDObject
-type SnapshotIDObject struct {
-	SnapshotID int64 `json:"snapshotID"`
-}
-
-// GetSnapshotID returns the value of SnapshotID.
-func (s *SnapshotIDObject) GetSnapshotID() int64 {
-	return s.SnapshotID
-}
-
-// SetSnapshotID sets the value of SnapshotID.
-func (s *SnapshotIDObject) SetSnapshotID(val int64) {
-	s.SnapshotID = val
-}
-
-func (*SnapshotIDObject) getBranchHeadRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/User

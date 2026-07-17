@@ -30,7 +30,7 @@ func decodeGetBranchHeadResponse(resp *http.Response) (res GetBranchHeadRes, _ e
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response SnapshotIDObject
+			var response Snapshot
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err
