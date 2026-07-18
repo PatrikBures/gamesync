@@ -73,7 +73,7 @@ func populateRestoreOpts(opts *restoreOpts, args []string) error {
 	return nil
 }
 
-func runRestoreCmd(c *api.Client, opts restoreOpts, conf config.Config) error {
+func runRestoreCmd(c *api.Client, opts restoreOpts, conf config.Config) (err error) {
 	snapshot, err := c.GetSnapshot(context.Background(), api.GetSnapshotParams{
 		UserID: conf.Server.UserID,
 		RepoName: opts.repo,
@@ -84,6 +84,8 @@ func runRestoreCmd(c *api.Client, opts restoreOpts, conf config.Config) error {
 		return fmt.Errorf("getting snapshot: %w", err)
 	}
 
+	// if it errors anywhere in the loop. then the sync will not be up to date. if it errors there
+	// should be a defer which restores its state the the previous snapshot.
 	for _, f := range snapshot.Files {
 		// currently only downloads the chunks. needs to also create the files from the chunks
 		// when checking if the files exists, it will just delete it and write a new one for now. 
@@ -93,26 +95,44 @@ func runRestoreCmd(c *api.Client, opts restoreOpts, conf config.Config) error {
 		// when it writes the chunk, it needs to write the chunk and also append to the file. 
 		// if the chunk already exists, it just needs to append to the file.
 
+		filePath := filepath.Join(opts.dir, f.Path)
+
+		fmt.Printf("\nwriting to: %s\n", filePath)
+
+		dir := filepath.Base(filePath)
+		if err = os.MkdirAll(dir, 0775); err != nil {
+			return fmt.Errorf("failed creating dir: %w", err)
+		}
+
+
+		decoder, err := zstd.NewReader(nil)
+		if err != nil {
+			return fmt.Errorf("initializing zstd decoder: %w", err)
+		}
 		for _, ch := range f.ChunkHashes {
 			chunk, err := c.GetChunk(context.Background(), api.GetChunkParams{ChunkHash: ch})
 			if err != nil {
 				return fmt.Errorf("failed getting chunk with hash '%s': %w", ch, err)
 			}
-			chunkPath := filepath.Join(conf.Global.ChunkDir, snapshoter.DirsForChunk(2, 2, ch), ch)
-			f, err := os.OpenFile(chunkPath, os.O_EXCL | os.O_CREATE | os.O_WRONLY, 0664)
+
+			chunkFile, _, err := snapshoter.CreateChunkFile(conf.Global.ChunkDir, ch)
 			if err != nil {
 				if errors.Is(err, os.ErrExist) {
 					fmt.Println("skipped:", ch)
 					continue
 				}
+				return err
 			}
+			defer func() {
+				err = errors.Join(err, chunkFile.Close())
+			}()
+
 			// need to verify that the hash matches the content
-			decoder, err := zstd.NewReader(chunk, nil)
-			if err != nil {
-				return fmt.Errorf("initializing zstd decoder: %w", err)
+			if err := decoder.Reset(chunk.Data); err != nil {
+				return fmt.Errorf("reseting decoder while downloading chunk '%s': %w", ch, err)
 			}
-			if _, err := decoder.WriteTo(f); err != nil {
-				return fmt.Errorf("decoding chunk: %w", err)
+			if i, err := decoder.WriteTo(chunkFile); err != nil {
+				return fmt.Errorf("decoding chunk '%s', wrote %d bytes: %w", ch, i, err)
 			}
 			fmt.Println("Downloaded:", ch)
 		}

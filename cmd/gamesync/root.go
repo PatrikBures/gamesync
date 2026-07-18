@@ -48,6 +48,7 @@ func newRootCmd() *rootCmd {
 	)
 
 	cmd.DisableAutoGenTag = true
+	cmd.SilenceUsage = true
 
 	root.cmd = cmd
 

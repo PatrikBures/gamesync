@@ -175,30 +175,28 @@ func (cg *chunkGen) createChunk(chunk chunker.Chunk) ([]byte, string, *os.File, 
 	hashSlice := hashBytes[:]
 	hashHex := hex.EncodeToString(hashSlice)
 
-	chunkFile, err := CreateChunkFile(cg.chunkDir, hashHex); 
+	chunkFile, _, err := CreateChunkFile(cg.chunkDir, hashHex); 
 
 	return hashSlice, hashHex, chunkFile, err
 }
 
-// creates relative dirs in chunkDir and opens the file.
+// creates relative dirs in chunkDir and opens the
+// file which it returns including its path.
 //
-// if file already exists, *os.File and error are nil.
-func CreateChunkFile(chunkDir string, chunkHexHash string) (*os.File, error) {
+// if the file already exist, error is os.ErrExists
+func CreateChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
 	hashDir := filepath.Join(chunkDir, DirsForChunk(dirLen, dirQty, chunkHexHash))
 	chunkFilePath := filepath.Join(hashDir, chunkHexHash)
 
 	if err := os.MkdirAll(hashDir, 0775); err != nil {
-		return nil, err
+		return nil, chunkFilePath, err
 	}
 
 	chunkFile, err := os.OpenFile(chunkFilePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0664)
 	if err != nil {
-		if errors.Is(err, os.ErrExist) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, chunkFilePath, err
 	}
-	return chunkFile, nil
+	return chunkFile, chunkFilePath, nil
 }
 
 // writes bytes to out compressed using zstd
