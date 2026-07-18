@@ -119,11 +119,7 @@ func (p *puller) PullChunk(chunkHash string) (err error) {
 
 	chunkFile, _, err := CreateReadChunkFile(p.chunkDir, chunkHash)
 	if err != nil {
-		if errors.Is(err, os.ErrExist) {
-			chunkExists = true
-		} else {
-			return fmt.Errorf("opening chunkfile: %w", err)
-		}
+		return fmt.Errorf("opening chunkfile: %w", err)
 	}
 	if chunkFile == nil {
 		return fmt.Errorf("chunkFile is nil!")
@@ -132,6 +128,13 @@ func (p *puller) PullChunk(chunkHash string) (err error) {
 		err = errors.Join(err, chunkFile.Close())
 	}()
 
+	chunkStat, err := chunkFile.Stat()
+	if err != nil {
+		return fmt.Errorf("stating chunk file: %w", err)
+	}
+	if chunkStat.Size() != 0 {
+		chunkExists = true
+	}
 
 	fileWriterOffset := io.NewOffsetWriter(p.file, p.fileBytesWritten)
 
@@ -143,8 +146,8 @@ func (p *puller) PullChunk(chunkHash string) (err error) {
 		if err != nil {
 			return fmt.Errorf("failed getting chunk: %w", err)
 		}
-		chunkReader = chunk.Data
-		chunkWriter = io.MultiWriter(chunkFile, fileWriterOffset)
+		chunkReader = io.TeeReader(chunk.Data, chunkFile)
+		chunkWriter = fileWriterOffset
 		fmt.Print("!")
 	} else {
 		chunkReader = chunkFile
