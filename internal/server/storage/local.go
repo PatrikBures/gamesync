@@ -28,7 +28,7 @@ func (l *local) chunkFilePath(hash string) string {
 	return filepath.Join(l.chunkFileDir(hash), hash)
 }
 func (l *local) chunkFileDir(hash string) string {
-	return filepath.Join(l.baseDir, snapshoter.DirsForChunk(2, 2, hash))
+	return filepath.Join(l.baseDir, snapshoter.DirsForChunk(hash))
 }
 
 func NewLocal(baseDir string, maxChunkBytes int64) (*local, error) {
@@ -59,7 +59,7 @@ func (l *local) Exists(ctx context.Context, hash string) (bool, error) {
 func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompressedBytes int64, err error) {
 	tmpPath := filepath.Join(l.tmpDir, hash)
 
-	tmpFile, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0664)
+	tmpFile, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY|os.O_SYNC, 0664)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
 			// the file is already being uploaded so return no error

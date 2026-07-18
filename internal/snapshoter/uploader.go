@@ -76,7 +76,7 @@ func (u *uploader) CreateSnapshot(files []FileResults) error {
 
 func (s *uploader) uploadMissing(ctx context.Context, chunkHashes []string) error {
 	for i, ch := range chunkHashes {
-		path := filepath.Join(s.chunkDir, DirsForChunk(2, 2, ch), ch)
+		path := filepath.Join(s.chunkDir, DirsForChunk(ch), ch)
 		f, err := os.Open(path)
 		if err != nil {
 			return err

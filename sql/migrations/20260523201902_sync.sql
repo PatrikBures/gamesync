@@ -30,6 +30,7 @@ CREATE TABLE branches
 
 CREATE TABLE files
 (
+    -- file hash is created by hashing all the raw chunk hashes in order, without any seperator. 
     file_hash BYTEA NOT NULL PRIMARY KEY,
     bytes BIGINT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()

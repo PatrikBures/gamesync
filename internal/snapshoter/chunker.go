@@ -180,19 +180,37 @@ func (cg *chunkGen) createChunk(chunk chunker.Chunk) ([]byte, string, *os.File, 
 	return hashSlice, hashHex, chunkFile, err
 }
 
-// creates relative dirs in chunkDir and opens the
-// file which it returns including its path.
-//
-// if the file already exist, error is os.ErrExists
-func CreateChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
-	hashDir := filepath.Join(chunkDir, DirsForChunk(dirLen, dirQty, chunkHexHash))
+func createChunkFile(chunkDir string, chunkHexHash string, flags int) (*os.File, string, error) {
+	hashDir := filepath.Join(chunkDir, DirsForChunk(chunkHexHash))
 	chunkFilePath := filepath.Join(hashDir, chunkHexHash)
 
 	if err := os.MkdirAll(hashDir, 0775); err != nil {
 		return nil, chunkFilePath, err
 	}
 
-	chunkFile, err := os.OpenFile(chunkFilePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0664)
+	chunkFile, err := os.OpenFile(chunkFilePath, os.O_CREATE|flags, 0664)
+	if err != nil {
+		return nil, chunkFilePath, err
+	}
+	return chunkFile, chunkFilePath, nil
+}
+
+// creates relative dirs in chunkDir and opens the
+// file which it returns including its path.
+//
+// if the file already exist, error is os.ErrExists
+func CreateChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
+	return createChunkFile(chunkDir, chunkHexHash, os.O_WRONLY|os.O_EXCL)
+}
+
+func CreateReadChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
+	return createChunkFile(chunkDir, chunkHexHash, os.O_RDWR)
+}
+
+func ReadChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
+	chunkFilePath := filepath.Join(chunkDir, DirsForChunk(chunkHexHash), chunkHexHash)
+
+	chunkFile, err := os.Open(chunkFilePath)
 	if err != nil {
 		return nil, chunkFilePath, err
 	}
@@ -219,7 +237,9 @@ func (cg *chunkGen) writeChunk(bytes []byte, out io.Writer) error {
 }
 
 // returns the dirs that the chunk should be in based on dirQty and dirLen
-func DirsForChunk(dl int, dq int, hash string) (dirs string) {
+func DirsForChunk(hash string) (dirs string) {
+	dq := dirQty
+	dl := dirLen
 	a := dq * dl
 	parts := make([]string, dq)
 	for i := 0; i < a; i += dl {
