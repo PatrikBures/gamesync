@@ -17,8 +17,8 @@ func (s *syncer) Pull(snapshotID int64) (err error) {
 
 	snapshot, err := s.client.GetSnapshot(context.Background(), api.GetSnapshotParams{
 		UserID: s.conf.Server.UserID,
-		RepoName: s.repo,
-		BranchName: s.branch,
+		RepoName: s.profile.RepoName,
+		BranchName: s.profile.BranchName,
 		SnapshotID: snapshotID,
 	})
 	if err != nil {
@@ -39,7 +39,7 @@ func (s *syncer) Pull(snapshotID int64) (err error) {
 		// when it writes the chunk, it needs to write the chunk and also append to the file. 
 		// if the chunk already exists, it just needs to append to the file.
 
-		filePath := filepath.Join(s.repoDir, f.Path)
+		filePath := filepath.Join(s.profile.Dir, f.Path)
 
 		fmt.Printf("\nwriting to: %s\n%s\n", filePath, f.Hash)
 
