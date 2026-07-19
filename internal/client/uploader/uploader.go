@@ -1,10 +1,11 @@
-package snapshoter
+package uploader
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/snapshoter"
 	"os"
 	"path/filepath"
 )
@@ -19,7 +20,7 @@ type uploader struct {
 
 
 // attempts needs to be at least 1, else it sets it to 1.
-func NewUploader(client *api.Client, params api.PostUserRepoBranchSnapshotParams, chunkDir string, attempts int) uploader {
+func New(client *api.Client, params api.PostUserRepoBranchSnapshotParams, chunkDir string, attempts int) uploader {
 	if attempts < 1 {
 		attempts = 1
 	}
@@ -35,21 +36,12 @@ func NewUploader(client *api.Client, params api.PostUserRepoBranchSnapshotParams
 // attempts to create snapshot 'attempts' amount of times with the provided 'files'. 
 // if the issue is that there are missing chunks on server, it will upload them and 
 // try again if there are more than one 'attempts'
-func (u *uploader) CreateSnapshot(files []FileResults) error {
+func (u *uploader) CreateSnapshot(files []api.File) error {
 
-	request := api.Files{}
-	// make capacity big enough for all files
-	request.Files = make([]api.File, 0, len(files))
-	for _, f := range files {
-		if f.Hash == "" {
-			return fmt.Errorf("file hash is empty: %s", f.Path)
-		}
-		request.Files = append(request.Files, api.File{
-			Path: f.Path,
-			Hash: f.Hash,
-			ChunkHashes: f.Hashes,
-		})
+	request := api.Files{
+		Files: files,
 	}
+
 	for range u.attempts {
 		result, err := u.client.PostUserRepoBranchSnapshot(context.Background(), &request, u.params)
 		if err != nil {
@@ -76,7 +68,7 @@ func (u *uploader) CreateSnapshot(files []FileResults) error {
 
 func (s *uploader) uploadMissing(ctx context.Context, chunkHashes []string) error {
 	for i, ch := range chunkHashes {
-		path := filepath.Join(s.chunkDir, DirsForChunk(ch), ch)
+		path := filepath.Join(s.chunkDir, snapshoter.DirsForChunk(ch), ch)
 		f, err := os.Open(path)
 		if err != nil {
 			return err

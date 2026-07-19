@@ -19,7 +19,7 @@ all: build man
 ### build
 build: mkbin
 	@echo "Building $(BIN_NAME)..."
-	go build -ldflags "-X gamesync/internal/vars.Version=$(VERSION)" -o bin/$(BIN_NAME) ./cmd/gamesync
+	CGO_ENABLED=0 go build -ldflags "-X gamesync/internal/vars.Version=$(VERSION)" -o bin/$(BIN_NAME) ./cmd/gamesync
 
 build-server: mkbin
 	@echo "Building $(BIN_SERVER_NAME)..."
@@ -120,5 +120,13 @@ fmt:
 ### util
 mkbin:
 	mkdir -p bin
+
+### debug
+pprof-cpu:
+	go tool pprof -http=:8090 ./bin/gamesync cpu.prof
+pprof-mem:
+	go tool pprof -http=:8091 ./bin/gamesync mem.prof
+trace:
+	go tool trace trace.out
 
 .PHONY: all build man install uninstall clean

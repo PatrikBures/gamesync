@@ -1,14 +1,17 @@
 package snapshoter
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	api "gamesync/internal/ogen"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync"
 	"sync/atomic"
 
 	"github.com/klauspost/compress/zstd"
@@ -35,6 +38,23 @@ const dirQty = 2
 // 4: asdf/asdf1234
 const dirLen = 2
 
+
+var chunkerPol = chunker.Pol(0x3DA3358B4DC173)
+
+var chunkFilePool = sync.Pool{
+	New: func() any { 
+		return &chunkFileData{
+			buf: make([]byte, 8*1024*1024),
+			chunker: chunker.New(nil, chunkerPol),
+		}
+	},
+}
+
+type chunkFileData struct {
+	buf     []byte
+	chunker *chunker.Chunker
+}
+
 // handles the generation of chunks
 //
 // any chunks created will be in ChunkDir
@@ -58,26 +78,45 @@ type FileResults struct {
 	Err    error
 }
 
+type ChunkStream struct {
+	Ch  <- chan FileResults
+	err error
+}
+
+func (s *ChunkStream) Err() error {
+	return s.err
+}
+
 // used to generate chunks
 func NewChunkGen(chunkDir string) *chunkGen {
 	return &chunkGen{chunkDir: chunkDir}
 }
 
 // chunks all files in repoDir
-func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
+func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*ChunkStream, error) {
+	if info, err := os.Stat(repoDir); err != nil {
+		return nil, fmt.Errorf("cannot access repo dir: %w", err)
+	} else if !info.IsDir() {
+		return nil, fmt.Errorf("repository is not a dir: %s", repoDir)
+	}
+
+	limit := runtime.NumCPU()
+	limit = 2
 	g := errgroup.Group{}
-	g.SetLimit(runtime.NumCPU())
+	g.SetLimit(limit)
 
-	results := make(chan FileResults, 10)
-	walkDone := make(chan struct{})
-
-	var walkErr error
-	var groupErr error
+	out := make(chan FileResults, limit << 1)
+	stream := &ChunkStream{Ch: out}
 
 	go func() {
-		walkErr = filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
+		defer close(out)
+
+		walkErr := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
+			}
+			if ctx.Err() != nil {
+				return ctx.Err()
 			}
 			if d.IsDir() {
 				return nil
@@ -86,55 +125,49 @@ func (cg *chunkGen) ChunkFilesInDir(repoDir string) ([]FileResults, error) {
 				fileHash, hashes, cerr := cg.chunkFile(path)
 				relPath, ferr := filepath.Rel(repoDir, path)
 				err := errors.Join(cerr, ferr)
-				results <- FileResults{Path: relPath, Hash: fileHash, Hashes: hashes, Err: err}
-				return err
+
+				select {
+				case out <- FileResults{Path: relPath, Hash: fileHash, Hashes: hashes, Err: err}:
+				case <- ctx.Done():
+				}
+
+				return nil
 			})
 			return nil
 		})
-		close(walkDone)
-	}()
 
-	go func() {
-		<- walkDone
-		groupErr = g.Wait()
-		close(results)
-	}()
-
-	var all []FileResults
-	for r := range results {
-		if r.Err == nil {
-			cg.Info.FilesChunked++
-		} else {
-			cg.Info.FilesErr++
+		if walkErr != nil {
+			stream.err = fmt.Errorf("dir traversal failed: %w", walkErr)
+			return
 		}
-		all = append(all, r)
-	}
-	if walkErr != nil {
-		return all, fmt.Errorf("walking directory: %w", walkErr)
-	}
-	if groupErr != nil {
-		return all, fmt.Errorf("chunking files: %w", groupErr)
-	}
-	return all, nil
+
+		_ =g.Wait()
+	}()
+
+
+	return stream, nil
 }
 
 // creates chunks from the file at path to chunkDir
 //
 // and returns file hash and slice of the chunk hashes, including already existing ones
-func (cg *chunkGen) chunkFile(path string) (string, []string, error) {
+func (cg *chunkGen) chunkFile(path string) (hashHex string, chunkHashes []string, err error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return "", nil, err
 	}
-	c := chunker.New(f, chunker.Pol(0x3DA3358B4DC173))
+	defer func() {
+		err = errors.Join(err, f.Close())
+	}()
 
-	buf := make([]byte, 8*1024*1024)
+	cfd := chunkFilePool.Get().(*chunkFileData)
+	cfd.chunker.Reset(f, chunkerPol)
+	defer chunkFilePool.Put(cfd)
 
-	chunkHashes := []string{}
 	fileHash := blake3.New(32, nil)
 
 	for chunkCount := 0; ; chunkCount++ {
-		chunk, err := c.Next(buf)
+		chunk, err := cfd.chunker.Next(cfd.buf)
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -142,12 +175,12 @@ func (cg *chunkGen) chunkFile(path string) (string, []string, error) {
 		}
 
 		hashBytes, hashHex, chunkFile, err := cg.createChunk(chunk)
-		if err != nil {
+		if err != nil && !errors.Is(err, os.ErrExist) {
 			return "", nil, err
 		}
 
-		if _, err := fileHash.Write(hashBytes); err != nil {
-			return "", nil, fmt.Errorf("hashing chunk to form file hash: %w", err)
+		if _, err = fileHash.Write(hashBytes); err != nil {
+			return "", nil, fmt.Errorf("hashing chunk to form file hash: %w", errors.Join(err, chunkFile.Close()))
 		}
 		chunkHashes = append(chunkHashes, hashHex)
 
@@ -255,4 +288,58 @@ func PrintFileResultsErrors(result []FileResults) {
 		}
 		fmt.Fprintf(os.Stderr, "Error chunking file path: %s, err: %v\n", r.Path, r.Err)
 	}
+}
+
+
+
+func (cg *chunkGen) ChunkFilesInDirSlice(ctx context.Context, repoDir string) ([]FileResults, error) {
+	stream, err := cg.ChunkFilesInDir(ctx, repoDir)
+	if err != nil {
+		return nil, err
+	}
+
+	s := []FileResults{}
+
+	for fr := range stream.Ch {
+		if fr.Err != nil {
+			return nil, fmt.Errorf("chunk '%s': %w", fr.Hash, fr.Err)
+		}
+		if fr.Hash == "" {
+			return nil, fmt.Errorf("file hash is empty: %s", fr.Path)
+		}
+		s = append(s, fr)
+	}
+	if err := stream.Err(); err != nil {
+		return nil, fmt.Errorf("stream system error: %w", err)
+	}
+
+	return s, nil
+}
+
+func (cg *chunkGen) ChunkFilesInDirApiFile(ctx context.Context, repoDir string) ([]api.File, error) {
+	stream, err := cg.ChunkFilesInDir(ctx, repoDir)
+	if err != nil {
+		return nil, err
+	}
+
+	s := []api.File{}
+
+	for fr := range stream.Ch {
+		if fr.Err != nil {
+			return nil, fmt.Errorf("chunk '%s': %w", fr.Hash, fr.Err)
+		}
+		if fr.Hash == "" {
+			return nil, fmt.Errorf("file hash is empty: %s", fr.Path)
+		}
+		s = append(s, api.File{
+			ChunkHashes: fr.Hashes,
+			Hash: fr.Hash,
+			Path: fr.Path,
+		})
+	}
+	if err := stream.Err(); err != nil {
+		return nil, fmt.Errorf("stream system error: %w", err)
+	}
+
+	return s, nil
 }

@@ -8,6 +8,6 @@ server/gamesync-state
 **/*.db
 **/*.sqlite
 **/.env
-cpu.prof
+*.prof
 trace.out
 asdf*

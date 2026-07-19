@@ -128,11 +128,9 @@ func (p *puller) PullChunk(chunkHash string) (err error) {
 		err = errors.Join(err, chunkFile.Close())
 	}()
 
-	chunkStat, err := chunkFile.Stat()
-	if err != nil {
+	if chunkStat, err := chunkFile.Stat(); err != nil {
 		return fmt.Errorf("stating chunk file: %w", err)
-	}
-	if chunkStat.Size() != 0 {
+	} else if chunkStat.Size() != 0 {
 		chunkExists = true
 	}
 

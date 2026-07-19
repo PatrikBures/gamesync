@@ -1,7 +1,9 @@
 package main
 
 import (
+	"log"
 	"os"
+	"runtime"
 	"runtime/pprof"
 	"runtime/trace"
 )
@@ -17,4 +19,11 @@ func main() {
 	defer trace.Stop()
 
 	Execute()
+
+	fmem, _ := os.Create("mem.prof")
+	defer fmem.Close()
+	runtime.GC() 
+	if err := pprof.WriteHeapProfile(fmem); err != nil {
+		log.Fatal("could not write memory profile: ", err)
+	}
 }
