@@ -1,0 +1,70 @@
+package syncer
+
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	api "gamesync/internal/ogen"
+	"gamesync/internal/snapshoter"
+	"os"
+	"path/filepath"
+)
+
+// Creates a snapshot. If it receives a list of missing chunks, it will 
+// upload them and try to create the snapshot again
+func (s *syncer) CreateSnapshot(files []api.File) error {
+	request := api.Files{
+		Files: files,
+	}
+
+	params := api.PostUserRepoBranchSnapshotParams{
+		UserID: s.conf.Server.UserID,
+		RepoName: s.repo,
+		BranchName: s.repo,
+	}
+
+	for range 2 {
+		result, err := s.client.PostUserRepoBranchSnapshot(context.Background(), &request, params)
+		if err != nil {
+			// this is a duplicate of a function in util.go in client cmd
+			if gErr, ok := errors.AsType[*api.GlobalErrorStatusCode](err); ok {
+				return fmt.Errorf("server returned error (%d): %s", gErr.Response.Code, gErr.Response.Message)
+			}
+			return fmt.Errorf("posting snapshot: %w", err)
+		}
+		switch r := result.(type) {
+		case *api.PostUserRepoBranchSnapshotFailedDependency:
+			if err := s.uploadMissing(context.Background(), r.ChunkHashes); err != nil {
+				return err
+			}
+		case *api.PostUserRepoBranchSnapshotCreated:
+			fmt.Printf("Created snapshot for '%s' repo on branch '%s'\n", s.repo, s.branch)
+			return nil
+		default:
+			return fmt.Errorf("unrecognized type %T with result: %v", r, r)
+		}
+	}
+	return fmt.Errorf("did not succeed creating snapshot, this error should not occcur")
+}
+
+func (s *syncer) uploadMissing(ctx context.Context, chunkHashes []string) error {
+	for i, ch := range chunkHashes {
+		path := filepath.Join(s.conf.Global.ChunkDir, snapshoter.DirsForChunk(ch), ch)
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		result, err := s.client.PutChunk(ctx, api.PutChunkReq{Data: f}, api.PutChunkParams{ChunkHash: ch})
+		if err != nil {
+			return err
+		}
+		switch r := result.(type) {
+		case *api.PutChunkOK, *api.PutChunkCreated:
+			fmt.Printf("uploaded chunk %d/%d\n", i+1, len(chunkHashes))
+		default:
+			return fmt.Errorf("uploading chunk: unrecognized type %T with result: %v", r, r)
+		}
+	}
+	return nil
+}

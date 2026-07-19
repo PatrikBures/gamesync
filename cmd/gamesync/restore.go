@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"gamesync/internal/client"
 	"gamesync/internal/client/config"
+	"gamesync/internal/client/syncer"
 	api "gamesync/internal/ogen"
-	"gamesync/internal/snapshoter"
 	"os"
 	"strconv"
 
@@ -70,12 +70,9 @@ func populateRestoreOpts(opts *restoreOpts, args []string) error {
 }
 
 func runRestoreCmd(c *api.Client, opts restoreOpts, conf *config.Config) (err error) {
-	syncer, err := snapshoter.NewSyncer(conf, c, opts.repo, opts.branch, opts.dir, opts.snapshotID)
-	if err != nil {
-		return fmt.Errorf("initializing syncer: %w", err)
-	}
+	syncer := syncer.New(conf, c, opts.repo, opts.branch, opts.dir)
 
-	if err := syncer.Pull(); err != nil {
+	if err := syncer.Pull(opts.snapshotID); err != nil {
 		return fmt.Errorf("pulling: %w", err)
 	}
 

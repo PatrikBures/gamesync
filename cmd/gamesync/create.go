@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"gamesync/internal/client"
 	"gamesync/internal/client/config"
-	"gamesync/internal/client/uploader"
+	"gamesync/internal/client/syncer"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/snapshoter"
 
@@ -115,7 +115,7 @@ func newCreateSnapshotCmd(config *config.Config) *createSnapshotCmd {
 			if err := populateCreateSnapshotOpts(&root.opts, args); err != nil {
 				return err
 			}
-			if err := runCreateSnapshotCmd(client, root.opts, *config); err != nil {
+			if err := runCreateSnapshotCmd(client, root.opts, config); err != nil {
 				return err
 			}
 			return nil
@@ -138,12 +138,7 @@ func populateCreateSnapshotOpts(opts *createSnapshotOpts, args []string) error {
 	return nil
 }
 
-func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config config.Config) error {
-	params := api.PostUserRepoBranchSnapshotParams{
-		UserID: config.Server.UserID,
-		RepoName: opts.repoName,
-		BranchName: opts.branchName,
-	}
+func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config *config.Config) error {
 
 	chunkGen := snapshoter.NewChunkGen(config.Global.ChunkDir)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -154,9 +149,9 @@ func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config co
 		return err
 	}
 
-	uploader := uploader.New(client, params, config.Global.ChunkDir, 2)
+	syncer := syncer.New(config, client, opts.repoName, opts.branchName, opts.dir)
 
-	if err := uploader.CreateSnapshot(files); err != nil {
+	if err := syncer.CreateSnapshot(files); err != nil {
 		return fmt.Errorf("creating snapshot: %w", err)
 	}
 

@@ -1,11 +1,11 @@
-package snapshoter
+package syncer
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"gamesync/internal/client/config"
 	api "gamesync/internal/ogen"
+	"gamesync/internal/snapshoter"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,55 +13,24 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
+func (s *syncer) Pull(snapshotID int64) (err error) {
 
-type syncer struct {
-	conf   *config.Config
-	client *api.Client
-	snapshot *api.SnapshotFiles
-	dir    string
-	repo   string
-	branch string
-}
-
-type puller struct {
-	client   *api.Client
-	decoder  *zstd.Decoder
-	file     *os.File
-	fileBytesWritten int64
-	chunkDir string
-}
-
-func NewSyncer(conf *config.Config, c *api.Client, repo string, branch string, dir string, snapshotID int64) (*syncer, error) { 
-
-	snapshot, err := c.GetSnapshot(context.Background(), api.GetSnapshotParams{
-		UserID: conf.Server.UserID,
-		RepoName: repo,
-		BranchName: branch,
+	snapshot, err := s.client.GetSnapshot(context.Background(), api.GetSnapshotParams{
+		UserID: s.conf.Server.UserID,
+		RepoName: s.repo,
+		BranchName: s.branch,
 		SnapshotID: snapshotID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("getting snapshot: %w", err)
+		return fmt.Errorf("getting snapshot: %w", err)
 	}
-
-	return &syncer{
-		client: c,
-		conf: conf,
-		dir: dir,
-		repo: repo,
-		branch: branch,
-		snapshot: snapshot,
-	}, nil
-}
-
-
-func (s *syncer) Pull() (err error) {
 	// we can add one puller which is only used if there is one chunk in the file
 	// this is to reuse the decoder and reduce allocations. (when goroutines are added)
 
 
 	// if it errors anywhere in the loop. then the sync will not be up to date. if it errors there
 	// should be a defer which restores its state the the previous snapshot.
-	for _, f := range s.snapshot.Files {
+	for _, f := range snapshot.Files {
 		// currently only downloads the chunks. needs to also create the files from the chunks
 		// when checking if the files exists, it will just delete it and write a new one for now. 
 		// until there is a state which stores the current chunk hash, size and modtime, which 
@@ -70,7 +39,7 @@ func (s *syncer) Pull() (err error) {
 		// when it writes the chunk, it needs to write the chunk and also append to the file. 
 		// if the chunk already exists, it just needs to append to the file.
 
-		filePath := filepath.Join(s.dir, f.Path)
+		filePath := filepath.Join(s.repoDir, f.Path)
 
 		fmt.Printf("\nwriting to: %s\n%s\n", filePath, f.Hash)
 
@@ -117,7 +86,7 @@ func (p *puller) PullChunk(chunkHash string) (err error) {
 	var chunkReader io.Reader
 	chunkExists := false
 
-	chunkFile, _, err := CreateReadChunkFile(p.chunkDir, chunkHash)
+	chunkFile, _, err := snapshoter.CreateReadChunkFile(p.chunkDir, chunkHash)
 	if err != nil {
 		return fmt.Errorf("opening chunkfile: %w", err)
 	}
