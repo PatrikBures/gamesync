@@ -14,7 +14,7 @@ type Profile struct {
 }
 
 type Profiler struct {
-	profiles map[string]Profile
+	Profiles map[string]Profile
 	file     *os.File
 	decoder  *json.Decoder
 	encoder  *json.Encoder
@@ -42,7 +42,7 @@ func New(profilePath string) (p *Profiler, err error) {
 
 	Profiler := Profiler{
 		file: f,
-		profiles: make(map[string]Profile),
+		Profiles: make(map[string]Profile),
 	}
 
 	if stat.Size() == 0 {
@@ -58,12 +58,12 @@ func New(profilePath string) (p *Profiler, err error) {
 
 // Loads profiles from file into Profiles
 func (p *Profiler) Load() error {
-	clear(p.profiles)
+	clear(p.Profiles)
 	
 	if p.decoder == nil {
 		p.decoder = json.NewDecoder(p.file)
 	}
-	if err := p.decoder.Decode(&p.profiles); err != nil {
+	if err := p.decoder.Decode(&p.Profiles); err != nil {
 		return err
 	}
 	return nil
@@ -83,7 +83,7 @@ func (p *Profiler) Save() error {
 		p.encoder.SetIndent("", "    ")
 	}
 
-	if err := p.encoder.Encode(p.profiles); err != nil {
+	if err := p.encoder.Encode(p.Profiles); err != nil {
 		return err
 	}
 	return nil
@@ -96,36 +96,36 @@ func (p *Profiler) Close() error {
 
 // Adds a profile, returns error if there already is a profile with slug.
 func (p *Profiler) Add(slug string, profile Profile) error {
-	if _, ok := p.profiles[slug]; ok {
+	if _, ok := p.Profiles[slug]; ok {
 		return fmt.Errorf("profile '%s' already exists", slug)
 	}
-	p.profiles[slug] = profile
+	p.Profiles[slug] = profile
 	return nil
 }
 
 // Adds a profile, overwriting any existing one.
 func (p *Profiler) AddOverwrite(slug string, profile Profile) {
-	p.profiles[slug] = profile
+	p.Profiles[slug] = profile
 }
 
 // Deletes profile and returns true if it deleted it.
 func (p *Profiler) Delete(slug string) bool {
-	_, ok := p.profiles[slug]
+	_, ok := p.Profiles[slug]
 	if ok {
-		delete(p.profiles, slug)
+		delete(p.Profiles, slug)
 	}
 	return ok
 }
 
 // Gets profile.
 func (p *Profiler) Get(slug string) (Profile, bool) {
-	profile, ok := p.profiles[slug]
+	profile, ok := p.Profiles[slug]
 	return profile, ok
 }
 
 // Cheks if profile exists
 func (p *Profiler) Exists(slug string) bool {
-	_, ok := p.profiles[slug]
+	_, ok := p.Profiles[slug]
 	return ok
 }
 
