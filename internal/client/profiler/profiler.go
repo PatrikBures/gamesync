@@ -108,9 +108,13 @@ func (p *Profiler) AddOverwrite(slug string, profile Profile) {
 	p.profiles[slug] = profile
 }
 
-// Deletes profile.
-func (p *Profiler) Delete(slug string) {
-	delete(p.profiles, slug)
+// Deletes profile and returns true if it deleted it.
+func (p *Profiler) Delete(slug string) bool {
+	_, ok := p.profiles[slug]
+	if ok {
+		delete(p.profiles, slug)
+	}
+	return ok
 }
 
 // Gets profile.
