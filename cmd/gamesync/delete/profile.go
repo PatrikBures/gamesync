@@ -1,4 +1,4 @@
-package main
+package delete
 
 import (
 	"errors"
@@ -10,45 +10,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
-type deleteCmd struct {
+type profileCmd struct {
 	cmd *cobra.Command
+	opts profileOpts
 }
 
-func newDeleteCmd(conf *config.Config) *deleteCmd {
-	root := deleteCmd{}
-
-	cmd := &cobra.Command{
-		Use: "delete",
-		Short: "Delete resources",
-	}
-
-	cmd.AddCommand(
-		newDeleteProfileCmd(conf).cmd,
-	)
-
-	root.cmd = cmd
-	return &root
-}
-
-type deleteProfileCmd struct {
-	cmd *cobra.Command
-	opts deleteProfileOpts
-}
-
-type deleteProfileOpts struct {
+type profileOpts struct {
 	force bool
 }
 
-func newDeleteProfileCmd(conf *config.Config) *deleteProfileCmd {
-	root := deleteProfileCmd{}
+func newProfileCmd(conf *config.Config) *profileCmd {
+	root := profileCmd{}
 
 	cmd := &cobra.Command{
 		Use: "profile PROFILE...",
 		Short: "Delete profiles. Errors if any profile is not found",
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runDeleteProfileCmd(conf, &root.opts, args)
+			return runProfileCmd(conf, &root.opts, args)
 		},
 	}
 
@@ -58,7 +37,7 @@ func newDeleteProfileCmd(conf *config.Config) *deleteProfileCmd {
 	return &root
 }
 
-func runDeleteProfileCmd(conf *config.Config, opts *deleteProfileOpts, args []string) (err error) {
+func runProfileCmd(conf *config.Config, opts *profileOpts, args []string) (err error) {
 	p, err := profiler.New(conf.Global.ProfilesFile)
 	if err != nil {
 		return fmt.Errorf("initializing profiler: %w", err)
@@ -72,7 +51,7 @@ func runDeleteProfileCmd(conf *config.Config, opts *deleteProfileOpts, args []st
 	for _, slug := range args {
 		ok := p.Delete(slug)
 		if ok {
-			fmt.Println("Deleted profile", slug)
+			fmt.Println("d profile", slug)
 		} else {
 			if !opts.force {
 				missingProfiles = append(missingProfiles, slug)

@@ -1,4 +1,4 @@
-package main
+package docs
 
 import (
 	"fmt"
@@ -9,10 +9,10 @@ import (
 )
 
 type genDocCmd struct {
-	cmd *cobra.Command
+	Cmd *cobra.Command
 }
 
-func newGenDocCmd() *genDocCmd {
+func New() *genDocCmd {
 	root := genDocCmd{}
 
 	cmd := &cobra.Command{
@@ -41,7 +41,7 @@ func newGenDocCmd() *genDocCmd {
 		},
 	}
 
-	root.cmd = cmd
+	root.Cmd = cmd
 
 	return &root
 }
