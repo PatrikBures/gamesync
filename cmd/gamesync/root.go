@@ -2,6 +2,11 @@ package main
 
 import (
 	"fmt"
+	createCmd "gamesync/cmd/gamesync/create"
+	docsCmd "gamesync/cmd/gamesync/docs"
+	getCmd "gamesync/cmd/gamesync/get"
+	restoreCmd "gamesync/cmd/gamesync/restore"
+	deleteCmd "gamesync/cmd/gamesync/delete"
 	"gamesync/internal/client/config"
 	"os"
 
@@ -40,12 +45,11 @@ func newRootCmd() *rootCmd {
 	cmd.PersistentFlags().Int64Var(&root.config.Server.UserID, "userid", 0, "User id")
 
 	cmd.AddCommand(
-		newGenDocCmd().cmd,
-		newInitCmd(&root.config).cmd,
-		newGetCmd(&root.config).cmd,
-		newCreateCmd(&root.config).cmd,
-		newRestoreCmd(&root.config).cmd,
-		newDeleteCmd(&root.config).cmd,
+		docsCmd.New().Cmd,
+		getCmd.New(&root.config).Cmd,
+		createCmd.New(&root.config).Cmd,
+		restoreCmd.New(&root.config).Cmd,
+		deleteCmd.New(&root.config).Cmd,
 	)
 
 	cmd.DisableAutoGenTag = true

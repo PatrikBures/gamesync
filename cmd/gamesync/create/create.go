@@ -1,9 +1,10 @@
-package main
+package create
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	util "gamesync/cmd/gamesync/_util"
 	"gamesync/internal/client"
 	"gamesync/internal/client/config"
 	"gamesync/internal/client/profiler"
@@ -16,10 +17,10 @@ import (
 
 
 type createCmd struct {
-	cmd *cobra.Command
+	Cmd *cobra.Command
 }
 
-func newCreateCmd(config *config.Config) *createCmd {
+func New(config *config.Config) *createCmd {
 	root := createCmd{}
 
 	cmd := &cobra.Command{
@@ -32,7 +33,7 @@ func newCreateCmd(config *config.Config) *createCmd {
 		newCreateProfileCmd(config).cmd,
 	)
 
-	root.cmd = cmd
+	root.Cmd = cmd
 	return &root
 }
 
@@ -84,7 +85,7 @@ func runCreateRepoCmd(client *api.Client, opts createRepoOpts, config config.Con
 		UserID: config.Server.UserID,
 		RepoName: opts.repoName,
 	})
-	if err := errHandler(err); err != nil {
+	if err := util.ErrHandler(err); err != nil {
 		return err
 	}
 	fmt.Printf("repo named '%s' created\n", opts.repoName)

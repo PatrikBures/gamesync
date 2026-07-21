@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"errors"
@@ -8,18 +8,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func errHandler(err error) error {
+func ErrHandler(err error) error {
 	if gErr, ok := errors.AsType[*api.GlobalErrorStatusCode](err); ok {
 		return fmt.Errorf("server returned error (%d): %s", gErr.Response.Code, gErr.Response.Message)
 	}
 	return err
 }
 
-func markFlagsRequired(cmd *cobra.Command, names []string) error {
+func MarkFlagsRequired(cmd *cobra.Command, names []string) {
 	for _, n := range names {
 		if err := cmd.MarkFlagRequired(n); err != nil {
-			return err
+			panic(fmt.Errorf("Error marking flag: %w", err))
 		}
 	}
-	return nil
 }

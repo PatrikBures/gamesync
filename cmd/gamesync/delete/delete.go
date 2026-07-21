@@ -1,4 +1,4 @@
-package main
+package delete
 
 import (
 	"errors"
@@ -12,10 +12,10 @@ import (
 
 
 type deleteCmd struct {
-	cmd *cobra.Command
+	Cmd *cobra.Command
 }
 
-func newDeleteCmd(conf *config.Config) *deleteCmd {
+func New(conf *config.Config) *deleteCmd {
 	root := deleteCmd{}
 
 	cmd := &cobra.Command{
@@ -27,7 +27,7 @@ func newDeleteCmd(conf *config.Config) *deleteCmd {
 		newDeleteProfileCmd(conf).cmd,
 	)
 
-	root.cmd = cmd
+	root.Cmd = cmd
 	return &root
 }
 

@@ -1,10 +1,11 @@
-package main
+package get
 
 import (
 	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	util "gamesync/cmd/gamesync/_util"
 	"gamesync/internal/client"
 	"gamesync/internal/client/config"
 	"gamesync/internal/client/profiler"
@@ -17,10 +18,10 @@ import (
 )
 
 type getCmd struct {
-	cmd *cobra.Command
+	Cmd *cobra.Command
 }
 
-func newGetCmd(conf *config.Config) *getCmd {
+func New(conf *config.Config) *getCmd {
 	root := getCmd{}
 
 	cmd := &cobra.Command{
@@ -32,7 +33,7 @@ func newGetCmd(conf *config.Config) *getCmd {
 		newGetProfileCmd(conf).cmd,
 	)
 
-	root.cmd = cmd
+	root.Cmd = cmd
 	return &root
 }
 
@@ -95,7 +96,7 @@ func runGetUserCmd(client *api.Client, opts getUserOpts) (err error) {
 
 func allUsers(client *api.Client) error {
 	users, err := client.GetUsers(context.Background())
-	if err := errHandler(err); err != nil {
+	if err := util.ErrHandler(err); err != nil {
 		return err
 	}
 	for _, user := range users {
@@ -109,7 +110,7 @@ func oneUser(client *api.Client, userID int64) error {
 		context.Background(),
 		api.GetUserParams{UserID: userID},
 	)
-	if err := errHandler(err); err != nil {
+	if err := util.ErrHandler(err); err != nil {
 		return err
 	}
 	fmt.Println("name:", user.UserName, "ID:", user.UserID, "roleID:", user.RoleID)

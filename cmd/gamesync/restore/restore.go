@@ -1,4 +1,4 @@
-package main
+package restore
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 
 
 type restoreCmd struct {
-	cmd *cobra.Command
+	Cmd *cobra.Command
 	opts restoreOpts
 }
 type restoreOpts struct {
@@ -22,7 +22,7 @@ type restoreOpts struct {
 	snapshotID int64
 }
 
-func newRestoreCmd(conf *config.Config) *restoreCmd {
+func New(conf *config.Config) *restoreCmd {
 	root := restoreCmd{}
 
 	cmd := &cobra.Command{
@@ -41,7 +41,7 @@ func newRestoreCmd(conf *config.Config) *restoreCmd {
 		},
 	}
 
-	root.cmd = cmd
+	root.Cmd = cmd
 	return &root
 }
 
