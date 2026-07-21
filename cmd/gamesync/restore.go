@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"gamesync/internal/client"
 	"gamesync/internal/client/config"
+	"gamesync/internal/client/profiler"
 	"gamesync/internal/client/syncer"
 	api "gamesync/internal/ogen"
-	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -18,9 +18,7 @@ type restoreCmd struct {
 	opts restoreOpts
 }
 type restoreOpts struct {
-	branch string
-	repo string
-	dir string
+	profile profiler.Profile
 	snapshotID int64
 }
 
@@ -28,11 +26,11 @@ func newRestoreCmd(conf *config.Config) *restoreCmd {
 	root := restoreCmd{}
 
 	cmd := &cobra.Command{
-		Use:   "restore DIR SNAPSHOT_ID",
+		Use:   "restore PROFILE SNAPSHOT_ID",
 		Short: "Restore a sync to a specific snapshot",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := populateRestoreOpts(&root.opts, args); err != nil { return err }
+			if err := populateRestoreOpts(conf, &root.opts, args); err != nil { return err }
 
 			c, err := client.Client(conf)
 			if err != nil { return err }
@@ -43,25 +41,19 @@ func newRestoreCmd(conf *config.Config) *restoreCmd {
 		},
 	}
 
-	cmd.Flags().StringVarP(&root.opts.repo,   "repo", "r", "", "")
-	cmd.Flags().StringVarP(&root.opts.branch, "branch", "b", "", "")
-
-	if err := markFlagsRequired(cmd, []string{"repo", "branch"}); err != nil {
-		panic(err)
-	}
-
 	root.cmd = cmd
 	return &root
 }
 
-func populateRestoreOpts(opts *restoreOpts, args []string) error {
-	opts.dir = args[0]
-
-	d, err := os.Stat(opts.dir)
-	if err != nil { return err }
-	if !d.IsDir() {
-		return fmt.Errorf("provided dir is not a dir: %s", opts.dir)
+func populateRestoreOpts(conf *config.Config, opts *restoreOpts, args []string) error {
+	profile, ok, err := profiler.Get(args[0], conf.Global.ProfilesFile)
+	if err != nil {
+		return fmt.Errorf("initializing profiler: %s", err)
 	}
+	if !ok {
+		return fmt.Errorf("profile '%s' does not exist", args[0])
+	}
+	opts.profile = profile
 
 	opts.snapshotID, err = strconv.ParseInt(args[1], 10, 64)
 	if err != nil { return err }
@@ -70,7 +62,7 @@ func populateRestoreOpts(opts *restoreOpts, args []string) error {
 }
 
 func runRestoreCmd(c *api.Client, opts restoreOpts, conf *config.Config) (err error) {
-	syncer := syncer.New(conf, c, opts.repo, opts.branch, opts.dir)
+	syncer := syncer.New(conf, c, opts.profile)
 
 	if err := syncer.Pull(opts.snapshotID); err != nil {
 		return fmt.Errorf("pulling: %w", err)

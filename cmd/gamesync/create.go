@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"gamesync/internal/client"
 	"gamesync/internal/client/config"
+	"gamesync/internal/client/profiler"
 	"gamesync/internal/client/syncer"
 	api "gamesync/internal/ogen"
 	"gamesync/internal/snapshoter"
@@ -27,6 +29,7 @@ func newCreateCmd(config *config.Config) *createCmd {
 	cmd.AddCommand(
 		newCreateRepoCmd(config).cmd,
 		newCreateSnapshotCmd(config).cmd,
+		newCreateProfileCmd(config).cmd,
 	)
 
 	root.cmd = cmd
@@ -95,61 +98,60 @@ type createSnapshotCmd struct {
 	opts createSnapshotOpts
 }
 type createSnapshotOpts struct {
-	repoName string
-	branchName string
-	dir string
+	profile profiler.Profile
 }
 
-func newCreateSnapshotCmd(config *config.Config) *createSnapshotCmd {
+func newCreateSnapshotCmd(conf *config.Config) *createSnapshotCmd {
 	root := createSnapshotCmd{}
 
 	cmd := &cobra.Command{
-		Use: "snapshot",
+		Use: "snapshot PROFILE",
 		Short: "Create a new snapshot",
-		Args: cobra.ExactArgs(0),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := client.Client(config)
+			client, err := client.Client(conf)
 			if err != nil {
 				return err
 			}
-			if err := populateCreateSnapshotOpts(&root.opts, args); err != nil {
+			if err := populateCreateSnapshotOpts(conf, &root.opts, args); err != nil {
 				return err
 			}
-			if err := runCreateSnapshotCmd(client, root.opts, config); err != nil {
+			if err := runCreateSnapshotCmd(client, &root.opts, conf); err != nil {
 				return err
 			}
 			return nil
 		},
 	}
 
-	cmd.Flags().StringVarP(&root.opts.repoName, "repo", "r", "", "Repo where snapshot will be created at")
-	cmd.Flags().StringVarP(&root.opts.branchName, "branch", "b", "", "Branch for the snapshot")
-	cmd.Flags().StringVarP(&root.opts.dir, "dir", "d", "", "Directory which will be snapshoted")
-
-	cmd.MarkFlagRequired("repo")
-	cmd.MarkFlagRequired("branch")
-	cmd.MarkFlagRequired("dir")
-
 	root.cmd = cmd
 	return &root
 }
 
-func populateCreateSnapshotOpts(opts *createSnapshotOpts, args []string) error {
+func populateCreateSnapshotOpts(conf *config.Config, opts *createSnapshotOpts, args []string) error {
+	profile, ok, err := profiler.Get(args[0], conf.Global.ProfilesFile)
+	if err != nil {
+		return fmt.Errorf("initializing profiler: %s", err)
+	}
+	if !ok {
+		return fmt.Errorf("profile '%s' does not exist", args[0])
+	}
+	opts.profile = profile
+
 	return nil
 }
 
-func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config *config.Config) error {
+func runCreateSnapshotCmd(client *api.Client, opts *createSnapshotOpts, conf *config.Config) error {
 
-	chunkGen := snapshoter.NewChunkGen(config.Global.ChunkDir)
+	chunkGen := snapshoter.NewChunkGen(conf.Global.ChunkDir)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	files, err := chunkGen.ChunkFilesInDirApiFile(ctx, opts.dir)
+	files, err := chunkGen.ChunkFilesInDirApiFile(ctx, opts.profile.Dir)
 	if err != nil {
 		return err
 	}
 
-	syncer := syncer.New(config, client, opts.repoName, opts.branchName, opts.dir)
+	syncer := syncer.New(conf, client, opts.profile)
 
 	if err := syncer.CreateSnapshot(files); err != nil {
 		return fmt.Errorf("creating snapshot: %w", err)
@@ -158,3 +160,69 @@ func runCreateSnapshotCmd(client *api.Client, opts createSnapshotOpts, config *c
 	return nil
 }
 
+
+
+type createProfileCmd struct {
+	cmd *cobra.Command
+	opts createProfileOpts
+}
+type createProfileOpts struct {
+	slug    string
+	force   bool
+	profile profiler.Profile
+}
+
+func newCreateProfileCmd(conf *config.Config) *createProfileCmd {
+	root := createProfileCmd{}
+
+	cmd := &cobra.Command{
+		Use: "profile PROFILE REPO BRANCH DIR",
+		Short: "Create new profile to sync",
+		Args: cobra.ExactArgs(4),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			populateCreateProfileOpts(&root.opts, args)
+
+			if err := runCreateProfileCmd(root.opts, conf); err != nil { return err }
+
+			return nil
+		},
+	}
+	cmd.Flags().BoolVarP(&root.opts.force, "force", "f", false, "Overwrites any exising profile")
+	root.cmd = cmd
+	return &root
+}
+
+func populateCreateProfileOpts(opts *createProfileOpts, args []string) {
+	opts.slug = args[0]
+	opts.profile = profiler.Profile{
+		RepoName: args[1],
+		BranchName: args[2],
+		Dir: args[3],
+	}
+}
+
+func runCreateProfileCmd(opts createProfileOpts, conf *config.Config) (err error) {
+	pr, err := profiler.New(conf.Global.ProfilesFile)
+	if err != nil {
+		return fmt.Errorf("initializing profiler: %w", err)
+	}
+	defer func() {
+		err = errors.Join(err, pr.Close())
+	}()
+
+	if opts.force {
+		pr.AddOverwrite(opts.slug, opts.profile)
+	} else {
+		if err := pr.Add(opts.slug, opts.profile); err != nil { return err }
+	}
+
+	if opts.force && pr.Exists(opts.slug) {
+		fmt.Printf("Force created profile '%s'\n", opts.slug)
+	} else {
+		fmt.Printf("Created profile '%s'\n", opts.slug)
+	}
+
+	if err := pr.Save(); err != nil { return err }
+
+	return nil
+}

@@ -22,6 +22,7 @@ type Config struct {
 type Global struct {
 	ChunkDir string
 	CacheDir string
+	ProfilesFile string
 }
 
 type Server struct {
@@ -69,6 +70,12 @@ func Load(c *Config, configFile string) error {
 	if err := loadCachedItem(c.Global.CacheDir, CacheNameUserID, &c.Server.UserID); err != nil {
 		return err
 	}
+
+	if c.Global.ProfilesFile == "" {
+		configDir := filepath.Dir(configFile)
+		c.Global.ProfilesFile = filepath.Join(configDir, "profiles.json")
+	}
+
 	return nil
 }
 
@@ -78,6 +85,7 @@ func (c *Config) insertHome() error {
 	for _, p := range []*string{
 		&c.Global.ChunkDir,
 		&c.Global.CacheDir,
+		&c.Global.ProfilesFile,
 	} {
 		s := *p
 		if !strings.HasPrefix(s, "~/") {

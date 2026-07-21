@@ -2,6 +2,7 @@ package syncer
 
 import (
 	"gamesync/internal/client/config"
+	"gamesync/internal/client/profiler"
 	api "gamesync/internal/ogen"
 	"os"
 
@@ -12,9 +13,7 @@ import (
 type syncer struct {
 	conf    *config.Config
 	client  *api.Client
-	repoDir string
-	repo    string
-	branch  string
+	profile profiler.Profile
 }
 
 type puller struct {
@@ -25,13 +24,11 @@ type puller struct {
 	chunkDir string
 }
 
-func New(conf *config.Config, c *api.Client, repo string, branch string, repoDir string) *syncer { 
+func New(conf *config.Config, c *api.Client, profile profiler.Profile) *syncer { 
 	return &syncer{
 		client: c,
 		conf: conf,
-		repoDir: repoDir,
-		repo: repo,
-		branch: branch,
+		profile: profile,
 	}
 }
 

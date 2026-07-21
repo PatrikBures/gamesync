@@ -45,6 +45,7 @@ func newRootCmd() *rootCmd {
 		newGetCmd(&root.config).cmd,
 		newCreateCmd(&root.config).cmd,
 		newRestoreCmd(&root.config).cmd,
+		newDeleteCmd(&root.config).cmd,
 	)
 
 	cmd.DisableAutoGenTag = true

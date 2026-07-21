@@ -20,8 +20,8 @@ func (s *syncer) CreateSnapshot(files []api.File) error {
 
 	params := api.PostUserRepoBranchSnapshotParams{
 		UserID: s.conf.Server.UserID,
-		RepoName: s.repo,
-		BranchName: s.repo,
+		RepoName: s.profile.RepoName,
+		BranchName: s.profile.BranchName,
 	}
 
 	for range 2 {
@@ -39,7 +39,7 @@ func (s *syncer) CreateSnapshot(files []api.File) error {
 				return err
 			}
 		case *api.PostUserRepoBranchSnapshotCreated:
-			fmt.Printf("Created snapshot for '%s' repo on branch '%s'\n", s.repo, s.branch)
+			fmt.Printf("Created snapshot for '%s' repo on branch '%s'\n", s.profile.RepoName, s.profile.BranchName)
 			return nil
 		default:
 			return fmt.Errorf("unrecognized type %T with result: %v", r, r)
