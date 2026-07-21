@@ -32,7 +32,7 @@ func newRestoreCmd(conf *config.Config) *restoreCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := populateRestoreOpts(conf, &root.opts, args); err != nil { return err }
 
-			c, err := client.Client(conf)
+			c, err := client.New(conf)
 			if err != nil { return err }
 
 			if err := runRestoreCmd(c, root.opts, conf); err != nil { return err }

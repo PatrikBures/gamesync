@@ -9,7 +9,7 @@ import (
 )
 
 // if UserID in config is < 1, request one from server
-func Client(c *config.Config) (*api.Client, error) {
+func New(c *config.Config) (*api.Client, error) {
 	client, err := api.NewClient(
 		c.Server.Url,
 		clientAuth.NewAuth(c.Server.Token))

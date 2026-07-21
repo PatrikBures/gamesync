@@ -53,7 +53,7 @@ func newGetUserCmd(config *config.Config) *getUserCmd {
 		Short: "Get all users or a specific one",
 		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := client.Client(config)
+			client, err := client.New(config)
 			if err != nil {
 				return err
 			}
