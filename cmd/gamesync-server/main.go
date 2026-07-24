@@ -10,12 +10,13 @@ import (
 	middlewares "gamesync/internal/server/middleware"
 	"gamesync/internal/server/service"
 	"gamesync/internal/server/storage"
-	"gamesync/internal/util/bytesize"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"go.pabu.dev/bytesize"
 )
 
 func main() {
@@ -72,9 +73,9 @@ func start() error {
 		return fmt.Errorf("initializing database: %w", err)
 	}
 
-	maxChunkBytes := bytesize.Convert(c.maxChunkSize)
-	if maxChunkBytes < 0 {
-		return fmt.Errorf("invalid size for max chunk size")
+	maxChunkBytes, err := bytesize.Parse(c.maxChunkSize)
+	if err != nil {
+		return fmt.Errorf("parsing max chunks size: %w", err)
 	}
 	slog.Info("max chunk size", "size", c.maxChunkSize, "bytes", maxChunkBytes)
 	localStorage, err := storage.NewLocal(c.chunkBaseDir, maxChunkBytes)
