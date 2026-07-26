@@ -31,15 +31,15 @@ CREATE TABLE branches
 CREATE TABLE files
 (
     -- file hash is created by hashing all the raw chunk hashes in order, without any seperator. 
-    file_hash BYTEA NOT NULL PRIMARY KEY,
     bytes BIGINT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    file_hash BYTEA NOT NULL PRIMARY KEY
 );
 
 CREATE TABLE snapshot_files
 (
-    file_hash BYTEA NOT NULL REFERENCES files(file_hash),
     snapshot_id BIGINT NOT NULL REFERENCES snapshots(snapshot_id) ON DELETE CASCADE,
+    file_hash BYTEA NOT NULL REFERENCES files(file_hash) ON DELETE RESTRICT,
     file_path VARCHAR(500) NOT NULL,
 
     PRIMARY KEY (snapshot_id, file_path)
@@ -48,16 +48,16 @@ CREATE INDEX idx_snapshot_files_file_hash ON snapshot_files(file_hash);
 
 CREATE TABLE chunks
 (
-    chunk_hash BYTEA NOT NULL PRIMARY KEY,
     bytes BIGINT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    chunk_hash BYTEA NOT NULL PRIMARY KEY
 );
 
 CREATE TABLE file_chunks
 (
+    chunk_order INT NOT NULL,
     file_hash BYTEA NOT NULL REFERENCES files(file_hash) ON DELETE CASCADE,
     chunk_hash BYTEA NOT NULL REFERENCES chunks(chunk_hash),
-    chunk_order INT NOT NULL,
 
     PRIMARY KEY (file_hash, chunk_order)
 );
