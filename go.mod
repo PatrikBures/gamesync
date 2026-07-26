@@ -9,12 +9,12 @@ require (
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/klauspost/compress v1.19.0
 	github.com/ogen-go/ogen v1.23.0
-	github.com/restic/chunker v0.5.0
 	github.com/spf13/cobra v1.10.2
 	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/metric v1.44.0
 	go.opentelemetry.io/otel/trace v1.44.0
-	go.pabu.dev/bytesize v0.1.1
+	go.pabu.dev/bytesize v0.2.0
+	go.pabu.dev/fastcdc v0.2.0
 	go.pabu.dev/ini v0.1.1
 	golang.org/x/sync v0.22.0
 	lukechampine.com/blake3 v1.4.1

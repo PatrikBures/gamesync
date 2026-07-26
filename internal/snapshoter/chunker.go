@@ -15,7 +15,7 @@ import (
 	"sync/atomic"
 
 	"github.com/klauspost/compress/zstd"
-	"github.com/restic/chunker"
+	"go.pabu.dev/fastcdc"
 	"golang.org/x/sync/errgroup"
 	"lukechampine.com/blake3"
 )
@@ -39,20 +39,18 @@ const dirQty = 2
 const dirLen = 2
 
 
-var chunkerPol = chunker.Pol(0x3DA3358B4DC173)
 
 var chunkFilePool = sync.Pool{
 	New: func() any { 
 		return &chunkFileData{
-			buf: make([]byte, 8*1024*1024),
-			chunker: chunker.New(nil, chunkerPol),
+			chunker: fastcdc.New(nil, fastcdc.Opts{}),
 		}
 	},
 }
 
 type chunkFileData struct {
 	buf     []byte
-	chunker *chunker.Chunker
+	chunker *fastcdc.Chunker
 }
 
 // handles the generation of chunks
@@ -161,13 +159,13 @@ func (cg *chunkGen) chunkFile(path string) (hashHex string, chunkHashes []string
 	}()
 
 	cfd := chunkFilePool.Get().(*chunkFileData)
-	cfd.chunker.Reset(f, chunkerPol)
+	cfd.chunker.Reset(f)
 	defer chunkFilePool.Put(cfd)
 
 	fileHash := blake3.New(32, nil)
 
 	for chunkCount := 0; ; chunkCount++ {
-		chunk, err := cfd.chunker.Next(cfd.buf)
+		chunk, err := cfd.chunker.Next()
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -190,7 +188,7 @@ func (cg *chunkGen) chunkFile(path string) (hashHex string, chunkHashes []string
 			continue
 		}
 
-		werr := cg.writeChunk(chunk.Data, chunkFile)
+		werr := cg.writeChunk(chunk, chunkFile)
 		cerr := chunkFile.Close()
 		err = errors.Join(werr, cerr)
 		if err != nil {
@@ -203,8 +201,8 @@ func (cg *chunkGen) chunkFile(path string) (hashHex string, chunkHashes []string
 }
 
 // hashes chunk, creates the relative dirs, and opens the file (does not put any data in)
-func (cg *chunkGen) createChunk(chunk chunker.Chunk) ([]byte, string, *os.File, error) {
-	hashBytes := blake3.Sum256(chunk.Data)
+func (cg *chunkGen) createChunk(chunk []byte) ([]byte, string, *os.File, error) {
+	hashBytes := blake3.Sum256(chunk)
 	hashSlice := hashBytes[:]
 	hashHex := hex.EncodeToString(hashSlice)
 
