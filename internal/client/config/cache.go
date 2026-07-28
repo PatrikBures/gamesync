@@ -21,7 +21,6 @@ func loadCachedItem[T int | int32 | int64 | string](cacheDir string, name CacheN
 	var valueString string
 	if content, err := os.ReadFile(p); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			fmt.Println("did not find:", p)
 			return nil
 		}
 		return err
@@ -89,14 +88,6 @@ func (c *Config) cacheDir() error {
 			return err
 		}
 		c.Global.CacheDir = filepath.Join(cd, projectName)
-	}
-
-	s, err := os.Stat(c.Global.CacheDir)
-	if err != nil {
-		return err
-	}
-	if !s.IsDir() {
-		return fmt.Errorf("cache dir is not a dir: %s", c.Global.CacheDir)
 	}
 
 	c.Global.ChunkDir = filepath.Join(c.Global.CacheDir, "chunks")
