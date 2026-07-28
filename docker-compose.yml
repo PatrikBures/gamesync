@@ -8,7 +8,7 @@ services:
       GAMESYNC_DB_PRIMARY_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}"
       GAMESYNC_DB_TYPE: postgres
       GAMESYNC_DB_LOG_LEVEL: error
-      GAMESYNC_REQUEST_LOGS: true
+      GAMESYNC_LOG_REQUESTS: true
     depends_on:
       migrate:
         condition: service_completed_successfully
