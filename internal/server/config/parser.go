@@ -1,4 +1,4 @@
-package serverConfig
+package config
 
 import (
 	"flag"
@@ -64,4 +64,27 @@ func StringToSlice(s string) []string {
 		return []string{}
 	}
 	return strings.Split(s, string(sliceSeperator))
+}
+
+func StringToMap(s string) (m map[string]bool) {
+	m = make(map[string]bool)
+	if s == "" {
+		return
+	}
+	buf := make([]byte, 0, 10)
+	for _, r := range []byte(s) {
+		if r != sliceSeperator {
+			buf = append(buf, r)
+			continue
+		}
+		if len(buf) == 0 {
+			continue
+		}
+		m[string(buf)] = true
+		buf = buf[:0]
+	}
+	if len(buf) > 0 {
+		m[string(buf)] = true
+	}
+	return
 }

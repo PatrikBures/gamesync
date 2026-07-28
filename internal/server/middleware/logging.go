@@ -8,8 +8,12 @@ import (
 	"github.com/ogen-go/ogen/middleware"
 )
 
-func Logging(logger *slog.Logger) middleware.Middleware {
+func Logging(logger *slog.Logger, ignoredRequests map[string]bool) middleware.Middleware {
 	return func(req middleware.Request, next middleware.Next) (middleware.Response, error) {
+		if ignoredRequests[req.OperationName] {
+			return next(req)
+		}
+
 		logger := logger.With(
 			"operation", req.OperationName,
 		)
