@@ -372,7 +372,7 @@ paths:
       - $ref: "#/components/parameters/userID"
     get:
       summary: Get all repos owned by userID
-      operationId: get-user-repos
+      operationId: get-repos
       tags:
         - Users
       responses:
@@ -390,7 +390,7 @@ paths:
       - $ref: "#/components/parameters/repoName"
     put:
       summary: Create new repo and a default branch "main"
-      operationId: put-user-repo
+      operationId: put-repo
       tags:
         - Users
       responses:
@@ -404,7 +404,7 @@ paths:
       - $ref: "#/components/parameters/repoName"
     get:
       summary: Get all branches in repo
-      operationId: get-user-repo-branches
+      operationId: get-branches
       tags:
         - Users
       responses:
@@ -422,7 +422,7 @@ paths:
       - $ref: "#/components/parameters/branchName"
     put:
       summary: Create new branch in repo
-      operationId: put-user-repo-branch
+      operationId: put-branch
       tags:
         - Users
       responses:
@@ -437,7 +437,7 @@ paths:
       - $ref: "#/components/parameters/branchName"
     post:
       summary: Create new snapshot
-      operationId: post-user-repo-branch-snapshot
+      operationId: post-snapshot
       tags:
         - Users
       responses:

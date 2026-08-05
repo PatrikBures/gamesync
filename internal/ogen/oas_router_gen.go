@@ -11,21 +11,21 @@ import (
 )
 
 var (
-	rn10AllowedHeaders = map[string]string{
+	rn11AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 		"PUT": "Authorization,Content-Type",
 	}
-	rn13AllowedHeaders = map[string]string{
+	rn14AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn17AllowedHeaders = map[string]string{
+	rn19AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
 	rn25AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
-	rn16AllowedHeaders = map[string]string{
+	rn18AllowedHeaders = map[string]string{
 		"GET":   "Authorization",
 		"PATCH": "Authorization,Content-Type",
 		"PUT":   "Authorization,Content-Type",
@@ -34,7 +34,7 @@ var (
 		"GET":  "Authorization",
 		"POST": "Content-Type",
 	}
-	rn12AllowedHeaders = map[string]string{
+	rn13AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn2AllowedHeaders = map[string]string{
@@ -43,13 +43,13 @@ var (
 	rn27AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
-	rn21AllowedHeaders = map[string]string{
+	rn15AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn4AllowedHeaders = map[string]string{
 		"PUT": "Authorization",
 	}
-	rn20AllowedHeaders = map[string]string{
+	rn8AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn6AllowedHeaders = map[string]string{
@@ -61,7 +61,7 @@ var (
 	rn7AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn19AllowedHeaders = map[string]string{
+	rn21AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 )
@@ -148,7 +148,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET,PUT",
-							allowedHeaders: rn10AllowedHeaders,
+							allowedHeaders: rn11AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -198,7 +198,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET",
-							allowedHeaders: rn13AllowedHeaders,
+							allowedHeaders: rn14AllowedHeaders,
 							acceptPost:     "",
 							acceptPatch:    "",
 						})
@@ -224,7 +224,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET,POST",
-							allowedHeaders: rn17AllowedHeaders,
+							allowedHeaders: rn19AllowedHeaders,
 							acceptPost:     "application/json",
 							acceptPatch:    "",
 						})
@@ -319,7 +319,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "GET,PATCH,PUT",
-										allowedHeaders: rn16AllowedHeaders,
+										allowedHeaders: rn18AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "application/json",
 									})
@@ -388,7 +388,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							default:
 								s.notAllowed(w, r, notAllowedParams{
 									allowedMethods: "GET",
-									allowedHeaders: rn12AllowedHeaders,
+									allowedHeaders: rn13AllowedHeaders,
 									acceptPost:     "",
 									acceptPatch:    "",
 								})
@@ -476,13 +476,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							if len(elem) == 0 {
 								switch r.Method {
 								case "GET":
-									s.handleGetUserReposRequest([1]string{
+									s.handleGetReposRequest([1]string{
 										args[0],
 									}, elemIsEscaped, w, r)
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "GET",
-										allowedHeaders: rn21AllowedHeaders,
+										allowedHeaders: rn15AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -511,7 +511,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								if len(elem) == 0 {
 									switch r.Method {
 									case "PUT":
-										s.handlePutUserRepoRequest([2]string{
+										s.handlePutRepoRequest([2]string{
 											args[0],
 											args[1],
 										}, elemIsEscaped, w, r)
@@ -538,14 +538,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									if len(elem) == 0 {
 										switch r.Method {
 										case "GET":
-											s.handleGetUserRepoBranchesRequest([2]string{
+											s.handleGetBranchesRequest([2]string{
 												args[0],
 												args[1],
 											}, elemIsEscaped, w, r)
 										default:
 											s.notAllowed(w, r, notAllowedParams{
 												allowedMethods: "GET",
-												allowedHeaders: rn20AllowedHeaders,
+												allowedHeaders: rn8AllowedHeaders,
 												acceptPost:     "",
 												acceptPatch:    "",
 											})
@@ -574,7 +574,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 										if len(elem) == 0 {
 											switch r.Method {
 											case "PUT":
-												s.handlePutUserRepoBranchRequest([3]string{
+												s.handlePutBranchRequest([3]string{
 													args[0],
 													args[1],
 													args[2],
@@ -602,7 +602,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 											if len(elem) == 0 {
 												switch r.Method {
 												case "POST":
-													s.handlePostUserRepoBranchSnapshotRequest([3]string{
+													s.handlePostSnapshotRequest([3]string{
 														args[0],
 														args[1],
 														args[2],
@@ -684,7 +684,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 													default:
 														s.notAllowed(w, r, notAllowedParams{
 															allowedMethods: "GET",
-															allowedHeaders: rn19AllowedHeaders,
+															allowedHeaders: rn21AllowedHeaders,
 															acceptPost:     "",
 															acceptPatch:    "",
 														})
@@ -1187,9 +1187,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							if len(elem) == 0 {
 								switch method {
 								case "GET":
-									r.name = GetUserReposOperation
+									r.name = GetReposOperation
 									r.summary = "Get all repos owned by userID"
-									r.operationID = "get-user-repos"
+									r.operationID = "get-repos"
 									r.operationGroup = ""
 									r.pathPattern = "/users/{userID}/repos"
 									r.args = args
@@ -1220,9 +1220,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								if len(elem) == 0 {
 									switch method {
 									case "PUT":
-										r.name = PutUserRepoOperation
+										r.name = PutRepoOperation
 										r.summary = "Create new repo and a default branch \"main\""
-										r.operationID = "put-user-repo"
+										r.operationID = "put-repo"
 										r.operationGroup = ""
 										r.pathPattern = "/users/{userID}/repos/{repoName}"
 										r.args = args
@@ -1244,9 +1244,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									if len(elem) == 0 {
 										switch method {
 										case "GET":
-											r.name = GetUserRepoBranchesOperation
+											r.name = GetBranchesOperation
 											r.summary = "Get all branches in repo"
-											r.operationID = "get-user-repo-branches"
+											r.operationID = "get-branches"
 											r.operationGroup = ""
 											r.pathPattern = "/users/{userID}/repos/{repoName}/branches"
 											r.args = args
@@ -1277,9 +1277,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										if len(elem) == 0 {
 											switch method {
 											case "PUT":
-												r.name = PutUserRepoBranchOperation
+												r.name = PutBranchOperation
 												r.summary = "Create new branch in repo"
-												r.operationID = "put-user-repo-branch"
+												r.operationID = "put-branch"
 												r.operationGroup = ""
 												r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}"
 												r.args = args
@@ -1301,9 +1301,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 											if len(elem) == 0 {
 												switch method {
 												case "POST":
-													r.name = PostUserRepoBranchSnapshotOperation
+													r.name = PostSnapshotOperation
 													r.summary = "Create new snapshot"
-													r.operationID = "post-user-repo-branch-snapshot"
+													r.operationID = "post-snapshot"
 													r.operationGroup = ""
 													r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots"
 													r.args = args

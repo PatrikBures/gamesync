@@ -164,7 +164,7 @@ func (s *Server) decodePostRolesRequest(r *http.Request) (
 	}
 }
 
-func (s *Server) decodePostUserRepoBranchSnapshotRequest(r *http.Request) (
+func (s *Server) decodePostSnapshotRequest(r *http.Request) (
 	req *Files,
 	rawBody []byte,
 	close func() error,

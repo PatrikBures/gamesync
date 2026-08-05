@@ -54,7 +54,7 @@ func populateRepoOpts(opts *repoOpts, args []string) error {
 }
 
 func runRepoCmd(client *api.Client, opts repoOpts, conf config.Config) error {
-	err := client.PutUserRepo(context.Background(), api.PutUserRepoParams{
+	err := client.PutRepo(context.Background(), api.PutRepoParams{
 		UserID: conf.Server.UserID,
 		RepoName: opts.repoName,
 	})

@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func (s *Service) GetUserRepoBranches(ctx context.Context, params api.GetUserRepoBranchesParams) (api.Branches, error) {
+func (s *Service) GetBranches(ctx context.Context, params api.GetBranchesParams) (api.Branches, error) {
 	branches, err := s.db.ReadQuery().ListBranches(ctx, params.RepoName)
 	if err != nil {
 		return nil, server.NewInternalError(err, "failed listing branches",
@@ -25,7 +25,7 @@ func (s *Service) GetUserRepoBranches(ctx context.Context, params api.GetUserRep
 	return branchesReturn, nil
 }
 
-func (s *Service) PutUserRepoBranch(ctx context.Context, params api.PutUserRepoBranchParams) error {
+func (s *Service) PutBranch(ctx context.Context, params api.PutBranchParams) error {
 	if err := s.db.WriteQuery().CreateBranchWithRepoName(ctx, dbm.CreateBranchWithRepoNameParams{
 		UserID:     params.UserID,
 		RepoName:   params.RepoName,

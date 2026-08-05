@@ -276,26 +276,29 @@ func (s *PermWithName) SetPermName(val string) {
 	s.PermName = val
 }
 
-// PostUserRepoBranchSnapshotCreated is response for PostUserRepoBranchSnapshot operation.
-type PostUserRepoBranchSnapshotCreated struct{}
+// PostSnapshotCreated is response for PostSnapshot operation.
+type PostSnapshotCreated struct{}
 
-func (*PostUserRepoBranchSnapshotCreated) postUserRepoBranchSnapshotRes() {}
+func (*PostSnapshotCreated) postSnapshotRes() {}
 
-type PostUserRepoBranchSnapshotFailedDependency struct {
+type PostSnapshotFailedDependency struct {
 	ChunkHashes []string `json:"chunkHashes"`
 }
 
 // GetChunkHashes returns the value of ChunkHashes.
-func (s *PostUserRepoBranchSnapshotFailedDependency) GetChunkHashes() []string {
+func (s *PostSnapshotFailedDependency) GetChunkHashes() []string {
 	return s.ChunkHashes
 }
 
 // SetChunkHashes sets the value of ChunkHashes.
-func (s *PostUserRepoBranchSnapshotFailedDependency) SetChunkHashes(val []string) {
+func (s *PostSnapshotFailedDependency) SetChunkHashes(val []string) {
 	s.ChunkHashes = val
 }
 
-func (*PostUserRepoBranchSnapshotFailedDependency) postUserRepoBranchSnapshotRes() {}
+func (*PostSnapshotFailedDependency) postSnapshotRes() {}
+
+// PutBranchCreated is response for PutBranch operation.
+type PutBranchCreated struct{}
 
 // PutChunkCreated is response for PutChunk operation.
 type PutChunkCreated struct{}
@@ -322,6 +325,9 @@ func (s PutChunkReq) Read(p []byte) (n int, err error) {
 	return s.Data.Read(p)
 }
 
+// PutRepoCreated is response for PutRepo operation.
+type PutRepoCreated struct{}
+
 // PutRoleNameOK is response for PutRoleName operation.
 type PutRoleNameOK struct{}
 
@@ -332,12 +338,6 @@ func (*PutRolePermsOK) putRolePermsRes() {}
 
 // PutUserNameOK is response for PutUserName operation.
 type PutUserNameOK struct{}
-
-// PutUserRepoBranchCreated is response for PutUserRepoBranch operation.
-type PutUserRepoBranchCreated struct{}
-
-// PutUserRepoCreated is response for PutUserRepo operation.
-type PutUserRepoCreated struct{}
 
 type Repos []string
 

@@ -14,6 +14,12 @@ type Handler interface {
 	//
 	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
 	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error)
+	// GetBranches implements get-branches operation.
+	//
+	// Get all branches in repo.
+	//
+	// GET /users/{userID}/repos/{repoName}/branches
+	GetBranches(ctx context.Context, params GetBranchesParams) (Branches, error)
 	// GetChunk implements get-chunk operation.
 	//
 	// Download chunk.
@@ -38,6 +44,12 @@ type Handler interface {
 	//
 	// GET /perms
 	GetPerms(ctx context.Context) ([]PermWithName, error)
+	// GetRepos implements get-repos operation.
+	//
+	// Get all repos owned by userID.
+	//
+	// GET /users/{userID}/repos
+	GetRepos(ctx context.Context, params GetReposParams) (Repos, error)
 	// GetRolePerms implements get-role-perms operation.
 	//
 	// Get all permissions the role has.
@@ -62,18 +74,6 @@ type Handler interface {
 	//
 	// GET /users/{userID}
 	GetUser(ctx context.Context, params GetUserParams) (*User, error)
-	// GetUserRepoBranches implements get-user-repo-branches operation.
-	//
-	// Get all branches in repo.
-	//
-	// GET /users/{userID}/repos/{repoName}/branches
-	GetUserRepoBranches(ctx context.Context, params GetUserRepoBranchesParams) (Branches, error)
-	// GetUserRepos implements get-user-repos operation.
-	//
-	// Get all repos owned by userID.
-	//
-	// GET /users/{userID}/repos
-	GetUserRepos(ctx context.Context, params GetUserReposParams) (Repos, error)
 	// GetUsers implements get-users operation.
 	//
 	// Get all users.
@@ -92,24 +92,36 @@ type Handler interface {
 	//
 	// POST /roles
 	PostRoles(ctx context.Context, req *RoleName) (*Role, error)
-	// PostUserRepoBranchSnapshot implements post-user-repo-branch-snapshot operation.
+	// PostSnapshot implements post-snapshot operation.
 	//
 	// Create new snapshot.
 	//
 	// POST /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots
-	PostUserRepoBranchSnapshot(ctx context.Context, req *Files, params PostUserRepoBranchSnapshotParams) (PostUserRepoBranchSnapshotRes, error)
+	PostSnapshot(ctx context.Context, req *Files, params PostSnapshotParams) (PostSnapshotRes, error)
 	// PostUsers implements post-users operation.
 	//
 	// Create new user.
 	//
 	// POST /users
 	PostUsers(ctx context.Context, req *UserName) (*UserNewReturn, error)
+	// PutBranch implements put-branch operation.
+	//
+	// Create new branch in repo.
+	//
+	// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
+	PutBranch(ctx context.Context, params PutBranchParams) error
 	// PutChunk implements put-chunk operation.
 	//
 	// Upload chunk.
 	//
 	// PUT /chunks/{chunkHash}
 	PutChunk(ctx context.Context, req PutChunkReq, params PutChunkParams) (PutChunkRes, error)
+	// PutRepo implements put-repo operation.
+	//
+	// Create new repo and a default branch "main".
+	//
+	// PUT /users/{userID}/repos/{repoName}
+	PutRepo(ctx context.Context, params PutRepoParams) error
 	// PutRoleName implements put-role-name operation.
 	//
 	// Update role name.
@@ -128,18 +140,6 @@ type Handler interface {
 	//
 	// PUT /users/{userID}/name
 	PutUserName(ctx context.Context, req *UserName, params PutUserNameParams) error
-	// PutUserRepo implements put-user-repo operation.
-	//
-	// Create new repo and a default branch "main".
-	//
-	// PUT /users/{userID}/repos/{repoName}
-	PutUserRepo(ctx context.Context, params PutUserRepoParams) error
-	// PutUserRepoBranch implements put-user-repo-branch operation.
-	//
-	// Create new branch in repo.
-	//
-	// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-	PutUserRepoBranch(ctx context.Context, params PutUserRepoBranchParams) error
 	// NewError creates *GlobalErrorStatusCode from error returned by handler.
 	//
 	// Used for common default response.

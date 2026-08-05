@@ -112,7 +112,7 @@ func (q *Queries) GetSnapshot(ctx context.Context, snapshotID int64) (Snapshot, 
 }
 
 const getSnapshotFiles = `-- name: GetSnapshotFiles :many
-SELECT file_hash, snapshot_id, file_path FROM snapshot_files
+SELECT snapshot_id, file_hash, file_path FROM snapshot_files
 WHERE snapshot_id = $1
 `
 
@@ -125,7 +125,7 @@ func (q *Queries) GetSnapshotFiles(ctx context.Context, snapshotID int64) ([]Sna
 	var items []SnapshotFile
 	for rows.Next() {
 		var i SnapshotFile
-		if err := rows.Scan(&i.FileHash, &i.SnapshotID, &i.FilePath); err != nil {
+		if err := rows.Scan(&i.SnapshotID, &i.FileHash, &i.FilePath); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
