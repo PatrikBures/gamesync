@@ -12,7 +12,7 @@ import (
 )
 
 type repoCmd struct {
-	cmd *cobra.Command
+	cmd  *cobra.Command
 	opts repoOpts
 }
 
@@ -24,9 +24,9 @@ func newRepoCmd(conf *config.Config) *repoCmd {
 	root := repoCmd{}
 
 	cmd := &cobra.Command{
-		Use: "repo REPO",
+		Use:   "repo REPO",
 		Short: "Deletes a repo",
-		Args: cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := client.New(conf)
 			if err != nil {
@@ -48,7 +48,7 @@ func populateRepoOpts(opts *repoOpts, args []string) {
 
 func runRepoCmd(c *api.Client, conf *config.Config, opts *repoOpts) error {
 	if err := c.DeleteRepo(context.Background(), api.DeleteRepoParams{
-		UserID: conf.Server.UserID,
+		UserID:   conf.Server.UserID,
 		RepoName: opts.repoName,
 	}); err != nil {
 		return util.ErrHandler(err)

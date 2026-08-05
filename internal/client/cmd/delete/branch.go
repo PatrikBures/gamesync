@@ -13,12 +13,12 @@ import (
 )
 
 type branchCmd struct {
-	cmd *cobra.Command
+	cmd  *cobra.Command
 	opts branchOpts
 }
 
 type branchOpts struct {
-	repoName string
+	repoName   string
 	branchName string
 }
 
@@ -26,9 +26,9 @@ func newBranchCmd(conf *config.Config) *branchCmd {
 	root := branchCmd{}
 
 	cmd := &cobra.Command{
-		Use: "branch REPO BRANCH",
+		Use:   "branch REPO BRANCH",
 		Short: "Deletes a branch from a repo",
-		Args: cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := client.New(conf)
 			if err != nil {
@@ -51,8 +51,8 @@ func populateBranchOpts(opts *branchOpts, args []string) {
 
 func runBranchCmd(c *api.Client, conf *config.Config, opts *branchOpts) error {
 	if err := c.DeleteBranch(context.Background(), api.DeleteBranchParams{
-		UserID: conf.Server.UserID,
-		RepoName: opts.repoName,
+		UserID:     conf.Server.UserID,
+		RepoName:   opts.repoName,
 		BranchName: opts.branchName,
 	}); err != nil {
 		return util.ErrHandler(err)

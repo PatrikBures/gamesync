@@ -87,7 +87,7 @@ func (s *Service) DeleteBranch(ctx context.Context, params api.DeleteBranchParam
 	slog.Info("deleting branch", "repoID", branch.RepoID, "branchID", branch.BranchID)
 
 	if err := s.db.WriteQuery().DeleteBranch(ctx, dbm.DeleteBranchParams{
-		RepoID: branch.RepoID,
+		RepoID:   branch.RepoID,
 		BranchID: branch.BranchID,
 	}); err != nil {
 		return server.NewInternalError(err, "deleting branch", "repoID", branch.RepoID, "branchID", branch.BranchID)
