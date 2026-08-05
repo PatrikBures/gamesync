@@ -16,7 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.Files, params api.PostUserRepoBranchSnapshotParams) (result api.PostUserRepoBranchSnapshotRes, err error) {
+func (s *Service) PostSnapshot(ctx context.Context, req *api.Files, params api.PostSnapshotParams) (result api.PostSnapshotRes, err error) {
 
 	files, chunkCount, err := reqFilesStruct(req.Files)
 	if err != nil {
@@ -41,14 +41,14 @@ func (s *Service) PostUserRepoBranchSnapshot(ctx context.Context, req *api.Files
 
 	allChunkHashes = deleteExistingChunks(allChunkHashes, existingChunks)
 	if len(allChunkHashes) > 0 {
-		return &api.PostUserRepoBranchSnapshotFailedDependency{ChunkHashes: bytesToHex(allChunkHashes)}, nil
+		return &api.PostSnapshotFailedDependency{ChunkHashes: bytesToHex(allChunkHashes)}, nil
 	}
 
 	if err := createSnapshot(s.db, files, ctx); err != nil {
 		return nil, err
 	}
 
-	return &api.PostUserRepoBranchSnapshotCreated{}, nil
+	return &api.PostSnapshotCreated{}, nil
 }
 
 type file struct {

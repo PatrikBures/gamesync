@@ -37,6 +37,19 @@ func encodeGetBranchHeadResponse(response GetBranchHeadRes, w http.ResponseWrite
 	}
 }
 
+func encodeGetBranchesResponse(response Branches, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
+
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
+}
+
 func encodeGetChunkResponse(response GetChunkOK, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.WriteHeader(200)
@@ -88,6 +101,19 @@ func encodeGetPermsResponse(response []PermWithName, w http.ResponseWriter, span
 	return nil
 }
 
+func encodeGetReposResponse(response Repos, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
+
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
+}
+
 func encodeGetRolePermsResponse(response PermNameArray, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
@@ -132,32 +158,6 @@ func encodeGetSnapshotResponse(response *SnapshotFiles, w http.ResponseWriter, s
 }
 
 func encodeGetUserResponse(response *User, w http.ResponseWriter, span trace.Span) error {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(200)
-
-	e := new(jx.Encoder)
-	response.Encode(e)
-	if _, err := e.WriteTo(w); err != nil {
-		return errors.Wrap(err, "write")
-	}
-
-	return nil
-}
-
-func encodeGetUserRepoBranchesResponse(response Branches, w http.ResponseWriter, span trace.Span) error {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(200)
-
-	e := new(jx.Encoder)
-	response.Encode(e)
-	if _, err := e.WriteTo(w); err != nil {
-		return errors.Wrap(err, "write")
-	}
-
-	return nil
-}
-
-func encodeGetUserReposResponse(response Repos, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 
@@ -235,14 +235,14 @@ func encodePostRolesResponse(response *Role, w http.ResponseWriter, span trace.S
 	return nil
 }
 
-func encodePostUserRepoBranchSnapshotResponse(response PostUserRepoBranchSnapshotRes, w http.ResponseWriter, span trace.Span) error {
+func encodePostSnapshotResponse(response PostSnapshotRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
-	case *PostUserRepoBranchSnapshotCreated:
+	case *PostSnapshotCreated:
 		w.WriteHeader(201)
 
 		return nil
 
-	case *PostUserRepoBranchSnapshotFailedDependency:
+	case *PostSnapshotFailedDependency:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(424)
 
@@ -272,6 +272,12 @@ func encodePostUsersResponse(response *UserNewReturn, w http.ResponseWriter, spa
 	return nil
 }
 
+func encodePutBranchResponse(response *PutBranchCreated, w http.ResponseWriter, span trace.Span) error {
+	w.WriteHeader(201)
+
+	return nil
+}
+
 func encodePutChunkResponse(response PutChunkRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *PutChunkOK:
@@ -287,6 +293,12 @@ func encodePutChunkResponse(response PutChunkRes, w http.ResponseWriter, span tr
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
+}
+
+func encodePutRepoResponse(response *PutRepoCreated, w http.ResponseWriter, span trace.Span) error {
+	w.WriteHeader(201)
+
+	return nil
 }
 
 func encodePutRoleNameResponse(response *PutRoleNameOK, w http.ResponseWriter, span trace.Span) error {
@@ -321,18 +333,6 @@ func encodePutRolePermsResponse(response PutRolePermsRes, w http.ResponseWriter,
 
 func encodePutUserNameResponse(response *PutUserNameOK, w http.ResponseWriter, span trace.Span) error {
 	w.WriteHeader(200)
-
-	return nil
-}
-
-func encodePutUserRepoResponse(response *PutUserRepoCreated, w http.ResponseWriter, span trace.Span) error {
-	w.WriteHeader(201)
-
-	return nil
-}
-
-func encodePutUserRepoBranchResponse(response *PutUserRepoBranchCreated, w http.ResponseWriter, span trace.Span) error {
-	w.WriteHeader(201)
 
 	return nil
 }

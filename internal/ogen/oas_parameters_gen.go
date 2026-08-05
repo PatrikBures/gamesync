@@ -206,6 +206,144 @@ func decodeGetBranchHeadParams(args [3]string, argsEscaped bool, r *http.Request
 	return params, nil
 }
 
+// GetBranchesParams is parameters of get-branches operation.
+type GetBranchesParams struct {
+	// Used to identify a user.
+	UserID int64
+	// Identify repository.
+	RepoName string
+}
+
+func unpackGetBranchesParams(packed middleware.Parameters) (params GetBranchesParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "userID",
+			In:   "path",
+		}
+		params.UserID = packed[key].(int64)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "repoName",
+			In:   "path",
+		}
+		params.RepoName = packed[key].(string)
+	}
+	return params
+}
+
+func decodeGetBranchesParams(args [2]string, argsEscaped bool, r *http.Request) (params GetBranchesParams, _ error) {
+	// Decode path: userID.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "userID",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt64(val)
+				if err != nil {
+					return err
+				}
+
+				params.UserID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.Int{
+					MinSet:        true,
+					Min:           0,
+					MaxSet:        false,
+					Max:           0,
+					MinExclusive:  false,
+					MaxExclusive:  false,
+					MultipleOfSet: false,
+					MultipleOf:    0,
+					Pattern:       nil,
+				}).Validate(int64(params.UserID)); err != nil {
+					return errors.Wrap(err, "int")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "userID",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: repoName.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "repoName",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.RepoName = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "repoName",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetChunkParams is parameters of get-chunk operation.
 type GetChunkParams struct {
 	// 32 byte chunk blake3 hash, hex encoded.
@@ -285,6 +423,90 @@ func decodeGetChunkParams(args [1]string, argsEscaped bool, r *http.Request) (pa
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "chunkHash",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// GetReposParams is parameters of get-repos operation.
+type GetReposParams struct {
+	// Used to identify a user.
+	UserID int64
+}
+
+func unpackGetReposParams(packed middleware.Parameters) (params GetReposParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "userID",
+			In:   "path",
+		}
+		params.UserID = packed[key].(int64)
+	}
+	return params
+}
+
+func decodeGetReposParams(args [1]string, argsEscaped bool, r *http.Request) (params GetReposParams, _ error) {
+	// Decode path: userID.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "userID",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt64(val)
+				if err != nil {
+					return err
+				}
+
+				params.UserID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.Int{
+					MinSet:        true,
+					Min:           0,
+					MaxSet:        false,
+					Max:           0,
+					MinExclusive:  false,
+					MaxExclusive:  false,
+					MultipleOfSet: false,
+					MultipleOf:    0,
+					Pattern:       nil,
+				}).Validate(int64(params.UserID)); err != nil {
+					return errors.Wrap(err, "int")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "userID",
 			In:   "path",
 			Err:  err,
 		}
@@ -724,15 +946,101 @@ func decodeGetUserParams(args [1]string, argsEscaped bool, r *http.Request) (par
 	return params, nil
 }
 
-// GetUserRepoBranchesParams is parameters of get-user-repo-branches operation.
-type GetUserRepoBranchesParams struct {
+// PatchRolePermsParams is parameters of patch-role-perms operation.
+type PatchRolePermsParams struct {
+	// Identify role.
+	RoleID int32
+}
+
+func unpackPatchRolePermsParams(packed middleware.Parameters) (params PatchRolePermsParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "roleID",
+			In:   "path",
+		}
+		params.RoleID = packed[key].(int32)
+	}
+	return params
+}
+
+func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Request) (params PatchRolePermsParams, _ error) {
+	// Decode path: roleID.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "roleID",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt32(val)
+				if err != nil {
+					return err
+				}
+
+				params.RoleID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.Int{
+					MinSet:        true,
+					Min:           0,
+					MaxSet:        false,
+					Max:           0,
+					MinExclusive:  false,
+					MaxExclusive:  false,
+					MultipleOfSet: false,
+					MultipleOf:    0,
+					Pattern:       nil,
+				}).Validate(int64(params.RoleID)); err != nil {
+					return errors.Wrap(err, "int")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "roleID",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PostSnapshotParams is parameters of post-snapshot operation.
+type PostSnapshotParams struct {
 	// Used to identify a user.
 	UserID int64
 	// Identify repository.
 	RepoName string
+	// Identify branch.
+	BranchName string
 }
 
-func unpackGetUserRepoBranchesParams(packed middleware.Parameters) (params GetUserRepoBranchesParams) {
+func unpackPostSnapshotParams(packed middleware.Parameters) (params PostSnapshotParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "userID",
@@ -747,10 +1055,17 @@ func unpackGetUserRepoBranchesParams(packed middleware.Parameters) (params GetUs
 		}
 		params.RepoName = packed[key].(string)
 	}
+	{
+		key := middleware.ParameterKey{
+			Name: "branchName",
+			In:   "path",
+		}
+		params.BranchName = packed[key].(string)
+	}
 	return params
 }
 
-func decodeGetUserRepoBranchesParams(args [2]string, argsEscaped bool, r *http.Request) (params GetUserRepoBranchesParams, _ error) {
+func decodePostSnapshotParams(args [3]string, argsEscaped bool, r *http.Request) (params PostSnapshotParams, _ error) {
 	// Decode path: userID.
 	if err := func() error {
 		param := args[0]
@@ -859,32 +1174,11 @@ func decodeGetUserRepoBranchesParams(args [2]string, argsEscaped bool, r *http.R
 			Err:  err,
 		}
 	}
-	return params, nil
-}
-
-// GetUserReposParams is parameters of get-user-repos operation.
-type GetUserReposParams struct {
-	// Used to identify a user.
-	UserID int64
-}
-
-func unpackGetUserReposParams(packed middleware.Parameters) (params GetUserReposParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "userID",
-			In:   "path",
-		}
-		params.UserID = packed[key].(int64)
-	}
-	return params
-}
-
-func decodeGetUserReposParams(args [1]string, argsEscaped bool, r *http.Request) (params GetUserReposParams, _ error) {
-	// Decode path: userID.
+	// Decode path: branchName.
 	if err := func() error {
-		param := args[0]
+		param := args[2]
 		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
+			unescaped, err := url.PathUnescape(args[2])
 			if err != nil {
 				return errors.Wrap(err, "unescape path")
 			}
@@ -892,7 +1186,7 @@ func decodeGetUserReposParams(args [1]string, argsEscaped bool, r *http.Request)
 		}
 		if len(param) > 0 {
 			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "userID",
+				Param:   "branchName",
 				Value:   param,
 				Style:   uri.PathStyleSimple,
 				Explode: false,
@@ -904,30 +1198,12 @@ func decodeGetUserReposParams(args [1]string, argsEscaped bool, r *http.Request)
 					return err
 				}
 
-				c, err := conv.ToInt64(val)
+				c, err := conv.ToString(val)
 				if err != nil {
 					return err
 				}
 
-				params.UserID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := (validate.Int{
-					MinSet:        true,
-					Min:           0,
-					MaxSet:        false,
-					Max:           0,
-					MinExclusive:  false,
-					MaxExclusive:  false,
-					MultipleOfSet: false,
-					MultipleOf:    0,
-					Pattern:       nil,
-				}).Validate(int64(params.UserID)); err != nil {
-					return errors.Wrap(err, "int")
-				}
+				params.BranchName = c
 				return nil
 			}(); err != nil {
 				return err
@@ -938,7 +1214,7 @@ func decodeGetUserReposParams(args [1]string, argsEscaped bool, r *http.Request)
 		return nil
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
-			Name: "userID",
+			Name: "branchName",
 			In:   "path",
 			Err:  err,
 		}
@@ -946,92 +1222,8 @@ func decodeGetUserReposParams(args [1]string, argsEscaped bool, r *http.Request)
 	return params, nil
 }
 
-// PatchRolePermsParams is parameters of patch-role-perms operation.
-type PatchRolePermsParams struct {
-	// Identify role.
-	RoleID int32
-}
-
-func unpackPatchRolePermsParams(packed middleware.Parameters) (params PatchRolePermsParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "roleID",
-			In:   "path",
-		}
-		params.RoleID = packed[key].(int32)
-	}
-	return params
-}
-
-func decodePatchRolePermsParams(args [1]string, argsEscaped bool, r *http.Request) (params PatchRolePermsParams, _ error) {
-	// Decode path: roleID.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "roleID",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToInt32(val)
-				if err != nil {
-					return err
-				}
-
-				params.RoleID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := (validate.Int{
-					MinSet:        true,
-					Min:           0,
-					MaxSet:        false,
-					Max:           0,
-					MinExclusive:  false,
-					MaxExclusive:  false,
-					MultipleOfSet: false,
-					MultipleOf:    0,
-					Pattern:       nil,
-				}).Validate(int64(params.RoleID)); err != nil {
-					return errors.Wrap(err, "int")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "roleID",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
-// PostUserRepoBranchSnapshotParams is parameters of post-user-repo-branch-snapshot operation.
-type PostUserRepoBranchSnapshotParams struct {
+// PutBranchParams is parameters of put-branch operation.
+type PutBranchParams struct {
 	// Used to identify a user.
 	UserID int64
 	// Identify repository.
@@ -1040,7 +1232,7 @@ type PostUserRepoBranchSnapshotParams struct {
 	BranchName string
 }
 
-func unpackPostUserRepoBranchSnapshotParams(packed middleware.Parameters) (params PostUserRepoBranchSnapshotParams) {
+func unpackPutBranchParams(packed middleware.Parameters) (params PutBranchParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "userID",
@@ -1065,7 +1257,7 @@ func unpackPostUserRepoBranchSnapshotParams(packed middleware.Parameters) (param
 	return params
 }
 
-func decodePostUserRepoBranchSnapshotParams(args [3]string, argsEscaped bool, r *http.Request) (params PostUserRepoBranchSnapshotParams, _ error) {
+func decodePutBranchParams(args [3]string, argsEscaped bool, r *http.Request) (params PutBranchParams, _ error) {
 	// Decode path: userID.
 	if err := func() error {
 		param := args[0]
@@ -1301,6 +1493,144 @@ func decodePutChunkParams(args [1]string, argsEscaped bool, r *http.Request) (pa
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "chunkHash",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// PutRepoParams is parameters of put-repo operation.
+type PutRepoParams struct {
+	// Used to identify a user.
+	UserID int64
+	// Identify repository.
+	RepoName string
+}
+
+func unpackPutRepoParams(packed middleware.Parameters) (params PutRepoParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "userID",
+			In:   "path",
+		}
+		params.UserID = packed[key].(int64)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "repoName",
+			In:   "path",
+		}
+		params.RepoName = packed[key].(string)
+	}
+	return params
+}
+
+func decodePutRepoParams(args [2]string, argsEscaped bool, r *http.Request) (params PutRepoParams, _ error) {
+	// Decode path: userID.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "userID",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt64(val)
+				if err != nil {
+					return err
+				}
+
+				params.UserID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+			if err := func() error {
+				if err := (validate.Int{
+					MinSet:        true,
+					Min:           0,
+					MaxSet:        false,
+					Max:           0,
+					MinExclusive:  false,
+					MaxExclusive:  false,
+					MultipleOfSet: false,
+					MultipleOf:    0,
+					Pattern:       nil,
+				}).Validate(int64(params.UserID)); err != nil {
+					return errors.Wrap(err, "int")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "userID",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode path: repoName.
+	if err := func() error {
+		param := args[1]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[1])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "repoName",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.RepoName = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "repoName",
 			In:   "path",
 			Err:  err,
 		}
@@ -1553,336 +1883,6 @@ func decodePutUserNameParams(args [1]string, argsEscaped bool, r *http.Request) 
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "userID",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
-// PutUserRepoParams is parameters of put-user-repo operation.
-type PutUserRepoParams struct {
-	// Used to identify a user.
-	UserID int64
-	// Identify repository.
-	RepoName string
-}
-
-func unpackPutUserRepoParams(packed middleware.Parameters) (params PutUserRepoParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "userID",
-			In:   "path",
-		}
-		params.UserID = packed[key].(int64)
-	}
-	{
-		key := middleware.ParameterKey{
-			Name: "repoName",
-			In:   "path",
-		}
-		params.RepoName = packed[key].(string)
-	}
-	return params
-}
-
-func decodePutUserRepoParams(args [2]string, argsEscaped bool, r *http.Request) (params PutUserRepoParams, _ error) {
-	// Decode path: userID.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "userID",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToInt64(val)
-				if err != nil {
-					return err
-				}
-
-				params.UserID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := (validate.Int{
-					MinSet:        true,
-					Min:           0,
-					MaxSet:        false,
-					Max:           0,
-					MinExclusive:  false,
-					MaxExclusive:  false,
-					MultipleOfSet: false,
-					MultipleOf:    0,
-					Pattern:       nil,
-				}).Validate(int64(params.UserID)); err != nil {
-					return errors.Wrap(err, "int")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "userID",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode path: repoName.
-	if err := func() error {
-		param := args[1]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[1])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "repoName",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.RepoName = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "repoName",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
-// PutUserRepoBranchParams is parameters of put-user-repo-branch operation.
-type PutUserRepoBranchParams struct {
-	// Used to identify a user.
-	UserID int64
-	// Identify repository.
-	RepoName string
-	// Identify branch.
-	BranchName string
-}
-
-func unpackPutUserRepoBranchParams(packed middleware.Parameters) (params PutUserRepoBranchParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "userID",
-			In:   "path",
-		}
-		params.UserID = packed[key].(int64)
-	}
-	{
-		key := middleware.ParameterKey{
-			Name: "repoName",
-			In:   "path",
-		}
-		params.RepoName = packed[key].(string)
-	}
-	{
-		key := middleware.ParameterKey{
-			Name: "branchName",
-			In:   "path",
-		}
-		params.BranchName = packed[key].(string)
-	}
-	return params
-}
-
-func decodePutUserRepoBranchParams(args [3]string, argsEscaped bool, r *http.Request) (params PutUserRepoBranchParams, _ error) {
-	// Decode path: userID.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "userID",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToInt64(val)
-				if err != nil {
-					return err
-				}
-
-				params.UserID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := (validate.Int{
-					MinSet:        true,
-					Min:           0,
-					MaxSet:        false,
-					Max:           0,
-					MinExclusive:  false,
-					MaxExclusive:  false,
-					MultipleOfSet: false,
-					MultipleOf:    0,
-					Pattern:       nil,
-				}).Validate(int64(params.UserID)); err != nil {
-					return errors.Wrap(err, "int")
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "userID",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode path: repoName.
-	if err := func() error {
-		param := args[1]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[1])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "repoName",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.RepoName = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "repoName",
-			In:   "path",
-			Err:  err,
-		}
-	}
-	// Decode path: branchName.
-	if err := func() error {
-		param := args[2]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[2])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "branchName",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToString(val)
-				if err != nil {
-					return err
-				}
-
-				params.BranchName = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "branchName",
 			In:   "path",
 			Err:  err,
 		}

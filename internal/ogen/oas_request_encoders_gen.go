@@ -38,7 +38,7 @@ func encodePostRolesRequest(
 	return nil
 }
 
-func encodePostUserRepoBranchSnapshotRequest(
+func encodePostSnapshotRequest(
 	req *Files,
 	r *http.Request,
 ) error {

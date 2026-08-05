@@ -49,7 +49,7 @@ func populateBranchOpts(opts *branchOpts, args []string) error {
 }
 
 func runBranchCmd(c *api.Client, conf *config.Config, opts *branchOpts) error {
-	branches, err := c.GetUserRepoBranches(context.Background(), api.GetUserRepoBranchesParams{
+	branches, err := c.GetBranches(context.Background(), api.GetBranchesParams{
 		UserID: conf.Server.UserID,
 		RepoName: opts.repoName,
 	})

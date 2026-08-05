@@ -43,7 +43,7 @@ func populateRepoOpts(opts *repoOpts, args []string) error {
 }
 
 func runRepoCmd(c *api.Client, conf *config.Config, opts *repoOpts) error {
-	repos, err := c.GetUserRepos(context.Background(), api.GetUserReposParams{ UserID: conf.Server.UserID })
+	repos, err := c.GetRepos(context.Background(), api.GetReposParams{ UserID: conf.Server.UserID })
 	if err != nil {
 		return fmt.Errorf("getting repos: %w", err)
 	}

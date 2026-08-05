@@ -783,14 +783,14 @@ func (s *PermWithName) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s *PostUserRepoBranchSnapshotFailedDependency) Encode(e *jx.Encoder) {
+func (s *PostSnapshotFailedDependency) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *PostUserRepoBranchSnapshotFailedDependency) encodeFields(e *jx.Encoder) {
+func (s *PostSnapshotFailedDependency) encodeFields(e *jx.Encoder) {
 	{
 		if s.ChunkHashes != nil {
 			e.FieldStart("chunkHashes")
@@ -803,14 +803,14 @@ func (s *PostUserRepoBranchSnapshotFailedDependency) encodeFields(e *jx.Encoder)
 	}
 }
 
-var jsonFieldsNameOfPostUserRepoBranchSnapshotFailedDependency = [1]string{
+var jsonFieldsNameOfPostSnapshotFailedDependency = [1]string{
 	0: "chunkHashes",
 }
 
-// Decode decodes PostUserRepoBranchSnapshotFailedDependency from json.
-func (s *PostUserRepoBranchSnapshotFailedDependency) Decode(d *jx.Decoder) error {
+// Decode decodes PostSnapshotFailedDependency from json.
+func (s *PostSnapshotFailedDependency) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode PostUserRepoBranchSnapshotFailedDependency to nil")
+		return errors.New("invalid: unable to decode PostSnapshotFailedDependency to nil")
 	}
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
@@ -839,21 +839,21 @@ func (s *PostUserRepoBranchSnapshotFailedDependency) Decode(d *jx.Decoder) error
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode PostUserRepoBranchSnapshotFailedDependency")
+		return errors.Wrap(err, "decode PostSnapshotFailedDependency")
 	}
 
 	return nil
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *PostUserRepoBranchSnapshotFailedDependency) MarshalJSON() ([]byte, error) {
+func (s *PostSnapshotFailedDependency) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *PostUserRepoBranchSnapshotFailedDependency) UnmarshalJSON(data []byte) error {
+func (s *PostSnapshotFailedDependency) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

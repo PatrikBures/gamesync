@@ -9,8 +9,8 @@ type PatchRolePermsRes interface {
 	patchRolePermsRes()
 }
 
-type PostUserRepoBranchSnapshotRes interface {
-	postUserRepoBranchSnapshotRes()
+type PostSnapshotRes interface {
+	postSnapshotRes()
 }
 
 type PutChunkRes interface {

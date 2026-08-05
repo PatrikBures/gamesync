@@ -16,21 +16,21 @@ type Branch struct {
 }
 
 type Chunk struct {
-	ChunkHash []byte
 	Bytes     int64
 	CreatedAt pgtype.Timestamptz
+	ChunkHash []byte
 }
 
 type File struct {
-	FileHash  []byte
 	Bytes     int64
 	CreatedAt pgtype.Timestamptz
+	FileHash  []byte
 }
 
 type FileChunk struct {
+	ChunkOrder int32
 	FileHash   []byte
 	ChunkHash  []byte
-	ChunkOrder int32
 }
 
 type Permission struct {
@@ -62,8 +62,8 @@ type Snapshot struct {
 }
 
 type SnapshotFile struct {
-	FileHash   []byte
 	SnapshotID int64
+	FileHash   []byte
 	FilePath   string
 }
 

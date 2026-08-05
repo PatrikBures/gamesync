@@ -13,7 +13,7 @@ import (
 
 const defaultBranchName = "main"
 
-func (s *Service) GetUserRepos(ctx context.Context, params api.GetUserReposParams) (api.Repos, error) {
+func (s *Service) GetRepos(ctx context.Context, params api.GetReposParams) (api.Repos, error) {
 	repos, err := s.db.ReadQuery().ListRepos(ctx, params.UserID)
 	if err != nil {
 		return nil, server.NewInternalError(err, "failed listing repos", "userID", params.UserID)
@@ -25,7 +25,7 @@ func (s *Service) GetUserRepos(ctx context.Context, params api.GetUserReposParam
 	return reposReturn, nil
 }
 
-func (s *Service) PutUserRepo(ctx context.Context, params api.PutUserRepoParams) (err error) {
+func (s *Service) PutRepo(ctx context.Context, params api.PutRepoParams) (err error) {
 	qtx, tx, err := s.db.BeginTX(ctx)
 	if err != nil {
 		return server.NewInternalError(err, "failed starting tx")

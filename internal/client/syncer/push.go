@@ -18,14 +18,14 @@ func (s *syncer) CreateSnapshot(files []api.File) error {
 		Files: files,
 	}
 
-	params := api.PostUserRepoBranchSnapshotParams{
+	params := api.PostSnapshotParams{
 		UserID: s.conf.Server.UserID,
 		RepoName: s.profile.RepoName,
 		BranchName: s.profile.BranchName,
 	}
 
 	for range 2 {
-		result, err := s.client.PostUserRepoBranchSnapshot(context.Background(), &request, params)
+		result, err := s.client.PostSnapshot(context.Background(), &request, params)
 		if err != nil {
 			// this is a duplicate of a function in util.go in client cmd
 			if gErr, ok := errors.AsType[*api.GlobalErrorStatusCode](err); ok {
@@ -34,11 +34,11 @@ func (s *syncer) CreateSnapshot(files []api.File) error {
 			return fmt.Errorf("posting snapshot: %w", err)
 		}
 		switch r := result.(type) {
-		case *api.PostUserRepoBranchSnapshotFailedDependency:
+		case *api.PostSnapshotFailedDependency:
 			if err := s.uploadMissing(context.Background(), r.ChunkHashes); err != nil {
 				return err
 			}
-		case *api.PostUserRepoBranchSnapshotCreated:
+		case *api.PostSnapshotCreated:
 			fmt.Printf("Created snapshot for '%s' repo on branch '%s'\n", s.profile.RepoName, s.profile.BranchName)
 			return nil
 		default:
