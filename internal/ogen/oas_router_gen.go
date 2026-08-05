@@ -47,7 +47,8 @@ var (
 		"GET": "Authorization",
 	}
 	rn4AllowedHeaders = map[string]string{
-		"PUT": "Authorization",
+		"DELETE": "Authorization",
+		"PUT":    "Authorization",
 	}
 	rn8AllowedHeaders = map[string]string{
 		"GET": "Authorization",
@@ -511,6 +512,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 								if len(elem) == 0 {
 									switch r.Method {
+									case "DELETE":
+										s.handleDeleteRepoRequest([2]string{
+											args[0],
+											args[1],
+										}, elemIsEscaped, w, r)
 									case "PUT":
 										s.handlePutRepoRequest([2]string{
 											args[0],
@@ -518,7 +524,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 										}, elemIsEscaped, w, r)
 									default:
 										s.notAllowed(w, r, notAllowedParams{
-											allowedMethods: "PUT",
+											allowedMethods: "DELETE,PUT",
 											allowedHeaders: rn4AllowedHeaders,
 											acceptPost:     "",
 											acceptPatch:    "",
@@ -1226,6 +1232,15 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 								if len(elem) == 0 {
 									switch method {
+									case "DELETE":
+										r.name = DeleteRepoOperation
+										r.summary = "Delete repo"
+										r.operationID = "delete-repo"
+										r.operationGroup = ""
+										r.pathPattern = "/users/{userID}/repos/{repoName}"
+										r.args = args
+										r.count = 2
+										return r, true
 									case "PUT":
 										r.name = PutRepoOperation
 										r.summary = "Create new repo and a default branch \"main\""

@@ -7,6 +7,7 @@ type OperationName = string
 
 const (
 	DeleteBranchOperation   OperationName = "DeleteBranch"
+	DeleteRepoOperation     OperationName = "DeleteRepo"
 	GetBranchHeadOperation  OperationName = "GetBranchHead"
 	GetBranchesOperation    OperationName = "GetBranches"
 	GetChunkOperation       OperationName = "GetChunk"

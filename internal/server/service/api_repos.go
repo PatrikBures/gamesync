@@ -70,3 +70,16 @@ func (s *Service) PutRepo(ctx context.Context, params api.PutRepoParams) (err er
 
 	return nil
 }
+
+func (s *Service) DeleteRepo(ctx context.Context, params api.DeleteRepoParams) error {
+	repoID, err := repoFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+
+	if err := s.db.WriteQuery().DeleteRepo(ctx, repoID); err != nil {
+		return server.NewInternalError(err, "deleting repo", "repoID", repoID)
+	}
+
+	return nil
+}

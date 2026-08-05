@@ -14,6 +14,12 @@ type Handler interface {
 	//
 	// DELETE /users/{userID}/repos/{repoName}/branches/{branchName}
 	DeleteBranch(ctx context.Context, params DeleteBranchParams) error
+	// DeleteRepo implements delete-repo operation.
+	//
+	// Delete repo.
+	//
+	// DELETE /users/{userID}/repos/{repoName}
+	DeleteRepo(ctx context.Context, params DeleteRepoParams) error
 	// GetBranchHead implements get-branch-head operation.
 	//
 	// Get current snapshot the branch points to.

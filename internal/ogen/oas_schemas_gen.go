@@ -41,6 +41,9 @@ type Branches []string
 // DeleteBranchOK is response for DeleteBranch operation.
 type DeleteBranchOK struct{}
 
+// DeleteRepoOK is response for DeleteRepo operation.
+type DeleteRepoOK struct{}
+
 // Ref: #/components/schemas/Error
 type Error struct {
 	Code    int32  `json:"code"`

@@ -27,6 +27,16 @@ func (q *Queries) CreateRepo(ctx context.Context, arg CreateRepoParams) (int64, 
 	return repo_id, err
 }
 
+const deleteRepo = `-- name: DeleteRepo :exec
+DELETE FROM repos
+WHERE repo_id = $1
+`
+
+func (q *Queries) DeleteRepo(ctx context.Context, repoID int64) error {
+	_, err := q.db.Exec(ctx, deleteRepo, repoID)
+	return err
+}
+
 const getRepoWithName = `-- name: GetRepoWithName :one
 SELECT repo_id, user_id, repo_name FROM repos
 WHERE user_id = $1

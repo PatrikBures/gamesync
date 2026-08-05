@@ -15,3 +15,8 @@ INSERT INTO repos (user_id, repo_name)
 VALUES ($1, $2)
 RETURNING repo_id
 ;
+
+-- name: DeleteRepo :exec
+DELETE FROM repos
+WHERE repo_id = $1
+;

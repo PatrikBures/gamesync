@@ -397,6 +397,15 @@ paths:
         "201": {}
         default:
           $ref: "#/components/responses/GlobalError"
+    delete:
+      summary: Delete repo
+      operationId: delete-repo
+      tags:
+        - Users
+      responses:
+        "200": {}
+        default:
+          $ref: "#/components/responses/GlobalError"
 
   /users/{userID}/repos/{repoName}/branches:
     parameters:
