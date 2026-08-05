@@ -90,7 +90,6 @@ func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*Chunk
 	}
 
 	limit := runtime.NumCPU()
-	limit = 2
 	g := errgroup.Group{}
 	g.SetLimit(limit)
 
