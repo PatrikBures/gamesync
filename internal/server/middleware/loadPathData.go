@@ -17,7 +17,7 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 	return func(req middleware.Request, next middleware.Next) (middleware.Response, error) {
 
 		// skip checking if repo exists when creating one 
-		if req.OperationName == "PutUserRepo" {
+		if req.OperationName == "PutRepo" {
 			return next(req)
 		}
 
@@ -54,7 +54,7 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 
 
 		// skip checking if branch exists when creating one 
-		if req.OperationName == "PutUserRepoBranch" {
+		if req.OperationName == "PutBranch" {
 			return next(req)
 		}
 		targetBranchName, ok := req.Params.Path("branchName")

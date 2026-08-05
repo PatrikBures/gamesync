@@ -32,14 +32,14 @@ var operationPerms = map[string]permissions.Perm{
 	"PatchRolePerms": permissions.PermRolesMod,
 	"PutRolePerms":   permissions.PermRolesMod,
 
-	"GetUserRepos": permissions.PermSync,
-	"PutUserRepo":  permissions.PermSync,
+	"GetRepos": permissions.PermSync,
+	"PutRepo":  permissions.PermSync,
 
-	"GetUserRepoBranches": permissions.PermSync,
-	"PutUserRepoBranch":   permissions.PermSync,
+	"GetBranches": permissions.PermSync,
+	"PutBranch":   permissions.PermSync,
 	"GetBranchHead":       permissions.PermSync,
 
-	"PostUserRepoBranchSnapshot": permissions.PermSync,
+	"PostSnapshot": permissions.PermSync,
 	"GetSnapshot":         permissions.PermSync,
 
 	"PutChunk":            permissions.PermSync,
