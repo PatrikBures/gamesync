@@ -21,6 +21,7 @@ func New(conf *config.Config) *getCmd {
 		newUserCmd(conf).cmd,
 		newProfileCmd(conf).cmd,
 		newRepoCmd(conf).cmd,
+		newBranchCmd(conf).cmd,
 	)
 
 	root.Cmd = cmd
