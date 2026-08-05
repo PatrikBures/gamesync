@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"go.pabu.dev/gamesync/internal/server"
 	"go.pabu.dev/gamesync/internal/server/dbm"
@@ -26,9 +27,12 @@ func (s *Service) GetBranches(ctx context.Context, params api.GetBranchesParams)
 }
 
 func (s *Service) PutBranch(ctx context.Context, params api.PutBranchParams) error {
-	if err := s.db.WriteQuery().CreateBranchWithRepoName(ctx, dbm.CreateBranchWithRepoNameParams{
-		UserID:     params.UserID,
-		RepoName:   params.RepoName,
+	repoID, err := repoFromCtx(ctx)
+	if err != nil {
+		return server.NewInternalError(err, "")
+	}
+	if err := s.db.WriteQuery().CreateBranch(ctx, dbm.CreateBranchParams{
+		RepoID: repoID,
 		BranchName: params.BranchName,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
@@ -36,7 +40,7 @@ func (s *Service) PutBranch(ctx context.Context, params api.PutBranchParams) err
 			case pgerrcode.UniqueViolation:
 				return server.ErrBranchNameConflict
 			case pgerrcode.ForeignKeyViolation:
-				return server.ErrBranchNotFound
+				return server.ErrRepoNotFound
 			}
 		}
 		return server.NewInternalError(err, "failed creating branch",
