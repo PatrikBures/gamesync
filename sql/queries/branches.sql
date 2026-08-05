@@ -18,13 +18,7 @@ INSERT INTO branches (repo_id, branch_name)
 VALUES ($1, $2)
 ;
 
--- name: CreateBranchWithRepoName :exec
-INSERT INTO branches (repo_id, branch_name)
-VALUES (
-    (
-        SELECT repo_id FROM repos
-        WHERE user_id = $1 AND repo_name = $2
-    ),
-    $3
-)
+-- name: DeleteBranch :exec
+DELETE FROM branches
+WHERE repo_id = $1 AND branch_id = $2
 ;

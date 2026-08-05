@@ -38,6 +38,9 @@ func (s *BearerAuth) SetRoles(val []string) {
 
 type Branches []string
 
+// DeleteBranchOK is response for DeleteBranch operation.
+type DeleteBranchOK struct{}
+
 // Ref: #/components/schemas/Error
 type Error struct {
 	Code    int32  `json:"code"`

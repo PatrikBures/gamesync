@@ -8,6 +8,12 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
+	// DeleteBranch implements delete-branch operation.
+	//
+	// Delete branch in repo.
+	//
+	// DELETE /users/{userID}/repos/{repoName}/branches/{branchName}
+	DeleteBranch(ctx context.Context, params DeleteBranchParams) error
 	// GetBranchHead implements get-branch-head operation.
 	//
 	// Get current snapshot the branch points to.

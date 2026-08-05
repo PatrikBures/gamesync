@@ -38,6 +38,7 @@ var operationPerms = map[string]permissions.Perm{
 	"GetBranches":   permissions.PermSync,
 	"PutBranch":     permissions.PermSync,
 	"GetBranchHead": permissions.PermSync,
+	"DeleteBranch":  permissions.PermSync,
 
 	"PostSnapshot": permissions.PermSync,
 	"GetSnapshot":  permissions.PermSync,

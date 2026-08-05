@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"go.pabu.dev/gamesync/internal/server"
@@ -75,4 +76,22 @@ func (s *Service) GetBranchHead(ctx context.Context, params api.GetBranchHeadPar
 		},
 	}, nil
 
+}
+
+func (s *Service) DeleteBranch(ctx context.Context, params api.DeleteBranchParams) (err error) {
+	branch, err := branchFromCtx(ctx)
+	if err != nil {
+		return
+	}
+
+	slog.Info("deleting branch", "repoID", branch.RepoID, "branchID", branch.BranchID)
+
+	if err := s.db.WriteQuery().DeleteBranch(ctx, dbm.DeleteBranchParams{
+		RepoID: branch.RepoID,
+		BranchID: branch.BranchID,
+	}); err != nil {
+		return server.NewInternalError(err, "deleting branch", "repoID", branch.RepoID, "branchID", branch.BranchID)
+	}
+
+	return nil
 }

@@ -53,7 +53,8 @@ var (
 		"GET": "Authorization",
 	}
 	rn6AllowedHeaders = map[string]string{
-		"PUT": "Authorization",
+		"DELETE": "Authorization",
+		"PUT":    "Authorization",
 	}
 	rn23AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
@@ -573,6 +574,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 										if len(elem) == 0 {
 											switch r.Method {
+											case "DELETE":
+												s.handleDeleteBranchRequest([3]string{
+													args[0],
+													args[1],
+													args[2],
+												}, elemIsEscaped, w, r)
 											case "PUT":
 												s.handlePutBranchRequest([3]string{
 													args[0],
@@ -581,7 +588,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 												}, elemIsEscaped, w, r)
 											default:
 												s.notAllowed(w, r, notAllowedParams{
-													allowedMethods: "PUT",
+													allowedMethods: "DELETE,PUT",
 													allowedHeaders: rn6AllowedHeaders,
 													acceptPost:     "",
 													acceptPatch:    "",
@@ -1276,6 +1283,15 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 
 										if len(elem) == 0 {
 											switch method {
+											case "DELETE":
+												r.name = DeleteBranchOperation
+												r.summary = "Delete branch in repo"
+												r.operationID = "delete-branch"
+												r.operationGroup = ""
+												r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}"
+												r.args = args
+												r.count = 3
+												return r, true
 											case "PUT":
 												r.name = PutBranchOperation
 												r.summary = "Create new branch in repo"

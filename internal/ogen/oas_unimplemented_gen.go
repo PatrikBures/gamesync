@@ -13,6 +13,15 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
+// DeleteBranch implements delete-branch operation.
+//
+// Delete branch in repo.
+//
+// DELETE /users/{userID}/repos/{repoName}/branches/{branchName}
+func (UnimplementedHandler) DeleteBranch(ctx context.Context, params DeleteBranchParams) error {
+	return ht.ErrNotImplemented
+}
+
 // GetBranchHead implements get-branch-head operation.
 //
 // Get current snapshot the branch points to.

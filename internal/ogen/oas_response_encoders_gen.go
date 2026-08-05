@@ -13,6 +13,12 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+func encodeDeleteBranchResponse(response *DeleteBranchOK, w http.ResponseWriter, span trace.Span) error {
+	w.WriteHeader(200)
+
+	return nil
+}
+
 func encodeGetBranchHeadResponse(response GetBranchHeadRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *Snapshot:

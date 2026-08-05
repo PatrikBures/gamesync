@@ -429,6 +429,15 @@ paths:
         "201": {}
         default:
           $ref: "#/components/responses/GlobalError"
+    delete:
+      summary: Delete branch in repo
+      operationId: delete-branch
+      tags:
+        - Users
+      responses:
+        "200": {}
+        default:
+          $ref: "#/components/responses/GlobalError"
 
   /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots:
     parameters:

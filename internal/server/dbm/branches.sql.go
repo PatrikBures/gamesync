@@ -24,25 +24,18 @@ func (q *Queries) CreateBranch(ctx context.Context, arg CreateBranchParams) erro
 	return err
 }
 
-const createBranchWithRepoName = `-- name: CreateBranchWithRepoName :exec
-INSERT INTO branches (repo_id, branch_name)
-VALUES (
-    (
-        SELECT repo_id FROM repos
-        WHERE user_id = $1 AND repo_name = $2
-    ),
-    $3
-)
+const deleteBranch = `-- name: DeleteBranch :exec
+DELETE FROM branches
+WHERE repo_id = $1 AND branch_id = $2
 `
 
-type CreateBranchWithRepoNameParams struct {
-	UserID     int64
-	RepoName   string
-	BranchName string
+type DeleteBranchParams struct {
+	RepoID   int64
+	BranchID int64
 }
 
-func (q *Queries) CreateBranchWithRepoName(ctx context.Context, arg CreateBranchWithRepoNameParams) error {
-	_, err := q.db.Exec(ctx, createBranchWithRepoName, arg.UserID, arg.RepoName, arg.BranchName)
+func (q *Queries) DeleteBranch(ctx context.Context, arg DeleteBranchParams) error {
+	_, err := q.db.Exec(ctx, deleteBranch, arg.RepoID, arg.BranchID)
 	return err
 }
 
