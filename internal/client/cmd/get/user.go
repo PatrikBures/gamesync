@@ -25,7 +25,7 @@ func newUserCmd(config *config.Config) *userCmd {
 	root := userCmd{}
 
 	cmd := &cobra.Command{
-		Use:   "user",
+		Use:   "user [USER_ID]",
 		Short: "Get all users or a specific one",
 		Args:  cobra.RangeArgs(0, 1),
 		RunE: func(cmd *cobra.Command, args []string) error {

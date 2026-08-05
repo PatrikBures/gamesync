@@ -22,6 +22,7 @@ func newRepoCmd(conf *config.Config) *repoCmd {
 	cmd := &cobra.Command{
 		Use:   "repo",
 		Short: "Get all repos",
+		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := client.New(conf)
 			if err != nil {

@@ -26,8 +26,9 @@ func newBranchCmd(conf *config.Config) *branchCmd {
 	root := branchCmd{}
 
 	cmd := &cobra.Command{
-		Use: "branch",
-		Short: "SUMMARY_PLACEHOLDER",
+		Use: "branch REPO BRANCH",
+		Short: "Deletes a branch from a repo",
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := client.New(conf)
 			if err != nil {

@@ -23,7 +23,7 @@ func newRepoCmd(conf *config.Config) *repoCmd {
 	root := repoCmd{}
 
 	cmd := &cobra.Command{
-		Use:   "repo",
+		Use:   "repo REPO",
 		Short: "Create a new repo",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
