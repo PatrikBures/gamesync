@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+client=""
+if [[ "$1" == "-c" ]]; then
+    client="yes"
+    shift
+fi
+
+
 if [[ $# -lt 2 ]]; then
     echo "less than 2 args"
     exit 2
@@ -21,7 +28,9 @@ resource_cmd_content=""
 IFS= read -r -d '' resource_cmd_content << EOF
 package $verb
 
-import (
+import (${client:+"
+	\"go.pabu.dev/gamesync/internal/client\"
+	api \"go.pabu.dev/gamesync/internal/ogen\""}
 	"go.pabu.dev/gamesync/internal/client/config"
 
 	"github.com/spf13/cobra"
@@ -40,10 +49,14 @@ func new${resource^}Cmd(conf *config.Config) *${resource}Cmd {
 	cmd := &cobra.Command{
 		Use: "${resource}",
 		Short: "SUMMARY_PLACEHOLDER",
-		RunE: func(cmd *cobra.Command, args []string) error {
-            populate${resource^}Opts(&root.opts, args)
+		RunE: func(cmd *cobra.Command, args []string) error {${client:+"
+			c, err := client.New(conf)
+			if err != nil {
+				return err
+			}"}
+			populate${resource^}Opts(&root.opts, args)
 
-			return run${resource^}Cmd(conf, &root.opts, args)
+			return run${resource^}Cmd(${client:+"c, "}conf, &root.opts)
 		},
 	}
 
@@ -55,7 +68,7 @@ func populate${resource^}Opts(opts *${resource}Opts, args []string) error {
 	return nil
 }
 
-func run${resource^}Cmd(conf *config.Config, opts *${resource}Opts, args []string) (err error) {
+func run${resource^}Cmd(${client:+"c *api.Client, "}conf *config.Config, opts *${resource}Opts) error {
 	return nil
 }
 EOF

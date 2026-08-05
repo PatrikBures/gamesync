@@ -20,6 +20,7 @@ func New(conf *config.Config) *getCmd {
 	cmd.AddCommand(
 		newUserCmd(conf).cmd,
 		newProfileCmd(conf).cmd,
+		newRepoCmd(conf).cmd,
 	)
 
 	root.Cmd = cmd

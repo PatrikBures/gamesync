@@ -48,7 +48,7 @@ func runProfileCmd(conf *config.Config, args []string) (err error) {
 	var buf bytes.Buffer
 	w := tabwriter.NewWriter(&buf, 0, 4, 2, ' ', 0)
 
-	if _, err := fmt.Fprintf(w, "Name\tRepo\tBranch\tDir\n"); err != nil { return err }
+	if _, err := fmt.Fprintf(w, "NAME\tREPO\tBRANCH\tDIR\n"); err != nil { return err }
 	if len(args) > 0 {
 		for _, slug := range args {
 			profile, ok := p.Get(slug)
