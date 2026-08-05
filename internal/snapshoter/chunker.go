@@ -38,14 +38,11 @@ const dirQty = 2
 // 4: asdf/asdf1234
 const dirLen = 2
 
-
-
 var chunkFilePool = sync.Pool{
-	New: func() any { 
+	New: func() any {
 		return fastcdc.New(nil, fastcdc.Opts{})
 	},
 }
-
 
 // handles the generation of chunks
 //
@@ -71,7 +68,7 @@ type FileResults struct {
 }
 
 type ChunkStream struct {
-	Ch  <- chan FileResults
+	Ch  <-chan FileResults
 	err error
 }
 
@@ -97,7 +94,7 @@ func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*Chunk
 	g := errgroup.Group{}
 	g.SetLimit(limit)
 
-	out := make(chan FileResults, limit << 1)
+	out := make(chan FileResults, limit<<1)
 	stream := &ChunkStream{Ch: out}
 
 	go func() {
@@ -120,7 +117,7 @@ func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*Chunk
 
 				select {
 				case out <- FileResults{Path: relPath, Hash: fileHash, Hashes: hashes, Err: err}:
-				case <- ctx.Done():
+				case <-ctx.Done():
 				}
 
 				return nil
@@ -133,9 +130,8 @@ func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*Chunk
 			return
 		}
 
-		_ =g.Wait()
+		_ = g.Wait()
 	}()
-
 
 	return stream, nil
 }
@@ -190,7 +186,7 @@ func (cg *chunkGen) chunkFile(path string) (hashHex string, chunkHashes []string
 		}
 		atomic.AddInt64(&cg.Info.ChunksCreated, 1)
 	}
-	
+
 	return hex.EncodeToString(fileHash.Sum(nil)), chunkHashes, nil
 }
 
@@ -200,7 +196,7 @@ func (cg *chunkGen) createChunk(chunk []byte) ([]byte, string, *os.File, error) 
 	hashSlice := hashBytes[:]
 	hashHex := hex.EncodeToString(hashSlice)
 
-	chunkFile, _, err := CreateChunkFile(cg.chunkDir, hashHex); 
+	chunkFile, _, err := CreateChunkFile(cg.chunkDir, hashHex)
 
 	return hashSlice, hashHex, chunkFile, err
 }
@@ -282,8 +278,6 @@ func PrintFileResultsErrors(result []FileResults) {
 	}
 }
 
-
-
 func (cg *chunkGen) ChunkFilesInDirSlice(ctx context.Context, repoDir string) ([]FileResults, error) {
 	stream, err := cg.ChunkFilesInDir(ctx, repoDir)
 	if err != nil {
@@ -325,8 +319,8 @@ func (cg *chunkGen) ChunkFilesInDirApiFile(ctx context.Context, repoDir string) 
 		}
 		s = append(s, api.File{
 			ChunkHashes: fr.Hashes,
-			Hash: fr.Hash,
-			Path: fr.Path,
+			Hash:        fr.Hash,
+			Path:        fr.Path,
 		})
 	}
 	if err := stream.Err(); err != nil {

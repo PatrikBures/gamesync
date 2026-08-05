@@ -3,8 +3,8 @@ package create
 import (
 	"context"
 	"fmt"
-	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
 	"go.pabu.dev/gamesync/internal/client"
+	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
 	"go.pabu.dev/gamesync/internal/client/config"
 	api "go.pabu.dev/gamesync/internal/ogen"
 
@@ -12,7 +12,7 @@ import (
 )
 
 type repoCmd struct {
-	cmd *cobra.Command
+	cmd  *cobra.Command
 	opts repoOpts
 }
 type repoOpts struct {
@@ -23,9 +23,9 @@ func newRepoCmd(conf *config.Config) *repoCmd {
 	root := repoCmd{}
 
 	cmd := &cobra.Command{
-		Use: "repo",
+		Use:   "repo",
 		Short: "Create a new repo",
-		Args: cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := client.New(conf)
 			if err != nil {
@@ -55,7 +55,7 @@ func populateRepoOpts(opts *repoOpts, args []string) error {
 
 func runRepoCmd(client *api.Client, opts repoOpts, conf config.Config) error {
 	if err := client.PutRepo(context.Background(), api.PutRepoParams{
-		UserID: conf.Server.UserID,
+		UserID:   conf.Server.UserID,
 		RepoName: opts.repoName,
 	}); err != nil {
 		return util.ErrHandler(err)

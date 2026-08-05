@@ -59,7 +59,7 @@ func start() error {
 	for _, d := range []string{
 		c.chunkBaseDir,
 	} {
-		if err :=os.MkdirAll(d, 0775); err != nil {
+		if err := os.MkdirAll(d, 0775); err != nil {
 			return err
 		}
 		slog.Info("ensured dir exists", "path", d)
@@ -86,7 +86,7 @@ func start() error {
 	}
 
 	s := service.NewService(
-	db, localStorage,
+		db, localStorage,
 		service.ServiceOpts{
 			DefaultRoleID: int32(c.defaultRoleID),
 		},
@@ -102,7 +102,7 @@ func start() error {
 		mw = append(mw, middlewares.Logging(requestLogger, config.StringToMap(c.quietLogRequests)))
 	}
 
-	mw = append(mw, 
+	mw = append(mw,
 		middlewares.LoadPathData(db),
 	)
 

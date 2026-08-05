@@ -27,7 +27,7 @@ func (s *Service) PostSnapshot(ctx context.Context, req *api.Files, params api.P
 	for _, f := range files {
 		allChunkHashes = append(allChunkHashes, f.chunkHashes...)
 	}
-	
+
 	// sorts and removes duplicate chunks
 	slices.SortFunc(allChunkHashes, bytes.Compare)
 	allChunkHashes = slices.CompactFunc(allChunkHashes, func(a []byte, b []byte) bool {
@@ -76,7 +76,7 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 	}()
 
 	snapshotID, err := qtx.CreateSnapshot(ctx, dbm.CreateSnapshotParams{
-		RepoID: repoID,
+		RepoID:   repoID,
 		BranchID: branch.BranchID,
 	})
 	if err != nil {
@@ -100,8 +100,8 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 	for _, f := range files {
 		connectSnapshotParams = append(connectSnapshotParams, dbm.ConnectSnapshotWithFilesParams{
 			SnapshotID: snapshotID,
-			FileHash: f.hash,
-			FilePath: f.path,
+			FileHash:   f.hash,
+			FilePath:   f.path,
 		})
 
 		if slices.ContainsFunc(fileHashes, func(item []byte) bool {
@@ -111,7 +111,7 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 		}
 
 		if err := qtx.CreateFile(ctx, dbm.CreateFileParams{
-			FileHash: f.hash,
+			FileHash:  f.hash,
 			ChunkHash: f.chunkHashes,
 		}); err != nil {
 			return server.NewInternalError(err, "failed inserting file", "fileHash", hex.EncodeToString(f.hash))
@@ -128,7 +128,7 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 	}
 
 	if err := qtx.UpdateBranchHead(ctx, dbm.UpdateBranchHeadParams{
-		BranchID: branch.BranchID,
+		BranchID:       branch.BranchID,
 		HeadSnapshotID: pgtype.Int8{Int64: snapshotID, Valid: true},
 	}); err != nil {
 		return server.NewInternalError(err, "failed updating branch head", "branchID", branch.BranchID, "newSnapshotID", snapshotID)
@@ -141,14 +141,13 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 	return nil
 }
 
-
 func connectFileChunksParams(fileHash []byte, chunkHashes [][]byte) []dbm.ConnectFileWithChunksParams {
 	s := make([]dbm.ConnectFileWithChunksParams, 0, len(chunkHashes))
 	for i := int32(0); i < int32(len(chunkHashes)); i++ {
 		s = append(s, dbm.ConnectFileWithChunksParams{
-			FileHash: fileHash,
-			ChunkHash: chunkHashes[i],
-			ChunkOrder: i+1,
+			FileHash:   fileHash,
+			ChunkHash:  chunkHashes[i],
+			ChunkOrder: i + 1,
 		})
 	}
 	return s
@@ -160,7 +159,7 @@ func reqFilesStruct(reqFiles []api.File) ([]file, int, error) {
 
 	for _, f := range reqFiles {
 		nf := file{
-			path: f.Path,
+			path:        f.Path,
 			chunkHashes: make([][]byte, 0, len(f.ChunkHashes)),
 		}
 		h, err := hex.DecodeString(f.Hash)
@@ -180,8 +179,6 @@ func reqFilesStruct(reqFiles []api.File) ([]file, int, error) {
 	}
 	return files, chunkCount, nil
 }
-
-
 
 // removes every []byte from a if it exists in b
 //
@@ -212,11 +209,11 @@ func bytesToHex(bytes [][]byte) []string {
 	return s
 }
 
-
-
 func (s *Service) GetSnapshot(ctx context.Context, params api.GetSnapshotParams) (result *api.SnapshotFiles, err error) {
 	snapshot, err := snapshotFromCtx(ctx)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 
 	qtx, tx, err := s.db.BeginReadTX(ctx)
 	if err != nil {
@@ -230,7 +227,6 @@ func (s *Service) GetSnapshot(ctx context.Context, params api.GetSnapshotParams)
 		}
 	}()
 
-
 	snapshotFiles, err := qtx.GetSnapshotFiles(ctx, snapshot.SnapshotID)
 	if err != nil {
 		return nil, server.NewInternalError(err, "failed listing snapshot files")
@@ -241,7 +237,7 @@ func (s *Service) GetSnapshot(ctx context.Context, params api.GetSnapshotParams)
 	}
 
 	result.ParentSnapshotID.Value = snapshot.ParentSnapshotID.Int64
-	result.ParentSnapshotID.Null  = !snapshot.ParentSnapshotID.Valid
+	result.ParentSnapshotID.Null = !snapshot.ParentSnapshotID.Valid
 
 	for _, sf := range snapshotFiles {
 		chunkHashes, err := qtx.GetFileChunkHashes(ctx, sf.FileHash)
@@ -256,8 +252,8 @@ func (s *Service) GetSnapshot(ctx context.Context, params api.GetSnapshotParams)
 
 		result.Files = append(result.Files, api.File{
 			ChunkHashes: ChunkHashesHex,
-			Hash: hex.EncodeToString(sf.FileHash),
-			Path: sf.FilePath,
+			Hash:        hex.EncodeToString(sf.FileHash),
+			Path:        sf.FilePath,
 		})
 	}
 

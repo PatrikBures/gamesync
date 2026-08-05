@@ -11,7 +11,6 @@ import (
 	"slices"
 )
 
-
 func (s *Service) GetRolePerms(ctx context.Context, params api.GetRolePermsParams) (result api.PermNameArray, err error) {
 
 	qtx, tx, err := s.db.BeginReadTX(ctx)
@@ -61,8 +60,8 @@ func (s *Service) PatchRolePerms(ctx context.Context, req *api.PermDiff, params 
 		return nil, &api.GlobalErrorStatusCode{
 			StatusCode: http.StatusUnprocessableEntity,
 			Response: api.Error{
-				Code: http.StatusUnprocessableEntity,
-				Message: fmt.Sprintf("There are %d invalid permission names in the add array", len(req.Add) - len(permsAdd)),
+				Code:    http.StatusUnprocessableEntity,
+				Message: fmt.Sprintf("There are %d invalid permission names in the add array", len(req.Add)-len(permsAdd)),
 			},
 		}
 	}
@@ -75,8 +74,8 @@ func (s *Service) PatchRolePerms(ctx context.Context, req *api.PermDiff, params 
 		return nil, &api.GlobalErrorStatusCode{
 			StatusCode: http.StatusUnprocessableEntity,
 			Response: api.Error{
-				Code: http.StatusUnprocessableEntity,
-				Message: fmt.Sprintf("There are %d invalid permission names in the delete array", len(req.Add) - len(permsAdd)),
+				Code:    http.StatusUnprocessableEntity,
+				Message: fmt.Sprintf("There are %d invalid permission names in the delete array", len(req.Add)-len(permsAdd)),
 			},
 		}
 	}
@@ -142,15 +141,15 @@ func (s *Service) PutRolePerms(ctx context.Context, req api.PermNameArray, param
 		return nil, &api.GlobalErrorStatusCode{
 			StatusCode: http.StatusUnprocessableEntity,
 			Response: api.Error{
-				Code: http.StatusUnprocessableEntity,
-				Message: fmt.Sprintf("There are %d invalid permission names in the array", len(perms) - len(req)),
+				Code:    http.StatusUnprocessableEntity,
+				Message: fmt.Sprintf("There are %d invalid permission names in the array", len(perms)-len(req)),
 			},
 		}
 	}
 
 	err = qtx.DeleteRolePermsWithRoleId(ctx, params.RoleID)
 	if err != nil {
-		return nil, server.NewInternalError(err, "failed deleting all perms for role", "roleID", params.RoleID) 
+		return nil, server.NewInternalError(err, "failed deleting all perms for role", "roleID", params.RoleID)
 	}
 
 	if err = qtx.InsertRolePerms(ctx, dbm.InsertRolePermsParams{

@@ -17,7 +17,7 @@ import (
 // not be compile-time safe, Which i prefer.
 func loadCachedItem[T int | int32 | int64 | string](cacheDir string, name CacheNames, target *T) error {
 	p := filepath.Join(cacheDir, string(name))
-	
+
 	var valueString string
 	if content, err := os.ReadFile(p); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -33,15 +33,21 @@ func loadCachedItem[T int | int32 | int64 | string](cacheDir string, name CacheN
 	switch t := any(target).(type) {
 	case *int:
 		i, err := strconv.ParseInt(valueString, 10, bits.UintSize)
-		if err != nil { return errors.Join(errMsg, err) }
+		if err != nil {
+			return errors.Join(errMsg, err)
+		}
 		*t = int(i)
 	case *int32:
 		i, err := strconv.ParseInt(valueString, 10, 32)
-		if err != nil { return errors.Join(errMsg, err) }
+		if err != nil {
+			return errors.Join(errMsg, err)
+		}
 		*t = int32(i)
 	case *int64:
 		i, err := strconv.ParseInt(valueString, 10, 64)
-		if err != nil { return errors.Join(errMsg, err) }
+		if err != nil {
+			return errors.Join(errMsg, err)
+		}
 		*t = int64(i)
 	case *string:
 		*t = valueString
@@ -51,11 +57,11 @@ func loadCachedItem[T int | int32 | int64 | string](cacheDir string, name CacheN
 	return nil
 }
 
-// Sets the value of a cache file. 
+// Sets the value of a cache file.
 func SetCacheItem[T int | int32 | int64 | string](cacheDir string, name CacheNames, value T) (err error) {
 	p := filepath.Join(cacheDir, string(name))
-	
-	f, err := os.OpenFile(p, os.O_CREATE | os.O_WRONLY, 0664)
+
+	f, err := os.OpenFile(p, os.O_CREATE|os.O_WRONLY, 0664)
 	if err != nil {
 		return err
 	}

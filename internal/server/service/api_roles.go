@@ -39,7 +39,7 @@ func (s *Service) PostRoles(ctx context.Context, req *api.RoleName) (*api.Role, 
 	return &api.Role{RoleID: roleID, RoleName: req.RoleName}, nil
 }
 
-func (s *Service) PutRoleName(ctx context.Context, req *api.RoleName, params api.PutRoleNameParams) (error) {
+func (s *Service) PutRoleName(ctx context.Context, req *api.RoleName, params api.PutRoleNameParams) error {
 	if err := s.db.WriteQuery().UpdateRoleName(ctx, dbm.UpdateRoleNameParams{
 		RoleID:   params.RoleID,
 		RoleName: req.RoleName,

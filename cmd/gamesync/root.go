@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	createCmd "go.pabu.dev/gamesync/internal/client/cmd/create"
+	deleteCmd "go.pabu.dev/gamesync/internal/client/cmd/delete"
 	docsCmd "go.pabu.dev/gamesync/internal/client/cmd/docs"
 	getCmd "go.pabu.dev/gamesync/internal/client/cmd/get"
 	restoreCmd "go.pabu.dev/gamesync/internal/client/cmd/restore"
-	deleteCmd "go.pabu.dev/gamesync/internal/client/cmd/delete"
 	"go.pabu.dev/gamesync/internal/client/config"
 	"os"
 

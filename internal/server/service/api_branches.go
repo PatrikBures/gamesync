@@ -32,7 +32,7 @@ func (s *Service) PutBranch(ctx context.Context, params api.PutBranchParams) err
 		return server.NewInternalError(err, "")
 	}
 	if err := s.db.WriteQuery().CreateBranch(ctx, dbm.CreateBranchParams{
-		RepoID: repoID,
+		RepoID:     repoID,
 		BranchName: params.BranchName,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
@@ -55,7 +55,9 @@ func (s *Service) PutBranch(ctx context.Context, params api.PutBranchParams) err
 
 func (s *Service) GetBranchHead(ctx context.Context, params api.GetBranchHeadParams) (result api.GetBranchHeadRes, err error) {
 	branch, err := branchFromCtx(ctx)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	if !branch.HeadSnapshotID.Valid {
 		return &api.GetBranchHeadNotFound{}, nil

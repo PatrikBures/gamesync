@@ -20,7 +20,6 @@ type Profiler struct {
 	encoder  *json.Encoder
 }
 
-
 // Initializes a Profiler and loads profiler, any changes
 // need to be saved using the Save() method.
 //
@@ -31,7 +30,9 @@ func New(profilePath string) (p *Profiler, err error) {
 		return nil, err
 	}
 	defer func() {
-		if err == nil { return }
+		if err == nil {
+			return
+		}
 		err = errors.Join(err, f.Close())
 	}()
 
@@ -41,7 +42,7 @@ func New(profilePath string) (p *Profiler, err error) {
 	}
 
 	Profiler := Profiler{
-		file: f,
+		file:     f,
 		Profiles: make(map[string]Profile),
 	}
 
@@ -59,7 +60,7 @@ func New(profilePath string) (p *Profiler, err error) {
 // Loads profiles from file into Profiles
 func (p *Profiler) Load() error {
 	clear(p.Profiles)
-	
+
 	if p.decoder == nil {
 		p.decoder = json.NewDecoder(p.file)
 	}
@@ -77,7 +78,7 @@ func (p *Profiler) Save() error {
 	if err := p.file.Truncate(0); err != nil {
 		return fmt.Errorf("truncating file: %w", err)
 	}
-	
+
 	if p.encoder == nil {
 		p.encoder = json.NewEncoder(p.file)
 		p.encoder.SetIndent("", "    ")
@@ -129,10 +130,11 @@ func (p *Profiler) Exists(slug string) bool {
 	return ok
 }
 
-
 func Get(slug string, profilePath string) (Profile, bool, error) {
 	p, err := New(profilePath)
-	if err != nil { return Profile{}, false, err }
+	if err != nil {
+		return Profile{}, false, err
+	}
 
 	profile, ok := p.Get(slug)
 	return profile, ok, p.Close()

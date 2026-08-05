@@ -20,7 +20,7 @@ func newProfileCmd(conf *config.Config) *profileCmd {
 	root := profileCmd{}
 
 	cmd := &cobra.Command{
-		Use: "profile [PROFILE]...",
+		Use:   "profile [PROFILE]...",
 		Short: "Get profile(s)",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runProfileCmd(conf, args)
@@ -48,22 +48,30 @@ func runProfileCmd(conf *config.Config, args []string) (err error) {
 	var buf bytes.Buffer
 	w := tabwriter.NewWriter(&buf, 0, 4, 2, ' ', 0)
 
-	if _, err := fmt.Fprintf(w, "NAME\tREPO\tBRANCH\tDIR\n"); err != nil { return err }
+	if _, err := fmt.Fprintf(w, "NAME\tREPO\tBRANCH\tDIR\n"); err != nil {
+		return err
+	}
 	if len(args) > 0 {
 		for _, slug := range args {
 			profile, ok := p.Get(slug)
 			if !ok {
 				return fmt.Errorf("profile not found: %s", slug)
 			}
-			if err := printProfile(w, slug, profile); err != nil { return err }
+			if err := printProfile(w, slug, profile); err != nil {
+				return err
+			}
 		}
 
 	} else {
 		for slug, profile := range p.Profiles {
-			if err := printProfile(w, slug, profile); err != nil { return err }
+			if err := printProfile(w, slug, profile); err != nil {
+				return err
+			}
 		}
 	}
-	if err := w.Flush(); err != nil { return err }
+	if err := w.Flush(); err != nil {
+		return err
+	}
 
 	_, err = buf.WriteTo(os.Stdout)
 	return err
@@ -73,4 +81,3 @@ func printProfile(w *tabwriter.Writer, slug string, profile profiler.Profile) er
 	_, err := fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", slug, profile.RepoName, profile.BranchName, profile.Dir)
 	return err
 }
-

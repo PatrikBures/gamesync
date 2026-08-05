@@ -3,8 +3,8 @@ package get
 import (
 	"context"
 	"fmt"
-	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
 	"go.pabu.dev/gamesync/internal/client"
+	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
 	"go.pabu.dev/gamesync/internal/client/config"
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"strconv"

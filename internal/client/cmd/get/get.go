@@ -27,4 +27,3 @@ func New(conf *config.Config) *getCmd {
 	root.Cmd = cmd
 	return &root
 }
-

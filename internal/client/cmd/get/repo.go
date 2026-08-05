@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
 	"go.pabu.dev/gamesync/internal/client"
+	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
 	"go.pabu.dev/gamesync/internal/client/config"
 	api "go.pabu.dev/gamesync/internal/ogen"
 
@@ -20,7 +20,7 @@ func newRepoCmd(conf *config.Config) *repoCmd {
 	root := repoCmd{}
 
 	cmd := &cobra.Command{
-		Use: "repo",
+		Use:   "repo",
 		Short: "Get all repos",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := client.New(conf)
@@ -37,7 +37,7 @@ func newRepoCmd(conf *config.Config) *repoCmd {
 }
 
 func runRepoCmd(c *api.Client, conf *config.Config) error {
-	repos, err := c.GetRepos(context.Background(), api.GetReposParams{ UserID: conf.Server.UserID })
+	repos, err := c.GetRepos(context.Background(), api.GetReposParams{UserID: conf.Server.UserID})
 	if err != nil {
 		return util.ErrHandler(err)
 	}
@@ -50,6 +50,6 @@ func runRepoCmd(c *api.Client, conf *config.Config) error {
 	for _, r := range repos {
 		fmt.Println(r)
 	}
-	
+
 	return nil
 }

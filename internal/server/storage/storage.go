@@ -22,4 +22,3 @@ type Chunk interface {
 	// Provides a reader for chunk
 	Download(ctx context.Context, hash string) (io.Reader, error)
 }
-

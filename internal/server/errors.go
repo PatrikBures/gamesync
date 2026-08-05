@@ -3,32 +3,32 @@ package server
 import "errors"
 
 var (
-	ErrNotAuthorized      = errors.New("not authorized")
-	ErrPermNotFound       = errors.New("permission not found")
+	ErrNotAuthorized = errors.New("not authorized")
+	ErrPermNotFound  = errors.New("permission not found")
 
-	ErrRepoNotFound       = errors.New("repo not found")
-	ErrRepoNameConflict   = errors.New("repo name already exists")
+	ErrRepoNotFound     = errors.New("repo not found")
+	ErrRepoNameConflict = errors.New("repo name already exists")
 
 	ErrBranchNotFound     = errors.New("branch not found")
 	ErrBranchNameConflict = errors.New("branch name already exists")
 
-	ErrRolePermsNotFound  = errors.New("role perms not found")
+	ErrRolePermsNotFound = errors.New("role perms not found")
 
-	ErrRoleNameConflict   = errors.New("role name already exists")
-	ErrRoleNotFound       = errors.New("role not found")
+	ErrRoleNameConflict = errors.New("role name already exists")
+	ErrRoleNotFound     = errors.New("role not found")
 
-	ErrUserNotFound       = errors.New("user not found")
-	ErrUserNameConflict   = errors.New("user name already exists")
+	ErrUserNotFound     = errors.New("user not found")
+	ErrUserNameConflict = errors.New("user name already exists")
 
-	ErrSnapshotNotFound   = errors.New("snapshot not found")
+	ErrSnapshotNotFound = errors.New("snapshot not found")
 
-	ErrTokenLength        = errors.New("token is too long or short")
+	ErrTokenLength = errors.New("token is too long or short")
 
-	ErrBase64             = errors.New("could not decode base64")
+	ErrBase64 = errors.New("could not decode base64")
 
-	ErrHashMismatch       = errors.New("hashes do not match")
-	ErrInvalidHash        = errors.New("invalid hash")
+	ErrHashMismatch = errors.New("hashes do not match")
+	ErrInvalidHash  = errors.New("invalid hash")
 
-	ErrChunkTooBig        = errors.New("chunk is too big")
-	ErrChunkNotFound      = errors.New("chunk not found")
+	ErrChunkTooBig   = errors.New("chunk is too big")
+	ErrChunkNotFound = errors.New("chunk not found")
 )

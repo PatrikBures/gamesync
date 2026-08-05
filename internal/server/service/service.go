@@ -9,6 +9,7 @@ import (
 const tokenLen = 33
 
 type ContextKey int
+
 const (
 	CkUser ContextKey = iota
 	CkRolePerms
@@ -18,9 +19,9 @@ const (
 )
 
 type Service struct {
-	db *dbx.DB
+	db      *dbx.DB
 	storage storage.Chunk
-	o ServiceOpts
+	o       ServiceOpts
 }
 type ServiceOpts struct {
 	DefaultRoleID int32
@@ -28,9 +29,9 @@ type ServiceOpts struct {
 
 func NewService(db *dbx.DB, storage storage.Chunk, opts ServiceOpts) *Service {
 	return &Service{
-		db: db,
+		db:      db,
 		storage: storage,
-		o:  opts,
+		o:       opts,
 	}
 }
 func (s *Service) GetHealth(ctx context.Context) error {

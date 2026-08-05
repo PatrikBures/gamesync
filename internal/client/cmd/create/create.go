@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 type createCmd struct {
 	Cmd *cobra.Command
 }
@@ -15,7 +14,7 @@ func New(conf *config.Config) *createCmd {
 	root := createCmd{}
 
 	cmd := &cobra.Command{
-		Use: "create",
+		Use:   "create",
 		Short: "Create resource",
 	}
 	cmd.AddCommand(

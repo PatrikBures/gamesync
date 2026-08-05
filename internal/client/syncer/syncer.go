@@ -9,7 +9,6 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
-
 type syncer struct {
 	conf    *config.Config
 	client  *api.Client
@@ -17,18 +16,17 @@ type syncer struct {
 }
 
 type puller struct {
-	client   *api.Client
-	decoder  *zstd.Decoder
-	file     *os.File
+	client           *api.Client
+	decoder          *zstd.Decoder
+	file             *os.File
 	fileBytesWritten int64
-	chunkDir string
+	chunkDir         string
 }
 
-func New(conf *config.Config, c *api.Client, profile profiler.Profile) *syncer { 
+func New(conf *config.Config, c *api.Client, profile profiler.Profile) *syncer {
 	return &syncer{
-		client: c,
-		conf: conf,
+		client:  c,
+		conf:    conf,
 		profile: profile,
 	}
 }
-

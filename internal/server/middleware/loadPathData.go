@@ -16,7 +16,7 @@ import (
 func LoadPathData(db *dbx.DB) middleware.Middleware {
 	return func(req middleware.Request, next middleware.Next) (middleware.Response, error) {
 
-		// skip checking if repo exists when creating one 
+		// skip checking if repo exists when creating one
 		if req.OperationName == "PutRepo" {
 			return next(req)
 		}
@@ -25,7 +25,6 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 		if !ok {
 			return next(req)
 		}
-
 
 		var repoName string
 		switch i := targetRepoName.(type) {
@@ -37,7 +36,7 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 
 		user := req.Context.Value(service.CkUser).(dbm.User)
 		repo, err := db.ReadQuery().GetRepoWithName(req.Context, dbm.GetRepoWithNameParams{
-			UserID: user.UserID,
+			UserID:   user.UserID,
 			RepoName: repoName,
 		})
 		if err != nil {
@@ -51,9 +50,7 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 		}
 		req.Context = context.WithValue(req.Context, service.CkRepoID, repo.RepoID)
 
-
-
-		// skip checking if branch exists when creating one 
+		// skip checking if branch exists when creating one
 		if req.OperationName == "PutBranch" {
 			return next(req)
 		}
@@ -71,7 +68,7 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 		}
 
 		branch, err := db.ReadQuery().GetBranchWithName(req.Context, dbm.GetBranchWithNameParams{
-			RepoID: repo.RepoID,
+			RepoID:     repo.RepoID,
 			BranchName: branchName,
 		})
 		if err != nil {
@@ -85,9 +82,6 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 			)
 		}
 		req.Context = context.WithValue(req.Context, service.CkBranch, branch)
-
-
-
 
 		targetSnapshotID, ok := req.Params.Path("snapshotID")
 		if !ok {
@@ -114,7 +108,7 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 			)
 		}
 		req.Context = context.WithValue(req.Context, service.CkSnapshot, snapshot)
-		
+
 		return next(req)
 	}
 }

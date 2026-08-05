@@ -10,7 +10,7 @@ import (
 )
 
 type profileCmd struct {
-	cmd *cobra.Command
+	cmd  *cobra.Command
 	opts profileOpts
 }
 type profileOpts struct {
@@ -23,13 +23,15 @@ func newProfileCmd(conf *config.Config) *profileCmd {
 	root := profileCmd{}
 
 	cmd := &cobra.Command{
-		Use: "profile PROFILE REPO BRANCH DIR",
+		Use:   "profile PROFILE REPO BRANCH DIR",
 		Short: "Create new profile to sync",
-		Args: cobra.ExactArgs(4),
+		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			populateProfileOpts(&root.opts, args)
 
-			if err := runProfileCmd(root.opts, conf); err != nil { return err }
+			if err := runProfileCmd(root.opts, conf); err != nil {
+				return err
+			}
 
 			return nil
 		},
@@ -42,9 +44,9 @@ func newProfileCmd(conf *config.Config) *profileCmd {
 func populateProfileOpts(opts *profileOpts, args []string) {
 	opts.slug = args[0]
 	opts.profile = profiler.Profile{
-		RepoName: args[1],
+		RepoName:   args[1],
 		BranchName: args[2],
-		Dir: args[3],
+		Dir:        args[3],
 	}
 }
 
@@ -60,7 +62,9 @@ func runProfileCmd(opts profileOpts, conf *config.Config) (err error) {
 	if opts.force {
 		pr.AddOverwrite(opts.slug, opts.profile)
 	} else {
-		if err := pr.Add(opts.slug, opts.profile); err != nil { return err }
+		if err := pr.Add(opts.slug, opts.profile); err != nil {
+			return err
+		}
 	}
 
 	if opts.force && pr.Exists(opts.slug) {
@@ -69,7 +73,9 @@ func runProfileCmd(opts profileOpts, conf *config.Config) (err error) {
 		fmt.Printf("Created profile '%s'\n", opts.slug)
 	}
 
-	if err := pr.Save(); err != nil { return err }
+	if err := pr.Save(); err != nil {
+		return err
+	}
 
 	return nil
 }

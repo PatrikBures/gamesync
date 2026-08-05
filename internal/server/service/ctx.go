@@ -9,7 +9,9 @@ import (
 // err is ServerError
 func repoBranchFromCtx(ctx context.Context) (repoID int64, branch dbm.Branch, err error) {
 	repoID, err = repoFromCtx(ctx)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 	branch, err = branchFromCtx(ctx)
 	return
 }

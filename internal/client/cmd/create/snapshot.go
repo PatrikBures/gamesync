@@ -14,7 +14,7 @@ import (
 )
 
 type snapshotCmd struct {
-	cmd *cobra.Command
+	cmd  *cobra.Command
 	opts snapshotOpts
 }
 type snapshotOpts struct {
@@ -25,9 +25,9 @@ func newSnapshotCmd(conf *config.Config) *snapshotCmd {
 	root := snapshotCmd{}
 
 	cmd := &cobra.Command{
-		Use: "snapshot PROFILE",
+		Use:   "snapshot PROFILE",
 		Short: "Create a new snapshot",
-		Args: cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := client.New(conf)
 			if err != nil {

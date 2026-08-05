@@ -11,7 +11,7 @@ import (
 )
 
 type profileCmd struct {
-	cmd *cobra.Command
+	cmd  *cobra.Command
 	opts profileOpts
 }
 
@@ -23,9 +23,9 @@ func newProfileCmd(conf *config.Config) *profileCmd {
 	root := profileCmd{}
 
 	cmd := &cobra.Command{
-		Use: "profile PROFILE...",
+		Use:   "profile PROFILE...",
 		Short: "Delete profiles. Errors if any profile is not found",
-		Args: cobra.MinimumNArgs(1),
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runProfileCmd(conf, &root.opts, args)
 		},

@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 type deleteCmd struct {
 	Cmd *cobra.Command
 }
@@ -15,7 +14,7 @@ func New(conf *config.Config) *deleteCmd {
 	root := deleteCmd{}
 
 	cmd := &cobra.Command{
-		Use: "delete",
+		Use:   "delete",
 		Short: "Delete resources",
 	}
 

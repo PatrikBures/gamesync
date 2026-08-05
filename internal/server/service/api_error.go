@@ -13,8 +13,8 @@ import (
 
 func (s *Service) NewError(ctx context.Context, err error) *api.GlobalErrorStatusCode {
 	code := http.StatusInternalServerError
-	msg  := "An internal server error occurred"
-	
+	msg := "An internal server error occurred"
+
 	// ogen auth wraps the error as a different type so we need to unwrap it
 	if oErr, ok := errors.AsType[*ogenerrors.SecurityError](err); ok {
 		err = oErr.Unwrap()
@@ -60,7 +60,7 @@ func (s *Service) NewError(ctx context.Context, err error) *api.GlobalErrorStatu
 	case server.ErrRoleNameConflict:
 		code = http.StatusConflict
 		msg = "Role name already exist"
-	
+
 	case server.ErrInvalidHash:
 		code = http.StatusUnprocessableEntity
 	}
@@ -78,7 +78,7 @@ func (s *Service) NewError(ctx context.Context, err error) *api.GlobalErrorStatu
 	return &api.GlobalErrorStatusCode{
 		StatusCode: code,
 		Response: api.Error{
-			Code: int32(code),
+			Code:    int32(code),
 			Message: msg,
 		},
 	}

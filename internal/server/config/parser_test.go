@@ -8,9 +8,9 @@ import (
 )
 
 func TestStringToSlice(t *testing.T) {
-	data := map[string][]string {
+	data := map[string][]string{
 		"asdff": {"asdff"},
-		"": {},
+		"":      {},
 		"as|fd": {"as", "fd"},
 		// by some reason, slices.Split turn the sep into space in these situations
 		// "|d": {"d"},
@@ -28,11 +28,11 @@ func TestStringToSlice(t *testing.T) {
 }
 
 func TestStringToMap(t *testing.T) {
-	data := map[string]map[string]bool {
+	data := map[string]map[string]bool{
 		"asdff": {"asdff": true},
-		"": {},
+		"":      {},
 		"as|fd": {"as": true, "fd": true},
-		"|d": {"d": true},
+		"|d":    {"d": true},
 		"|asd|": {"asd": true},
 	}
 

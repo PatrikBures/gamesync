@@ -35,15 +35,15 @@ var operationPerms = map[string]permissions.Perm{
 	"GetRepos": permissions.PermSync,
 	"PutRepo":  permissions.PermSync,
 
-	"GetBranches": permissions.PermSync,
-	"PutBranch":   permissions.PermSync,
-	"GetBranchHead":       permissions.PermSync,
+	"GetBranches":   permissions.PermSync,
+	"PutBranch":     permissions.PermSync,
+	"GetBranchHead": permissions.PermSync,
 
 	"PostSnapshot": permissions.PermSync,
-	"GetSnapshot":         permissions.PermSync,
+	"GetSnapshot":  permissions.PermSync,
 
-	"PutChunk":            permissions.PermSync,
-	"GetChunk":            permissions.PermSync,
+	"PutChunk": permissions.PermSync,
+	"GetChunk": permissions.PermSync,
 }
 
 func AuthzMiddleware() middleware.Middleware {
@@ -66,8 +66,6 @@ func AuthzMiddleware() middleware.Middleware {
 		return next(req)
 	}
 }
-
-
 
 // returns either ErrContext, ErrNotAuthorized or nil
 func CheckPerm(ctx context.Context, perm permissions.Perm) error {
@@ -107,6 +105,5 @@ func UserOrPerm(ctx context.Context, userID int64, perm permissions.Perm) error 
 		return errUser
 	}
 
-	return CheckPerm(ctx, perm) 
+	return CheckPerm(ctx, perm)
 }
-

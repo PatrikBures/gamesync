@@ -1,6 +1,5 @@
 package syncer
 
-
 import (
 	"context"
 	"errors"
@@ -11,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-// Creates a snapshot. If it receives a list of missing chunks, it will 
+// Creates a snapshot. If it receives a list of missing chunks, it will
 // upload them and try to create the snapshot again
 func (s *syncer) CreateSnapshot(files []api.File) error {
 	request := api.Files{
@@ -19,8 +18,8 @@ func (s *syncer) CreateSnapshot(files []api.File) error {
 	}
 
 	params := api.PostSnapshotParams{
-		UserID: s.conf.Server.UserID,
-		RepoName: s.profile.RepoName,
+		UserID:     s.conf.Server.UserID,
+		RepoName:   s.profile.RepoName,
 		BranchName: s.profile.BranchName,
 	}
 

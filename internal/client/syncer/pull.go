@@ -16,8 +16,8 @@ import (
 func (s *syncer) Pull(snapshotID int64) (err error) {
 
 	snapshot, err := s.client.GetSnapshot(context.Background(), api.GetSnapshotParams{
-		UserID: s.conf.Server.UserID,
-		RepoName: s.profile.RepoName,
+		UserID:     s.conf.Server.UserID,
+		RepoName:   s.profile.RepoName,
 		BranchName: s.profile.BranchName,
 		SnapshotID: snapshotID,
 	})
@@ -27,16 +27,15 @@ func (s *syncer) Pull(snapshotID int64) (err error) {
 	// we can add one puller which is only used if there is one chunk in the file
 	// this is to reuse the decoder and reduce allocations. (when goroutines are added)
 
-
 	// if it errors anywhere in the loop. then the sync will not be up to date. if it errors there
 	// should be a defer which restores its state the the previous snapshot.
 	for _, f := range snapshot.Files {
 		// currently only downloads the chunks. needs to also create the files from the chunks
-		// when checking if the files exists, it will just delete it and write a new one for now. 
-		// until there is a state which stores the current chunk hash, size and modtime, which 
-		// can be used to quickly check if it has changed. 
+		// when checking if the files exists, it will just delete it and write a new one for now.
+		// until there is a state which stores the current chunk hash, size and modtime, which
+		// can be used to quickly check if it has changed.
 		//
-		// when it writes the chunk, it needs to write the chunk and also append to the file. 
+		// when it writes the chunk, it needs to write the chunk and also append to the file.
 		// if the chunk already exists, it just needs to append to the file.
 
 		filePath := filepath.Join(s.profile.Dir, f.Path)
@@ -57,7 +56,7 @@ func (s *syncer) Pull(snapshotID int64) (err error) {
 		}
 
 		puller := puller{
-			client: s.client,
+			client:   s.client,
 			chunkDir: s.conf.Global.ChunkDir,
 		}
 		// if it errors after this point, it is quite likely that it leaves the file in a broken state
@@ -79,7 +78,6 @@ func (s *syncer) Pull(snapshotID int64) (err error) {
 
 	return nil
 }
-
 
 func (p *puller) PullChunk(chunkHash string) (err error) {
 
@@ -128,7 +126,6 @@ func (p *puller) PullChunk(chunkHash string) (err error) {
 	if chunkReader == nil {
 		return fmt.Errorf("chunkReader is nil")
 	}
-
 
 	// need to verify that the hash matches the content
 	if err := p.decoder.Reset(chunkReader); err != nil {

@@ -52,7 +52,7 @@ func (s *Service) PutRepo(ctx context.Context, params api.PutRepoParams) (err er
 	}
 
 	if err = qtx.CreateBranch(ctx, dbm.CreateBranchParams{
-		RepoID: repoID,
+		RepoID:     repoID,
 		BranchName: defaultBranchName,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {

@@ -10,6 +10,7 @@ import (
 )
 
 type CacheNames string
+
 const (
 	CacheNameUserID CacheNames = "user_id"
 )
@@ -20,8 +21,8 @@ type Config struct {
 }
 
 type Global struct {
-	ChunkDir string
-	CacheDir string
+	ChunkDir     string
+	CacheDir     string
 	ProfilesFile string
 }
 
@@ -126,7 +127,6 @@ func (c *Config) loadToken() error {
 	}
 	return nil
 }
-
 
 func createDirs(dirs []string) error {
 	for _, dir := range dirs {

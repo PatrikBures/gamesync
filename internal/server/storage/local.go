@@ -37,8 +37,8 @@ func NewLocal(baseDir string, maxChunkBytes int64) (*local, error) {
 		return nil, err
 	}
 	return &local{
-		baseDir: baseDir,
-		tmpDir: tmpDir,
+		baseDir:       baseDir,
+		tmpDir:        tmpDir,
 		maxChunkBytes: maxChunkBytes,
 	}, nil
 }
@@ -76,7 +76,6 @@ func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompr
 		}
 	}()
 
-
 	uncompressedBytes, actualHashBytes, err := l.writeAndHash(data, tmpFile)
 	if err != nil {
 		return 0, err // it is fine to return the error here directly
@@ -97,7 +96,6 @@ func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompr
 		slog.Warn("uploaded chunk hash does not match", "chunkHash", hash, "expectedChunkHash", actualHash)
 		return 0, server.ErrHashMismatch
 	}
-
 
 	// move file to chunkdir
 	chunkFileDir := l.chunkFileDir(hash)
@@ -124,7 +122,6 @@ func (l *local) Download(ctx context.Context, hash string) (io.Reader, error) {
 	return f, nil
 }
 
-
 // writes src to dst and returns Blake3 hash of zstd decompressed data, and the uncompressed amount of bytes
 func (l *local) writeAndHash(src io.Reader, dst io.Writer) (int64, []byte, error) {
 	dataCopy := io.TeeReader(src, dst)
@@ -138,7 +135,7 @@ func (l *local) writeAndHash(src io.Reader, dst io.Writer) (int64, []byte, error
 	hasher := blake3.New(32, nil)
 
 	limitedData := &maxBytesReader{
-		r: decoder,
+		r:   decoder,
 		max: l.maxChunkBytes,
 	}
 
@@ -151,9 +148,6 @@ func (l *local) writeAndHash(src io.Reader, dst io.Writer) (int64, []byte, error
 
 	return limitedData.n, hasher.Sum(nil), nil
 }
-
-
-
 
 type maxBytesReader struct {
 	r   io.Reader
