@@ -7,16 +7,6 @@ import (
 )
 
 // err is ServerError
-func repoBranchFromCtx(ctx context.Context) (repoID int64, branch dbm.Branch, err error) {
-	repoID, err = repoFromCtx(ctx)
-	if err != nil {
-		return
-	}
-	branch, err = branchFromCtx(ctx)
-	return
-}
-
-// err is ServerError
 func branchFromCtx(ctx context.Context) (branch dbm.Branch, err error) {
 	branch, ok := ctx.Value(CkBranch).(dbm.Branch)
 	if !ok {

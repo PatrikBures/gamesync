@@ -58,7 +58,7 @@ type file struct {
 }
 
 func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
-	repoID, branch, err := repoBranchFromCtx(ctx)
+	branch, err := branchFromCtx(ctx)
 	if err != nil {
 		return err
 	}
@@ -76,11 +76,11 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 	}()
 
 	snapshotID, err := qtx.CreateSnapshot(ctx, dbm.CreateSnapshotParams{
-		RepoID:   repoID,
+		RepoID:   branch.RepoID,
 		BranchID: branch.BranchID,
 	})
 	if err != nil {
-		return server.NewInternalError(err, "failed creating new snapshot row", "repoID", repoID, "branchID", branch.BranchID)
+		return server.NewInternalError(err, "failed creating new snapshot row", "repoID", branch.RepoID, "branchID", branch.BranchID)
 	}
 
 	connectSnapshotParams := make([]dbm.ConnectSnapshotWithFilesParams, 0, len(files))
@@ -135,7 +135,7 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return server.NewInternalError(err, "failed committing creation of snapshot", "repoID", repoID, "branchID", branch.BranchID)
+		return server.NewInternalError(err, "failed committing creation of snapshot", "repoID", branch.RepoID, "branchID", branch.BranchID)
 	}
 
 	return nil
