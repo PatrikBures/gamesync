@@ -42,16 +42,10 @@ const dirLen = 2
 
 var chunkFilePool = sync.Pool{
 	New: func() any { 
-		return &chunkFileData{
-			chunker: fastcdc.New(nil, fastcdc.Opts{}),
-		}
+		return fastcdc.New(nil, fastcdc.Opts{})
 	},
 }
 
-type chunkFileData struct {
-	buf     []byte
-	chunker *fastcdc.Chunker
-}
 
 // handles the generation of chunks
 //
@@ -158,14 +152,14 @@ func (cg *chunkGen) chunkFile(path string) (hashHex string, chunkHashes []string
 		err = errors.Join(err, f.Close())
 	}()
 
-	cfd := chunkFilePool.Get().(*chunkFileData)
-	cfd.chunker.Reset(f)
-	defer chunkFilePool.Put(cfd)
+	chunker := chunkFilePool.Get().(*fastcdc.Chunker)
+	chunker.Reset(f)
+	defer chunkFilePool.Put(chunker)
 
 	fileHash := blake3.New(32, nil)
 
 	for chunkCount := 0; ; chunkCount++ {
-		chunk, err := cfd.chunker.Next()
+		chunk, err := chunker.Next()
 		if err == io.EOF {
 			break
 		} else if err != nil {
