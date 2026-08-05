@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	api "gamesync/internal/ogen"
+	api "go.pabu.dev/gamesync/internal/ogen"
 )
 
 type auth struct {

@@ -5,8 +5,8 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"gamesync/internal/server"
-	"gamesync/internal/server/dbm"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/dbm"
 	"log/slog"
 
 	"github.com/jackc/pgerrcode"

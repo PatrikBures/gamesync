@@ -2,11 +2,11 @@ package restore
 
 import (
 	"fmt"
-	"gamesync/internal/client"
-	"gamesync/internal/client/config"
-	"gamesync/internal/client/profiler"
-	"gamesync/internal/client/syncer"
-	api "gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/client"
+	"go.pabu.dev/gamesync/internal/client/config"
+	"go.pabu.dev/gamesync/internal/client/profiler"
+	"go.pabu.dev/gamesync/internal/client/syncer"
+	api "go.pabu.dev/gamesync/internal/ogen"
 	"strconv"
 
 	"github.com/spf13/cobra"

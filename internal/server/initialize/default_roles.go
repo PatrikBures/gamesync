@@ -2,9 +2,9 @@ package initServer
 
 import (
 	"context"
-	"gamesync/internal/dbx"
-	"gamesync/internal/server/dbm"
-	"gamesync/internal/server/permissions"
+	"go.pabu.dev/gamesync/internal/dbx"
+	"go.pabu.dev/gamesync/internal/server/dbm"
+	"go.pabu.dev/gamesync/internal/server/permissions"
 	"log/slog"
 	"slices"
 )

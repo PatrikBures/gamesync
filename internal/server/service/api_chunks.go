@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	"encoding/hex"
-	api "gamesync/internal/ogen"
-	"gamesync/internal/server"
-	"gamesync/internal/server/dbm"
+	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/dbm"
 )
 
 

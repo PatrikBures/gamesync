@@ -3,10 +3,10 @@ package get
 import (
 	"context"
 	"fmt"
-	util "gamesync/cmd/gamesync/_util"
-	"gamesync/internal/client"
-	"gamesync/internal/client/config"
-	api "gamesync/internal/ogen"
+	util "go.pabu.dev/gamesync/cmd/gamesync/_util"
+	"go.pabu.dev/gamesync/internal/client"
+	"go.pabu.dev/gamesync/internal/client/config"
+	api "go.pabu.dev/gamesync/internal/ogen"
 	"strconv"
 
 	"github.com/spf13/cobra"

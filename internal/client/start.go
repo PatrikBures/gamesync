@@ -3,9 +3,9 @@ package client
 import (
 	"context"
 	"fmt"
-	clientAuth "gamesync/internal/client/auth"
-	config "gamesync/internal/client/config"
-	api "gamesync/internal/ogen"
+	clientAuth "go.pabu.dev/gamesync/internal/client/auth"
+	config "go.pabu.dev/gamesync/internal/client/config"
+	api "go.pabu.dev/gamesync/internal/ogen"
 )
 
 // if UserID in config is < 1, request one from server

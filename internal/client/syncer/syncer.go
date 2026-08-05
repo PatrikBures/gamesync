@@ -1,9 +1,9 @@
 package syncer
 
 import (
-	"gamesync/internal/client/config"
-	"gamesync/internal/client/profiler"
-	api "gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/client/config"
+	"go.pabu.dev/gamesync/internal/client/profiler"
+	api "go.pabu.dev/gamesync/internal/ogen"
 	"os"
 
 	"github.com/klauspost/compress/zstd"

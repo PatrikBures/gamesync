@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"errors"
-	api "gamesync/internal/ogen"
-	"gamesync/internal/server"
+	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/server"
 	"log/slog"
 	"net/http"
 

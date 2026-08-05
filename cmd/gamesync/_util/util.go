@@ -3,7 +3,7 @@ package util
 import (
 	"errors"
 	"fmt"
-	api "gamesync/internal/ogen"
+	api "go.pabu.dev/gamesync/internal/ogen"
 
 	"github.com/spf13/cobra"
 )

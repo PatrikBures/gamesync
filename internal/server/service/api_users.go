@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"errors"
-	"gamesync/internal/dbx"
-	api "gamesync/internal/ogen"
-	"gamesync/internal/server"
-	"gamesync/internal/server/dbm"
+	"go.pabu.dev/gamesync/internal/dbx"
+	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/dbm"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"

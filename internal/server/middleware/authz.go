@@ -3,10 +3,10 @@ package middlewares
 import (
 	"context"
 	"errors"
-	"gamesync/internal/server"
-	"gamesync/internal/server/dbm"
-	"gamesync/internal/server/permissions"
-	"gamesync/internal/server/service"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/dbm"
+	"go.pabu.dev/gamesync/internal/server/permissions"
+	"go.pabu.dev/gamesync/internal/server/service"
 	"log/slog"
 	"slices"
 

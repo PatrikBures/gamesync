@@ -3,7 +3,7 @@ package dbx
 import (
 	"context"
 	"fmt"
-	"gamesync/internal/server/dbm"
+	"go.pabu.dev/gamesync/internal/server/dbm"
 	"log/slog"
 	"sync/atomic"
 

@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"gamesync/internal/server"
-	"gamesync/internal/server/permissions"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/permissions"
 	"log/slog"
 
 	"github.com/ogen-go/ogen/middleware"

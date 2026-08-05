@@ -1,7 +1,7 @@
 package create
 
 import (
-	"gamesync/internal/client/config"
+	"go.pabu.dev/gamesync/internal/client/config"
 
 	"github.com/spf13/cobra"
 )

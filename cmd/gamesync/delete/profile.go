@@ -3,8 +3,8 @@ package delete
 import (
 	"errors"
 	"fmt"
-	"gamesync/internal/client/config"
-	"gamesync/internal/client/profiler"
+	"go.pabu.dev/gamesync/internal/client/config"
+	"go.pabu.dev/gamesync/internal/client/profiler"
 	"strings"
 
 	"github.com/spf13/cobra"

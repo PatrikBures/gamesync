@@ -3,8 +3,8 @@ package initServer
 import (
 	"context"
 	"errors"
-	"gamesync/internal/dbx"
-	"gamesync/internal/server/dbm"
+	"go.pabu.dev/gamesync/internal/dbx"
+	"go.pabu.dev/gamesync/internal/server/dbm"
 
 	"github.com/jackc/pgx/v5"
 )

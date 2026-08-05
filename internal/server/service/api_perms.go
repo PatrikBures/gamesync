@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	api "gamesync/internal/ogen"
-	"gamesync/internal/server"
+	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/server"
 )
 
 func (s *Service) GetPerms(ctx context.Context) ([]api.PermWithName, error) {

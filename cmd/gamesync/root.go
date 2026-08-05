@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	createCmd "gamesync/cmd/gamesync/create"
-	docsCmd "gamesync/cmd/gamesync/docs"
-	getCmd "gamesync/cmd/gamesync/get"
-	restoreCmd "gamesync/cmd/gamesync/restore"
-	deleteCmd "gamesync/cmd/gamesync/delete"
-	"gamesync/internal/client/config"
+	createCmd "go.pabu.dev/gamesync/cmd/gamesync/create"
+	docsCmd "go.pabu.dev/gamesync/cmd/gamesync/docs"
+	getCmd "go.pabu.dev/gamesync/cmd/gamesync/get"
+	restoreCmd "go.pabu.dev/gamesync/cmd/gamesync/restore"
+	deleteCmd "go.pabu.dev/gamesync/cmd/gamesync/delete"
+	"go.pabu.dev/gamesync/internal/client/config"
 	"os"
 
 	"github.com/spf13/cobra"

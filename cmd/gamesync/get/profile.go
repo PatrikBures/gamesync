@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"gamesync/internal/client/config"
-	"gamesync/internal/client/profiler"
+	"go.pabu.dev/gamesync/internal/client/config"
+	"go.pabu.dev/gamesync/internal/client/profiler"
 	"os"
 	"text/tabwriter"
 

@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	api "gamesync/internal/ogen"
+	api "go.pabu.dev/gamesync/internal/ogen"
 	"io"
 	"io/fs"
 	"os"

@@ -3,7 +3,7 @@ package initServer
 import (
 	"context"
 	"fmt"
-	"gamesync/internal/dbx"
+	"go.pabu.dev/gamesync/internal/dbx"
 	"log/slog"
 )
 

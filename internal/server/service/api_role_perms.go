@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
-	api "gamesync/internal/ogen"
-	"gamesync/internal/server"
-	"gamesync/internal/server/dbm"
+	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/dbm"
 	"log/slog"
 	"net/http"
 	"slices"

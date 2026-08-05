@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"gamesync/internal/server"
-	"gamesync/internal/server/dbm"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/dbm"
 )
 
 // err is ServerError

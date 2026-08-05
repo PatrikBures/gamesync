@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"gamesync/internal/dbx"
-	"gamesync/internal/server/storage"
+	"go.pabu.dev/gamesync/internal/dbx"
+	"go.pabu.dev/gamesync/internal/server/storage"
 )
 
 const tokenLen = 33

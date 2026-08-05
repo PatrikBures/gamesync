@@ -3,10 +3,10 @@ package middlewares
 import (
 	"context"
 	"errors"
-	"gamesync/internal/dbx"
-	"gamesync/internal/server"
-	"gamesync/internal/server/dbm"
-	"gamesync/internal/server/service"
+	"go.pabu.dev/gamesync/internal/dbx"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/dbm"
+	"go.pabu.dev/gamesync/internal/server/service"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/ogen-go/ogen/middleware"

@@ -5,9 +5,9 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-	api "gamesync/internal/ogen"
-	"gamesync/internal/server"
-	"gamesync/internal/server/permissions"
+	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/permissions"
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"

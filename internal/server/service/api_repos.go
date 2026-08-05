@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	api "gamesync/internal/ogen"
-	"gamesync/internal/server"
-	"gamesync/internal/server/dbm"
+	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/server/dbm"
 	"log/slog"
 
 	"github.com/jackc/pgerrcode"

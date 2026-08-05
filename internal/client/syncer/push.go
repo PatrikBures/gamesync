@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	api "gamesync/internal/ogen"
-	"gamesync/internal/snapshoter"
+	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/snapshoter"
 	"os"
 	"path/filepath"
 )
