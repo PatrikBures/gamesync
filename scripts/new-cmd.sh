@@ -64,9 +64,7 @@ func new${resource^}Cmd(conf *config.Config) *${resource}Cmd {
 	return &root
 }
 
-func populate${resource^}Opts(opts *${resource}Opts, args []string) error {
-	return nil
-}
+func populate${resource^}Opts(opts *${resource}Opts, args []string) {}
 
 func run${resource^}Cmd(${client:+"c *api.Client, "}conf *config.Config, opts *${resource}Opts) error {
 	return nil
