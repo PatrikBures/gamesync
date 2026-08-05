@@ -102,7 +102,7 @@ func New(conf *config.Config) *${verb}Cmd {
 }
 EOF
 
-dir="./cmd/gamesync/${verb}"
+dir="./internal/client/cmd/${verb}"
 verb_file="${dir}/${verb}.go"
 if ! [[ -d "$dir" ]]; then
     mkdir -p "$dir"
