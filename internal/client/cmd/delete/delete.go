@@ -20,6 +20,7 @@ func New(conf *config.Config) *deleteCmd {
 
 	cmd.AddCommand(
 		newProfileCmd(conf).cmd,
+		newBranchCmd(conf).cmd,
 	)
 
 	root.Cmd = cmd
