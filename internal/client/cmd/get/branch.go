@@ -1,10 +1,10 @@
-package create
+package get
 
 import (
 	"context"
 	"fmt"
 
-	util "go.pabu.dev/gamesync/cmd/gamesync/_util"
+	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
 	"go.pabu.dev/gamesync/internal/client"
 	"go.pabu.dev/gamesync/internal/client/config"
 	api "go.pabu.dev/gamesync/internal/ogen"
@@ -19,21 +19,21 @@ type branchCmd struct {
 
 type branchOpts struct {
 	repoName string
-	branchName string
 }
 
 func newBranchCmd(conf *config.Config) *branchCmd {
 	root := branchCmd{}
 
 	cmd := &cobra.Command{
-		Use: "branch REPO BRANCH",
-		Short: "Create new branch in repo",
-		Args: cobra.ExactArgs(2),
+		Use: "branch REPO",
+		Short: "Get branches in repo",
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := client.New(conf)
 			if err != nil {
 				return err
 			}
+
 			populateBranchOpts(&root.opts, args)
 
 			return runBranchCmd(c, conf, &root.opts)
@@ -46,17 +46,25 @@ func newBranchCmd(conf *config.Config) *branchCmd {
 
 func populateBranchOpts(opts *branchOpts, args []string) {
 	opts.repoName = args[0]
-	opts.branchName = args[1]
 }
 
 func runBranchCmd(c *api.Client, conf *config.Config, opts *branchOpts) error {
-	if err := c.PutBranch(context.Background(), api.PutBranchParams{
+	branches, err := c.GetBranches(context.Background(), api.GetBranchesParams{
 		UserID: conf.Server.UserID,
 		RepoName: opts.repoName,
-		BranchName: opts.branchName,
-	}); err != nil {
+	})
+	if err != nil {
 		return util.ErrHandler(err)
 	}
-	fmt.Printf("branch '%s' created in repo '%s'\n", opts.branchName, opts.repoName)
+
+	if len(branches) == 0 {
+		fmt.Printf("no branches found in repo '%s'\n", opts.repoName)
+		return nil
+	}
+
+	for _, b := range branches {
+		fmt.Println(b)
+	}
+
 	return nil
 }

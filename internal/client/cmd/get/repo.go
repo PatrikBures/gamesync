@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	util "go.pabu.dev/gamesync/cmd/gamesync/_util"
+	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
 	"go.pabu.dev/gamesync/internal/client"
 	"go.pabu.dev/gamesync/internal/client/config"
 	api "go.pabu.dev/gamesync/internal/ogen"
