@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	util "go.pabu.dev/gamesync/cmd/gamesync/_util"
 	"go.pabu.dev/gamesync/internal/client"
 	"go.pabu.dev/gamesync/internal/client/config"
 	api "go.pabu.dev/gamesync/internal/ogen"
@@ -13,10 +14,7 @@ import (
 
 type repoCmd struct {
 	cmd *cobra.Command
-	opts repoOpts
 }
-
-type repoOpts struct {}
 
 func newRepoCmd(conf *config.Config) *repoCmd {
 	root := repoCmd{}
@@ -30,7 +28,7 @@ func newRepoCmd(conf *config.Config) *repoCmd {
 				return err
 			}
 
-			return runRepoCmd(c, conf, &root.opts)
+			return runRepoCmd(c, conf)
 		},
 	}
 
@@ -38,14 +36,10 @@ func newRepoCmd(conf *config.Config) *repoCmd {
 	return &root
 }
 
-func populateRepoOpts(opts *repoOpts, args []string) error {
-	return nil
-}
-
-func runRepoCmd(c *api.Client, conf *config.Config, opts *repoOpts) error {
+func runRepoCmd(c *api.Client, conf *config.Config) error {
 	repos, err := c.GetRepos(context.Background(), api.GetReposParams{ UserID: conf.Server.UserID })
 	if err != nil {
-		return fmt.Errorf("getting repos: %w", err)
+		return util.ErrHandler(err)
 	}
 
 	if len(repos) == 0 {

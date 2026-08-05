@@ -54,12 +54,11 @@ func populateRepoOpts(opts *repoOpts, args []string) error {
 }
 
 func runRepoCmd(client *api.Client, opts repoOpts, conf config.Config) error {
-	err := client.PutRepo(context.Background(), api.PutRepoParams{
+	if err := client.PutRepo(context.Background(), api.PutRepoParams{
 		UserID: conf.Server.UserID,
 		RepoName: opts.repoName,
-	})
-	if err := util.ErrHandler(err); err != nil {
-		return err
+	}); err != nil {
+		return util.ErrHandler(err)
 	}
 	fmt.Printf("repo named '%s' created\n", opts.repoName)
 	return nil

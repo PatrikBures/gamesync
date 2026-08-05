@@ -91,7 +91,7 @@ func (p *puller) PullChunk(chunkHash string) (err error) {
 		return fmt.Errorf("opening chunkfile: %w", err)
 	}
 	if chunkFile == nil {
-		return fmt.Errorf("chunkFile is nil!")
+		return fmt.Errorf("chunkFile is nil")
 	}
 	defer func() {
 		err = errors.Join(err, chunkFile.Close())
@@ -123,10 +123,10 @@ func (p *puller) PullChunk(chunkHash string) (err error) {
 	}
 
 	if chunkWriter == nil {
-		return fmt.Errorf("chunkWriter is nil!")
+		return fmt.Errorf("chunkWriter is nil")
 	}
 	if chunkReader == nil {
-		return fmt.Errorf("chunkReader is nil!")
+		return fmt.Errorf("chunkReader is nil")
 	}
 
 

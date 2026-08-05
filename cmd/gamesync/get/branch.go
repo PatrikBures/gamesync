@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	util "go.pabu.dev/gamesync/cmd/gamesync/_util"
 	"go.pabu.dev/gamesync/internal/client"
 	"go.pabu.dev/gamesync/internal/client/config"
 	api "go.pabu.dev/gamesync/internal/ogen"
@@ -24,8 +25,8 @@ func newBranchCmd(conf *config.Config) *branchCmd {
 	root := branchCmd{}
 
 	cmd := &cobra.Command{
-		Use: "branch",
-		Short: "SUMMARY_PLACEHOLDER",
+		Use: "branch REPO",
+		Short: "Get branches in repo",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := client.New(conf)
@@ -43,9 +44,8 @@ func newBranchCmd(conf *config.Config) *branchCmd {
 	return &root
 }
 
-func populateBranchOpts(opts *branchOpts, args []string) error {
+func populateBranchOpts(opts *branchOpts, args []string) {
 	opts.repoName = args[0]
-	return nil
 }
 
 func runBranchCmd(c *api.Client, conf *config.Config, opts *branchOpts) error {
@@ -54,7 +54,7 @@ func runBranchCmd(c *api.Client, conf *config.Config, opts *branchOpts) error {
 		RepoName: opts.repoName,
 	})
 	if err != nil {
-		return fmt.Errorf("getting branches: %w", err)
+		return util.ErrHandler(err)
 	}
 
 	if len(branches) == 0 {

@@ -53,7 +53,7 @@ func runProfileCmd(conf *config.Config, args []string) (err error) {
 		for _, slug := range args {
 			profile, ok := p.Get(slug)
 			if !ok {
-				return fmt.Errorf("Profile not found: %s", slug)
+				return fmt.Errorf("profile not found: %s", slug)
 			}
 			if err := printProfile(w, slug, profile); err != nil { return err }
 		}
