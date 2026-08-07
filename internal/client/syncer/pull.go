@@ -13,7 +13,7 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
-func (s *syncer) Pull(snapshotID int64) (err error) {
+func (s *syncer) Restore(snapshotID int64) (err error) {
 
 	snapshot, err := s.client.GetSnapshot(context.Background(), api.GetSnapshotParams{
 		UserID:     s.conf.Server.UserID,
@@ -74,6 +74,10 @@ func (s *syncer) Pull(snapshotID int64) (err error) {
 				return fmt.Errorf("pulling chunk for file '%s', chunk '%s': %w", filePath, chunkHash, err)
 			}
 		}
+	}
+
+	if err := s.stater.SetProfileSnapshot(s.profile.Slug, snapshotID); err != nil {
+		return fmt.Errorf("setting profile snapshot: %w", err)
 	}
 
 	return nil

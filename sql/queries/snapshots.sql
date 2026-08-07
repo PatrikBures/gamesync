@@ -13,7 +13,7 @@ VALUES (
         LIMIT 1
     )
 )
-RETURNING snapshot_id
+RETURNING *
 ;
 
 

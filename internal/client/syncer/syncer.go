@@ -13,6 +13,7 @@ type syncer struct {
 	conf    *config.Config
 	client  *api.Client
 	profile profiler.Profile
+	stater  *stater
 }
 
 type puller struct {
@@ -28,5 +29,6 @@ func New(conf *config.Config, c *api.Client, profile profiler.Profile) *syncer {
 		client:  c,
 		conf:    conf,
 		profile: profile,
+		stater: NewStater(conf.ProfileStateDir()),
 	}
 }

@@ -54,7 +54,7 @@ VALUES (
         LIMIT 1
     )
 )
-RETURNING snapshot_id
+RETURNING snapshot_id, parent_snapshot_id, created_at
 `
 
 type CreateSnapshotParams struct {
@@ -66,11 +66,11 @@ type CreateSnapshotParams struct {
 //
 // accepts repo_id and branch_id to find the parent snapshot
 // using head snapshot id from branches
-func (q *Queries) CreateSnapshot(ctx context.Context, arg CreateSnapshotParams) (int64, error) {
+func (q *Queries) CreateSnapshot(ctx context.Context, arg CreateSnapshotParams) (Snapshot, error) {
 	row := q.db.QueryRow(ctx, createSnapshot, arg.RepoID, arg.BranchID)
-	var snapshot_id int64
-	err := row.Scan(&snapshot_id)
-	return snapshot_id, err
+	var i Snapshot
+	err := row.Scan(&i.SnapshotID, &i.ParentSnapshotID, &i.CreatedAt)
+	return i, err
 }
 
 const getFileChunkHashes = `-- name: GetFileChunkHashes :many

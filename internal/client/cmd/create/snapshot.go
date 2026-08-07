@@ -73,7 +73,7 @@ func runSnapshotCmd(client *api.Client, opts *snapshotOpts, conf *config.Config)
 
 	syncer := syncer.New(conf, client, opts.profile)
 
-	if err := syncer.CreateSnapshot(files); err != nil {
+	if _, err := syncer.CreateSnapshot(files); err != nil {
 		return fmt.Errorf("creating snapshot: %w", err)
 	}
 

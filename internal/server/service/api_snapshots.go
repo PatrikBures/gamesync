@@ -44,11 +44,12 @@ func (s *Service) PostSnapshot(ctx context.Context, req *api.Files, params api.P
 		return &api.PostSnapshotFailedDependency{ChunkHashes: bytesToHex(allChunkHashes)}, nil
 	}
 
-	if err := createSnapshot(s.db, files, ctx); err != nil {
+	newSnapshot, err := createSnapshot(s.db, files, ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	return &api.PostSnapshotCreated{}, nil
+	return newSnapshot, nil
 }
 
 type file struct {
@@ -57,15 +58,15 @@ type file struct {
 	chunkHashes [][]byte
 }
 
-func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
+func createSnapshot(db *dbx.DB, files []file, ctx context.Context) (*api.Snapshot, error) {
 	branch, err := branchFromCtx(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	qtx, tx, err := db.BeginTX(ctx)
 	if err != nil {
-		return server.NewInternalError(err, "failed starting tx")
+		return nil, server.NewInternalError(err, "failed starting tx")
 	}
 	defer func() {
 		if recover() != nil || err != nil {
@@ -75,12 +76,12 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 		}
 	}()
 
-	snapshotID, err := qtx.CreateSnapshot(ctx, dbm.CreateSnapshotParams{
+	newSnapshot, err := qtx.CreateSnapshot(ctx, dbm.CreateSnapshotParams{
 		RepoID:   branch.RepoID,
 		BranchID: branch.BranchID,
 	})
 	if err != nil {
-		return server.NewInternalError(err, "failed creating new snapshot row", "repoID", branch.RepoID, "branchID", branch.BranchID)
+		return nil, server.NewInternalError(err, "failed creating new snapshot row", "repoID", branch.RepoID, "branchID", branch.BranchID)
 	}
 
 	connectSnapshotParams := make([]dbm.ConnectSnapshotWithFilesParams, 0, len(files))
@@ -93,13 +94,13 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 		if errors.Is(err, pgx.ErrNoRows) {
 			fileHashes = fileHashes[:0]
 		} else {
-			return server.NewInternalError(err, "failed listing existing file hashes")
+			return nil, server.NewInternalError(err, "failed listing existing file hashes")
 		}
 	}
 
 	for _, f := range files {
 		connectSnapshotParams = append(connectSnapshotParams, dbm.ConnectSnapshotWithFilesParams{
-			SnapshotID: snapshotID,
+			SnapshotID: newSnapshot.SnapshotID,
 			FileHash:   f.hash,
 			FilePath:   f.path,
 		})
@@ -114,31 +115,34 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) error {
 			FileHash:  f.hash,
 			ChunkHash: f.chunkHashes,
 		}); err != nil {
-			return server.NewInternalError(err, "failed inserting file", "fileHash", hex.EncodeToString(f.hash))
+			return nil, server.NewInternalError(err, "failed inserting file", "fileHash", hex.EncodeToString(f.hash))
 		}
 
 		if _, err := qtx.ConnectFileWithChunks(ctx, connectFileChunksParams(f.hash, f.chunkHashes)); err != nil {
-			return server.NewInternalError(err, "failed connecting file with chunks", "fileHash", hex.EncodeToString(f.hash))
+			return nil, server.NewInternalError(err, "failed connecting file with chunks", "fileHash", hex.EncodeToString(f.hash))
 		}
 		fileHashes = append(fileHashes, f.hash)
 	}
 
 	if _, err := qtx.ConnectSnapshotWithFiles(ctx, connectSnapshotParams); err != nil {
-		return server.NewInternalError(err, "failed connecting snapshot with files", "snapshotID", snapshotID)
+		return nil, server.NewInternalError(err, "failed connecting snapshot with files", "snapshotID", newSnapshot.SnapshotID)
 	}
 
 	if err := qtx.UpdateBranchHead(ctx, dbm.UpdateBranchHeadParams{
 		BranchID:       branch.BranchID,
-		HeadSnapshotID: pgtype.Int8{Int64: snapshotID, Valid: true},
+		HeadSnapshotID: pgtype.Int8{Int64: newSnapshot.SnapshotID, Valid: true},
 	}); err != nil {
-		return server.NewInternalError(err, "failed updating branch head", "branchID", branch.BranchID, "newSnapshotID", snapshotID)
+		return nil, server.NewInternalError(err, "failed updating branch head", "branchID", branch.BranchID, "newSnapshotID", newSnapshot.SnapshotID)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return server.NewInternalError(err, "failed committing creation of snapshot", "repoID", branch.RepoID, "branchID", branch.BranchID)
+		return nil, server.NewInternalError(err, "failed committing creation of snapshot", "repoID", branch.RepoID, "branchID", branch.BranchID)
 	}
 
-	return nil
+	return &api.Snapshot{
+		ParentSnapshotID: api.NilInt64{Value: newSnapshot.ParentSnapshotID.Int64, Null: !newSnapshot.ParentSnapshotID.Valid},
+		SnapshotID: newSnapshot.SnapshotID,
+	}, nil
 }
 
 func connectFileChunksParams(fileHash []byte, chunkHashes [][]byte) []dbm.ConnectFileWithChunksParams {

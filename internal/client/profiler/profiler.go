@@ -8,6 +8,7 @@ import (
 )
 
 type Profile struct {
+	Slug       string `json:"-"`
 	RepoName   string `json:"repo"`
 	BranchName string `json:"branch"`
 	Dir        string `json:"dir"`
@@ -121,6 +122,7 @@ func (p *Profiler) Delete(slug string) bool {
 // Gets profile.
 func (p *Profiler) Get(slug string) (Profile, bool) {
 	profile, ok := p.Profiles[slug]
+	profile.Slug = slug
 	return profile, ok
 }
 

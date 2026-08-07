@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"go.pabu.dev/gamesync/internal/client/util"
 	"go.pabu.dev/ini"
 )
 
@@ -23,6 +24,7 @@ type Config struct {
 type Global struct {
 	ChunkDir     string
 	CacheDir     string
+	StateDir     string
 	ProfilesFile string
 }
 
@@ -33,12 +35,6 @@ type Server struct {
 	Url       string // example: http://localhost:8080, https://example.org
 }
 
-type Sync struct {
-	Name   string
-	Repo   string
-	Branch string
-	Path   string
-}
 
 const projectName = "gamesync"
 
@@ -58,7 +54,13 @@ func Load(c *Config, configFile string) error {
 	if err := ini.Unmarshal(configContent, c); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
-	if err := c.insertHome(); err != nil {
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	if err := c.insertHome(home); err != nil {
 		return err
 	}
 	if err := c.loadToken(); err != nil {
@@ -77,27 +79,35 @@ func Load(c *Config, configFile string) error {
 		c.Global.ProfilesFile = filepath.Join(configDir, "profiles.json")
 	}
 
+	if c.Global.StateDir == "" {
+		stateDir := os.Getenv("XDG_STATE_HOME")
+		if stateDir == "" {
+			stateDir = filepath.Join(home, ".local", "state", projectName)
+		}
+		c.Global.StateDir = stateDir
+	}
+
+	if err := util.CreateDirs([]string{
+		c.Global.StateDir,
+		c.ProfileStateDir(),
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// Inserts current users home for paths that start with ~/
-func (c *Config) insertHome() error {
-	home := ""
+// replaces ~/ with home for paths in config
+func (c *Config) insertHome(home string) error {
 	for _, p := range []*string{
 		&c.Global.ChunkDir,
 		&c.Global.CacheDir,
+		&c.Global.StateDir,
 		&c.Global.ProfilesFile,
 	} {
 		s := *p
 		if !strings.HasPrefix(s, "~/") {
 			continue
-		}
-		if home == "" {
-			var err error
-			home, err = os.UserHomeDir()
-			if err != nil {
-				return err
-			}
 		}
 		newPath := filepath.Join(home, s[2:])
 		*p = newPath
@@ -112,7 +122,6 @@ func (c *Config) loadToken() error {
 		if err != nil {
 			return fmt.Errorf("loading token file: %w", err)
 		}
-		// trims new line if it ends with it
 		if token[len(token)-1] == '\n' {
 			token = token[:len(token)-1]
 		}
@@ -128,11 +137,7 @@ func (c *Config) loadToken() error {
 	return nil
 }
 
-func createDirs(dirs []string) error {
-	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, 0775); err != nil {
-			return err
-		}
-	}
-	return nil
+
+func (c *Config) ProfileStateDir() string {
+	return filepath.Join(c.Global.StateDir, "profiles")
 }

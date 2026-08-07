@@ -82,6 +82,10 @@ func NewChunkGen(chunkDir string) *chunkGen {
 }
 
 // chunks all files in repoDir
+// 
+// loop through the stream with ChunkStream.Ch
+//
+// after the loop, check any errors with ChunkStream.Err()
 func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*ChunkStream, error) {
 	if info, err := os.Stat(repoDir); err != nil {
 		return nil, fmt.Errorf("cannot access repo dir: %w", err)

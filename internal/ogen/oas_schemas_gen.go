@@ -282,11 +282,6 @@ func (s *PermWithName) SetPermName(val string) {
 	s.PermName = val
 }
 
-// PostSnapshotCreated is response for PostSnapshot operation.
-type PostSnapshotCreated struct{}
-
-func (*PostSnapshotCreated) postSnapshotRes() {}
-
 type PostSnapshotFailedDependency struct {
 	ChunkHashes []string `json:"chunkHashes"`
 }
@@ -417,6 +412,7 @@ func (s *Snapshot) SetParentSnapshotID(val NilInt64) {
 }
 
 func (*Snapshot) getBranchHeadRes() {}
+func (*Snapshot) postSnapshotRes()  {}
 
 // Merged schema.
 // Ref: #/components/schemas/SnapshotFiles
