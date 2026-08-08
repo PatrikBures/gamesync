@@ -108,10 +108,16 @@ func (q *Queries) GetFileChunkHashes(ctx context.Context, fileHash []byte) ([][]
 const getSnapshot = `-- name: GetSnapshot :one
 SELECT snapshot_id, parent_snapshot_id, repo_id, created_at FROM snapshots
 WHERE snapshot_id = $1
+AND repo_id = $2
 `
 
-func (q *Queries) GetSnapshot(ctx context.Context, snapshotID int64) (Snapshot, error) {
-	row := q.db.QueryRow(ctx, getSnapshot, snapshotID)
+type GetSnapshotParams struct {
+	SnapshotID int64
+	RepoID     int64
+}
+
+func (q *Queries) GetSnapshot(ctx context.Context, arg GetSnapshotParams) (Snapshot, error) {
+	row := q.db.QueryRow(ctx, getSnapshot, arg.SnapshotID, arg.RepoID)
 	var i Snapshot
 	err := row.Scan(
 		&i.SnapshotID,

@@ -55,6 +55,7 @@ WHERE branch_id = $1
 -- name: GetSnapshot :one
 SELECT * FROM snapshots
 WHERE snapshot_id = $1
+AND repo_id = $2
 ;
 
 
