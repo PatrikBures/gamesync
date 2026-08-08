@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	api "go.pabu.dev/gamesync/internal/ogen"
 	"io"
 	"io/fs"
 	"os"
@@ -13,6 +12,9 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
+
+	"go.pabu.dev/gamesync/internal/client/stater"
+	api "go.pabu.dev/gamesync/internal/ogen"
 
 	"github.com/klauspost/compress/zstd"
 	"go.pabu.dev/fastcdc"
@@ -64,6 +66,7 @@ type FileResults struct {
 	Hash   string
 	Path   string
 	Hashes []string
+	State  stater.FileState
 	Err    error
 }
 
@@ -81,11 +84,10 @@ func NewChunkGen(chunkDir string) *chunkGen {
 	return &chunkGen{chunkDir: chunkDir}
 }
 
-// chunks all files in repoDir
-// 
-// loop through the stream with ChunkStream.Ch
+// Chunks all files in repoDir. Loop through the stream with ChunkStream.Ch
 //
-// after the loop, check any errors with ChunkStream.Err()
+// During the loop check each FileResult error
+// and after the loop, check any errors with ChunkStream.Err()
 func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*ChunkStream, error) {
 	if info, err := os.Stat(repoDir); err != nil {
 		return nil, fmt.Errorf("cannot access repo dir: %w", err)
@@ -114,12 +116,18 @@ func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*Chunk
 				return nil
 			}
 			g.Go(func() error {
-				fileHash, hashes, cerr := cg.chunkFile(path)
+				fileHash, hashes, fileState, cerr := cg.chunkFile(path)
 				relPath, ferr := filepath.Rel(repoDir, path)
 				err := errors.Join(cerr, ferr)
 
 				select {
-				case out <- FileResults{Path: relPath, Hash: fileHash, Hashes: hashes, Err: err}:
+				case out <- FileResults{
+					Path: relPath,
+					Hash: fileHash,
+					Hashes: hashes,
+					State: fileState,
+					Err: err,
+				}:
 				case <-ctx.Done():
 				}
 
@@ -141,14 +149,14 @@ func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*Chunk
 
 // creates chunks from the file at path to chunkDir
 //
-// and returns file hash and slice of the chunk hashes, including already existing ones
-func (cg *chunkGen) chunkFile(path string) (hashHex string, chunkHashes []string, err error) {
+// returns file hash and slice of the chunk hashes (including already existing) and the fileState.
+func (cg *chunkGen) chunkFile(path string) (string, []string, stater.FileState, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return "", nil, err
+		return "", nil, stater.FileState{}, err
 	}
 	defer func() {
-		err = errors.Join(err, f.Close())
+		_ = f.Close()
 	}()
 
 	chunker := chunkFilePool.Get().(*fastcdc.Chunker)
@@ -157,21 +165,23 @@ func (cg *chunkGen) chunkFile(path string) (hashHex string, chunkHashes []string
 
 	fileHash := blake3.New(32, nil)
 
+	var chunkHashes []string
+
 	for chunkCount := 0; ; chunkCount++ {
 		chunk, err := chunker.Next()
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return "", nil, err
+			return "", nil,stater.FileState{}, err
 		}
 
 		hashBytes, hashHex, chunkFile, err := cg.createChunk(chunk)
 		if err != nil && !errors.Is(err, os.ErrExist) {
-			return "", nil, err
+			return "", nil, stater.FileState{}, err
 		}
 
 		if _, err = fileHash.Write(hashBytes); err != nil {
-			return "", nil, fmt.Errorf("hashing chunk to form file hash: %w", errors.Join(err, chunkFile.Close()))
+			return "", nil, stater.FileState{}, fmt.Errorf("hashing chunk to form file hash: %w", errors.Join(err, chunkFile.Close()))
 		}
 		chunkHashes = append(chunkHashes, hashHex)
 
@@ -185,12 +195,21 @@ func (cg *chunkGen) chunkFile(path string) (hashHex string, chunkHashes []string
 		cerr := chunkFile.Close()
 		err = errors.Join(werr, cerr)
 		if err != nil {
-			return "", nil, fmt.Errorf("creating chunk for file %s, chunk nr %d, hash %s: %w", path, chunkCount+1, hashHex, err)
+			return "", nil, stater.FileState{}, fmt.Errorf("creating chunk for file %s, chunk nr %d, hash %s: %w", path, chunkCount+1, hashHex, err)
 		}
 		atomic.AddInt64(&cg.Info.ChunksCreated, 1)
 	}
 
-	return hex.EncodeToString(fileHash.Sum(nil)), chunkHashes, nil
+	stat, err := f.Stat()
+	if err != nil {
+		return "", nil, stater.FileState{}, err
+	}
+	fileState := stater.FileState{
+		ModTime: stat.ModTime().Unix(),
+		Size: stat.Size(),
+	}
+
+	return hex.EncodeToString(fileHash.Sum(nil)), chunkHashes, fileState, nil
 }
 
 // hashes chunk, creates the relative dirs, and opens the file (does not put any data in)

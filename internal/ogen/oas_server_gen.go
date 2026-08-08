@@ -80,6 +80,12 @@ type Handler interface {
 	//
 	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}
 	GetSnapshot(ctx context.Context, params GetSnapshotParams) (*SnapshotFiles, error)
+	// GetSnapshotAncestor implements get-snapshot-ancestor operation.
+	//
+	// Check if snapshot is ancestor of target snapshot.
+	//
+	// GET /users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry
+	GetSnapshotAncestor(ctx context.Context, params GetSnapshotAncestorParams) (*GetSnapshotAncestorOK, error)
 	// GetUser implements get-user operation.
 	//
 	// Get info about user.

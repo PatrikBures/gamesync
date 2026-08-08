@@ -2,15 +2,17 @@ package syncer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
+	"go.pabu.dev/gamesync/internal/client/stater"
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"go.pabu.dev/gamesync/internal/snapshoter"
 )
 
-// Syncs a profile by automatically determining if it should push/pull or 
-// if it up to date or there is a conflict. 
+// Syncs a profile by automatically determining if it should push/pull or
+// if it up to date or there is a conflict.
 func (s *syncer) Sync() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -28,22 +30,11 @@ func (s *syncer) Sync() error {
 
 	var snapshotID int64
 	var parentSnapshotID int64
+	noHead := false
 
 	switch snapshot := res.(type) {
 	case *api.GetBranchHeadNotFound:
-		fmt.Println("no snapshot in branch")
-		files, err := chunkGen.ChunkFilesInDirApiFile(ctx, s.profile.Dir)
-		if err != nil {
-			return err
-		}
-		newSnapshot, err := s.CreateSnapshot(files)
-		if err != nil {
-			return fmt.Errorf("creating snapshot: %w", err)
-		}
-		if err := s.stater.SetProfileSnapshot(s.profile.Slug, newSnapshot.SnapshotID); err != nil {
-			return fmt.Errorf("setting profile snapshot state: %w", err)
-		}
-		return nil
+		noHead = true
 	case *api.Snapshot:
 		snapshotID = snapshot.SnapshotID
 		if !snapshot.ParentSnapshotID.Null {
@@ -54,83 +45,74 @@ func (s *syncer) Sync() error {
 	}
 
 	unknownState := false
-	stateSnapshotID, err := s.stater.GetProfileSnapshot(s.profile.Slug)
+	previousState, err := s.stater.Get(s.profile.Slug)
 	if err != nil {
-		if !os.IsNotExist(err) {
+		if !errors.Is(err, os.ErrNotExist) {
 			return fmt.Errorf("getting profile snapshot state: %w", err)
 		} 
 		unknownState = true
 	}
 
-	latestSnapshot, err := s.client.GetSnapshot(ctx, api.GetSnapshotParams{
-		UserID: s.conf.Server.UserID,
-		RepoName: s.profile.RepoName,
-		BranchName: s.profile.BranchName,
-		SnapshotID: snapshotID,
-	})
+	stream, err := chunkGen.ChunkFilesInDir(ctx, s.profile.Dir)
 	if err != nil {
 		return err
 	}
 
-	files, err := chunkGen.ChunkFilesInDirApiFile(ctx, s.profile.Dir)
-	if err != nil {
-		return err
-	}
-
-	diff := false
-	localFileCount := 0
-	for _, fr := range files {
-		if !diff {
-			for _, f := range latestSnapshot.Files {
-				if f.Path != fr.Path {
-					continue
-				}
-				if f.Hash != fr.Hash {
-					diff = true
-					break
-				}
-			}
+	currentFileStates := make(map[string]stater.FileState)
+	files := []api.File{}
+	for fr := range stream.Ch {
+		if fr.Err != nil {
+			return err
 		}
-		localFileCount++
+		files = append(files, api.File{
+			ChunkHashes: fr.Hashes,
+			Hash: fr.Hash,
+			Path: fr.Path,
+		})
+		currentFileStates[fr.Path] = fr.State
 	}
 
-	if localFileCount != len(latestSnapshot.Files) {
-		diff = true
-	}
-
-	if unknownState && diff {
-		return fmt.Errorf("no previous local state and difference between remote and local. Force pull or push.")
-	}
-
-	if diff && snapshotID == stateSnapshotID {
-		fmt.Println("Pushing...")
+	if noHead {
+		fmt.Println("Pushing with no head...")
 		_, err := s.CreateSnapshot(files)
 		if err != nil {
 			return fmt.Errorf("creating snapshot: %w", err)
 		}
-	} else if diff && parentSnapshotID == stateSnapshotID {
+		return nil
+	}
+
+	localDiff := !stater.Equal(currentFileStates, previousState.FileStates)
+	remoteDiff := snapshotID != previousState.SnapshotID
+
+	if localDiff && !remoteDiff {
+		fmt.Println("Pushing...")
+		newSnapshot, err := s.CreateSnapshot(files)
+		if err != nil {
+			return fmt.Errorf("creating snapshot: %w", err)
+		}
+		return s.stater.Set(s.profile.Slug, stater.State{
+			SnapshotID: newSnapshot.SnapshotID,
+			FileStates: currentFileStates,
+		})
+	} else if !localDiff && remoteDiff{
 		fmt.Println("Pulling...")
 		if err := s.Restore(snapshotID); err != nil {
 			return fmt.Errorf("restoring snapshot: %w", err)
 		}
-	} else if diff && parentSnapshotID != stateSnapshotID && snapshotID != stateSnapshotID {
-		// this will only occur if it is 2 snapshots behind. this is an issue
-		// when it is only behind by one snapshot and there are changes on both sides. 
-		// in which case it will just pull. 
-		return fmt.Errorf("Changes on remote and local, either force push or pull.")
-	} else if !diff && snapshotID == stateSnapshotID {
-		fmt.Println("Already up to date")
-	} else if !diff {
-		// also handles case when unknownState is true
-		fmt.Println("Fast forwarding...")
-		if err := s.stater.SetProfileSnapshot(s.profile.Slug, snapshotID); err != nil {
-			return fmt.Errorf("fast forwarding snapshot: %w", err)
+		return s.stater.Update(s.profile.Slug,snapshotID,  s.profile.Dir)
+	} else if localDiff && remoteDiff {
+		if unknownState {
+			return fmt.Errorf("no previous local state. Force pull or push")
 		}
+		return fmt.Errorf("changes on remote and local, either force push or pull")
+	} else if !localDiff && !remoteDiff{
+		fmt.Println("Already up to date")
 	} else {
-		fmt.Println("diff:", diff)
+		fmt.Println("localDiff:", localDiff)
+		fmt.Println("remoteDiff:", remoteDiff)
 		fmt.Println("snapshotID", snapshotID)
 		fmt.Println("parentSnapshotID", parentSnapshotID)
-		fmt.Println("stateSnapshotID", stateSnapshotID)
+		fmt.Println("previous SnapshotID", previousState.SnapshotID)
 
 		return fmt.Errorf("unhandled combination")
 	}

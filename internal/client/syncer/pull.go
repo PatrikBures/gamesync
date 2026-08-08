@@ -76,10 +76,6 @@ func (s *syncer) Restore(snapshotID int64) (err error) {
 		}
 	}
 
-	if err := s.stater.SetProfileSnapshot(s.profile.Slug, snapshotID); err != nil {
-		return fmt.Errorf("setting profile snapshot: %w", err)
-	}
-
 	return nil
 }
 

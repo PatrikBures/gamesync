@@ -6,7 +6,7 @@ import (
 
 	"go.pabu.dev/gamesync/internal/client/config"
 	"go.pabu.dev/gamesync/internal/client/profiler"
-	"go.pabu.dev/gamesync/internal/client/syncer"
+	"go.pabu.dev/gamesync/internal/client/stater"
 
 	"github.com/spf13/cobra"
 )
@@ -48,7 +48,7 @@ func runProfileCmd(conf *config.Config, opts *profileOpts, args []string) (err e
 	}()
 
 	deleteProfiles := []string{}
-	stater := syncer.NewStater(conf.ProfileStateDir())
+	s := stater.New(conf.ProfileStateDir())
 
 	for _, slug := range args {
 		ok := p.Delete(slug)
@@ -60,7 +60,7 @@ func runProfileCmd(conf *config.Config, opts *profileOpts, args []string) (err e
 	}
 
 	for _, slug := range deleteProfiles {
-		if err := stater.DeleteProfileSnapshot(slug); err != nil {
+		if err := s.Delete(slug); err != nil {
 			return fmt.Errorf("deleting profile state: %w", err)
 		}
 		fmt.Printf("Deleted profile '%s'\n", slug)

@@ -63,7 +63,10 @@ func (s *Service) GetBranchHead(ctx context.Context, params api.GetBranchHeadPar
 	if !branch.HeadSnapshotID.Valid {
 		return &api.GetBranchHeadNotFound{}, nil
 	}
-	snapshot, err := s.db.ReadQuery().GetSnapshot(ctx, branch.HeadSnapshotID.Int64)
+	snapshot, err := s.db.ReadQuery().GetSnapshot(ctx, dbm.GetSnapshotParams{
+		SnapshotID: branch.HeadSnapshotID.Int64,
+		RepoID: branch.RepoID,
+	})
 	if err != nil {
 		return nil, server.NewInternalError(err, "failed getting snapshot while getting branch head", "snapshotID", branch.HeadSnapshotID)
 	}

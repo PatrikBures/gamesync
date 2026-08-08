@@ -95,7 +95,10 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 			return middleware.Response{}, server.NewInternalError(nil, "snapshotID is not int64", "path", req.Raw.URL.Path)
 		}
 
-		snapshot, err := db.ReadQuery().GetSnapshot(req.Context, snapshotID)
+		snapshot, err := db.ReadQuery().GetSnapshot(req.Context, dbm.GetSnapshotParams{
+			SnapshotID: snapshotID,
+			RepoID: repo.RepoID,
+		})
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return middleware.Response{}, server.ErrSnapshotNotFound
