@@ -74,11 +74,14 @@ func (s *syncer) Sync() error {
 
 	if noHead {
 		fmt.Println("Pushing with no head...")
-		_, err := s.CreateSnapshot(files)
+		newSnapshot, err := s.CreateSnapshot(files)
 		if err != nil {
 			return fmt.Errorf("creating snapshot: %w", err)
 		}
-		return nil
+		return s.stater.Set(s.profile.Slug, stater.State{
+			SnapshotID: newSnapshot.SnapshotID,
+			FileStates: currentFileStates,
+		})
 	}
 
 	localDiff := !stater.Equal(currentFileStates, previousState.FileStates)
