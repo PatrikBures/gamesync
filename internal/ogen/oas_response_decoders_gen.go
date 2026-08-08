@@ -971,7 +971,7 @@ func decodeGetSnapshotResponse(resp *http.Response) (res *SnapshotFiles, _ error
 	return res, errors.Wrap(defRes, "error")
 }
 
-func decodeGetSnapshotParentResponse(resp *http.Response) (res *GetSnapshotParentOK, _ error) {
+func decodeGetSnapshotAncestorResponse(resp *http.Response) (res *GetSnapshotAncestorOK, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -987,7 +987,7 @@ func decodeGetSnapshotParentResponse(resp *http.Response) (res *GetSnapshotParen
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response GetSnapshotParentOK
+			var response GetSnapshotAncestorOK
 			if err := func() error {
 				if err := response.Decode(d); err != nil {
 					return err

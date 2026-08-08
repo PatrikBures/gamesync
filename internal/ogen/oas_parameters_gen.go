@@ -1192,8 +1192,8 @@ func decodeGetSnapshotParams(args [4]string, argsEscaped bool, r *http.Request) 
 	return params, nil
 }
 
-// GetSnapshotParentParams is parameters of get-snapshot-parent operation.
-type GetSnapshotParentParams struct {
+// GetSnapshotAncestorParams is parameters of get-snapshot-ancestor operation.
+type GetSnapshotAncestorParams struct {
 	// ID of a snapshot.
 	TargetSnapshotID int64
 	// Used to identify a user.
@@ -1204,7 +1204,7 @@ type GetSnapshotParentParams struct {
 	SnapshotID int64
 }
 
-func unpackGetSnapshotParentParams(packed middleware.Parameters) (params GetSnapshotParentParams) {
+func unpackGetSnapshotAncestorParams(packed middleware.Parameters) (params GetSnapshotAncestorParams) {
 	{
 		key := middleware.ParameterKey{
 			Name: "targetSnapshotID",
@@ -1236,7 +1236,7 @@ func unpackGetSnapshotParentParams(packed middleware.Parameters) (params GetSnap
 	return params
 }
 
-func decodeGetSnapshotParentParams(args [3]string, argsEscaped bool, r *http.Request) (params GetSnapshotParentParams, _ error) {
+func decodeGetSnapshotAncestorParams(args [3]string, argsEscaped bool, r *http.Request) (params GetSnapshotAncestorParams, _ error) {
 	q := uri.NewQueryDecoder(r.URL.Query())
 	// Decode query: targetSnapshotID.
 	if err := func() error {

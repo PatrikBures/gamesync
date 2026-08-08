@@ -2359,16 +2359,16 @@ func (s *Server) handleGetSnapshotRequest(args [4]string, argsEscaped bool, w ht
 	}
 }
 
-// handleGetSnapshotParentRequest handles get-snapshot-parent operation.
+// handleGetSnapshotAncestorRequest handles get-snapshot-ancestor operation.
 //
 // Check if snapshot is ancestor of target snapshot.
 //
 // GET /users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry
-func (s *Server) handleGetSnapshotParentRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGetSnapshotAncestorRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("get-snapshot-parent"),
+		otelogen.OperationID("get-snapshot-ancestor"),
 		semconv.HTTPRequestMethodKey.String("GET"),
 		semconv.HTTPRouteKey.String("/users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry"),
 	}
@@ -2376,7 +2376,7 @@ func (s *Server) handleGetSnapshotParentRequest(args [3]string, argsEscaped bool
 	otelAttrs = append(otelAttrs, s.cfg.Attributes...)
 
 	// Start a span for this request.
-	ctx, span := s.cfg.Tracer.Start(r.Context(), GetSnapshotParentOperation,
+	ctx, span := s.cfg.Tracer.Start(r.Context(), GetSnapshotAncestorOperation,
 		trace.WithAttributes(otelAttrs...),
 		serverSpanKind,
 	)
@@ -2431,15 +2431,15 @@ func (s *Server) handleGetSnapshotParentRequest(args [3]string, argsEscaped bool
 		}
 		err          error
 		opErrContext = ogenerrors.OperationContext{
-			Name: GetSnapshotParentOperation,
-			ID:   "get-snapshot-parent",
+			Name: GetSnapshotAncestorOperation,
+			ID:   "get-snapshot-ancestor",
 		}
 	)
 	{
 		type bitset = [1]uint8
 		var satisfied bitset
 		{
-			sctx, ok, err := s.securityBearerAuth(ctx, GetSnapshotParentOperation, r)
+			sctx, ok, err := s.securityBearerAuth(ctx, GetSnapshotAncestorOperation, r)
 			if err != nil {
 				err = &ogenerrors.SecurityError{
 					OperationContext: opErrContext,
@@ -2481,7 +2481,7 @@ func (s *Server) handleGetSnapshotParentRequest(args [3]string, argsEscaped bool
 			return
 		}
 	}
-	params, err := decodeGetSnapshotParentParams(args, argsEscaped, r)
+	params, err := decodeGetSnapshotAncestorParams(args, argsEscaped, r)
 	if err != nil {
 		err = &ogenerrors.DecodeParamsError{
 			OperationContext: opErrContext,
@@ -2494,13 +2494,13 @@ func (s *Server) handleGetSnapshotParentRequest(args [3]string, argsEscaped bool
 
 	var rawBody []byte
 
-	var response *GetSnapshotParentOK
+	var response *GetSnapshotAncestorOK
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    GetSnapshotParentOperation,
+			OperationName:    GetSnapshotAncestorOperation,
 			OperationSummary: "Check if snapshot is ancestor of target snapshot",
-			OperationID:      "get-snapshot-parent",
+			OperationID:      "get-snapshot-ancestor",
 			Body:             nil,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
@@ -2526,8 +2526,8 @@ func (s *Server) handleGetSnapshotParentRequest(args [3]string, argsEscaped bool
 
 		type (
 			Request  = struct{}
-			Params   = GetSnapshotParentParams
-			Response = *GetSnapshotParentOK
+			Params   = GetSnapshotAncestorParams
+			Response = *GetSnapshotAncestorOK
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -2536,14 +2536,14 @@ func (s *Server) handleGetSnapshotParentRequest(args [3]string, argsEscaped bool
 		](
 			m,
 			mreq,
-			unpackGetSnapshotParentParams,
+			unpackGetSnapshotAncestorParams,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.GetSnapshotParent(ctx, params)
+				response, err = s.h.GetSnapshotAncestor(ctx, params)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.GetSnapshotParent(ctx, params)
+		response, err = s.h.GetSnapshotAncestor(ctx, params)
 	}
 	if err != nil {
 		if errRes, ok := errors.Into[*GlobalErrorStatusCode](err); ok {
@@ -2562,7 +2562,7 @@ func (s *Server) handleGetSnapshotParentRequest(args [3]string, argsEscaped bool
 		return
 	}
 
-	if err := encodeGetSnapshotParentResponse(response, w, span); err != nil {
+	if err := encodeGetSnapshotAncestorResponse(response, w, span); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)

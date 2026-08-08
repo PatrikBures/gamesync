@@ -265,7 +265,7 @@ func (s *Service) GetSnapshot(ctx context.Context, params api.GetSnapshotParams)
 }
 
 
-func (s *Service) GetSnapshotParent(ctx context.Context, params api.GetSnapshotParentParams) (*api.GetSnapshotParentOK, error) {
+func (s *Service) GetSnapshotAncestor(ctx context.Context, params api.GetSnapshotAncestorParams) (*api.GetSnapshotAncestorOK, error) {
 	ok, err := s.db.ReadQuery().HasAncestor(ctx, dbm.HasAncestorParams{
 		StartSnapshotID: params.SnapshotID,
 		TargetSnapshotID: params.TargetSnapshotID,
@@ -273,5 +273,5 @@ func (s *Service) GetSnapshotParent(ctx context.Context, params api.GetSnapshotP
 	if err != nil {
 		return nil, server.NewInternalError(err, "Checking if ancestor", "startSnapshotID", params.SnapshotID, "targetSnapshotID", params.TargetSnapshotID)
 	}
-	return &api.GetSnapshotParentOK{ IsAncestor: ok }, nil
+	return &api.GetSnapshotAncestorOK{ IsAncestor: ok }, nil
 }

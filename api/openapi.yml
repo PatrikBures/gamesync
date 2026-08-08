@@ -422,7 +422,7 @@ paths:
       - $ref: "#/components/parameters/snapshotID"
     get:
       summary: Check if snapshot is ancestor of target snapshot
-      operationId: get-snapshot-parent
+      operationId: get-snapshot-ancestor
       tags:
         - Users
       responses:

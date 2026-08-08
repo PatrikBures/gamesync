@@ -147,17 +147,17 @@ func (s GetChunkOK) Read(p []byte) (n int, err error) {
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
 
-type GetSnapshotParentOK struct {
+type GetSnapshotAncestorOK struct {
 	IsAncestor bool `json:"isAncestor"`
 }
 
 // GetIsAncestor returns the value of IsAncestor.
-func (s *GetSnapshotParentOK) GetIsAncestor() bool {
+func (s *GetSnapshotAncestorOK) GetIsAncestor() bool {
 	return s.IsAncestor
 }
 
 // SetIsAncestor sets the value of IsAncestor.
-func (s *GetSnapshotParentOK) SetIsAncestor(val bool) {
+func (s *GetSnapshotAncestorOK) SetIsAncestor(val bool) {
 	s.IsAncestor = val
 }
 

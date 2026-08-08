@@ -121,12 +121,12 @@ func (UnimplementedHandler) GetSnapshot(ctx context.Context, params GetSnapshotP
 	return r, ht.ErrNotImplemented
 }
 
-// GetSnapshotParent implements get-snapshot-parent operation.
+// GetSnapshotAncestor implements get-snapshot-ancestor operation.
 //
 // Check if snapshot is ancestor of target snapshot.
 //
 // GET /users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry
-func (UnimplementedHandler) GetSnapshotParent(ctx context.Context, params GetSnapshotParentParams) (r *GetSnapshotParentOK, _ error) {
+func (UnimplementedHandler) GetSnapshotAncestor(ctx context.Context, params GetSnapshotAncestorParams) (r *GetSnapshotAncestorOK, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

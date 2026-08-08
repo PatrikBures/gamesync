@@ -101,12 +101,12 @@ type Invoker interface {
 	//
 	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}
 	GetSnapshot(ctx context.Context, params GetSnapshotParams) (*SnapshotFiles, error)
-	// GetSnapshotParent invokes get-snapshot-parent operation.
+	// GetSnapshotAncestor invokes get-snapshot-ancestor operation.
 	//
 	// Check if snapshot is ancestor of target snapshot.
 	//
 	// GET /users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry
-	GetSnapshotParent(ctx context.Context, params GetSnapshotParentParams) (*GetSnapshotParentOK, error)
+	GetSnapshotAncestor(ctx context.Context, params GetSnapshotAncestorParams) (*GetSnapshotAncestorOK, error)
 	// GetUser invokes get-user operation.
 	//
 	// Get info about user.
@@ -1864,19 +1864,19 @@ func (c *Client) sendGetSnapshot(ctx context.Context, params GetSnapshotParams) 
 	return result, nil
 }
 
-// GetSnapshotParent invokes get-snapshot-parent operation.
+// GetSnapshotAncestor invokes get-snapshot-ancestor operation.
 //
 // Check if snapshot is ancestor of target snapshot.
 //
 // GET /users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry
-func (c *Client) GetSnapshotParent(ctx context.Context, params GetSnapshotParentParams) (*GetSnapshotParentOK, error) {
-	res, err := c.sendGetSnapshotParent(ctx, params)
+func (c *Client) GetSnapshotAncestor(ctx context.Context, params GetSnapshotAncestorParams) (*GetSnapshotAncestorOK, error) {
+	res, err := c.sendGetSnapshotAncestor(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetSnapshotParent(ctx context.Context, params GetSnapshotParentParams) (res *GetSnapshotParentOK, err error) {
+func (c *Client) sendGetSnapshotAncestor(ctx context.Context, params GetSnapshotAncestorParams) (res *GetSnapshotAncestorOK, err error) {
 	otelAttrs := []attribute.KeyValue{
-		otelogen.OperationID("get-snapshot-parent"),
+		otelogen.OperationID("get-snapshot-ancestor"),
 		semconv.HTTPRequestMethodKey.String("GET"),
 		semconv.URLTemplateKey.String("/users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry"),
 	}
@@ -1894,7 +1894,7 @@ func (c *Client) sendGetSnapshotParent(ctx context.Context, params GetSnapshotPa
 	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
 
 	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, GetSnapshotParentOperation,
+	ctx, span := c.cfg.Tracer.Start(ctx, GetSnapshotAncestorOperation,
 		trace.WithAttributes(otelAttrs...),
 		clientSpanKind,
 	)
@@ -2001,7 +2001,7 @@ func (c *Client) sendGetSnapshotParent(ctx context.Context, params GetSnapshotPa
 		var satisfied bitset
 		{
 			stage = "Security:BearerAuth"
-			switch err := c.securityBearerAuth(ctx, GetSnapshotParentOperation, r); {
+			switch err := c.securityBearerAuth(ctx, GetSnapshotAncestorOperation, r); {
 			case err == nil: // if NO error
 				satisfied[0] |= 1 << 0
 			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
@@ -2044,7 +2044,7 @@ func (c *Client) sendGetSnapshotParent(ctx context.Context, params GetSnapshotPa
 	}()
 
 	stage = "DecodeResponse"
-	result, err := decodeGetSnapshotParentResponse(resp)
+	result, err := decodeGetSnapshotAncestorResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

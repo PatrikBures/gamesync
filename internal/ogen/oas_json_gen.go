@@ -425,28 +425,28 @@ func (s *Files) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
-func (s *GetSnapshotParentOK) Encode(e *jx.Encoder) {
+func (s *GetSnapshotAncestorOK) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
 	e.ObjEnd()
 }
 
 // encodeFields encodes fields.
-func (s *GetSnapshotParentOK) encodeFields(e *jx.Encoder) {
+func (s *GetSnapshotAncestorOK) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("isAncestor")
 		e.Bool(s.IsAncestor)
 	}
 }
 
-var jsonFieldsNameOfGetSnapshotParentOK = [1]string{
+var jsonFieldsNameOfGetSnapshotAncestorOK = [1]string{
 	0: "isAncestor",
 }
 
-// Decode decodes GetSnapshotParentOK from json.
-func (s *GetSnapshotParentOK) Decode(d *jx.Decoder) error {
+// Decode decodes GetSnapshotAncestorOK from json.
+func (s *GetSnapshotAncestorOK) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode GetSnapshotParentOK to nil")
+		return errors.New("invalid: unable to decode GetSnapshotAncestorOK to nil")
 	}
 	var requiredBitSet [1]uint8
 
@@ -469,7 +469,7 @@ func (s *GetSnapshotParentOK) Decode(d *jx.Decoder) error {
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "decode GetSnapshotParentOK")
+		return errors.Wrap(err, "decode GetSnapshotAncestorOK")
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
@@ -486,8 +486,8 @@ func (s *GetSnapshotParentOK) Decode(d *jx.Decoder) error {
 				bitIdx := bits.TrailingZeros8(result)
 				fieldIdx := i*8 + bitIdx
 				var name string
-				if fieldIdx < len(jsonFieldsNameOfGetSnapshotParentOK) {
-					name = jsonFieldsNameOfGetSnapshotParentOK[fieldIdx]
+				if fieldIdx < len(jsonFieldsNameOfGetSnapshotAncestorOK) {
+					name = jsonFieldsNameOfGetSnapshotAncestorOK[fieldIdx]
 				} else {
 					name = strconv.Itoa(fieldIdx)
 				}
@@ -508,14 +508,14 @@ func (s *GetSnapshotParentOK) Decode(d *jx.Decoder) error {
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s *GetSnapshotParentOK) MarshalJSON() ([]byte, error) {
+func (s *GetSnapshotAncestorOK) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *GetSnapshotParentOK) UnmarshalJSON(data []byte) error {
+func (s *GetSnapshotAncestorOK) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

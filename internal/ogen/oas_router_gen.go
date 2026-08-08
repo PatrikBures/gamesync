@@ -760,7 +760,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 												// Leaf node.
 												switch r.Method {
 												case "GET":
-													s.handleGetSnapshotParentRequest([3]string{
+													s.handleGetSnapshotAncestorRequest([3]string{
 														args[0],
 														args[1],
 														args[2],
@@ -1530,9 +1530,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 												// Leaf node.
 												switch method {
 												case "GET":
-													r.name = GetSnapshotParentOperation
+													r.name = GetSnapshotAncestorOperation
 													r.summary = "Check if snapshot is ancestor of target snapshot"
-													r.operationID = "get-snapshot-parent"
+													r.operationID = "get-snapshot-ancestor"
 													r.operationGroup = ""
 													r.pathPattern = "/users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry"
 													r.args = args

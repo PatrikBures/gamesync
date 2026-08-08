@@ -169,7 +169,7 @@ func encodeGetSnapshotResponse(response *SnapshotFiles, w http.ResponseWriter, s
 	return nil
 }
 
-func encodeGetSnapshotParentResponse(response *GetSnapshotParentOK, w http.ResponseWriter, span trace.Span) error {
+func encodeGetSnapshotAncestorResponse(response *GetSnapshotAncestorOK, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 
