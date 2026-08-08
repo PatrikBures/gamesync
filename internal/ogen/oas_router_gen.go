@@ -22,7 +22,7 @@ var (
 		"GET":  "Authorization",
 		"POST": "Authorization,Content-Type",
 	}
-	rn25AllowedHeaders = map[string]string{
+	rn29AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
 	rn18AllowedHeaders = map[string]string{
@@ -30,7 +30,7 @@ var (
 		"PATCH": "Authorization,Content-Type",
 		"PUT":   "Authorization,Content-Type",
 	}
-	rn22AllowedHeaders = map[string]string{
+	rn26AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
 		"POST": "Content-Type",
 	}
@@ -40,7 +40,7 @@ var (
 	rn2AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
-	rn27AllowedHeaders = map[string]string{
+	rn31AllowedHeaders = map[string]string{
 		"PUT": "Authorization,Content-Type",
 	}
 	rn15AllowedHeaders = map[string]string{
@@ -57,13 +57,16 @@ var (
 		"DELETE": "Authorization",
 		"PUT":    "Authorization",
 	}
-	rn23AllowedHeaders = map[string]string{
+	rn27AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
 	}
 	rn7AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 	rn21AllowedHeaders = map[string]string{
+		"GET": "Authorization",
+	}
+	rn25AllowedHeaders = map[string]string{
 		"GET": "Authorization",
 	}
 )
@@ -286,7 +289,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "PUT",
-										allowedHeaders: rn25AllowedHeaders,
+										allowedHeaders: rn29AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -353,7 +356,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					default:
 						s.notAllowed(w, r, notAllowedParams{
 							allowedMethods: "GET,POST",
-							allowedHeaders: rn22AllowedHeaders,
+							allowedHeaders: rn26AllowedHeaders,
 							acceptPost:     "application/json",
 							acceptPatch:    "",
 						})
@@ -458,7 +461,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								default:
 									s.notAllowed(w, r, notAllowedParams{
 										allowedMethods: "PUT",
-										allowedHeaders: rn27AllowedHeaders,
+										allowedHeaders: rn31AllowedHeaders,
 										acceptPost:     "",
 										acceptPatch:    "",
 									})
@@ -534,42 +537,205 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									return
 								}
 								switch elem[0] {
-								case '/': // Prefix: "/branches"
+								case '/': // Prefix: "/"
 
-									if l := len("/branches"); len(elem) >= l && elem[0:l] == "/branches" {
+									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
 									if len(elem) == 0 {
-										switch r.Method {
-										case "GET":
-											s.handleGetBranchesRequest([2]string{
-												args[0],
-												args[1],
-											}, elemIsEscaped, w, r)
-										default:
-											s.notAllowed(w, r, notAllowedParams{
-												allowedMethods: "GET",
-												allowedHeaders: rn8AllowedHeaders,
-												acceptPost:     "",
-												acceptPatch:    "",
-											})
-										}
-
-										return
+										break
 									}
 									switch elem[0] {
-									case '/': // Prefix: "/"
+									case 'b': // Prefix: "branches"
 
-										if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+										if l := len("branches"); len(elem) >= l && elem[0:l] == "branches" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "branchName"
+										if len(elem) == 0 {
+											switch r.Method {
+											case "GET":
+												s.handleGetBranchesRequest([2]string{
+													args[0],
+													args[1],
+												}, elemIsEscaped, w, r)
+											default:
+												s.notAllowed(w, r, notAllowedParams{
+													allowedMethods: "GET",
+													allowedHeaders: rn8AllowedHeaders,
+													acceptPost:     "",
+													acceptPatch:    "",
+												})
+											}
+
+											return
+										}
+										switch elem[0] {
+										case '/': // Prefix: "/"
+
+											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											// Param: "branchName"
+											// Match until "/"
+											idx := strings.IndexByte(elem, '/')
+											if idx < 0 {
+												idx = len(elem)
+											}
+											args[2] = elem[:idx]
+											elem = elem[idx:]
+
+											if len(elem) == 0 {
+												switch r.Method {
+												case "DELETE":
+													s.handleDeleteBranchRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												case "PUT":
+													s.handlePutBranchRequest([3]string{
+														args[0],
+														args[1],
+														args[2],
+													}, elemIsEscaped, w, r)
+												default:
+													s.notAllowed(w, r, notAllowedParams{
+														allowedMethods: "DELETE,PUT",
+														allowedHeaders: rn6AllowedHeaders,
+														acceptPost:     "",
+														acceptPatch:    "",
+													})
+												}
+
+												return
+											}
+											switch elem[0] {
+											case '/': // Prefix: "/snapshots"
+
+												if l := len("/snapshots"); len(elem) >= l && elem[0:l] == "/snapshots" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													switch r.Method {
+													case "POST":
+														s.handlePostSnapshotRequest([3]string{
+															args[0],
+															args[1],
+															args[2],
+														}, elemIsEscaped, w, r)
+													default:
+														s.notAllowed(w, r, notAllowedParams{
+															allowedMethods: "POST",
+															allowedHeaders: rn27AllowedHeaders,
+															acceptPost:     "application/json",
+															acceptPatch:    "",
+														})
+													}
+
+													return
+												}
+												switch elem[0] {
+												case '/': // Prefix: "/"
+
+													if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														break
+													}
+													switch elem[0] {
+													case 'c': // Prefix: "current"
+														origElem := elem
+														if l := len("current"); len(elem) >= l && elem[0:l] == "current" {
+															elem = elem[l:]
+														} else {
+															break
+														}
+
+														if len(elem) == 0 {
+															// Leaf node.
+															switch r.Method {
+															case "GET":
+																s.handleGetBranchHeadRequest([3]string{
+																	args[0],
+																	args[1],
+																	args[2],
+																}, elemIsEscaped, w, r)
+															default:
+																s.notAllowed(w, r, notAllowedParams{
+																	allowedMethods: "GET",
+																	allowedHeaders: rn7AllowedHeaders,
+																	acceptPost:     "",
+																	acceptPatch:    "",
+																})
+															}
+
+															return
+														}
+
+														elem = origElem
+													}
+													// Param: "snapshotID"
+													// Leaf parameter, slashes are prohibited
+													idx := strings.IndexByte(elem, '/')
+													if idx >= 0 {
+														break
+													}
+													args[3] = elem
+													elem = ""
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch r.Method {
+														case "GET":
+															s.handleGetSnapshotRequest([4]string{
+																args[0],
+																args[1],
+																args[2],
+																args[3],
+															}, elemIsEscaped, w, r)
+														default:
+															s.notAllowed(w, r, notAllowedParams{
+																allowedMethods: "GET",
+																allowedHeaders: rn21AllowedHeaders,
+																acceptPost:     "",
+																acceptPatch:    "",
+															})
+														}
+
+														return
+													}
+
+												}
+
+											}
+
+										}
+
+									case 's': // Prefix: "snapshots/"
+
+										if l := len("snapshots/"); len(elem) >= l && elem[0:l] == "snapshots/" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										// Param: "snapshotID"
 										// Match until "/"
 										idx := strings.IndexByte(elem, '/')
 										if idx < 0 {
@@ -579,133 +745,36 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 										elem = elem[idx:]
 
 										if len(elem) == 0 {
-											switch r.Method {
-											case "DELETE":
-												s.handleDeleteBranchRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											case "PUT":
-												s.handlePutBranchRequest([3]string{
-													args[0],
-													args[1],
-													args[2],
-												}, elemIsEscaped, w, r)
-											default:
-												s.notAllowed(w, r, notAllowedParams{
-													allowedMethods: "DELETE,PUT",
-													allowedHeaders: rn6AllowedHeaders,
-													acceptPost:     "",
-													acceptPatch:    "",
-												})
-											}
-
-											return
+											break
 										}
 										switch elem[0] {
-										case '/': // Prefix: "/snapshots"
+										case '/': // Prefix: "/ancestry"
 
-											if l := len("/snapshots"); len(elem) >= l && elem[0:l] == "/snapshots" {
+											if l := len("/ancestry"); len(elem) >= l && elem[0:l] == "/ancestry" {
 												elem = elem[l:]
 											} else {
 												break
 											}
 
 											if len(elem) == 0 {
+												// Leaf node.
 												switch r.Method {
-												case "POST":
-													s.handlePostSnapshotRequest([3]string{
+												case "GET":
+													s.handleGetSnapshotParentRequest([3]string{
 														args[0],
 														args[1],
 														args[2],
 													}, elemIsEscaped, w, r)
 												default:
 													s.notAllowed(w, r, notAllowedParams{
-														allowedMethods: "POST",
-														allowedHeaders: rn23AllowedHeaders,
-														acceptPost:     "application/json",
+														allowedMethods: "GET",
+														allowedHeaders: rn25AllowedHeaders,
+														acceptPost:     "",
 														acceptPatch:    "",
 													})
 												}
 
 												return
-											}
-											switch elem[0] {
-											case '/': // Prefix: "/"
-
-												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-													elem = elem[l:]
-												} else {
-													break
-												}
-
-												if len(elem) == 0 {
-													break
-												}
-												switch elem[0] {
-												case 'c': // Prefix: "current"
-													origElem := elem
-													if l := len("current"); len(elem) >= l && elem[0:l] == "current" {
-														elem = elem[l:]
-													} else {
-														break
-													}
-
-													if len(elem) == 0 {
-														// Leaf node.
-														switch r.Method {
-														case "GET":
-															s.handleGetBranchHeadRequest([3]string{
-																args[0],
-																args[1],
-																args[2],
-															}, elemIsEscaped, w, r)
-														default:
-															s.notAllowed(w, r, notAllowedParams{
-																allowedMethods: "GET",
-																allowedHeaders: rn7AllowedHeaders,
-																acceptPost:     "",
-																acceptPatch:    "",
-															})
-														}
-
-														return
-													}
-
-													elem = origElem
-												}
-												// Param: "snapshotID"
-												// Leaf parameter, slashes are prohibited
-												idx := strings.IndexByte(elem, '/')
-												if idx >= 0 {
-													break
-												}
-												args[3] = elem
-												elem = ""
-
-												if len(elem) == 0 {
-													// Leaf node.
-													switch r.Method {
-													case "GET":
-														s.handleGetSnapshotRequest([4]string{
-															args[0],
-															args[1],
-															args[2],
-															args[3],
-														}, elemIsEscaped, w, r)
-													default:
-														s.notAllowed(w, r, notAllowedParams{
-															allowedMethods: "GET",
-															allowedHeaders: rn21AllowedHeaders,
-															acceptPost:     "",
-															acceptPatch:    "",
-														})
-													}
-
-													return
-												}
-
 											}
 
 										}
@@ -1255,39 +1324,188 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 									}
 								}
 								switch elem[0] {
-								case '/': // Prefix: "/branches"
+								case '/': // Prefix: "/"
 
-									if l := len("/branches"); len(elem) >= l && elem[0:l] == "/branches" {
+									if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 										elem = elem[l:]
 									} else {
 										break
 									}
 
 									if len(elem) == 0 {
-										switch method {
-										case "GET":
-											r.name = GetBranchesOperation
-											r.summary = "Get all branches in repo"
-											r.operationID = "get-branches"
-											r.operationGroup = ""
-											r.pathPattern = "/users/{userID}/repos/{repoName}/branches"
-											r.args = args
-											r.count = 2
-											return r, true
-										default:
-											return
-										}
+										break
 									}
 									switch elem[0] {
-									case '/': // Prefix: "/"
+									case 'b': // Prefix: "branches"
 
-										if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+										if l := len("branches"); len(elem) >= l && elem[0:l] == "branches" {
 											elem = elem[l:]
 										} else {
 											break
 										}
 
-										// Param: "branchName"
+										if len(elem) == 0 {
+											switch method {
+											case "GET":
+												r.name = GetBranchesOperation
+												r.summary = "Get all branches in repo"
+												r.operationID = "get-branches"
+												r.operationGroup = ""
+												r.pathPattern = "/users/{userID}/repos/{repoName}/branches"
+												r.args = args
+												r.count = 2
+												return r, true
+											default:
+												return
+											}
+										}
+										switch elem[0] {
+										case '/': // Prefix: "/"
+
+											if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+												elem = elem[l:]
+											} else {
+												break
+											}
+
+											// Param: "branchName"
+											// Match until "/"
+											idx := strings.IndexByte(elem, '/')
+											if idx < 0 {
+												idx = len(elem)
+											}
+											args[2] = elem[:idx]
+											elem = elem[idx:]
+
+											if len(elem) == 0 {
+												switch method {
+												case "DELETE":
+													r.name = DeleteBranchOperation
+													r.summary = "Delete branch in repo"
+													r.operationID = "delete-branch"
+													r.operationGroup = ""
+													r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}"
+													r.args = args
+													r.count = 3
+													return r, true
+												case "PUT":
+													r.name = PutBranchOperation
+													r.summary = "Create new branch in repo"
+													r.operationID = "put-branch"
+													r.operationGroup = ""
+													r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}"
+													r.args = args
+													r.count = 3
+													return r, true
+												default:
+													return
+												}
+											}
+											switch elem[0] {
+											case '/': // Prefix: "/snapshots"
+
+												if l := len("/snapshots"); len(elem) >= l && elem[0:l] == "/snapshots" {
+													elem = elem[l:]
+												} else {
+													break
+												}
+
+												if len(elem) == 0 {
+													switch method {
+													case "POST":
+														r.name = PostSnapshotOperation
+														r.summary = "Create new snapshot"
+														r.operationID = "post-snapshot"
+														r.operationGroup = ""
+														r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots"
+														r.args = args
+														r.count = 3
+														return r, true
+													default:
+														return
+													}
+												}
+												switch elem[0] {
+												case '/': // Prefix: "/"
+
+													if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+														elem = elem[l:]
+													} else {
+														break
+													}
+
+													if len(elem) == 0 {
+														break
+													}
+													switch elem[0] {
+													case 'c': // Prefix: "current"
+														origElem := elem
+														if l := len("current"); len(elem) >= l && elem[0:l] == "current" {
+															elem = elem[l:]
+														} else {
+															break
+														}
+
+														if len(elem) == 0 {
+															// Leaf node.
+															switch method {
+															case "GET":
+																r.name = GetBranchHeadOperation
+																r.summary = "Get current snapshot the branch points to"
+																r.operationID = "get-branch-head"
+																r.operationGroup = ""
+																r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current"
+																r.args = args
+																r.count = 3
+																return r, true
+															default:
+																return
+															}
+														}
+
+														elem = origElem
+													}
+													// Param: "snapshotID"
+													// Leaf parameter, slashes are prohibited
+													idx := strings.IndexByte(elem, '/')
+													if idx >= 0 {
+														break
+													}
+													args[3] = elem
+													elem = ""
+
+													if len(elem) == 0 {
+														// Leaf node.
+														switch method {
+														case "GET":
+															r.name = GetSnapshotOperation
+															r.summary = "Get all files and chunks for snapshot"
+															r.operationID = "get-snapshot"
+															r.operationGroup = ""
+															r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}"
+															r.args = args
+															r.count = 4
+															return r, true
+														default:
+															return
+														}
+													}
+
+												}
+
+											}
+
+										}
+
+									case 's': // Prefix: "snapshots/"
+
+										if l := len("snapshots/"); len(elem) >= l && elem[0:l] == "snapshots/" {
+											elem = elem[l:]
+										} else {
+											break
+										}
+
+										// Param: "snapshotID"
 										// Match until "/"
 										idx := strings.IndexByte(elem, '/')
 										if idx < 0 {
@@ -1297,119 +1515,32 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 										elem = elem[idx:]
 
 										if len(elem) == 0 {
-											switch method {
-											case "DELETE":
-												r.name = DeleteBranchOperation
-												r.summary = "Delete branch in repo"
-												r.operationID = "delete-branch"
-												r.operationGroup = ""
-												r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}"
-												r.args = args
-												r.count = 3
-												return r, true
-											case "PUT":
-												r.name = PutBranchOperation
-												r.summary = "Create new branch in repo"
-												r.operationID = "put-branch"
-												r.operationGroup = ""
-												r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}"
-												r.args = args
-												r.count = 3
-												return r, true
-											default:
-												return
-											}
+											break
 										}
 										switch elem[0] {
-										case '/': // Prefix: "/snapshots"
+										case '/': // Prefix: "/ancestry"
 
-											if l := len("/snapshots"); len(elem) >= l && elem[0:l] == "/snapshots" {
+											if l := len("/ancestry"); len(elem) >= l && elem[0:l] == "/ancestry" {
 												elem = elem[l:]
 											} else {
 												break
 											}
 
 											if len(elem) == 0 {
+												// Leaf node.
 												switch method {
-												case "POST":
-													r.name = PostSnapshotOperation
-													r.summary = "Create new snapshot"
-													r.operationID = "post-snapshot"
+												case "GET":
+													r.name = GetSnapshotParentOperation
+													r.summary = "Check if snapshot is ancestor of target snapshot"
+													r.operationID = "get-snapshot-parent"
 													r.operationGroup = ""
-													r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots"
+													r.pathPattern = "/users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry"
 													r.args = args
 													r.count = 3
 													return r, true
 												default:
 													return
 												}
-											}
-											switch elem[0] {
-											case '/': // Prefix: "/"
-
-												if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
-													elem = elem[l:]
-												} else {
-													break
-												}
-
-												if len(elem) == 0 {
-													break
-												}
-												switch elem[0] {
-												case 'c': // Prefix: "current"
-													origElem := elem
-													if l := len("current"); len(elem) >= l && elem[0:l] == "current" {
-														elem = elem[l:]
-													} else {
-														break
-													}
-
-													if len(elem) == 0 {
-														// Leaf node.
-														switch method {
-														case "GET":
-															r.name = GetBranchHeadOperation
-															r.summary = "Get current snapshot the branch points to"
-															r.operationID = "get-branch-head"
-															r.operationGroup = ""
-															r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current"
-															r.args = args
-															r.count = 3
-															return r, true
-														default:
-															return
-														}
-													}
-
-													elem = origElem
-												}
-												// Param: "snapshotID"
-												// Leaf parameter, slashes are prohibited
-												idx := strings.IndexByte(elem, '/')
-												if idx >= 0 {
-													break
-												}
-												args[3] = elem
-												elem = ""
-
-												if len(elem) == 0 {
-													// Leaf node.
-													switch method {
-													case "GET":
-														r.name = GetSnapshotOperation
-														r.summary = "Get all files and chunks for snapshot"
-														r.operationID = "get-snapshot"
-														r.operationGroup = ""
-														r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/{snapshotID}"
-														r.args = args
-														r.count = 4
-														return r, true
-													default:
-														return
-													}
-												}
-
 											}
 
 										}

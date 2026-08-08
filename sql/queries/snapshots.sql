@@ -18,6 +18,12 @@ RETURNING *
 ;
 
 
+-- name: HasAncestor :one
+-- checks if 2 is ancestor of 1
+SELECT snapshot_has_ancestor($1, $2)
+;
+
+
 -- name: ListFileHashes :many
 SELECT file_hash FROM files
 WHERE file_hash = ANY(sqlc.arg(file_hash)::BYTEA[])

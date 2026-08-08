@@ -153,6 +153,23 @@ func (q *Queries) GetSnapshotFiles(ctx context.Context, snapshotID int64) ([]Sna
 	return items, nil
 }
 
+const hasAncestor = `-- name: HasAncestor :one
+SELECT snapshot_has_ancestor($1, $2)
+`
+
+type HasAncestorParams struct {
+	StartSnapshotID  int64
+	TargetSnapshotID int64
+}
+
+// checks if 2 is ancestor of 1
+func (q *Queries) HasAncestor(ctx context.Context, arg HasAncestorParams) (bool, error) {
+	row := q.db.QueryRow(ctx, hasAncestor, arg.StartSnapshotID, arg.TargetSnapshotID)
+	var snapshot_has_ancestor bool
+	err := row.Scan(&snapshot_has_ancestor)
+	return snapshot_has_ancestor, err
+}
+
 const listFileHashes = `-- name: ListFileHashes :many
 SELECT file_hash FROM files
 WHERE file_hash = ANY($1::BYTEA[])
