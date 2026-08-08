@@ -132,17 +132,13 @@ func StateFile(path string) (FileState, error) {
 }
 
 
-func Equal(a, b State) bool {
-	if a.SnapshotID != b.SnapshotID {
+func Equal(a, b map[string]FileState) bool {
+	if len(a) != len(b) {
 		return false
 	}
 
-	if len(a.FileStates) != len(b.FileStates) {
-		return false
-	}
-
-	for k, fsa := range a.FileStates {
-		fsb, ok := b.FileStates[k]
+	for k, fsa := range a {
+		fsb, ok := b[k]
 		if !ok || fsa != fsb {
 			return false
 		}

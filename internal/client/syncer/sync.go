@@ -58,11 +58,7 @@ func (s *syncer) Sync() error {
 		return err
 	}
 
-	localFileCount := 0
-	currentState := stater.State{
-		SnapshotID: snapshotID,
-		FileStates: make(map[string]stater.FileState),
-	}
+	currentFileStates := make(map[string]stater.FileState)
 	files := []api.File{}
 	for fr := range stream.Ch {
 		if fr.Err != nil {
@@ -73,12 +69,11 @@ func (s *syncer) Sync() error {
 			Hash: fr.Hash,
 			Path: fr.Path,
 		})
-		currentState.FileStates[fr.Path] = fr.State
-		localFileCount++
+		currentFileStates[fr.Path] = fr.State
 	}
 
 	if noHead {
-		fmt.Println("Pushing...")
+		fmt.Println("Pushing with no head...")
 		_, err := s.CreateSnapshot(files)
 		if err != nil {
 			return fmt.Errorf("creating snapshot: %w", err)
@@ -86,16 +81,19 @@ func (s *syncer) Sync() error {
 		return nil
 	}
 
-	localDiff := stater.Equal(&currentState, previousState)
-	remoteDiff := snapshotID != currentState.SnapshotID
+	localDiff := !stater.Equal(currentFileStates, previousState.FileStates)
+	remoteDiff := snapshotID != previousState.SnapshotID
 
 	if localDiff && !remoteDiff {
 		fmt.Println("Pushing...")
-		_, err := s.CreateSnapshot(files)
+		newSnapshot, err := s.CreateSnapshot(files)
 		if err != nil {
 			return fmt.Errorf("creating snapshot: %w", err)
 		}
-		return s.stater.Set(s.profile.Slug, &currentState)
+		return s.stater.Set(s.profile.Slug, stater.State{
+			SnapshotID: newSnapshot.SnapshotID,
+			FileStates: currentFileStates,
+		})
 	} else if !localDiff && remoteDiff{
 		fmt.Println("Pulling...")
 		if err := s.Restore(snapshotID); err != nil {
@@ -104,17 +102,11 @@ func (s *syncer) Sync() error {
 		return s.stater.Update(s.profile.Slug,snapshotID,  s.profile.Dir)
 	} else if localDiff && remoteDiff {
 		if unknownState {
-			return fmt.Errorf("no previous local state and difference between remote and local. Force pull or push")
+			return fmt.Errorf("no previous local state. Force pull or push")
 		}
 		return fmt.Errorf("changes on remote and local, either force push or pull")
-	} else if !localDiff && !remoteDiff {
+	} else if !localDiff && !remoteDiff{
 		fmt.Println("Already up to date")
-	// } else if !diff {
-	// 	// also handles case when unknownState is true
-	// 	fmt.Println("Fast forwarding...")
-	// 	if err := s.stater.Set(s.profile.Slug, &state); err != nil {
-	// 		return fmt.Errorf("fast forwarding snapshot: %w", err)
-	// 	}
 	} else {
 		fmt.Println("localDiff:", localDiff)
 		fmt.Println("remoteDiff:", remoteDiff)
