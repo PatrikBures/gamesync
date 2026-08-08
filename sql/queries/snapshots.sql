@@ -2,16 +2,17 @@
 -- name: CreateSnapshot :one
 -- returns the new snapshot_id
 --
--- accepts repo_id and branch_id to find the parent snapshot
+-- also accepts branch_id to find the parent snapshot
 -- using head snapshot id from branches
-INSERT INTO snapshots (parent_snapshot_id)
+INSERT INTO snapshots (parent_snapshot_id, repo_id)
 VALUES (
     (
         SELECT head_snapshot_id FROM branches 
         WHERE repo_id = $1
         AND branch_id = $2
         LIMIT 1
-    )
+    ),
+    $1
 )
 RETURNING *
 ;

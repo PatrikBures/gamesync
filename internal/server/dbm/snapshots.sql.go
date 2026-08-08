@@ -45,16 +45,17 @@ func (q *Queries) CreateFile(ctx context.Context, arg CreateFileParams) error {
 }
 
 const createSnapshot = `-- name: CreateSnapshot :one
-INSERT INTO snapshots (parent_snapshot_id)
+INSERT INTO snapshots (parent_snapshot_id, repo_id)
 VALUES (
     (
         SELECT head_snapshot_id FROM branches 
         WHERE repo_id = $1
         AND branch_id = $2
         LIMIT 1
-    )
+    ),
+    $1
 )
-RETURNING snapshot_id, parent_snapshot_id, created_at
+RETURNING snapshot_id, parent_snapshot_id, repo_id, created_at
 `
 
 type CreateSnapshotParams struct {
@@ -64,12 +65,17 @@ type CreateSnapshotParams struct {
 
 // returns the new snapshot_id
 //
-// accepts repo_id and branch_id to find the parent snapshot
+// also accepts branch_id to find the parent snapshot
 // using head snapshot id from branches
 func (q *Queries) CreateSnapshot(ctx context.Context, arg CreateSnapshotParams) (Snapshot, error) {
 	row := q.db.QueryRow(ctx, createSnapshot, arg.RepoID, arg.BranchID)
 	var i Snapshot
-	err := row.Scan(&i.SnapshotID, &i.ParentSnapshotID, &i.CreatedAt)
+	err := row.Scan(
+		&i.SnapshotID,
+		&i.ParentSnapshotID,
+		&i.RepoID,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
@@ -100,14 +106,19 @@ func (q *Queries) GetFileChunkHashes(ctx context.Context, fileHash []byte) ([][]
 }
 
 const getSnapshot = `-- name: GetSnapshot :one
-SELECT snapshot_id, parent_snapshot_id, created_at FROM snapshots
+SELECT snapshot_id, parent_snapshot_id, repo_id, created_at FROM snapshots
 WHERE snapshot_id = $1
 `
 
 func (q *Queries) GetSnapshot(ctx context.Context, snapshotID int64) (Snapshot, error) {
 	row := q.db.QueryRow(ctx, getSnapshot, snapshotID)
 	var i Snapshot
-	err := row.Scan(&i.SnapshotID, &i.ParentSnapshotID, &i.CreatedAt)
+	err := row.Scan(
+		&i.SnapshotID,
+		&i.ParentSnapshotID,
+		&i.RepoID,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
