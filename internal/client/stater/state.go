@@ -34,10 +34,10 @@ func (s *Stater) resolvePath(profile string) string {
 }
 
 // reads current profile state. returns  os.ErrNotExist if missing.
-func (s *Stater) Get(profile string) (*State, error) {
+func (s *Stater) Get(profile string) (State, error) {
 	file, err := os.Open(s.resolvePath(profile))
 	if err != nil {
-		return nil, err
+		return State{}, err
 	}
 
 	defer func() {
@@ -46,14 +46,14 @@ func (s *Stater) Get(profile string) (*State, error) {
 
 	var state State
 	if err = json.NewDecoder(file).Decode(&state); err != nil {
-		return nil, err
+		return State{}, err
 	}
 
-	return &state, nil
+	return state, nil
 }
 
 // Atomically writes state
-func (s *Stater) Set(profile string, state *State) error {
+func (s *Stater) Set(profile string, state State) error {
 	tempFile, err := os.CreateTemp(s.stateDir, ".tmp-*")
 	if err != nil {
 		return err
@@ -117,7 +117,7 @@ func (s *Stater) Update(profile string, snapshotID int64, dir string) error {
 		return err
 	}
 
-	return s.Set(profile, &state)
+	return s.Set(profile, state)
 }
 
 func StateFile(path string) (FileState, error) {
@@ -132,3 +132,21 @@ func StateFile(path string) (FileState, error) {
 }
 
 
+func Equal(a, b State) bool {
+	if a.SnapshotID != b.SnapshotID {
+		return false
+	}
+
+	if len(a.FileStates) != len(b.FileStates) {
+		return false
+	}
+
+	for k, fsa := range a.FileStates {
+		fsb, ok := b.FileStates[k]
+		if !ok || fsa != fsb {
+			return false
+		}
+	}
+
+	return true
+}
