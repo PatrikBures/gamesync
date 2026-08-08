@@ -41,10 +41,6 @@ func (s *syncer) CreateSnapshot(files []api.File) (*api.Snapshot, error) {
 			}
 		case *api.Snapshot:
 			fmt.Printf("Created snapshot for '%s' repo on branch '%s'\n", s.profile.RepoName, s.profile.BranchName)
-
-			if err := s.stater.SetProfileSnapshot(s.profile.Slug, r.SnapshotID); err != nil {
-				return nil, fmt.Errorf("setting profile snapshot: %w", err)
-			}
 			return r, nil
 		default:
 			return nil, fmt.Errorf("unrecognized type %T with result: %v", r, r)
