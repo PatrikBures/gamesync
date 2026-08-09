@@ -11,9 +11,18 @@ import (
 	"go.pabu.dev/gamesync/internal/snapshoter"
 )
 
+type SyncMode int
+const (
+	ModeAuto SyncMode = iota
+	ModePush
+	ModePushForce
+	ModePull
+	ModePullForce
+)
+
 // Syncs a profile by automatically determining if it should push/pull or
 // if it up to date or there is a conflict.
-func (s *syncer) Sync() error {
+func (s *syncer) Sync(mode SyncMode) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -42,6 +51,10 @@ func (s *syncer) Sync() error {
 		}
 	default:
 		return fmt.Errorf("unexpected result type: %T", snapshot)
+	}
+
+	if noHead && (mode == ModePull || mode == ModePullForce) {
+		return fmt.Errorf("no snapshot on branch, nothing to pull")
 	}
 
 	unknownState := false
@@ -87,7 +100,10 @@ func (s *syncer) Sync() error {
 	localDiff := !stater.Equal(currentFileStates, previousState.FileStates)
 	remoteDiff := snapshotID != previousState.SnapshotID
 
-	if localDiff && !remoteDiff {
+	if (localDiff && !remoteDiff && mode != ModePullForce) || mode == ModePushForce {
+		if mode == ModePull {
+			return fmt.Errorf("local files are newer than remote, either push or force pull")
+		}
 		fmt.Println("Pushing...")
 		newSnapshot, err := s.CreateSnapshot(files)
 		if err != nil {
@@ -97,7 +113,10 @@ func (s *syncer) Sync() error {
 			SnapshotID: newSnapshot.SnapshotID,
 			FileStates: currentFileStates,
 		})
-	} else if !localDiff && remoteDiff{
+	} else if (!localDiff && remoteDiff) || mode == ModePullForce {
+		if mode == ModePush {
+			return fmt.Errorf("remote is newer than local, either pull or force push")
+		}
 		fmt.Println("Pulling...")
 		if err := s.Restore(snapshotID); err != nil {
 			return fmt.Errorf("restoring snapshot: %w", err)

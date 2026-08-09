@@ -1,4 +1,4 @@
-package sync
+package pull
 
 import (
 	"fmt"
@@ -12,38 +12,42 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type syncCmd struct {
+type pullCmd struct {
 	Cmd *cobra.Command
-	opts syncOpts
+	opts pullOpts
 }
 
-type syncOpts struct {
+type pullOpts struct {
 	profile profiler.Profile
+	force bool
+	mode syncer.SyncMode
 }
 
-func New(conf *config.Config) *syncCmd {
-	root := syncCmd{}
+func New(conf *config.Config) *pullCmd {
+	root := pullCmd{}
 
 	cmd := &cobra.Command{
-		Use: "sync PROFILE",
-		Short: "Syncs a profile with server",
+		Use: "pull PROFILE",
+		Short: "Pulls a profile from server",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := populateSyncOpts(conf, &root.opts, args); err != nil {
+			if err := populatePullOpts(conf, &root.opts, args); err != nil {
 				return err
 			}
 
 			c, err := client.New(conf)
 			if err != nil { return err }
 
-			return runSyncCmd(c, conf, &root.opts)
+			return runPullCmd(c, conf, &root.opts)
 		},
 	}
+
+	cmd.Flags().BoolVarP(&root.opts.force, "force", "f", false, "Force pulls from server")
 
 	root.Cmd = cmd
 	return &root
 }
 
-func populateSyncOpts(conf *config.Config, opts *syncOpts, args []string) error {
+func populatePullOpts(conf *config.Config, opts *pullOpts, args []string) error {
 	profileName := args[0]
 	profile, ok, err := profiler.Get(profileName, conf.Global.ProfilesFile)
 	if err != nil {
@@ -53,11 +57,19 @@ func populateSyncOpts(conf *config.Config, opts *syncOpts, args []string) error 
 		return fmt.Errorf("profile '%s' not found", profileName)
 	}
 	opts.profile = profile
+
+	if opts.force {
+		opts.mode = syncer.ModePullForce
+	} else {
+		opts.mode = syncer.ModePull
+	}
+
 	return nil
 }
 
-func runSyncCmd(c *api.Client, conf *config.Config, opts *syncOpts) error {
+func runPullCmd(c *api.Client, conf *config.Config, opts *pullOpts) error {
 	s := syncer.New(conf, c, opts.profile)
 
-	return s.Sync(syncer.ModeAuto)
+	return s.Sync(opts.mode)
 }
+
