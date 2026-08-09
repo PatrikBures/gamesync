@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/schollz/progressbar/v3"
 	"go.pabu.dev/gamesync/internal/client/stater"
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"go.pabu.dev/gamesync/internal/snapshoter"
@@ -71,6 +72,15 @@ func (s *syncer) Sync(mode SyncMode) error {
 		return err
 	}
 
+	chunkBar := progressbar.NewOptions(-1,
+		progressbar.OptionSetDescription("Chunking"),
+		progressbar.OptionSetElapsedTime(true),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionUseIECUnits(true),
+		progressbar.OptionShowCount(),
+		progressbar.OptionSpinnerCustom([]string{"⡆ ", "⠇ ", "⠋ ", "⠉⠁", "⠈⠉", " ⠙", " ⠸", " ⢰", " ⣠", "⢀⣀", "⣀⡀", "⣄ "}),
+	)
+
 	currentFileStates := make(map[string]stater.FileState)
 	files := []api.File{}
 	for fr := range stream.Ch {
@@ -83,7 +93,12 @@ func (s *syncer) Sync(mode SyncMode) error {
 			Path: fr.Path,
 		})
 		currentFileStates[fr.Path] = fr.State
+		chunkBar.Add64(fr.State.Size)
 	}
+	if err := chunkBar.Close(); err != nil {
+		return err
+	}
+	fmt.Println()
 
 	if noHead {
 		fmt.Println("Pushing with no head...")
