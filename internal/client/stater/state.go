@@ -81,8 +81,7 @@ func (s *Stater) Set(profile string, state State) error {
 }
 
 func (s *Stater) Delete(profile string) error {
-	p := filepath.Join(s.stateDir, profile)
-	err := os.Remove(p)
+	err := os.Remove(s.resolvePath(profile))
 	if errors.Is(err, os.ErrNotExist) {
 		err = nil
 	}
