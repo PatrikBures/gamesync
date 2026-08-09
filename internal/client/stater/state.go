@@ -30,7 +30,7 @@ func New(stateDir string) *Stater {
 }
 
 func (s *Stater) resolvePath(profile string) string {
-	return filepath.Join(s.stateDir, filepath.Base(profile))
+	return filepath.Join(s.stateDir, filepath.Base(profile) + ".json")
 }
 
 // reads current profile state. returns  os.ErrNotExist if missing.
@@ -66,7 +66,10 @@ func (s *Stater) Set(profile string, state State) error {
 		}
 	}()
 
-	if err = json.NewEncoder(tempFile).Encode(state); err != nil {
+	encoder := json.NewEncoder(tempFile)
+	encoder.SetIndent("", "    ")
+
+	if err = encoder.Encode(state); err != nil {
 		return err
 	}
 
