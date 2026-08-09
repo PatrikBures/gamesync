@@ -2,12 +2,14 @@ package restore
 
 import (
 	"fmt"
+	"strconv"
+
 	"go.pabu.dev/gamesync/internal/client"
 	"go.pabu.dev/gamesync/internal/client/config"
 	"go.pabu.dev/gamesync/internal/client/profiler"
+	"go.pabu.dev/gamesync/internal/client/stater"
 	"go.pabu.dev/gamesync/internal/client/syncer"
 	api "go.pabu.dev/gamesync/internal/ogen"
-	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -75,5 +77,7 @@ func runRestoreCmd(c *api.Client, opts restoreOpts, conf *config.Config) (err er
 		return fmt.Errorf("pulling: %w", err)
 	}
 
-	return nil
+	s := stater.New(conf.ProfileStateDir())
+	
+	return s.Update(opts.profile.Slug, opts.snapshotID, opts.profile.Dir)
 }
