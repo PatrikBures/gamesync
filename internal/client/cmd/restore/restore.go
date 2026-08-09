@@ -71,7 +71,7 @@ func populateRestoreOpts(conf *config.Config, opts *restoreOpts, args []string) 
 func runRestoreCmd(c *api.Client, opts restoreOpts, conf *config.Config) (err error) {
 	syncer := syncer.New(conf, c, opts.profile)
 
-	if err := syncer.Pull(opts.snapshotID); err != nil {
+	if err := syncer.Restore(opts.snapshotID); err != nil {
 		return fmt.Errorf("pulling: %w", err)
 	}
 

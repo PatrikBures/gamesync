@@ -13,7 +13,7 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
-func (s *syncer) Pull(snapshotID int64) (err error) {
+func (s *syncer) Restore(snapshotID int64) (err error) {
 
 	snapshot, err := s.client.GetSnapshot(context.Background(), api.GetSnapshotParams{
 		UserID:     s.conf.Server.UserID,

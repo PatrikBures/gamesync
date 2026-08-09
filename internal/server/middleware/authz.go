@@ -43,6 +43,7 @@ var operationPerms = map[string]permissions.Perm{
 
 	"PostSnapshot": permissions.PermSync,
 	"GetSnapshot":  permissions.PermSync,
+	"GetSnapshotAncestor": permissions.PermSync,
 
 	"PutChunk": permissions.PermSync,
 	"GetChunk": permissions.PermSync,

@@ -169,6 +169,19 @@ func encodeGetSnapshotResponse(response *SnapshotFiles, w http.ResponseWriter, s
 	return nil
 }
 
+func encodeGetSnapshotAncestorResponse(response *GetSnapshotAncestorOK, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
+
+	e := new(jx.Encoder)
+	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
+}
+
 func encodeGetUserResponse(response *User, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
@@ -249,8 +262,15 @@ func encodePostRolesResponse(response *Role, w http.ResponseWriter, span trace.S
 
 func encodePostSnapshotResponse(response PostSnapshotRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
-	case *PostSnapshotCreated:
+	case *Snapshot:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(201)
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
 
 		return nil
 

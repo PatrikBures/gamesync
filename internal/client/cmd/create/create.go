@@ -19,7 +19,6 @@ func New(conf *config.Config) *createCmd {
 	}
 	cmd.AddCommand(
 		newRepoCmd(conf).cmd,
-		newSnapshotCmd(conf).cmd,
 		newProfileCmd(conf).cmd,
 		newBranchCmd(conf).cmd,
 	)

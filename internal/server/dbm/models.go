@@ -58,6 +58,7 @@ type RolePermission struct {
 type Snapshot struct {
 	SnapshotID       int64
 	ParentSnapshotID pgtype.Int8
+	RepoID           int64
 	CreatedAt        pgtype.Timestamptz
 }
 

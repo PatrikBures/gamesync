@@ -147,6 +147,20 @@ func (s GetChunkOK) Read(p []byte) (n int, err error) {
 // GetHealthOK is response for GetHealth operation.
 type GetHealthOK struct{}
 
+type GetSnapshotAncestorOK struct {
+	IsAncestor bool `json:"isAncestor"`
+}
+
+// GetIsAncestor returns the value of IsAncestor.
+func (s *GetSnapshotAncestorOK) GetIsAncestor() bool {
+	return s.IsAncestor
+}
+
+// SetIsAncestor sets the value of IsAncestor.
+func (s *GetSnapshotAncestorOK) SetIsAncestor(val bool) {
+	s.IsAncestor = val
+}
+
 // GlobalErrorStatusCode wraps Error with StatusCode.
 type GlobalErrorStatusCode struct {
 	StatusCode int
@@ -282,11 +296,6 @@ func (s *PermWithName) SetPermName(val string) {
 	s.PermName = val
 }
 
-// PostSnapshotCreated is response for PostSnapshot operation.
-type PostSnapshotCreated struct{}
-
-func (*PostSnapshotCreated) postSnapshotRes() {}
-
 type PostSnapshotFailedDependency struct {
 	ChunkHashes []string `json:"chunkHashes"`
 }
@@ -417,6 +426,7 @@ func (s *Snapshot) SetParentSnapshotID(val NilInt64) {
 }
 
 func (*Snapshot) getBranchHeadRes() {}
+func (*Snapshot) postSnapshotRes()  {}
 
 // Merged schema.
 // Ref: #/components/schemas/SnapshotFiles

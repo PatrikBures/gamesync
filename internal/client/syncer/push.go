@@ -12,7 +12,9 @@ import (
 
 // Creates a snapshot. If it receives a list of missing chunks, it will
 // upload them and try to create the snapshot again
-func (s *syncer) CreateSnapshot(files []api.File) error {
+//
+// It expects the chunks to already exist localy
+func (s *syncer) CreateSnapshot(files []api.File) (*api.Snapshot, error) {
 	request := api.Files{
 		Files: files,
 	}
@@ -28,23 +30,23 @@ func (s *syncer) CreateSnapshot(files []api.File) error {
 		if err != nil {
 			// this is a duplicate of a function in util.go in client cmd
 			if gErr, ok := errors.AsType[*api.GlobalErrorStatusCode](err); ok {
-				return fmt.Errorf("server returned error (%d): %s", gErr.Response.Code, gErr.Response.Message)
+				return nil, fmt.Errorf("server returned error (%d): %s", gErr.Response.Code, gErr.Response.Message)
 			}
-			return fmt.Errorf("posting snapshot: %w", err)
+			return nil, fmt.Errorf("posting snapshot: %w", err)
 		}
 		switch r := result.(type) {
 		case *api.PostSnapshotFailedDependency:
 			if err := s.uploadMissing(context.Background(), r.ChunkHashes); err != nil {
-				return err
+				return nil, err
 			}
-		case *api.PostSnapshotCreated:
+		case *api.Snapshot:
 			fmt.Printf("Created snapshot for '%s' repo on branch '%s'\n", s.profile.RepoName, s.profile.BranchName)
-			return nil
+			return r, nil
 		default:
-			return fmt.Errorf("unrecognized type %T with result: %v", r, r)
+			return nil, fmt.Errorf("unrecognized type %T with result: %v", r, r)
 		}
 	}
-	return fmt.Errorf("did not succeed creating snapshot, this error should not occcur")
+	return nil, fmt.Errorf("did not succeed creating snapshot, this error should not occcur")
 }
 
 func (s *syncer) uploadMissing(ctx context.Context, chunkHashes []string) error {

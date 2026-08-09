@@ -12,6 +12,7 @@ CREATE TABLE snapshots
 (
     snapshot_id BIGSERIAL NOT NULL PRIMARY KEY,
     parent_snapshot_id BIGINT REFERENCES snapshots(snapshot_id),
+    repo_id BIGINT NOT NULL REFERENCES repos(repo_id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_snapshots_parent ON snapshots(parent_snapshot_id);

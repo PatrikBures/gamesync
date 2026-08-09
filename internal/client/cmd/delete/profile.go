@@ -3,9 +3,10 @@ package delete
 import (
 	"errors"
 	"fmt"
+
 	"go.pabu.dev/gamesync/internal/client/config"
 	"go.pabu.dev/gamesync/internal/client/profiler"
-	"strings"
+	"go.pabu.dev/gamesync/internal/client/stater"
 
 	"github.com/spf13/cobra"
 )
@@ -46,24 +47,23 @@ func runProfileCmd(conf *config.Config, opts *profileOpts, args []string) (err e
 		err = errors.Join(err, p.Close())
 	}()
 
-	missingProfiles := []string{}
+	deleteProfiles := []string{}
+	s := stater.New(conf.ProfileStateDir())
 
 	for _, slug := range args {
 		ok := p.Delete(slug)
 		if ok {
-			fmt.Println("d profile", slug)
-		} else {
-			if !opts.force {
-				missingProfiles = append(missingProfiles, slug)
-			} else {
-				fmt.Println("Did not find profile", slug)
-			}
+			deleteProfiles = append(deleteProfiles, slug)
+		} else if !opts.force {
+			return fmt.Errorf("profile not found: %s", slug)
 		}
 	}
 
-	if !opts.force && len(missingProfiles) > 0 {
-		fmt.Println("Changes were not saved")
-		return fmt.Errorf("profile(s) not found: %s", strings.Join(missingProfiles, ", "))
+	for _, slug := range deleteProfiles {
+		if err := s.Delete(slug); err != nil {
+			return fmt.Errorf("deleting profile state: %w", err)
+		}
+		fmt.Printf("Deleted profile '%s'\n", slug)
 	}
 
 	return p.Save()

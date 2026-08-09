@@ -45,16 +45,17 @@ func (q *Queries) CreateFile(ctx context.Context, arg CreateFileParams) error {
 }
 
 const createSnapshot = `-- name: CreateSnapshot :one
-INSERT INTO snapshots (parent_snapshot_id)
+INSERT INTO snapshots (parent_snapshot_id, repo_id)
 VALUES (
     (
         SELECT head_snapshot_id FROM branches 
         WHERE repo_id = $1
         AND branch_id = $2
         LIMIT 1
-    )
+    ),
+    $1
 )
-RETURNING snapshot_id
+RETURNING snapshot_id, parent_snapshot_id, repo_id, created_at
 `
 
 type CreateSnapshotParams struct {
@@ -64,13 +65,18 @@ type CreateSnapshotParams struct {
 
 // returns the new snapshot_id
 //
-// accepts repo_id and branch_id to find the parent snapshot
+// also accepts branch_id to find the parent snapshot
 // using head snapshot id from branches
-func (q *Queries) CreateSnapshot(ctx context.Context, arg CreateSnapshotParams) (int64, error) {
+func (q *Queries) CreateSnapshot(ctx context.Context, arg CreateSnapshotParams) (Snapshot, error) {
 	row := q.db.QueryRow(ctx, createSnapshot, arg.RepoID, arg.BranchID)
-	var snapshot_id int64
-	err := row.Scan(&snapshot_id)
-	return snapshot_id, err
+	var i Snapshot
+	err := row.Scan(
+		&i.SnapshotID,
+		&i.ParentSnapshotID,
+		&i.RepoID,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const getFileChunkHashes = `-- name: GetFileChunkHashes :many
@@ -100,14 +106,25 @@ func (q *Queries) GetFileChunkHashes(ctx context.Context, fileHash []byte) ([][]
 }
 
 const getSnapshot = `-- name: GetSnapshot :one
-SELECT snapshot_id, parent_snapshot_id, created_at FROM snapshots
+SELECT snapshot_id, parent_snapshot_id, repo_id, created_at FROM snapshots
 WHERE snapshot_id = $1
+AND repo_id = $2
 `
 
-func (q *Queries) GetSnapshot(ctx context.Context, snapshotID int64) (Snapshot, error) {
-	row := q.db.QueryRow(ctx, getSnapshot, snapshotID)
+type GetSnapshotParams struct {
+	SnapshotID int64
+	RepoID     int64
+}
+
+func (q *Queries) GetSnapshot(ctx context.Context, arg GetSnapshotParams) (Snapshot, error) {
+	row := q.db.QueryRow(ctx, getSnapshot, arg.SnapshotID, arg.RepoID)
 	var i Snapshot
-	err := row.Scan(&i.SnapshotID, &i.ParentSnapshotID, &i.CreatedAt)
+	err := row.Scan(
+		&i.SnapshotID,
+		&i.ParentSnapshotID,
+		&i.RepoID,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
@@ -134,6 +151,23 @@ func (q *Queries) GetSnapshotFiles(ctx context.Context, snapshotID int64) ([]Sna
 		return nil, err
 	}
 	return items, nil
+}
+
+const hasAncestor = `-- name: HasAncestor :one
+SELECT snapshot_has_ancestor($1, $2)
+`
+
+type HasAncestorParams struct {
+	StartSnapshotID  int64
+	TargetSnapshotID int64
+}
+
+// checks if 2 is ancestor of 1
+func (q *Queries) HasAncestor(ctx context.Context, arg HasAncestorParams) (bool, error) {
+	row := q.db.QueryRow(ctx, hasAncestor, arg.StartSnapshotID, arg.TargetSnapshotID)
+	var snapshot_has_ancestor bool
+	err := row.Scan(&snapshot_has_ancestor)
+	return snapshot_has_ancestor, err
 }
 
 const listFileHashes = `-- name: ListFileHashes :many
