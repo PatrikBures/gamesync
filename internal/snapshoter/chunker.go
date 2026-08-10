@@ -238,18 +238,26 @@ func createChunkFile(chunkDir string, chunkHexHash string, flags int) (*os.File,
 	return chunkFile, chunkFilePath, nil
 }
 
-// creates relative dirs in chunkDir and opens the
+// Creates relative dirs in chunkDir and opens the
 // file which it returns including its path.
 //
 // if the file already exist, error is os.ErrExists
+//
+// File is opened in readonly mode
 func CreateChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
 	return createChunkFile(chunkDir, chunkHexHash, os.O_WRONLY|os.O_EXCL)
 }
 
+// Creates relative dirs in chunkDir and opens the
+// file which it returns including its path.
+// The file is created if it already does not exist. 
+// 
+// File is opened int read and write mode.
 func CreateReadChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
 	return createChunkFile(chunkDir, chunkHexHash, os.O_RDWR)
 }
 
+// Opens chunkfile in read only mode also returning its path.
 func ReadChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
 	chunkFilePath := filepath.Join(chunkDir, DirsForChunk(chunkHexHash), chunkHexHash)
 
@@ -279,7 +287,7 @@ func (cg *chunkGen) writeChunk(bytes []byte, out io.Writer) error {
 	return errors.Join(writeErr, closeErr)
 }
 
-// returns the dirs that the chunk should be in based on dirQty and dirLen
+// returns the dirs that the chunk should be in
 func DirsForChunk(hash string) (dirs string) {
 	dq := dirQty
 	dl := dirLen
