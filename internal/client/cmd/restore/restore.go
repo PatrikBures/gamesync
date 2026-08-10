@@ -9,6 +9,7 @@ import (
 	"go.pabu.dev/gamesync/internal/client/profiler"
 	"go.pabu.dev/gamesync/internal/client/stater"
 	"go.pabu.dev/gamesync/internal/client/syncer"
+	"go.pabu.dev/gamesync/internal/client/util"
 	api "go.pabu.dev/gamesync/internal/ogen"
 
 	"github.com/spf13/cobra"
@@ -73,7 +74,12 @@ func populateRestoreOpts(conf *config.Config, opts *restoreOpts, args []string) 
 func runRestoreCmd(c *api.Client, opts restoreOpts, conf *config.Config) (err error) {
 	syncer := syncer.New(conf, c, opts.profile)
 
-	if err := syncer.Restore(opts.snapshotID); err != nil {
+	files, err := util.FilesInDirRecursive(opts.profile.Dir)
+	if err != nil {
+		return fmt.Errorf("finding existing files: %w", err)
+	}
+
+	if err := syncer.Restore(opts.snapshotID, files); err != nil {
 		return fmt.Errorf("pulling: %w", err)
 	}
 

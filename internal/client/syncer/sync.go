@@ -133,7 +133,7 @@ func (s *syncer) Sync(mode SyncMode) error {
 			return fmt.Errorf("remote is newer than local, either pull or force push")
 		}
 		fmt.Println("Pulling...")
-		if err := s.Restore(snapshotID); err != nil {
+		if err := s.Restore(snapshotID, stater.CopyToSimpleMap(s.profile.Dir, currentFileStates)); err != nil {
 			return fmt.Errorf("restoring snapshot: %w", err)
 		}
 		return s.stater.Update(s.profile.Slug,snapshotID,  s.profile.Dir)

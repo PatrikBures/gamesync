@@ -4,16 +4,25 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	api "go.pabu.dev/gamesync/internal/ogen"
-	"go.pabu.dev/gamesync/internal/snapshoter"
 	"io"
 	"os"
 	"path/filepath"
 
+	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/gamesync/internal/snapshoter"
+
 	"github.com/klauspost/compress/zstd"
 )
 
-func (s *syncer) Restore(snapshotID int64) (err error) {
+type puller struct {
+	client           *api.Client
+	decoder          *zstd.Decoder
+	file             *os.File
+	fileBytesWritten int64
+	chunkDir         string
+}
+
+func (s *syncer) Restore(snapshotID int64, currentFilePaths map[string]struct{}) (err error) {
 
 	snapshot, err := s.client.GetSnapshot(context.Background(), api.GetSnapshotParams{
 		UserID:     s.conf.Server.UserID,
@@ -24,6 +33,7 @@ func (s *syncer) Restore(snapshotID int64) (err error) {
 	if err != nil {
 		return fmt.Errorf("getting snapshot: %w", err)
 	}
+
 	// we can add one puller which is only used if there is one chunk in the file
 	// this is to reuse the decoder and reduce allocations. (when goroutines are added)
 
@@ -74,9 +84,11 @@ func (s *syncer) Restore(snapshotID int64) (err error) {
 				return fmt.Errorf("pulling chunk for file '%s', chunk '%s': %w", filePath, chunkHash, err)
 			}
 		}
+
+		delete(currentFilePaths, filePath)
 	}
 
-	return nil
+	return cleanUp(currentFilePaths)
 }
 
 func (p *puller) PullChunk(chunkHash string) (err error) {
@@ -141,5 +153,18 @@ func (p *puller) PullChunk(chunkHash string) (err error) {
 
 	fmt.Println("Downloaded:", chunkHash)
 
+	return nil
+}
+
+func cleanUp(deleteFiles map[string]struct{}) error {
+	for path := range deleteFiles {
+		if err := os.Remove(path); err != nil {
+			return fmt.Errorf("removing file: %w", err)
+		}
+		dir := filepath.Dir(path)
+		if err := os.Remove(dir); err != nil && !errors.Is(err, os.ErrExist) {
+			return fmt.Errorf("removing empty dir: %w", err)
+		}
+	}
 	return nil
 }

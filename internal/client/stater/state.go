@@ -148,3 +148,11 @@ func Equal(a, b map[string]FileState) bool {
 
 	return true
 }
+
+func CopyToSimpleMap(dir string, state map[string]FileState) map[string]struct{} {
+	simple := make(map[string]struct{}, len(state))
+	for f := range state {
+		simple[filepath.Join(dir, f)] = struct{}{}
+	}
+	return simple
+}
