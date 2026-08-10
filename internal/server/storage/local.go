@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
-	"go.pabu.dev/gamesync/internal/server"
-	"go.pabu.dev/gamesync/internal/snapshoter"
 	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
+
+	"go.pabu.dev/gamesync/internal/server"
+	"go.pabu.dev/gamesync/internal/snapshoter"
 
 	"github.com/klauspost/compress/zstd"
 	"lukechampine.com/blake3"
@@ -120,6 +121,14 @@ func (l *local) Download(ctx context.Context, hash string) (io.Reader, error) {
 		return nil, server.NewInternalError(err, "failed opening chunk file", "path", path)
 	}
 	return f, nil
+}
+
+func (l *local) Delete(ctx context.Context, hash string) error {
+	path := l.chunkFilePath(hash)
+	if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return nil
 }
 
 // writes src to dst and returns uncompressedBytes, compressedBytes and blake3 hash

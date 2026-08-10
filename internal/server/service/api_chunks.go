@@ -38,8 +38,11 @@ func (s *Service) PutChunk(ctx context.Context, req api.PutChunkReq, params api.
 		Bytes:     bytes,
 		BytesCompressed: bytesCompressed,
 	}); err != nil {
-		return nil, server.NewInternalError(err, "failed inserting chunk to database", "chunkHash", params.ChunkHash, "error", err)
-		// TODO: should also delete the chunk file
+		derr := s.storage.Delete(ctx, params.ChunkHash)
+		if derr != nil {
+			return nil, server.NewInternalError(err, "failed inserting chunk to database and deleting chunk", "chunkHash", params.ChunkHash, "delete err", derr)
+		}
+		return nil, server.NewInternalError(err, "failed inserting chunk to database", "chunkHash", params.ChunkHash)
 	}
 
 	return &api.PutChunkCreated{}, nil
