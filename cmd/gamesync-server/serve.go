@@ -2,18 +2,25 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"syscall"
+	"time"
+
+	"github.com/robfig/cron/v3"
 	api "go.pabu.dev/gamesync/internal/ogen"
 	config "go.pabu.dev/gamesync/internal/server/config"
+	"go.pabu.dev/gamesync/internal/server/garbage"
 	initServer "go.pabu.dev/gamesync/internal/server/initialize"
 	middlewares "go.pabu.dev/gamesync/internal/server/middleware"
 	"go.pabu.dev/gamesync/internal/server/service"
 	"go.pabu.dev/gamesync/internal/server/storage"
-	"log/slog"
-	"net/http"
-	"os"
-	"path/filepath"
 
 	"go.pabu.dev/bytesize"
 )
@@ -28,9 +35,15 @@ type opts struct {
 	chunkTmpDir      string
 	maxChunkSize     string
 	quietLogRequests string
+	gcEnabled        bool
+	gcCron           string
 }
 
 func serve() error {
+	appCtx, stopApp := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stopApp()
+
+
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 
 	c := opts{}
@@ -42,6 +55,8 @@ func serve() error {
 	config.AddStringVar(&c.maxChunkSize, "max-chunk-size", "256Ki", "Max chunk size")
 	config.AddBoolVar(&c.requestLogs, "log-requests", false, "Enable logs for requests")
 	config.AddStringVar(&c.quietLogRequests, "log-requests-quiet", "GetHealth", "Hide requests from logger, seperated by '|'")
+	config.AddBoolVar(&c.gcEnabled, "gc-enabled", true, "Enables background goroutine for garbage collector")
+	config.AddStringVar(&c.gcCron, "gc-cron", "0 2 * * *", "Cron schedule for garbage collector")
 
 	flag.Parse()
 
@@ -59,7 +74,7 @@ func serve() error {
 	}
 
 	db, err := initServer.InitDatabase(
-		context.Background(),
+		appCtx,
 		c.dbPrimaryUrl,
 		config.StringToSlice(c.dbReplicaUrls),
 		config.StringToSlice(c.disabledRoles),
@@ -109,7 +124,65 @@ func serve() error {
 		return fmt.Errorf("creating server: %v", err)
 	}
 
-	return http.ListenAndServe(":8080", srv)
+	var cr *cron.Cron
+	if c.gcEnabled {
+		garbageCollector := garbage.New(db)
+		cr = cron.New()
+
+		if _, err := cr.AddFunc(c.gcCron, func() {
+			jobCtx, cancelJob := context.WithTimeout(appCtx, 15*time.Minute)
+			defer cancelJob()
+
+			slog.Info("Started GC job")
+			if err := garbageCollector.CleanOrphanedChunks(jobCtx); err != nil {
+				if jobCtx.Err() == context.Canceled {
+					slog.Error("GC job canceled due to application shutdown")
+				}
+				slog.Error("GC job error", "error", err)
+			}
+		}); err != nil {
+			return fmt.Errorf("adding cron job: %w", err)
+		}
+		cr.Start()
+		slog.Info("GC cron scheduler started", "schedule", c.gcCron)
+	}
+
+	httpSrv := &http.Server{
+		Addr:         ":8080",
+		Handler:      srv,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+	}
+	serverErrChan := make(chan error, 1)
+	go func() {
+		slog.Info("starting HTTP server", "addr", httpSrv.Addr)
+		if err := httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serverErrChan <- err
+		}
+	}()
+
+	select {
+	case err := <- serverErrChan:
+		return fmt.Errorf("HTTP server error: %w", err)
+	case <- appCtx.Done():
+		slog.Info("shutdown signal received, starting graceful teardown...")
+	}
+
+	shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelShutdown()
+
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+		slog.Error("HTTP server forced shutdown", "error", err)
+	}
+
+	if cr != nil {
+		slog.Info("stopping cron scheduler...")
+		cronCtx := cr.Stop()
+		<-cronCtx.Done()
+	}
+
+	slog.Info("server stopped cleanly")
+	return nil
 }
 
 func validateOpts(c *opts) error {
