@@ -50,6 +50,7 @@ CREATE INDEX idx_snapshot_files_file_hash ON snapshot_files(file_hash);
 CREATE TABLE chunks
 (
     bytes BIGINT NOT NULL,
+    bytes_compressed BIGINT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     chunk_hash BYTEA NOT NULL PRIMARY KEY
 );

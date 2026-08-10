@@ -23,18 +23,19 @@ func (q *Queries) CheckChunk(ctx context.Context, chunkHash []byte) (bool, error
 }
 
 const createChunk = `-- name: CreateChunk :exec
-INSERT INTO chunks (chunk_hash, bytes)
-VALUES ($1, $2)
+INSERT INTO chunks (chunk_hash, bytes, bytes_compressed)
+VALUES ($1, $2, $3)
 ON CONFLICT DO NOTHING
 `
 
 type CreateChunkParams struct {
-	ChunkHash []byte
-	Bytes     int64
+	ChunkHash       []byte
+	Bytes           int64
+	BytesCompressed int64
 }
 
 func (q *Queries) CreateChunk(ctx context.Context, arg CreateChunkParams) error {
-	_, err := q.db.Exec(ctx, createChunk, arg.ChunkHash, arg.Bytes)
+	_, err := q.db.Exec(ctx, createChunk, arg.ChunkHash, arg.Bytes, arg.BytesCompressed)
 	return err
 }
 
