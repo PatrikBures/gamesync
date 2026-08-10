@@ -25,4 +25,4 @@ HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --start-interval=0.5s -
 
 EXPOSE 8080
 
-CMD ["/usr/local/bin/gamesync-server"]
+CMD ["/usr/local/bin/gamesync-server", "serve"]
