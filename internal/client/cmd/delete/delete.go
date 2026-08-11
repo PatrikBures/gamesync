@@ -22,6 +22,7 @@ func New(conf *config.Config) *deleteCmd {
 		newProfileCmd(conf).cmd,
 		newBranchCmd(conf).cmd,
 		newRepoCmd(conf).cmd,
+		newSnapshotCmd(conf).cmd,
 	)
 
 	root.Cmd = cmd

@@ -415,6 +415,21 @@ paths:
         "200": {}
         default:
           $ref: "#/components/responses/GlobalError"
+  /users/{userID}/repos/{repoName}/snapshots/{snapshotID}:
+    parameters:
+      - $ref: "#/components/parameters/userID"
+      - $ref: "#/components/parameters/repoName"
+      - $ref: "#/components/parameters/snapshotID"
+    delete:
+      summary: Delete snapshot
+      operationId: delete-snapshot
+      tags:
+        - Users
+      responses:
+        "200": {}
+        default:
+          $ref: "#/components/responses/GlobalError"
+
   /users/{userID}/repos/{repoName}/snapshots/{snapshotID}/ancestry:
     parameters:
       - $ref: "#/components/parameters/userID"

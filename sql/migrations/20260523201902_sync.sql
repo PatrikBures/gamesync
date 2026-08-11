@@ -17,12 +17,31 @@ CREATE TABLE snapshots
 );
 CREATE INDEX idx_snapshots_parent ON snapshots(parent_snapshot_id);
 
+-- +goose StatementBegin
+CREATE FUNCTION handle_referenced_row_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE snapshots
+    SET parent_snapshot_id = OLD.parent_snapshot_id
+    WHERE snapshots.parent_snapshot_id = OLD.snapshot_id;
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+-- +goose StatementEnd
+
+CREATE TRIGGER trg_reparent_snapshots
+BEFORE DELETE ON snapshots
+FOR EACH ROW
+EXECUTE FUNCTION handle_referenced_row_delete();
+
+
 CREATE TABLE branches
 (
     branch_id BIGSERIAL NOT NULL PRIMARY KEY,
     repo_id BIGINT NOT NULL REFERENCES repos(repo_id) ON DELETE CASCADE,
     branch_name VARCHAR(25) NOT NULL,
-    head_snapshot_id BIGINT NULL REFERENCES snapshots(snapshot_id),
+    head_snapshot_id BIGINT NULL REFERENCES snapshots(snapshot_id) ON DELETE RESTRICT,
 
     UNIQUE (repo_id, branch_name)
 );

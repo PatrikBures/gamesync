@@ -31,6 +31,15 @@ func (UnimplementedHandler) DeleteRepo(ctx context.Context, params DeleteRepoPar
 	return ht.ErrNotImplemented
 }
 
+// DeleteSnapshot implements delete-snapshot operation.
+//
+// Delete snapshot.
+//
+// DELETE /users/{userID}/repos/{repoName}/snapshots/{snapshotID}
+func (UnimplementedHandler) DeleteSnapshot(ctx context.Context, params DeleteSnapshotParams) error {
+	return ht.ErrNotImplemented
+}
+
 // GetBranchHead implements get-branch-head operation.
 //
 // Get current snapshot the branch points to.

@@ -25,6 +25,12 @@ func encodeDeleteRepoResponse(response *DeleteRepoOK, w http.ResponseWriter, spa
 	return nil
 }
 
+func encodeDeleteSnapshotResponse(response *DeleteSnapshotOK, w http.ResponseWriter, span trace.Span) error {
+	w.WriteHeader(200)
+
+	return nil
+}
+
 func encodeGetBranchHeadResponse(response GetBranchHeadRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *Snapshot:

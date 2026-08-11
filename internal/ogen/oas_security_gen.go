@@ -36,6 +36,7 @@ func findAuthorization(h http.Header, prefix string) (string, bool) {
 var operationRolesBearerAuth = map[string][]string{
 	DeleteBranchOperation:        []string{},
 	DeleteRepoOperation:          []string{},
+	DeleteSnapshotOperation:      []string{},
 	GetBranchHeadOperation:       []string{},
 	GetBranchesOperation:         []string{},
 	GetChunkOperation:            []string{},

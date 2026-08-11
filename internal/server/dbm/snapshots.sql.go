@@ -79,6 +79,28 @@ func (q *Queries) CreateSnapshot(ctx context.Context, arg CreateSnapshotParams) 
 	return i, err
 }
 
+const deleteSnapshot = `-- name: DeleteSnapshot :one
+WITH detached AS (
+    UPDATE branches
+    SET head_snapshot_id = snapshots.parent_snapshot_id
+    FROM snapshots
+    WHERE branches.head_snapshot_id = $1
+    AND snapshots.snapshot_id = $1
+), deleted AS (
+    DELETE FROM snapshots
+    WHERE snapshot_id = $1
+    RETURNING snapshot_id
+)
+SELECT EXISTS (SELECT 1 FROM deleted) AS was_deleted
+`
+
+func (q *Queries) DeleteSnapshot(ctx context.Context, headSnapshotID pgtype.Int8) (bool, error) {
+	row := q.db.QueryRow(ctx, deleteSnapshot, headSnapshotID)
+	var was_deleted bool
+	err := row.Scan(&was_deleted)
+	return was_deleted, err
+}
+
 const getFileChunkHashes = `-- name: GetFileChunkHashes :many
 SELECT chunk_hash FROM file_chunks
 WHERE file_hash = $1

@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"log/slog"
+	"slices"
+
 	"go.pabu.dev/gamesync/internal/dbx"
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"go.pabu.dev/gamesync/internal/server"
 	"go.pabu.dev/gamesync/internal/server/dbm"
-	"log/slog"
-	"slices"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -274,4 +275,16 @@ func (s *Service) GetSnapshotAncestor(ctx context.Context, params api.GetSnapsho
 		return nil, server.NewInternalError(err, "Checking if ancestor", "startSnapshotID", params.SnapshotID, "targetSnapshotID", params.TargetSnapshotID)
 	}
 	return &api.GetSnapshotAncestorOK{ IsAncestor: ok }, nil
+}
+
+
+func (s *Service) DeleteSnapshot(ctx context.Context, params api.DeleteSnapshotParams) error {
+	was_deleted, err := s.db.WriteQuery().DeleteSnapshot(ctx, pgtype.Int8{Int64: params.SnapshotID, Valid: true})
+	if err != nil {
+		return server.NewInternalError(err, "deleting snapshot", "snapshotID", params.SnapshotID)
+	}
+	if !was_deleted {
+		return server.ErrSnapshotNotFound
+	}
+	return nil
 }
