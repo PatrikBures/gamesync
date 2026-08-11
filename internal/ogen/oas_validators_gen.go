@@ -9,14 +9,6 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
-func (s Branches) Validate() error {
-	alias := ([]string)(s)
-	if alias == nil {
-		return errors.New("nil is invalid value")
-	}
-	return nil
-}
-
 func (s *File) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer

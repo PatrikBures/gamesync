@@ -167,7 +167,7 @@ func decodeDeleteSnapshotResponse(resp *http.Response) (res *DeleteSnapshotOK, _
 	return res, errors.Wrap(defRes, "error")
 }
 
-func decodeGetBranchHeadResponse(resp *http.Response) (res GetBranchHeadRes, _ error) {
+func decodeGetBranchHeadResponse(resp *http.Response) (res *Snapshot, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -204,9 +204,6 @@ func decodeGetBranchHeadResponse(resp *http.Response) (res GetBranchHeadRes, _ e
 		default:
 			return res, validate.InvalidContentType(ct)
 		}
-	case 404:
-		// Code 404.
-		return &GetBranchHeadNotFound{}, nil
 	}
 	// Convenient error response.
 	defRes, err := func() (res *GlobalErrorStatusCode, err error) {
@@ -253,7 +250,7 @@ func decodeGetBranchHeadResponse(resp *http.Response) (res GetBranchHeadRes, _ e
 	return res, errors.Wrap(defRes, "error")
 }
 
-func decodeGetBranchesResponse(resp *http.Response) (res Branches, _ error) {
+func decodeGetBranchesResponse(resp *http.Response) (res []Branch, _ error) {
 	switch resp.StatusCode {
 	case 200:
 		// Code 200.
@@ -269,9 +266,17 @@ func decodeGetBranchesResponse(resp *http.Response) (res Branches, _ error) {
 			}
 			d := jx.DecodeBytes(buf)
 
-			var response Branches
+			var response []Branch
 			if err := func() error {
-				if err := response.Decode(d); err != nil {
+				response = make([]Branch, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem Branch
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					response = append(response, elem)
+					return nil
+				}); err != nil {
 					return err
 				}
 				if err := d.Skip(); err != io.EOF {
@@ -288,8 +293,8 @@ func decodeGetBranchesResponse(resp *http.Response) (res Branches, _ error) {
 			}
 			// Validate response.
 			if err := func() error {
-				if err := response.Validate(); err != nil {
-					return err
+				if response == nil {
+					return errors.New("nil is invalid value")
 				}
 				return nil
 			}(); err != nil {

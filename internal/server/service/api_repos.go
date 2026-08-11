@@ -5,13 +5,11 @@ import (
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"go.pabu.dev/gamesync/internal/server"
 	"go.pabu.dev/gamesync/internal/server/dbm"
-	"log/slog"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const defaultBranchName = "main"
 
 func (s *Service) GetRepos(ctx context.Context, params api.GetReposParams) (api.Repos, error) {
 	repos, err := s.db.ReadQuery().ListRepos(ctx, params.UserID)
@@ -25,19 +23,8 @@ func (s *Service) GetRepos(ctx context.Context, params api.GetReposParams) (api.
 	return reposReturn, nil
 }
 
-func (s *Service) PutRepo(ctx context.Context, params api.PutRepoParams) (err error) {
-	qtx, tx, err := s.db.BeginTX(ctx)
-	if err != nil {
-		return server.NewInternalError(err, "failed starting tx")
-	}
-	defer func() {
-		if recover() != nil || err != nil {
-			if e := tx.Rollback(ctx); e != nil {
-				slog.Error("failed rollback", "error", e)
-			}
-		}
-	}()
-	repoID, err := qtx.CreateRepo(ctx, dbm.CreateRepoParams{
+func (s *Service) PutRepo(ctx context.Context, params api.PutRepoParams) error {
+	_, err := s.db.WriteQuery().CreateRepo(ctx, dbm.CreateRepoParams{
 		RepoName: params.RepoName,
 		UserID:   params.UserID,
 	})
@@ -49,23 +36,6 @@ func (s *Service) PutRepo(ctx context.Context, params api.PutRepoParams) (err er
 			}
 		}
 		return server.NewInternalError(err, "failed creating repo", "userID", params.UserID, "repoName", params.RepoName)
-	}
-
-	if err = qtx.CreateBranch(ctx, dbm.CreateBranchParams{
-		RepoID:     repoID,
-		BranchName: defaultBranchName,
-	}); err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
-			switch pgErr.Code {
-			case pgerrcode.UniqueViolation:
-				return server.NewInternalError(err, "default branch already exists on new branch", "userID", params.UserID, "repoName", params.RepoName)
-			}
-		}
-		return server.NewInternalError(err, "failed creating branch", "repoID", repoID, "branchName", defaultBranchName)
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return server.NewInternalError(err, "failed committing tx")
 	}
 
 	return nil

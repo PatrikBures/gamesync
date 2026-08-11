@@ -90,13 +90,20 @@ components:
 
     targetSnapshotID:
       name: targetSnapshotID
-      description: ID of a snapshot
+      description: target ID of a snapshot
       in: query
       required: true
       schema:
         type: integer
         format: int64
         minimum: 0
+    filterBranchName:
+      name: branchName
+      description: filter for branch name
+      in: query
+      required: false
+      schema:
+        type: string
   responses:
     GlobalError:
       description: An error occured
@@ -218,10 +225,25 @@ components:
         type: string
 
     ### Branch schemas
-    Branches:
-      type: array
-      items:
-        type: string
+    #
+    __Branch:
+      type: object
+      properties:
+        branchID:
+          type: integer
+          format: int64
+        repoID:
+          type: integer
+          format: int64
+        headSnapshotID:
+          type: integer
+          format: int64
+        parentSnapshotID:
+          type: [integer, "null"]
+          format: int64
+        branchName:
+          type: string
+      required: [headSnapshotID, branchName, repoID, branchID]
 
     ### Snapshot Schemas
     __SnapshotID:
@@ -469,16 +491,20 @@ paths:
           content: 
             application/json:
               schema:
-                $ref: "#/components/schemas/Branches"
+                type: array
+                items:
+                  $ref: "#/components/schemas/__Branch"
         default:
           $ref: "#/components/responses/GlobalError"
+      parameters:
+        - $ref: "#/components/parameters/filterBranchName"
   /users/{userID}/repos/{repoName}/branches/{branchName}:
     parameters:
       - $ref: "#/components/parameters/userID"
       - $ref: "#/components/parameters/repoName"
       - $ref: "#/components/parameters/branchName"
     put:
-      summary: Create new branch in repo
+      summary: Create new branch in repo specifying new head snapshotID
       operationId: put-branch
       tags:
         - Users
@@ -486,6 +512,13 @@ paths:
         "201": {}
         default:
           $ref: "#/components/responses/GlobalError"
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              $ref: "#/components/schemas/__SnapshotID"
+
     delete:
       summary: Delete branch in repo
       operationId: delete-branch
@@ -549,8 +582,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/__Snapshot"
-        "404":
-          description: The branch does not have a head
         default:
           $ref: "#/components/responses/GlobalError"
 

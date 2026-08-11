@@ -50,8 +50,12 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 		}
 		req.Context = context.WithValue(req.Context, service.CkRepoID, repo.RepoID)
 
+
+
+
+
 		// skip checking if branch exists when creating one
-		if req.OperationName == "PutBranch" {
+		if req.OperationName == "PutBranch" || req.OperationName == "PostSnapshot" {
 			return next(req)
 		}
 		targetBranchName, ok := req.Params.Path("branchName")
@@ -82,6 +86,9 @@ func LoadPathData(db *dbx.DB) middleware.Middleware {
 			)
 		}
 		req.Context = context.WithValue(req.Context, service.CkBranch, branch)
+
+
+
 
 		targetSnapshotID, ok := req.Params.Path("snapshotID")
 		if !ok {

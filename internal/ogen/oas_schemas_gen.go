@@ -36,7 +36,64 @@ func (s *BearerAuth) SetRoles(val []string) {
 	s.Roles = val
 }
 
-type Branches []string
+// Ref: #/components/schemas/__Branch
+type Branch struct {
+	BranchID         int64       `json:"branchID"`
+	RepoID           int64       `json:"repoID"`
+	HeadSnapshotID   int64       `json:"headSnapshotID"`
+	ParentSnapshotID OptNilInt64 `json:"parentSnapshotID"`
+	BranchName       string      `json:"branchName"`
+}
+
+// GetBranchID returns the value of BranchID.
+func (s *Branch) GetBranchID() int64 {
+	return s.BranchID
+}
+
+// GetRepoID returns the value of RepoID.
+func (s *Branch) GetRepoID() int64 {
+	return s.RepoID
+}
+
+// GetHeadSnapshotID returns the value of HeadSnapshotID.
+func (s *Branch) GetHeadSnapshotID() int64 {
+	return s.HeadSnapshotID
+}
+
+// GetParentSnapshotID returns the value of ParentSnapshotID.
+func (s *Branch) GetParentSnapshotID() OptNilInt64 {
+	return s.ParentSnapshotID
+}
+
+// GetBranchName returns the value of BranchName.
+func (s *Branch) GetBranchName() string {
+	return s.BranchName
+}
+
+// SetBranchID sets the value of BranchID.
+func (s *Branch) SetBranchID(val int64) {
+	s.BranchID = val
+}
+
+// SetRepoID sets the value of RepoID.
+func (s *Branch) SetRepoID(val int64) {
+	s.RepoID = val
+}
+
+// SetHeadSnapshotID sets the value of HeadSnapshotID.
+func (s *Branch) SetHeadSnapshotID(val int64) {
+	s.HeadSnapshotID = val
+}
+
+// SetParentSnapshotID sets the value of ParentSnapshotID.
+func (s *Branch) SetParentSnapshotID(val OptNilInt64) {
+	s.ParentSnapshotID = val
+}
+
+// SetBranchName sets the value of BranchName.
+func (s *Branch) SetBranchName(val string) {
+	s.BranchName = val
+}
 
 // DeleteBranchOK is response for DeleteBranch operation.
 type DeleteBranchOK struct{}
@@ -126,11 +183,6 @@ func (s *Files) GetFiles() []File {
 func (s *Files) SetFiles(val []File) {
 	s.Files = val
 }
-
-// GetBranchHeadNotFound is response for GetBranchHead operation.
-type GetBranchHeadNotFound struct{}
-
-func (*GetBranchHeadNotFound) getBranchHeadRes() {}
 
 // Ref: #/components/schemas/_Chunk
 type GetChunkOK struct {
@@ -231,6 +283,120 @@ func (o NilInt64) Get() (v int64, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o NilInt64) Or(d int64) int64 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilInt64 returns new OptNilInt64 with value set to v.
+func NewOptNilInt64(v int64) OptNilInt64 {
+	return OptNilInt64{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilInt64 is optional nullable int64.
+type OptNilInt64 struct {
+	Value int64
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilInt64 was set.
+func (o OptNilInt64) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilInt64) Reset() {
+	var v int64
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilInt64) SetTo(v int64) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilInt64) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilInt64) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v int64
+	o.Value = v
+}
+
+// IsEmpty returns true if the field was omitted from the payload (not Set and not Null).
+func (o OptNilInt64) IsEmpty() bool {
+	return !o.Set && !o.Null
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilInt64) Get() (v int64, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilInt64) Or(d int64) int64 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptString returns new OptString with value set to v.
+func NewOptString(v string) OptString {
+	return OptString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptString is optional string.
+type OptString struct {
+	Value string
+	Set   bool
+}
+
+// IsSet returns true if OptString was set.
+func (o OptString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptString) Reset() {
+	var v string
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptString) SetTo(v string) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptString) Get() (v string, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptString) Or(d string) string {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -428,8 +594,7 @@ func (s *Snapshot) SetParentSnapshotID(val NilInt64) {
 	s.ParentSnapshotID = val
 }
 
-func (*Snapshot) getBranchHeadRes() {}
-func (*Snapshot) postSnapshotRes()  {}
+func (*Snapshot) postSnapshotRes() {}
 
 // Merged schema.
 // Ref: #/components/schemas/SnapshotFiles
@@ -456,6 +621,21 @@ func (s *SnapshotFiles) SetFiles(val []File) {
 // SetParentSnapshotID sets the value of ParentSnapshotID.
 func (s *SnapshotFiles) SetParentSnapshotID(val NilInt64) {
 	s.ParentSnapshotID = val
+}
+
+// Ref: #/components/schemas/__SnapshotID
+type SnapshotID struct {
+	SnapshotID int64 `json:"snapshotID"`
+}
+
+// GetSnapshotID returns the value of SnapshotID.
+func (s *SnapshotID) GetSnapshotID() int64 {
+	return s.SnapshotID
+}
+
+// SetSnapshotID sets the value of SnapshotID.
+func (s *SnapshotID) SetSnapshotID(val int64) {
+	s.SnapshotID = val
 }
 
 // Merged schema.

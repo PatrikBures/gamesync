@@ -31,13 +31,13 @@ type Handler interface {
 	// Get current snapshot the branch points to.
 	//
 	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
-	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error)
+	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (*Snapshot, error)
 	// GetBranches implements get-branches operation.
 	//
 	// Get all branches in repo.
 	//
 	// GET /users/{userID}/repos/{repoName}/branches
-	GetBranches(ctx context.Context, params GetBranchesParams) (Branches, error)
+	GetBranches(ctx context.Context, params GetBranchesParams) ([]Branch, error)
 	// GetChunk implements get-chunk operation.
 	//
 	// Download chunk.
@@ -130,10 +130,10 @@ type Handler interface {
 	PostUsers(ctx context.Context, req *UserName) (*UserNewReturn, error)
 	// PutBranch implements put-branch operation.
 	//
-	// Create new branch in repo.
+	// Create new branch in repo specifying new head snapshotID.
 	//
 	// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-	PutBranch(ctx context.Context, params PutBranchParams) error
+	PutBranch(ctx context.Context, req *SnapshotID, params PutBranchParams) error
 	// PutChunk implements put-chunk operation.
 	//
 	// Upload chunk.

@@ -14,10 +14,11 @@ import (
 	"go.pabu.dev/gamesync/internal/server/dbm"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (s *Service) PostSnapshot(ctx context.Context, req *api.Files, params api.PostSnapshotParams) (result api.PostSnapshotRes, err error) {
+	repoID, err := repoFromCtx(ctx)
+	if err != nil { return nil, err }
 
 	files, chunkCount, err := reqFilesStruct(req.Files)
 	if err != nil {
@@ -45,7 +46,7 @@ func (s *Service) PostSnapshot(ctx context.Context, req *api.Files, params api.P
 		return &api.PostSnapshotFailedDependency{ChunkHashes: bytesToHex(allChunkHashes)}, nil
 	}
 
-	newSnapshot, err := createSnapshot(s.db, files, ctx)
+	newSnapshot, err := createSnapshot(ctx, s.db, files, repoID, params.BranchName)
 	if err != nil {
 		return nil, err
 	}
@@ -59,11 +60,7 @@ type file struct {
 	chunkHashes [][]byte
 }
 
-func createSnapshot(db *dbx.DB, files []file, ctx context.Context) (*api.Snapshot, error) {
-	branch, err := branchFromCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
+func createSnapshot(ctx context.Context, db *dbx.DB, files []file, repoID int64, branchName string) (*api.Snapshot, error) {
 
 	qtx, tx, err := db.BeginTX(ctx)
 	if err != nil {
@@ -77,12 +74,12 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) (*api.Snapsho
 		}
 	}()
 
-	newSnapshot, err := qtx.CreateSnapshot(ctx, dbm.CreateSnapshotParams{
-		RepoID:   branch.RepoID,
-		BranchID: branch.BranchID,
+	newSnapshot, err := qtx.CommitToBranch(ctx, dbm.CommitToBranchParams{
+		RepoID: repoID,
+		BranchName: branchName,
 	})
 	if err != nil {
-		return nil, server.NewInternalError(err, "failed creating new snapshot row", "repoID", branch.RepoID, "branchID", branch.BranchID)
+		return nil, server.NewInternalError(err, "failed commiting snapshot", "repoID", repoID, "branchName", branchName)
 	}
 
 	connectSnapshotParams := make([]dbm.ConnectSnapshotWithFilesParams, 0, len(files))
@@ -129,15 +126,8 @@ func createSnapshot(db *dbx.DB, files []file, ctx context.Context) (*api.Snapsho
 		return nil, server.NewInternalError(err, "failed connecting snapshot with files", "snapshotID", newSnapshot.SnapshotID)
 	}
 
-	if err := qtx.UpdateBranchHead(ctx, dbm.UpdateBranchHeadParams{
-		BranchID:       branch.BranchID,
-		HeadSnapshotID: pgtype.Int8{Int64: newSnapshot.SnapshotID, Valid: true},
-	}); err != nil {
-		return nil, server.NewInternalError(err, "failed updating branch head", "branchID", branch.BranchID, "newSnapshotID", newSnapshot.SnapshotID)
-	}
-
 	if err := tx.Commit(ctx); err != nil {
-		return nil, server.NewInternalError(err, "failed committing creation of snapshot", "repoID", branch.RepoID, "branchID", branch.BranchID)
+		return nil, server.NewInternalError(err, "failed committing creation of snapshot", "repoID", repoID, "branchID", newSnapshot.BranchID)
 	}
 
 	return &api.Snapshot{
@@ -279,7 +269,7 @@ func (s *Service) GetSnapshotAncestor(ctx context.Context, params api.GetSnapsho
 
 
 func (s *Service) DeleteSnapshot(ctx context.Context, params api.DeleteSnapshotParams) error {
-	was_deleted, err := s.db.WriteQuery().DeleteSnapshot(ctx, pgtype.Int8{Int64: params.SnapshotID, Valid: true})
+	was_deleted, err := s.db.WriteQuery().DeleteSnapshot(ctx, params.SnapshotID)
 	if err != nil {
 		return server.NewInternalError(err, "deleting snapshot", "snapshotID", params.SnapshotID)
 	}

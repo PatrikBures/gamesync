@@ -12,7 +12,7 @@ CREATE TABLE snapshots
 (
     snapshot_id BIGSERIAL NOT NULL PRIMARY KEY,
     parent_snapshot_id BIGINT REFERENCES snapshots(snapshot_id),
-    repo_id BIGINT NOT NULL REFERENCES repos(repo_id),
+    repo_id BIGINT NOT NULL REFERENCES repos(repo_id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_snapshots_parent ON snapshots(parent_snapshot_id);
@@ -40,8 +40,8 @@ CREATE TABLE branches
 (
     branch_id BIGSERIAL NOT NULL PRIMARY KEY,
     repo_id BIGINT NOT NULL REFERENCES repos(repo_id) ON DELETE CASCADE,
+    head_snapshot_id BIGINT NOT NULL REFERENCES snapshots(snapshot_id) ON DELETE RESTRICT,
     branch_name VARCHAR(25) NOT NULL,
-    head_snapshot_id BIGINT NULL REFERENCES snapshots(snapshot_id) ON DELETE RESTRICT,
 
     UNIQUE (repo_id, branch_name)
 );

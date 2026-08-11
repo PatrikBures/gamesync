@@ -10,31 +10,53 @@ import (
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func (s *Service) GetBranches(ctx context.Context, params api.GetBranchesParams) (api.Branches, error) {
-	branches, err := s.db.ReadQuery().ListBranches(ctx, params.RepoName)
+func (s *Service) GetBranches(ctx context.Context, params api.GetBranchesParams) ([]api.Branch, error) {
+	repoID, err := repoFromCtx(ctx)
+	if err != nil { return nil, err }
+
+	branches, err := s.db.ReadQuery().ListBranches(ctx, dbm.ListBranchesParams{
+		RepoID: repoID,
+		BranchName: pgtype.Text{
+			String: params.BranchName.Value,
+			Valid: params.BranchName.Set,
+		},
+	})
 	if err != nil {
 		return nil, server.NewInternalError(err, "failed listing branches",
 			"userID", params.UserID,
-			"repoName", params.RepoName,
+			"repoID", repoID,
 		)
 	}
-	branchesReturn := make(api.Branches, 0, len(branches))
+
+	branchesReturn := make([]api.Branch, 0, len(branches))
 	for _, b := range branches {
-		branchesReturn = append(branchesReturn, b.BranchName)
+		branchesReturn = append(branchesReturn, api.Branch{
+			RepoID: b.RepoID,
+			BranchID: b.BranchID,
+			HeadSnapshotID: b.HeadSnapshotID,
+			ParentSnapshotID: api.OptNilInt64{
+				Value: b.ParentSnapshotID.Int64,
+				Null: b.ParentSnapshotID.Valid,
+				Set: true,
+			},
+			BranchName: b.BranchName,
+		})
 	}
 	return branchesReturn, nil
 }
 
-func (s *Service) PutBranch(ctx context.Context, params api.PutBranchParams) error {
+func (s *Service) PutBranch(ctx context.Context, req *api.SnapshotID, params api.PutBranchParams) error {
 	repoID, err := repoFromCtx(ctx)
 	if err != nil {
 		return server.NewInternalError(err, "")
 	}
-	if err := s.db.WriteQuery().CreateBranch(ctx, dbm.CreateBranchParams{
+	if _, err := s.db.WriteQuery().CreateBranch(ctx, dbm.CreateBranchParams{
 		RepoID:     repoID,
 		BranchName: params.BranchName,
+		HeadSnapshotID: req.SnapshotID,
 	}); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			switch pgErr.Code {
@@ -54,17 +76,14 @@ func (s *Service) PutBranch(ctx context.Context, params api.PutBranchParams) err
 	return nil
 }
 
-func (s *Service) GetBranchHead(ctx context.Context, params api.GetBranchHeadParams) (result api.GetBranchHeadRes, err error) {
+func (s *Service) GetBranchHead(ctx context.Context, params api.GetBranchHeadParams) (*api.Snapshot, error) {
 	branch, err := branchFromCtx(ctx)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	if !branch.HeadSnapshotID.Valid {
-		return &api.GetBranchHeadNotFound{}, nil
-	}
 	snapshot, err := s.db.ReadQuery().GetSnapshot(ctx, dbm.GetSnapshotParams{
-		SnapshotID: branch.HeadSnapshotID.Int64,
+		SnapshotID: branch.HeadSnapshotID,
 		RepoID: branch.RepoID,
 	})
 	if err != nil {
@@ -78,7 +97,6 @@ func (s *Service) GetBranchHead(ctx context.Context, params api.GetBranchHeadPar
 			Null:  !snapshot.ParentSnapshotID.Valid,
 		},
 	}, nil
-
 }
 
 func (s *Service) DeleteBranch(ctx context.Context, params api.DeleteBranchParams) (err error) {

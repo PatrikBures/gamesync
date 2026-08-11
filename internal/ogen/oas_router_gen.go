@@ -55,7 +55,7 @@ var (
 	}
 	rn6AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
-		"PUT":    "Authorization",
+		"PUT":    "Authorization,Content-Type",
 	}
 	rn27AllowedHeaders = map[string]string{
 		"POST": "Authorization,Content-Type",
@@ -1409,7 +1409,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 													return r, true
 												case "PUT":
 													r.name = PutBranchOperation
-													r.summary = "Create new branch in repo"
+													r.summary = "Create new branch in repo specifying new head snapshotID"
 													r.operationID = "put-branch"
 													r.operationGroup = ""
 													r.pathPattern = "/users/{userID}/repos/{repoName}/branches/{branchName}"

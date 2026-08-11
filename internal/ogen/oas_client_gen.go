@@ -52,13 +52,13 @@ type Invoker interface {
 	// Get current snapshot the branch points to.
 	//
 	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
-	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error)
+	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (*Snapshot, error)
 	// GetBranches invokes get-branches operation.
 	//
 	// Get all branches in repo.
 	//
 	// GET /users/{userID}/repos/{repoName}/branches
-	GetBranches(ctx context.Context, params GetBranchesParams) (Branches, error)
+	GetBranches(ctx context.Context, params GetBranchesParams) ([]Branch, error)
 	// GetChunk invokes get-chunk operation.
 	//
 	// Download chunk.
@@ -151,10 +151,10 @@ type Invoker interface {
 	PostUsers(ctx context.Context, request *UserName) (*UserNewReturn, error)
 	// PutBranch invokes put-branch operation.
 	//
-	// Create new branch in repo.
+	// Create new branch in repo specifying new head snapshotID.
 	//
 	// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-	PutBranch(ctx context.Context, params PutBranchParams) error
+	PutBranch(ctx context.Context, request *SnapshotID, params PutBranchParams) error
 	// PutChunk invokes put-chunk operation.
 	//
 	// Upload chunk.
@@ -721,12 +721,12 @@ func (c *Client) sendDeleteSnapshot(ctx context.Context, params DeleteSnapshotPa
 // Get current snapshot the branch points to.
 //
 // GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
-func (c *Client) GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error) {
+func (c *Client) GetBranchHead(ctx context.Context, params GetBranchHeadParams) (*Snapshot, error) {
 	res, err := c.sendGetBranchHead(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetBranchHead(ctx context.Context, params GetBranchHeadParams) (res GetBranchHeadRes, err error) {
+func (c *Client) sendGetBranchHead(ctx context.Context, params GetBranchHeadParams) (res *Snapshot, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-branch-head"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -891,12 +891,12 @@ func (c *Client) sendGetBranchHead(ctx context.Context, params GetBranchHeadPara
 // Get all branches in repo.
 //
 // GET /users/{userID}/repos/{repoName}/branches
-func (c *Client) GetBranches(ctx context.Context, params GetBranchesParams) (Branches, error) {
+func (c *Client) GetBranches(ctx context.Context, params GetBranchesParams) ([]Branch, error) {
 	res, err := c.sendGetBranches(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetBranches(ctx context.Context, params GetBranchesParams) (res Branches, err error) {
+func (c *Client) sendGetBranches(ctx context.Context, params GetBranchesParams) (res []Branch, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-branches"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -974,6 +974,27 @@ func (c *Client) sendGetBranches(ctx context.Context, params GetBranchesParams) 
 	}
 	pathParts[4] = "/branches"
 	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeQueryParams"
+	q := uri.NewQueryEncoder()
+	{
+		// Encode "branchName" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "branchName",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.BranchName.Get(); ok {
+				return e.EncodeValue(conv.StringToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	u.RawQuery = q.Values().Encode()
 
 	stage = "EncodeRequest"
 	r, err := ht.NewRequest(ctx, "GET", u)
@@ -2980,15 +3001,15 @@ func (c *Client) sendPostUsers(ctx context.Context, request *UserName) (res *Use
 
 // PutBranch invokes put-branch operation.
 //
-// Create new branch in repo.
+// Create new branch in repo specifying new head snapshotID.
 //
 // PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-func (c *Client) PutBranch(ctx context.Context, params PutBranchParams) error {
-	_, err := c.sendPutBranch(ctx, params)
+func (c *Client) PutBranch(ctx context.Context, request *SnapshotID, params PutBranchParams) error {
+	_, err := c.sendPutBranch(ctx, request, params)
 	return err
 }
 
-func (c *Client) sendPutBranch(ctx context.Context, params PutBranchParams) (res *PutBranchCreated, err error) {
+func (c *Client) sendPutBranch(ctx context.Context, request *SnapshotID, params PutBranchParams) (res *PutBranchCreated, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("put-branch"),
 		semconv.HTTPRequestMethodKey.String("PUT"),
@@ -3089,6 +3110,9 @@ func (c *Client) sendPutBranch(ctx context.Context, params PutBranchParams) (res
 	r, err := ht.NewRequest(ctx, "PUT", u)
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutBranchRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
 	}
 
 	{

@@ -11,6 +11,53 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const commitToBranch = `-- name: CommitToBranch :one
+WITH current_branch AS (
+    SELECT head_snapshot_id
+    FROM branches
+    WHERE branches.repo_id = $1 AND branches.branch_name = $2
+),
+new_snapshot AS (
+    INSERT INTO snapshots (repo_id, parent_snapshot_id)
+    VALUES (
+        $1,
+        (SELECT head_snapshot_id FROM current_branch)
+    )
+    RETURNING snapshot_id, parent_snapshot_id, repo_id, created_at
+),
+upsert_branch AS (
+    INSERT INTO branches (repo_id, branch_name, head_snapshot_id)
+    SELECT $1, $2, new_snapshot.snapshot_id
+    FROM new_snapshot
+    ON CONFLICT (repo_id, branch_name)
+    DO UPDATE SET head_snapshot_id = EXCLUDED.head_snapshot_id
+    RETURNING branch_id, repo_id, head_snapshot_id, branch_name
+)
+SELECT 
+    new_snapshot.snapshot_id,
+    new_snapshot.parent_snapshot_id,
+    upsert_branch.branch_id
+FROM new_snapshot CROSS JOIN upsert_branch
+`
+
+type CommitToBranchParams struct {
+	RepoID     int64
+	BranchName string
+}
+
+type CommitToBranchRow struct {
+	SnapshotID       int64
+	ParentSnapshotID pgtype.Int8
+	BranchID         int64
+}
+
+func (q *Queries) CommitToBranch(ctx context.Context, arg CommitToBranchParams) (CommitToBranchRow, error) {
+	row := q.db.QueryRow(ctx, commitToBranch, arg.RepoID, arg.BranchName)
+	var i CommitToBranchRow
+	err := row.Scan(&i.SnapshotID, &i.ParentSnapshotID, &i.BranchID)
+	return i, err
+}
+
 type ConnectFileWithChunksParams struct {
 	FileHash   []byte
 	ChunkHash  []byte
@@ -44,41 +91,6 @@ func (q *Queries) CreateFile(ctx context.Context, arg CreateFileParams) error {
 	return err
 }
 
-const createSnapshot = `-- name: CreateSnapshot :one
-INSERT INTO snapshots (parent_snapshot_id, repo_id)
-VALUES (
-    (
-        SELECT head_snapshot_id FROM branches 
-        WHERE repo_id = $1
-        AND branch_id = $2
-        LIMIT 1
-    ),
-    $1
-)
-RETURNING snapshot_id, parent_snapshot_id, repo_id, created_at
-`
-
-type CreateSnapshotParams struct {
-	RepoID   int64
-	BranchID int64
-}
-
-// returns the new snapshot_id
-//
-// also accepts branch_id to find the parent snapshot
-// using head snapshot id from branches
-func (q *Queries) CreateSnapshot(ctx context.Context, arg CreateSnapshotParams) (Snapshot, error) {
-	row := q.db.QueryRow(ctx, createSnapshot, arg.RepoID, arg.BranchID)
-	var i Snapshot
-	err := row.Scan(
-		&i.SnapshotID,
-		&i.ParentSnapshotID,
-		&i.RepoID,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const deleteSnapshot = `-- name: DeleteSnapshot :one
 WITH detached AS (
     UPDATE branches
@@ -94,7 +106,7 @@ WITH detached AS (
 SELECT EXISTS (SELECT 1 FROM deleted) AS was_deleted
 `
 
-func (q *Queries) DeleteSnapshot(ctx context.Context, headSnapshotID pgtype.Int8) (bool, error) {
+func (q *Queries) DeleteSnapshot(ctx context.Context, headSnapshotID int64) (bool, error) {
 	row := q.db.QueryRow(ctx, deleteSnapshot, headSnapshotID)
 	var was_deleted bool
 	err := row.Scan(&was_deleted)
@@ -225,7 +237,7 @@ WHERE branch_id = $1
 
 type UpdateBranchHeadParams struct {
 	BranchID       int64
-	HeadSnapshotID pgtype.Int8
+	HeadSnapshotID int64
 }
 
 func (q *Queries) UpdateBranchHead(ctx context.Context, arg UpdateBranchHeadParams) error {

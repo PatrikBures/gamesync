@@ -748,6 +748,8 @@ func decodeGetBranchHeadParams(args [3]string, argsEscaped bool, r *http.Request
 
 // GetBranchesParams is parameters of get-branches operation.
 type GetBranchesParams struct {
+	// Filter for branch name.
+	BranchName OptString `json:",omitempty,omitzero"`
 	// Used to identify a user.
 	UserID int64
 	// Identify repository.
@@ -755,6 +757,15 @@ type GetBranchesParams struct {
 }
 
 func unpackGetBranchesParams(packed middleware.Parameters) (params GetBranchesParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "branchName",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.BranchName = v.(OptString)
+		}
+	}
 	{
 		key := middleware.ParameterKey{
 			Name: "userID",
@@ -773,6 +784,48 @@ func unpackGetBranchesParams(packed middleware.Parameters) (params GetBranchesPa
 }
 
 func decodeGetBranchesParams(args [2]string, argsEscaped bool, r *http.Request) (params GetBranchesParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: branchName.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "branchName",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotBranchNameVal string
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToString(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotBranchNameVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.BranchName.SetTo(paramsDotBranchNameVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "branchName",
+			In:   "query",
+			Err:  err,
+		}
+	}
 	// Decode path: userID.
 	if err := func() error {
 		param := args[0]
@@ -1404,7 +1457,7 @@ func decodeGetSnapshotParams(args [4]string, argsEscaped bool, r *http.Request) 
 
 // GetSnapshotAncestorParams is parameters of get-snapshot-ancestor operation.
 type GetSnapshotAncestorParams struct {
-	// ID of a snapshot.
+	// Target ID of a snapshot.
 	TargetSnapshotID int64
 	// Used to identify a user.
 	UserID int64

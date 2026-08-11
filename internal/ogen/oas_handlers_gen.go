@@ -788,7 +788,7 @@ func (s *Server) handleGetBranchHeadRequest(args [3]string, argsEscaped bool, w 
 
 	var rawBody []byte
 
-	var response GetBranchHeadRes
+	var response *Snapshot
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
@@ -817,7 +817,7 @@ func (s *Server) handleGetBranchHeadRequest(args [3]string, argsEscaped bool, w 
 		type (
 			Request  = struct{}
 			Params   = GetBranchHeadParams
-			Response = GetBranchHeadRes
+			Response = *Snapshot
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -996,7 +996,7 @@ func (s *Server) handleGetBranchesRequest(args [2]string, argsEscaped bool, w ht
 
 	var rawBody []byte
 
-	var response Branches
+	var response []Branch
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
@@ -1006,6 +1006,10 @@ func (s *Server) handleGetBranchesRequest(args [2]string, argsEscaped bool, w ht
 			Body:             nil,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
+				{
+					Name: "branchName",
+					In:   "query",
+				}: params.BranchName,
 				{
 					Name: "userID",
 					In:   "path",
@@ -1021,7 +1025,7 @@ func (s *Server) handleGetBranchesRequest(args [2]string, argsEscaped bool, w ht
 		type (
 			Request  = struct{}
 			Params   = GetBranchesParams
-			Response = Branches
+			Response = []Branch
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -3958,7 +3962,7 @@ func (s *Server) handlePostUsersRequest(args [0]string, argsEscaped bool, w http
 
 // handlePutBranchRequest handles put-branch operation.
 //
-// Create new branch in repo.
+// Create new branch in repo specifying new head snapshotID.
 //
 // PUT /users/{userID}/repos/{repoName}/branches/{branchName}
 func (s *Server) handlePutBranchRequest(args [3]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
@@ -4090,15 +4094,30 @@ func (s *Server) handlePutBranchRequest(args [3]string, argsEscaped bool, w http
 	}
 
 	var rawBody []byte
+	request, rawBody, close, err := s.decodePutBranchRequest(r)
+	if err != nil {
+		err = &ogenerrors.DecodeRequestError{
+			OperationContext: opErrContext,
+			Err:              err,
+		}
+		defer recordError("DecodeRequest", err)
+		s.cfg.ErrorHandler(ctx, w, r, err)
+		return
+	}
+	defer func() {
+		if err := close(); err != nil {
+			recordError("CloseRequest", err)
+		}
+	}()
 
 	var response *PutBranchCreated
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
 			OperationName:    PutBranchOperation,
-			OperationSummary: "Create new branch in repo",
+			OperationSummary: "Create new branch in repo specifying new head snapshotID",
 			OperationID:      "put-branch",
-			Body:             nil,
+			Body:             request,
 			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
@@ -4118,7 +4137,7 @@ func (s *Server) handlePutBranchRequest(args [3]string, argsEscaped bool, w http
 		}
 
 		type (
-			Request  = struct{}
+			Request  = *SnapshotID
 			Params   = PutBranchParams
 			Response = *PutBranchCreated
 		)
@@ -4131,12 +4150,12 @@ func (s *Server) handlePutBranchRequest(args [3]string, argsEscaped bool, w http
 			mreq,
 			unpackPutBranchParams,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				err = s.h.PutBranch(ctx, params)
+				err = s.h.PutBranch(ctx, request, params)
 				return response, err
 			},
 		)
 	} else {
-		err = s.h.PutBranch(ctx, params)
+		err = s.h.PutBranch(ctx, request, params)
 	}
 	if err != nil {
 		if errRes, ok := errors.Into[*GlobalErrorStatusCode](err); ok {

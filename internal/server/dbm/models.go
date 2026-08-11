@@ -11,8 +11,8 @@ import (
 type Branch struct {
 	BranchID       int64
 	RepoID         int64
+	HeadSnapshotID int64
 	BranchName     string
-	HeadSnapshotID pgtype.Int8
 }
 
 type Chunk struct {
