@@ -74,7 +74,9 @@ func (s *syncer) Sync(mode SyncMode) error {
 			Path: fr.Path,
 		})
 		currentFileStates[fr.Path] = fr.State
-		chunkBar.Add64(fr.State.Size)
+		if chunkBar.Add64(fr.State.Size) != nil {
+			return fmt.Errorf("adding to progressbar: %w", err)
+		}
 	}
 	if err := chunkBar.Close(); err != nil {
 		return err

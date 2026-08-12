@@ -36,7 +36,9 @@ func newBranchCmd(conf *config.Config) *branchCmd {
 			if err != nil {
 				return err
 			}
-			populateBranchOpts(&root.opts, args)
+			if populateBranchOpts(&root.opts, args) != nil {
+				return err
+			}
 
 			return runBranchCmd(c, conf, &root.opts)
 		},
