@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"go.pabu.dev/gamesync/internal/client/util"
+	"go.pabu.dev/gamesync/internal/snapshoter"
 	"go.pabu.dev/ini"
 )
 
@@ -140,4 +141,8 @@ func (c *Config) loadToken() error {
 
 func (c *Config) ProfileStateDir() string {
 	return filepath.Join(c.Global.StateDir, "profiles")
+}
+
+func (c *Config) ChunkHashPath(hash string) string {
+	return filepath.Join(c.Global.ChunkDir, snapshoter.DirsForChunk(hash), hash)
 }

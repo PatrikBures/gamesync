@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	api "go.pabu.dev/gamesync/internal/ogen"
-	"go.pabu.dev/gamesync/internal/snapshoter"
 	"os"
-	"path/filepath"
+
+	"github.com/schollz/progressbar/v3"
+	api "go.pabu.dev/gamesync/internal/ogen"
 )
 
 // Creates a snapshot. If it receives a list of missing chunks, it will
@@ -50,22 +50,48 @@ func (s *syncer) CreateSnapshot(files []api.File) (*api.Snapshot, error) {
 }
 
 func (s *syncer) uploadMissing(ctx context.Context, chunkHashes []string) error {
+	var totalSize int64
+	for _, ch := range chunkHashes {
+		stat, err := os.Stat(s.conf.ChunkHashPath(ch))
+		if err != nil {
+			return err
+		}
+		totalSize += stat.Size()
+	}
+
+	bar := progressbar.NewOptions64(totalSize,
+		progressbar.OptionSetDescription(fmt.Sprintf("[0/%d] Starting uploading chunks...", len(chunkHashes))),
+		progressbar.OptionSetElapsedTime(true),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionUseIECUnits(true),
+		progressbar.OptionShowCount(),
+		progressbar.OptionOnCompletion(func() { fmt.Fprintln(os.Stderr) } ),
+	)
+
 	for i, ch := range chunkHashes {
-		path := filepath.Join(s.conf.Global.ChunkDir, snapshoter.DirsForChunk(ch), ch)
+		path := s.conf.ChunkHashPath(ch)
 		f, err := os.Open(path)
 		if err != nil {
 			return err
 		}
-		result, err := s.client.PutChunk(ctx, api.PutChunkReq{Data: f}, api.PutChunkParams{ChunkHash: ch})
+
+		br := progressbar.NewReader(f, bar)
+		
+		result, err := s.client.PutChunk(ctx, api.PutChunkReq{Data: &br}, api.PutChunkParams{ChunkHash: ch})
 		if err != nil {
 			return err
 		}
 		switch r := result.(type) {
 		case *api.PutChunkOK, *api.PutChunkCreated:
-			fmt.Printf("uploaded chunk %d/%d\n", i+1, len(chunkHashes))
+			bar.Describe(fmt.Sprintf("[%d/%d] Uploading %s...", i+1, len(chunkHashes), ch[:8]))
 		default:
 			return fmt.Errorf("uploading chunk: unrecognized type %T with result: %v", r, r)
 		}
 	}
+
+	if err := bar.Finish(); err != nil {
+		return err
+	}
+	
 	return nil
 }
