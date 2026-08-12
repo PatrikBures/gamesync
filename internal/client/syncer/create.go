@@ -49,7 +49,7 @@ func (s *syncer) CreateSnapshot(files []api.File) (*api.Snapshot, error) {
 	return nil, fmt.Errorf("did not succeed creating snapshot, this error should not occcur")
 }
 
-func (s *syncer) uploadMissing(ctx context.Context, chunkHashes []string) error {
+func (s *syncer) uploadMissing(ctx context.Context, chunkHashes []string) (err error) {
 	var totalSize int64
 	for _, ch := range chunkHashes {
 		stat, err := os.Stat(s.conf.ChunkHashPath(ch))
@@ -65,8 +65,12 @@ func (s *syncer) uploadMissing(ctx context.Context, chunkHashes []string) error 
 		progressbar.OptionShowBytes(true),
 		progressbar.OptionUseIECUnits(true),
 		progressbar.OptionShowCount(),
-		progressbar.OptionOnCompletion(func() { fmt.Fprintln(os.Stderr) } ),
 	)
+
+	defer func() {
+		if err == nil { return }
+		bar.Exit()
+	}()
 
 	for i, ch := range chunkHashes {
 		path := s.conf.ChunkHashPath(ch)
@@ -89,9 +93,12 @@ func (s *syncer) uploadMissing(ctx context.Context, chunkHashes []string) error 
 		}
 	}
 
-	if err := bar.Finish(); err != nil {
+	bar.Describe(fmt.Sprintf("[%d/%d] Upladed all chunks", len(chunkHashes), len(chunkHashes)))
+
+	if err = bar.Finish(); err != nil {
 		return err
 	}
+	fmt.Println()
 	
 	return nil
 }
