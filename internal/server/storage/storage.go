@@ -15,7 +15,7 @@ type Chunk interface {
 	// Checks if the decompressed data hash matches provided hash.
 	//
 	// Returns number of uncompressed and compressed bytes the chunk has
-	Store(ctx context.Context, hash string, data io.Reader) (int64, int64, error)
+	Store(ctx context.Context, hash string, data io.Reader) (int32, int32, error)
 
 	// Provides a reader for chunk
 	Download(ctx context.Context, hash string) (io.Reader, error)

@@ -63,14 +63,10 @@ type file struct {
 func createSnapshot(ctx context.Context, db *dbx.DB, files []file, repoID int64, branchName string) (*api.Snapshot, error) {
 
 	qtx, tx, err := db.BeginTX(ctx)
-	if err != nil {
-		return nil, server.NewInternalError(err, "failed starting tx")
-	}
+	if err != nil { return nil, server.NewInternalError(err, "failed starting tx") }
 	defer func() {
 		if recover() != nil || err != nil {
-			if e := tx.Rollback(ctx); e != nil {
-				slog.Error("failed rollback", "error", e)
-			}
+			if e := tx.Rollback(ctx); e != nil { slog.Error("failed rollback", "error", e) }
 		}
 	}()
 

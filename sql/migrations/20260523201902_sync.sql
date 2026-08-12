@@ -13,7 +13,7 @@ CREATE TABLE snapshots
     snapshot_id BIGSERIAL NOT NULL PRIMARY KEY,
     parent_snapshot_id BIGINT REFERENCES snapshots(snapshot_id),
     repo_id BIGINT NOT NULL REFERENCES repos(repo_id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_snapshots_parent ON snapshots(parent_snapshot_id);
 
@@ -50,9 +50,9 @@ CREATE TABLE branches
 
 CREATE TABLE files
 (
-    -- file hash is created by hashing all the raw chunk hashes in order, without any seperator. 
+    -- file hash is created by hashing all the raw chunk hashes in order, without any seperator.
     bytes BIGINT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     file_hash BYTEA NOT NULL PRIMARY KEY
 );
 
@@ -68,11 +68,17 @@ CREATE INDEX idx_snapshot_files_file_hash ON snapshot_files(file_hash);
 
 CREATE TABLE chunks
 (
-    bytes BIGINT NOT NULL,
-    bytes_compressed BIGINT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    chunk_hash BYTEA NOT NULL PRIMARY KEY
+    bytes INT NOT NULL,
+    bytes_compressed INT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    chunk_hash BYTEA NOT NULL PRIMARY KEY,
+    pending_deletion_at TIMESTAMPTZ NULL DEFAULT NULL
 );
+
+-- index only for chunks about to be deleted so listing it is fast
+CREATE INDEX idx_chunks_pending_deletion
+ON CHUNKS (pending_deletion_at, chunk_hash)
+WHERE pending_deletion_at IS NOT NULL;
 
 CREATE TABLE file_chunks
 (
@@ -98,3 +104,7 @@ DELETE file_chunks;
 DROP INDEX idx_snapshots_parent;
 DROP INDEX idx_snapshot_files_file_hash;
 DROP INDEX idx_file_chunks_chunk_hash;
+DROP INDEX idx_chunks_pending_deletion;
+
+DROP TRIGGER trg_reparent_snapshots ON snapshots CASCADE;
+DROP FUNCTION handle_referenced_row_delete() CASCADE;

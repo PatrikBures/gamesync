@@ -88,7 +88,7 @@ func serve() error {
 		return fmt.Errorf("parsing max chunks size: %w", err)
 	}
 	slog.Info("max chunk size", "size", c.maxChunkSize, "bytes", maxChunkBytes)
-	localStorage, err := storage.NewLocal(c.chunkBaseDir, maxChunkBytes)
+	localStorage, err := storage.NewLocal(c.chunkBaseDir, int32(maxChunkBytes))
 	if err != nil {
 		return fmt.Errorf("starting new local storage: %w", err)
 	}
@@ -126,7 +126,12 @@ func serve() error {
 
 	var cr *cron.Cron
 	if c.gcEnabled {
-		garbageCollector := garbage.New(db)
+		garbageCollector := garbage.New(db, localStorage, garbage.Opts{
+			// these should be configurable
+			DeleteFiles: time.Hour*2,
+			MarkChunks: time.Hour*2,
+			DeleteMarkedChunks: time.Minute*5,
+		})
 		cr = cron.New()
 
 		if _, err := cr.AddFunc(c.gcCron, func() {
@@ -140,6 +145,7 @@ func serve() error {
 				}
 				slog.Error("GC job error", "error", err)
 			}
+			slog.Info("Completed GC job")
 		}); err != nil {
 			return fmt.Errorf("adding cron job: %w", err)
 		}
