@@ -41,18 +41,24 @@ type Invoker interface {
 	//
 	// DELETE /users/{userID}/repos/{repoName}
 	DeleteRepo(ctx context.Context, params DeleteRepoParams) error
+	// DeleteSnapshot invokes delete-snapshot operation.
+	//
+	// Delete snapshot.
+	//
+	// DELETE /users/{userID}/repos/{repoName}/snapshots/{snapshotID}
+	DeleteSnapshot(ctx context.Context, params DeleteSnapshotParams) error
 	// GetBranchHead invokes get-branch-head operation.
 	//
 	// Get current snapshot the branch points to.
 	//
 	// GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
-	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error)
+	GetBranchHead(ctx context.Context, params GetBranchHeadParams) (*Snapshot, error)
 	// GetBranches invokes get-branches operation.
 	//
 	// Get all branches in repo.
 	//
 	// GET /users/{userID}/repos/{repoName}/branches
-	GetBranches(ctx context.Context, params GetBranchesParams) (Branches, error)
+	GetBranches(ctx context.Context, params GetBranchesParams) ([]Branch, error)
 	// GetChunk invokes get-chunk operation.
 	//
 	// Download chunk.
@@ -145,10 +151,10 @@ type Invoker interface {
 	PostUsers(ctx context.Context, request *UserName) (*UserNewReturn, error)
 	// PutBranch invokes put-branch operation.
 	//
-	// Create new branch in repo.
+	// Create new branch in repo specifying new head snapshotID.
 	//
 	// PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-	PutBranch(ctx context.Context, params PutBranchParams) error
+	PutBranch(ctx context.Context, request *SnapshotID, params PutBranchParams) error
 	// PutChunk invokes put-chunk operation.
 	//
 	// Upload chunk.
@@ -541,17 +547,186 @@ func (c *Client) sendDeleteRepo(ctx context.Context, params DeleteRepoParams) (r
 	return result, nil
 }
 
+// DeleteSnapshot invokes delete-snapshot operation.
+//
+// Delete snapshot.
+//
+// DELETE /users/{userID}/repos/{repoName}/snapshots/{snapshotID}
+func (c *Client) DeleteSnapshot(ctx context.Context, params DeleteSnapshotParams) error {
+	_, err := c.sendDeleteSnapshot(ctx, params)
+	return err
+}
+
+func (c *Client) sendDeleteSnapshot(ctx context.Context, params DeleteSnapshotParams) (res *DeleteSnapshotOK, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("delete-snapshot"),
+		semconv.HTTPRequestMethodKey.String("DELETE"),
+		semconv.URLTemplateKey.String("/users/{userID}/repos/{repoName}/snapshots/{snapshotID}"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, DeleteSnapshotOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [6]string
+	pathParts[0] = "/users/"
+	{
+		// Encode "userID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "userID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int64ToString(params.UserID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/repos/"
+	{
+		// Encode "repoName" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "repoName",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.RepoName))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[3] = encoded
+	}
+	pathParts[4] = "/snapshots/"
+	{
+		// Encode "snapshotID" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "snapshotID",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.Int64ToString(params.SnapshotID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[5] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, DeleteSnapshotOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer func() {
+		// Drain the body to EOF before closing, so the underlying
+		// connection can be reused by the Transport regardless of the
+		// response status code. See https://github.com/ogen-go/ogen/issues/1670.
+		_, _ = io.Copy(io.Discard, body)
+		_ = body.Close()
+	}()
+
+	stage = "DecodeResponse"
+	result, err := decodeDeleteSnapshotResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // GetBranchHead invokes get-branch-head operation.
 //
 // Get current snapshot the branch points to.
 //
 // GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
-func (c *Client) GetBranchHead(ctx context.Context, params GetBranchHeadParams) (GetBranchHeadRes, error) {
+func (c *Client) GetBranchHead(ctx context.Context, params GetBranchHeadParams) (*Snapshot, error) {
 	res, err := c.sendGetBranchHead(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetBranchHead(ctx context.Context, params GetBranchHeadParams) (res GetBranchHeadRes, err error) {
+func (c *Client) sendGetBranchHead(ctx context.Context, params GetBranchHeadParams) (res *Snapshot, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-branch-head"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -716,12 +891,12 @@ func (c *Client) sendGetBranchHead(ctx context.Context, params GetBranchHeadPara
 // Get all branches in repo.
 //
 // GET /users/{userID}/repos/{repoName}/branches
-func (c *Client) GetBranches(ctx context.Context, params GetBranchesParams) (Branches, error) {
+func (c *Client) GetBranches(ctx context.Context, params GetBranchesParams) ([]Branch, error) {
 	res, err := c.sendGetBranches(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendGetBranches(ctx context.Context, params GetBranchesParams) (res Branches, err error) {
+func (c *Client) sendGetBranches(ctx context.Context, params GetBranchesParams) (res []Branch, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("get-branches"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -799,6 +974,27 @@ func (c *Client) sendGetBranches(ctx context.Context, params GetBranchesParams) 
 	}
 	pathParts[4] = "/branches"
 	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeQueryParams"
+	q := uri.NewQueryEncoder()
+	{
+		// Encode "branchName" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "branchName",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.BranchName.Get(); ok {
+				return e.EncodeValue(conv.StringToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	u.RawQuery = q.Values().Encode()
 
 	stage = "EncodeRequest"
 	r, err := ht.NewRequest(ctx, "GET", u)
@@ -2805,15 +3001,15 @@ func (c *Client) sendPostUsers(ctx context.Context, request *UserName) (res *Use
 
 // PutBranch invokes put-branch operation.
 //
-// Create new branch in repo.
+// Create new branch in repo specifying new head snapshotID.
 //
 // PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-func (c *Client) PutBranch(ctx context.Context, params PutBranchParams) error {
-	_, err := c.sendPutBranch(ctx, params)
+func (c *Client) PutBranch(ctx context.Context, request *SnapshotID, params PutBranchParams) error {
+	_, err := c.sendPutBranch(ctx, request, params)
 	return err
 }
 
-func (c *Client) sendPutBranch(ctx context.Context, params PutBranchParams) (res *PutBranchCreated, err error) {
+func (c *Client) sendPutBranch(ctx context.Context, request *SnapshotID, params PutBranchParams) (res *PutBranchCreated, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("put-branch"),
 		semconv.HTTPRequestMethodKey.String("PUT"),
@@ -2914,6 +3110,9 @@ func (c *Client) sendPutBranch(ctx context.Context, params PutBranchParams) (res
 	r, err := ht.NewRequest(ctx, "PUT", u)
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodePutBranchRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
 	}
 
 	{

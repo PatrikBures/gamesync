@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"math"
 	"os"
 	"path/filepath"
 
@@ -19,7 +20,7 @@ import (
 type local struct {
 	baseDir       string
 	tmpDir        string
-	maxChunkBytes int64
+	maxChunkBytes int32
 }
 
 func (l *local) chunkFilePathDir(chunkFileDir string, hash string) string {
@@ -32,7 +33,7 @@ func (l *local) chunkFileDir(hash string) string {
 	return filepath.Join(l.baseDir, snapshoter.DirsForChunk(hash))
 }
 
-func NewLocal(baseDir string, maxChunkBytes int64) (*local, error) {
+func NewLocal(baseDir string, maxChunkBytes int32) (*local, error) {
 	tmpDir := filepath.Join(baseDir, ".tmp")
 	if err := os.MkdirAll(tmpDir, 0775); err != nil {
 		return nil, err
@@ -57,7 +58,7 @@ func (l *local) Exists(ctx context.Context, hash string) (bool, error) {
 
 }
 
-func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompressedBytes int64, compressedBytes int64, err error) {
+func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompressedBytes int32, compressedBytes int32, err error) {
 	tmpPath := filepath.Join(l.tmpDir, hash)
 
 	tmpFile, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY|os.O_SYNC, 0664)
@@ -123,6 +124,7 @@ func (l *local) Download(ctx context.Context, hash string) (io.Reader, error) {
 	return f, nil
 }
 
+// Deletes chunk, does not error if it does not exist
 func (l *local) Delete(ctx context.Context, hash string) error {
 	path := l.chunkFilePath(hash)
 	if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -132,7 +134,7 @@ func (l *local) Delete(ctx context.Context, hash string) error {
 }
 
 // writes src to dst and returns uncompressedBytes, compressedBytes and blake3 hash
-func (l *local) writeAndHash(src io.Reader, dst io.Writer) (int64, int64, []byte, error) {
+func (l *local) writeAndHash(src io.Reader, dst io.Writer) (int32, int32, []byte, error) {
 	dataCopy := io.TeeReader(src, dst)
 
 	compressedCountReader := &countBytesReader{ r: dataCopy }
@@ -162,14 +164,17 @@ func (l *local) writeAndHash(src io.Reader, dst io.Writer) (int64, int64, []byte
 
 type maxBytesReader struct {
 	r   io.Reader
-	max int64
-	n   int64
+	max int32
+	n   int32
 }
 
 func (m *maxBytesReader) Read(p []byte) (int, error) {
 	n, err := m.r.Read(p)
 	if n > 0 {
-		m.n += int64(n)
+		if m.n > math.MaxInt32 - int32(n) {
+			return n, server.ErrChunkTooBig
+		}
+		m.n += int32(n)
 		if m.n > m.max {
 			return n, server.ErrChunkTooBig
 		}
@@ -179,13 +184,13 @@ func (m *maxBytesReader) Read(p []byte) (int, error) {
 
 type countBytesReader struct {
 	r io.Reader
-	n int64
+	n int32
 }
 
 func (c *countBytesReader) Read(p []byte) (int, error) {
 	n, err := c.r.Read(p)
 	if n > 0 {
-		c.n += int64(n)
+		c.n += int32(n)
 	}
 	return n, err
 }

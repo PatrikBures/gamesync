@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"go.pabu.dev/gamesync/internal/client"
+	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
 	"go.pabu.dev/gamesync/internal/client/config"
 	"go.pabu.dev/gamesync/internal/client/profiler"
 	"go.pabu.dev/gamesync/internal/client/syncer"
@@ -59,5 +60,9 @@ func populateSyncOpts(conf *config.Config, opts *syncOpts, args []string) error 
 func runSyncCmd(c *api.Client, conf *config.Config, opts *syncOpts) error {
 	s := syncer.New(conf, c, opts.profile)
 
-	return s.Sync(syncer.ModeAuto)
+	if err := s.Sync(syncer.ModeAuto); err != nil {
+		return util.ErrHandler(err)
+	}
+
+	return nil
 }

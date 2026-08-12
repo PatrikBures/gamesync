@@ -26,4 +26,4 @@ $func$ LANGUAGE plpgsql STABLE STRICT;
 
 -- +goose Down
 
-DROP FUNCTION IF EXISTS snapshot_has_ancestor(BIGINT, BIGINT);
+DROP FUNCTION snapshot_has_ancestor(BIGINT, BIGINT);

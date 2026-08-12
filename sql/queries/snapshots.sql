@@ -1,20 +1,31 @@
 
--- name: CreateSnapshot :one
--- returns the new snapshot_id
---
--- also accepts branch_id to find the parent snapshot
--- using head snapshot id from branches
-INSERT INTO snapshots (parent_snapshot_id, repo_id)
-VALUES (
-    (
-        SELECT head_snapshot_id FROM branches 
-        WHERE repo_id = $1
-        AND branch_id = $2
-        LIMIT 1
-    ),
-    $1
+-- name: CommitToBranch :one
+WITH current_branch AS (
+    SELECT head_snapshot_id
+    FROM branches
+    WHERE branches.repo_id = $1 AND branches.branch_name = $2
+),
+new_snapshot AS (
+    INSERT INTO snapshots (repo_id, parent_snapshot_id)
+    VALUES (
+        $1,
+        (SELECT head_snapshot_id FROM current_branch)
+    )
+    RETURNING *
+),
+upsert_branch AS (
+    INSERT INTO branches (repo_id, branch_name, head_snapshot_id)
+    SELECT $1, $2, new_snapshot.snapshot_id
+    FROM new_snapshot
+    ON CONFLICT (repo_id, branch_name)
+    DO UPDATE SET head_snapshot_id = EXCLUDED.head_snapshot_id
+    RETURNING *
 )
-RETURNING *
+SELECT 
+    new_snapshot.snapshot_id,
+    new_snapshot.parent_snapshot_id,
+    upsert_branch.branch_id
+FROM new_snapshot CROSS JOIN upsert_branch
 ;
 
 
@@ -76,3 +87,18 @@ WHERE file_hash = $1
 ORDER BY chunk_order
 ;
 
+
+-- name: DeleteSnapshot :one
+WITH detached AS (
+    UPDATE branches
+    SET head_snapshot_id = snapshots.parent_snapshot_id
+    FROM snapshots
+    WHERE branches.head_snapshot_id = $1
+    AND snapshots.snapshot_id = $1
+), deleted AS (
+    DELETE FROM snapshots
+    WHERE snapshot_id = $1
+    RETURNING snapshot_id
+)
+SELECT EXISTS (SELECT 1 FROM deleted) AS was_deleted;
+;

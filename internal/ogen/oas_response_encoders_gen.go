@@ -25,36 +25,35 @@ func encodeDeleteRepoResponse(response *DeleteRepoOK, w http.ResponseWriter, spa
 	return nil
 }
 
-func encodeGetBranchHeadResponse(response GetBranchHeadRes, w http.ResponseWriter, span trace.Span) error {
-	switch response := response.(type) {
-	case *Snapshot:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(200)
+func encodeDeleteSnapshotResponse(response *DeleteSnapshotOK, w http.ResponseWriter, span trace.Span) error {
+	w.WriteHeader(200)
 
-		e := new(jx.Encoder)
-		response.Encode(e)
-		if _, err := e.WriteTo(w); err != nil {
-			return errors.Wrap(err, "write")
-		}
-
-		return nil
-
-	case *GetBranchHeadNotFound:
-		w.WriteHeader(404)
-
-		return nil
-
-	default:
-		return errors.Errorf("unexpected response type: %T", response)
-	}
+	return nil
 }
 
-func encodeGetBranchesResponse(response Branches, w http.ResponseWriter, span trace.Span) error {
+func encodeGetBranchHeadResponse(response *Snapshot, w http.ResponseWriter, span trace.Span) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(200)
 
 	e := new(jx.Encoder)
 	response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+
+	return nil
+}
+
+func encodeGetBranchesResponse(response []Branch, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(200)
+
+	e := new(jx.Encoder)
+	e.ArrStart()
+	for _, elem := range response {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
 	if _, err := e.WriteTo(w); err != nil {
 		return errors.Wrap(err, "write")
 	}

@@ -30,8 +30,8 @@ ON CONFLICT DO NOTHING
 
 type CreateChunkParams struct {
 	ChunkHash       []byte
-	Bytes           int64
-	BytesCompressed int64
+	Bytes           int32
+	BytesCompressed int32
 }
 
 func (q *Queries) CreateChunk(ctx context.Context, arg CreateChunkParams) error {

@@ -27,36 +27,17 @@ func (s *syncer) Sync(mode SyncMode) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	res, err := s.client.GetBranchHead(ctx, api.GetBranchHeadParams{
-		UserID: s.conf.Server.UserID,
-		RepoName: s.profile.RepoName,
-		BranchName: s.profile.BranchName,
-	})
+	noHead, snapshotID, parentSnapshotID, err := s.head(ctx)
 	if err != nil {
 		return err
-	}
-
-	chunkGen := snapshoter.NewChunkGen(s.conf.Global.ChunkDir)
-
-	var snapshotID int64
-	var parentSnapshotID int64
-	noHead := false
-
-	switch snapshot := res.(type) {
-	case *api.GetBranchHeadNotFound:
-		noHead = true
-	case *api.Snapshot:
-		snapshotID = snapshot.SnapshotID
-		if !snapshot.ParentSnapshotID.Null {
-			parentSnapshotID = snapshot.ParentSnapshotID.Value
-		}
-	default:
-		return fmt.Errorf("unexpected result type: %T", snapshot)
 	}
 
 	if noHead && (mode == ModePull || mode == ModePullForce) {
 		return fmt.Errorf("no snapshot on branch, nothing to pull")
 	}
+
+	chunkGen := snapshoter.NewChunkGen(s.conf.Global.ChunkDir)
+
 
 	unknownState := false
 	previousState, err := s.stater.Get(s.profile.Slug)
@@ -136,7 +117,7 @@ func (s *syncer) Sync(mode SyncMode) error {
 		if err := s.Restore(snapshotID, stater.CopyToSimpleMap(s.profile.Dir, currentFileStates)); err != nil {
 			return fmt.Errorf("restoring snapshot: %w", err)
 		}
-		return s.stater.Update(s.profile.Slug,snapshotID,  s.profile.Dir)
+		return s.stater.Update(s.profile.Slug, snapshotID, s.profile.Dir)
 	} else if localDiff && remoteDiff {
 		if unknownState {
 			return fmt.Errorf("no previous local state. Force pull or push")
@@ -155,4 +136,34 @@ func (s *syncer) Sync(mode SyncMode) error {
 	}
 
 	return nil
+}
+
+
+func (s *syncer) head(ctx context.Context) (bool, int64, int64, error) {
+	branches, err := s.client.GetBranches(ctx, api.GetBranchesParams{
+		UserID: s.conf.Server.UserID,
+		RepoName: s.profile.RepoName,
+		BranchName: api.OptString{
+			Value: s.profile.BranchName,
+			Set: true,
+		},
+	})
+	if err != nil {
+		return false, 0, 0, err
+	}
+
+	if len(branches) == 0 {
+		return true, 0, 0, nil
+	}
+
+	branch := branches[0]
+
+	var snapshotID int64
+	if branch.ParentSnapshotID.Null {
+		snapshotID = -1
+	} else {
+		snapshotID = branch.ParentSnapshotID.Value
+	}
+
+	return false, branch.HeadSnapshotID, snapshotID, nil
 }

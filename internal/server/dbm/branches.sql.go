@@ -7,21 +7,27 @@ package dbm
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createBranch = `-- name: CreateBranch :exec
-INSERT INTO branches (repo_id, branch_name)
-VALUES ($1, $2)
+const createBranch = `-- name: CreateBranch :one
+INSERT INTO branches (repo_id, branch_name, head_snapshot_id)
+VALUES ($1, $2, $3)
+RETURNING branch_id
 `
 
 type CreateBranchParams struct {
-	RepoID     int64
-	BranchName string
+	RepoID         int64
+	BranchName     string
+	HeadSnapshotID int64
 }
 
-func (q *Queries) CreateBranch(ctx context.Context, arg CreateBranchParams) error {
-	_, err := q.db.Exec(ctx, createBranch, arg.RepoID, arg.BranchName)
-	return err
+func (q *Queries) CreateBranch(ctx context.Context, arg CreateBranchParams) (int64, error) {
+	row := q.db.QueryRow(ctx, createBranch, arg.RepoID, arg.BranchName, arg.HeadSnapshotID)
+	var branch_id int64
+	err := row.Scan(&branch_id)
+	return branch_id, err
 }
 
 const deleteBranch = `-- name: DeleteBranch :exec
@@ -40,7 +46,7 @@ func (q *Queries) DeleteBranch(ctx context.Context, arg DeleteBranchParams) erro
 }
 
 const getBranchWithName = `-- name: GetBranchWithName :one
-SELECT branch_id, repo_id, branch_name, head_snapshot_id FROM branches
+SELECT branch_id, repo_id, head_snapshot_id, branch_name FROM branches
 WHERE repo_id = $1
 AND branch_name = $2
 LIMIT 1
@@ -57,34 +63,54 @@ func (q *Queries) GetBranchWithName(ctx context.Context, arg GetBranchWithNamePa
 	err := row.Scan(
 		&i.BranchID,
 		&i.RepoID,
-		&i.BranchName,
 		&i.HeadSnapshotID,
+		&i.BranchName,
 	)
 	return i, err
 }
 
 const listBranches = `-- name: ListBranches :many
-SELECT branch_id, repo_id, branch_name, head_snapshot_id FROM branches
-WHERE repo_id = (
-    SELECT repo_id FROM repos 
-    WHERE repo_name = $1
-)
+SELECT
+    branches.branch_id,
+    branches.repo_id,
+    branches.head_snapshot_id,
+    snapshots.parent_snapshot_id,
+    branches.branch_name
+FROM branches
+INNER JOIN snapshots ON branches.head_snapshot_id = snapshots.snapshot_id
+WHERE branches.repo_id = $1
+AND ($2::text IS NULL OR branch_name = $2)
+ORDER BY branch_id
 `
 
-func (q *Queries) ListBranches(ctx context.Context, repoName string) ([]Branch, error) {
-	rows, err := q.db.Query(ctx, listBranches, repoName)
+type ListBranchesParams struct {
+	RepoID     int64
+	BranchName pgtype.Text
+}
+
+type ListBranchesRow struct {
+	BranchID         int64
+	RepoID           int64
+	HeadSnapshotID   int64
+	ParentSnapshotID pgtype.Int8
+	BranchName       string
+}
+
+func (q *Queries) ListBranches(ctx context.Context, arg ListBranchesParams) ([]ListBranchesRow, error) {
+	rows, err := q.db.Query(ctx, listBranches, arg.RepoID, arg.BranchName)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Branch
+	var items []ListBranchesRow
 	for rows.Next() {
-		var i Branch
+		var i ListBranchesRow
 		if err := rows.Scan(
 			&i.BranchID,
 			&i.RepoID,
-			&i.BranchName,
 			&i.HeadSnapshotID,
+			&i.ParentSnapshotID,
+			&i.BranchName,
 		); err != nil {
 			return nil, err
 		}

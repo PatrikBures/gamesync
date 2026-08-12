@@ -31,12 +31,21 @@ func (UnimplementedHandler) DeleteRepo(ctx context.Context, params DeleteRepoPar
 	return ht.ErrNotImplemented
 }
 
+// DeleteSnapshot implements delete-snapshot operation.
+//
+// Delete snapshot.
+//
+// DELETE /users/{userID}/repos/{repoName}/snapshots/{snapshotID}
+func (UnimplementedHandler) DeleteSnapshot(ctx context.Context, params DeleteSnapshotParams) error {
+	return ht.ErrNotImplemented
+}
+
 // GetBranchHead implements get-branch-head operation.
 //
 // Get current snapshot the branch points to.
 //
 // GET /users/{userID}/repos/{repoName}/branches/{branchName}/snapshots/current
-func (UnimplementedHandler) GetBranchHead(ctx context.Context, params GetBranchHeadParams) (r GetBranchHeadRes, _ error) {
+func (UnimplementedHandler) GetBranchHead(ctx context.Context, params GetBranchHeadParams) (r *Snapshot, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -45,7 +54,7 @@ func (UnimplementedHandler) GetBranchHead(ctx context.Context, params GetBranchH
 // Get all branches in repo.
 //
 // GET /users/{userID}/repos/{repoName}/branches
-func (UnimplementedHandler) GetBranches(ctx context.Context, params GetBranchesParams) (r Branches, _ error) {
+func (UnimplementedHandler) GetBranches(ctx context.Context, params GetBranchesParams) (r []Branch, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -186,10 +195,10 @@ func (UnimplementedHandler) PostUsers(ctx context.Context, req *UserName) (r *Us
 
 // PutBranch implements put-branch operation.
 //
-// Create new branch in repo.
+// Create new branch in repo specifying new head snapshotID.
 //
 // PUT /users/{userID}/repos/{repoName}/branches/{branchName}
-func (UnimplementedHandler) PutBranch(ctx context.Context, params PutBranchParams) error {
+func (UnimplementedHandler) PutBranch(ctx context.Context, req *SnapshotID, params PutBranchParams) error {
 	return ht.ErrNotImplemented
 }
 

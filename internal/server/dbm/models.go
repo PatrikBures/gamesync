@@ -11,15 +11,16 @@ import (
 type Branch struct {
 	BranchID       int64
 	RepoID         int64
+	HeadSnapshotID int64
 	BranchName     string
-	HeadSnapshotID pgtype.Int8
 }
 
 type Chunk struct {
-	Bytes           int64
-	BytesCompressed int64
-	CreatedAt       pgtype.Timestamptz
-	ChunkHash       []byte
+	Bytes             int32
+	BytesCompressed   int32
+	CreatedAt         pgtype.Timestamptz
+	ChunkHash         []byte
+	PendingDeletionAt pgtype.Timestamptz
 }
 
 type File struct {
