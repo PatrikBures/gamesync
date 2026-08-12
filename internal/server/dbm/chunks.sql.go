@@ -64,3 +64,39 @@ func (q *Queries) GetChunkHashes(ctx context.Context, chunkHash [][]byte) ([][]b
 	}
 	return items, nil
 }
+
+const getChunkHashesClearMark = `-- name: GetChunkHashesClearMark :many
+WITH existing_chunks AS (
+    SELECT chunk_hash FROM chunks
+    WHERE chunk_hash = ANY($1::BYTEA[])
+    ORDER BY chunk_hash ASC
+), 
+updated AS (
+    UPDATE chunks
+    SET pending_deletion_at = NULL
+    FROM existing_chunks
+    WHERE chunks.chunk_hash = existing_chunks.chunk_hash
+    AND chunks.pending_deletion_at IS NOT NULL
+)
+SELECT chunk_hash FROM existing_chunks
+`
+
+func (q *Queries) GetChunkHashesClearMark(ctx context.Context, chunkHash [][]byte) ([][]byte, error) {
+	rows, err := q.db.Query(ctx, getChunkHashesClearMark, chunkHash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items [][]byte
+	for rows.Next() {
+		var chunk_hash []byte
+		if err := rows.Scan(&chunk_hash); err != nil {
+			return nil, err
+		}
+		items = append(items, chunk_hash)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

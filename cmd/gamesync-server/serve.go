@@ -128,9 +128,9 @@ func serve() error {
 	if c.gcEnabled {
 		garbageCollector := garbage.New(db, localStorage, garbage.Opts{
 			// these should be configurable
-			DeleteFiles: time.Hour*2,
-			MarkChunks: time.Hour*2,
-			DeleteMarkedChunks: time.Minute*5,
+			DeleteFiles: time.Minute*2,
+			MarkChunks: time.Minute*2,
+			DeleteMarkedChunks: time.Minute*2,
 		})
 		cr = cron.New()
 

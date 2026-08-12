@@ -9,7 +9,7 @@ services:
       GAMESYNC_DB_TYPE: postgres
       GAMESYNC_DB_LOG_LEVEL: error
       GAMESYNC_LOG_REQUESTS: true
-      GAMESYNC_GC_CRON: "*/10 * * * *"
+      GAMESYNC_GC_CRON: "/5 * * * *"
     depends_on:
       migrate:
         condition: service_completed_successfully

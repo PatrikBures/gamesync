@@ -36,7 +36,7 @@ func (s *Service) PostSnapshot(ctx context.Context, req *api.Files, params api.P
 		return bytes.Equal(a, b)
 	})
 
-	existingChunks, err := s.db.ReadQuery().GetChunkHashes(ctx, allChunkHashes)
+	existingChunks, err := s.db.WriteQuery().GetChunkHashesClearMark(ctx, allChunkHashes)
 	if err != nil {
 		return nil, server.NewInternalError(err, "getting existing chunks")
 	}

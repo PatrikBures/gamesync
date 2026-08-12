@@ -92,22 +92,11 @@ func (q *Queries) CreateFile(ctx context.Context, arg CreateFileParams) error {
 }
 
 const deleteSnapshot = `-- name: DeleteSnapshot :one
-WITH detached AS (
-    UPDATE branches
-    SET head_snapshot_id = snapshots.parent_snapshot_id
-    FROM snapshots
-    WHERE branches.head_snapshot_id = $1
-    AND snapshots.snapshot_id = $1
-), deleted AS (
-    DELETE FROM snapshots
-    WHERE snapshot_id = $1
-    RETURNING snapshot_id
-)
-SELECT EXISTS (SELECT 1 FROM deleted) AS was_deleted
+SELECT delete_snapshot($1) AS was_deleted
 `
 
-func (q *Queries) DeleteSnapshot(ctx context.Context, headSnapshotID int64) (bool, error) {
-	row := q.db.QueryRow(ctx, deleteSnapshot, headSnapshotID)
+func (q *Queries) DeleteSnapshot(ctx context.Context, pSnapshotID int64) (bool, error) {
+	row := q.db.QueryRow(ctx, deleteSnapshot, pSnapshotID)
 	var was_deleted bool
 	err := row.Scan(&was_deleted)
 	return was_deleted, err

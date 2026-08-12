@@ -18,29 +18,53 @@ CREATE TABLE snapshots
 CREATE INDEX idx_snapshots_parent ON snapshots(parent_snapshot_id);
 
 -- +goose StatementBegin
-CREATE FUNCTION handle_referenced_row_delete()
-RETURNS TRIGGER AS $$
+CREATE FUNCTION delete_snapshot(p_snapshot_id BIGINT)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_parent_id BIGINT;
 BEGIN
-    UPDATE snapshots
-    SET parent_snapshot_id = OLD.parent_snapshot_id
-    WHERE snapshots.parent_snapshot_id = OLD.snapshot_id;
+    SELECT parent_snapshot_id INTO v_parent_id FROM snapshots
+    WHERE snapshot_id = p_snapshot_id
+    ;
 
-    RETURN OLD;
+    IF NOT FOUND THEN
+        RETURN FALSE;
+    END IF
+    ;
+
+    UPDATE snapshots
+    SET parent_snapshot_id = v_parent_id
+    WHERE parent_snapshot_id = p_snapshot_id
+    ;
+
+    -- only update branch head if parent is not null, which only
+    -- occurs if it is deleting the first snapshot
+    -- if it is the only snapshot in the branch, then the branch 
+    -- will be deleted by the cascade
+    IF v_parent_id IS NOT NULL THEN
+        UPDATE branches
+        SET head_snapshot_id = v_parent_id
+        WHERE head_snapshot_id = p_snapshot_id
+        ;
+    END IF
+    ;
+
+    DELETE FROM snapshots
+    WHERE snapshot_id = p_snapshot_id
+    ;
+
+    RETURN TRUE
+    ;
 END;
 $$ LANGUAGE plpgsql;
 -- +goose StatementEnd
-
-CREATE TRIGGER trg_reparent_snapshots
-BEFORE DELETE ON snapshots
-FOR EACH ROW
-EXECUTE FUNCTION handle_referenced_row_delete();
 
 
 CREATE TABLE branches
 (
     branch_id BIGSERIAL NOT NULL PRIMARY KEY,
     repo_id BIGINT NOT NULL REFERENCES repos(repo_id) ON DELETE CASCADE,
-    head_snapshot_id BIGINT NOT NULL REFERENCES snapshots(snapshot_id) ON DELETE RESTRICT,
+    head_snapshot_id BIGINT NOT NULL REFERENCES snapshots(snapshot_id) ON DELETE CASCADE,
     branch_name VARCHAR(25) NOT NULL,
 
     UNIQUE (repo_id, branch_name)

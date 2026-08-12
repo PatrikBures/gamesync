@@ -59,7 +59,7 @@ func (s *syncer) Sync(mode SyncMode) error {
 		progressbar.OptionShowBytes(true),
 		progressbar.OptionUseIECUnits(true),
 		progressbar.OptionShowCount(),
-		progressbar.OptionSpinnerCustom([]string{"⡆ ", "⠇ ", "⠋ ", "⠉⠁", "⠈⠉", " ⠙", " ⠸", " ⢰", " ⣠", "⢀⣀", "⣀⡀", "⣄ "}),
+		progressbar.OptionSpinnerType(4),
 	)
 
 	currentFileStates := make(map[string]stater.FileState)

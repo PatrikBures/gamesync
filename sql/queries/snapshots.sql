@@ -89,16 +89,5 @@ ORDER BY chunk_order
 
 
 -- name: DeleteSnapshot :one
-WITH detached AS (
-    UPDATE branches
-    SET head_snapshot_id = snapshots.parent_snapshot_id
-    FROM snapshots
-    WHERE branches.head_snapshot_id = $1
-    AND snapshots.snapshot_id = $1
-), deleted AS (
-    DELETE FROM snapshots
-    WHERE snapshot_id = $1
-    RETURNING snapshot_id
-)
-SELECT EXISTS (SELECT 1 FROM deleted) AS was_deleted;
+SELECT delete_snapshot($1) AS was_deleted
 ;
