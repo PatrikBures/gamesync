@@ -13,6 +13,7 @@ import (
 	pushCmd "go.pabu.dev/gamesync/internal/client/cmd/push"
 	pullCmd "go.pabu.dev/gamesync/internal/client/cmd/pull"
 	wrapCmd "go.pabu.dev/gamesync/internal/client/cmd/wrap"
+	chunkCmd "go.pabu.dev/gamesync/internal/client/cmd/chunk"
 	"go.pabu.dev/gamesync/internal/client/config"
 
 	"github.com/spf13/cobra"
@@ -59,6 +60,7 @@ func newRootCmd() *rootCmd {
 		pushCmd.New(&root.config).Cmd,
 		pullCmd.New(&root.config).Cmd,
 		wrapCmd.New(&root.config).Cmd,
+		chunkCmd.New(&root.config).Cmd,
 	)
 
 	cmd.DisableAutoGenTag = true

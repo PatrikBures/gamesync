@@ -164,7 +164,7 @@ func chunkFiles(ctx context.Context, chunkDir string, profileDir string) (map[st
 		chunkGen.ProcessedFile()
 	}
 
-	fmt.Println("New created chunks:", chunkGen.Info.Created(), ", Already existing chunks:", chunkGen.Info.Skipped())
+	chunkGen.Info.Print()
 
 	return currentFileStates, files, nil
 }

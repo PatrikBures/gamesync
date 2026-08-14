@@ -68,6 +68,11 @@ type chunkGenInfo struct {
 }
 func (cgi *chunkGenInfo) Created() int64 { return cgi.chunkCreated.Load() }
 func (cgi *chunkGenInfo) Skipped() int64 { return cgi.chunkSkipped.Load() }
+func (cgi *chunkGenInfo) Print() {
+	fmt.Printf("New created chunks: %d, Already existing chunks: %d\n", cgi.Created(),  cgi.Skipped())
+}
+
+
 
 // contains the path, hashes and error obtained when chunking file
 type FileResults struct {
@@ -395,6 +400,7 @@ func (cg *chunkGen) ChunkFilesInDirSlice(ctx context.Context, repoDir string) ([
 			return nil, fmt.Errorf("file hash is empty: %s", fr.Path)
 		}
 		s = append(s, fr)
+		cg.ProcessedFile()
 	}
 	if err := stream.Err(); err != nil {
 		return nil, fmt.Errorf("stream system error: %w", err)
@@ -423,6 +429,7 @@ func (cg *chunkGen) ChunkFilesInDirApiFile(ctx context.Context, repoDir string) 
 			Hash:        fr.Hash,
 			Path:        fr.Path,
 		})
+		cg.ProcessedFile()
 	}
 	if err := stream.Err(); err != nil {
 		return nil, fmt.Errorf("stream system error: %w", err)
