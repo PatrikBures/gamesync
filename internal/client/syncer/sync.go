@@ -20,6 +20,10 @@ const (
 	ModePullForce
 )
 
+var (
+	ErrNoExistingSnapshot = errors.New("no snapshot on branch, nothing to pull")
+)
+
 // Syncs a profile by automatically determining if it should push/pull or
 // if it up to date or there is a conflict.
 func (s *syncer) Sync(mode SyncMode) error {
@@ -32,7 +36,7 @@ func (s *syncer) Sync(mode SyncMode) error {
 	}
 
 	if noHead && (mode == ModePull || mode == ModePullForce) {
-		return fmt.Errorf("no snapshot on branch, nothing to pull")
+		return ErrNoExistingSnapshot
 	}
 
 	unknownState := false
