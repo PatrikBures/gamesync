@@ -2,6 +2,7 @@ package delete
 
 import (
 	"context"
+	"fmt"
 
 	"go.pabu.dev/gamesync/internal/client"
 	util "go.pabu.dev/gamesync/internal/client/cmd/_util"
@@ -53,5 +54,6 @@ func runRepoCmd(c *api.Client, conf *config.Config, opts *repoOpts) error {
 	}); err != nil {
 		return util.ErrHandler(err)
 	}
+	fmt.Printf("Deleted repo '%s'\n", opts.repoName)
 	return nil
 }
