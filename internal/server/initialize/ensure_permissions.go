@@ -50,7 +50,7 @@ loop:
 					}
 					slog.Info("updated perm name", "permission", perm, "old_permission", cp)
 				}
-				slog.Info("already exists", "permission", perm)
+				slog.Info("permission already exists", "permID", perm.PermID, "permName", perm.PermName)
 				continue loop
 			}
 		}

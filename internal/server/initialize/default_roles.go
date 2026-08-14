@@ -37,7 +37,7 @@ func CreateDefaultRoles(db *dbx.DB, skipRoles []string) error {
 		}
 
 		if existingRoleCount > 0 {
-			slog.Info("role already exists", "role", role)
+			slog.Info("role already exists", "roleID", role.RoleID, "roleName", role.RoleName)
 			continue
 		}
 
@@ -91,7 +91,7 @@ func CreateDefaultRolePerms(db *dbx.DB) (err error) {
 	}
 
 	slog.Info("removed role perms under 100", "count", rolesDeletedCount)
-	slog.Info("created perms for roles under 100", "roles", len(rolePerms), "total_perms_inserted", permsInsertedCount)
+	slog.Info("created perms for roles under 100", "total_perms_inserted", permsInsertedCount)
 
 	return nil
 }
