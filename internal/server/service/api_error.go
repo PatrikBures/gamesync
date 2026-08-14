@@ -61,7 +61,11 @@ func (s *Service) NewError(ctx context.Context, err error) *api.GlobalErrorStatu
 		code = http.StatusConflict
 		msg = "Role name already exist"
 
+	case server.ErrHashMismatch:
+		msg = "Content hash does not match provided hash"
+		code = http.StatusUnprocessableEntity
 	case server.ErrInvalidHash:
+		msg = "Hash is not valid"
 		code = http.StatusUnprocessableEntity
 	}
 

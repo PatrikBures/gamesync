@@ -95,7 +95,7 @@ func (l *local) Store(ctx context.Context, hash string, data io.Reader) (uncompr
 
 	actualHash := hex.EncodeToString(actualHashBytes)
 	if actualHash != hash {
-		slog.Warn("uploaded chunk hash does not match", "chunkHash", hash, "expectedChunkHash", actualHash)
+		slog.Warn("uploaded chunk hash does not match", "providedChunkHash", hash, "contentChunkHash", actualHash)
 		return 0, 0, server.ErrHashMismatch
 	}
 

@@ -9,7 +9,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sync"
 	"sync/atomic"
 
@@ -17,6 +16,7 @@ import (
 	api "go.pabu.dev/gamesync/internal/ogen"
 
 	"github.com/klauspost/compress/zstd"
+	"github.com/schollz/progressbar/v3"
 	"go.pabu.dev/fastcdc"
 	"golang.org/x/sync/errgroup"
 	"lukechampine.com/blake3"
@@ -42,8 +42,13 @@ const dirLen = 2
 
 var chunkFilePool = sync.Pool{
 	New: func() any {
-		return fastcdc.New(nil, fastcdc.Opts{})
+		return new(poolData)
 	},
+}
+
+type poolData struct {
+	chunker *fastcdc.Chunker
+	encoder *zstd.Encoder
 }
 
 // handles the generation of chunks
@@ -51,15 +56,18 @@ var chunkFilePool = sync.Pool{
 // any chunks created will be in ChunkDir
 type chunkGen struct {
 	chunkDir string
-	Info     chunkGenInfo
+	bar *progressbar.ProgressBar
+	totalFileCount int64
+	totalFilesProcessed int64
+	Info chunkGenInfo
 }
 
 type chunkGenInfo struct {
-	FilesChunked  int64
-	FilesErr      int64
-	ChunksCreated int64
-	ChunksSkipped int64
+	chunkCreated atomic.Int64
+	chunkSkipped atomic.Int64
 }
+func (cgi *chunkGenInfo) Created() int64 { return cgi.chunkCreated.Load() }
+func (cgi *chunkGenInfo) Skipped() int64 { return cgi.chunkSkipped.Load() }
 
 // contains the path, hashes and error obtained when chunking file
 type FileResults struct {
@@ -80,8 +88,51 @@ func (s *ChunkStream) Err() error {
 }
 
 // used to generate chunks
+//
+// remember to exit chunkGen and to not reuse the struct
 func NewChunkGen(chunkDir string) *chunkGen {
 	return &chunkGen{chunkDir: chunkDir}
+}
+
+// exits bar
+func (cg *chunkGen) exit() error {
+	if cg.bar == nil {
+		return nil
+	}
+	err := cg.bar.Exit()
+	cg.bar = nil
+	fmt.Println()
+	return err
+}
+
+func (cg *chunkGen) initBar(repoDir string) error {
+	if cg.bar != nil {
+		return fmt.Errorf("bar is not nil, Exit or Finish chunkGen")
+	}
+
+	totalSize, totalFileCount, err := dirInfo(repoDir)
+	if err != nil {
+		return err
+	}
+	cg.totalFileCount = totalFileCount
+
+	cg.bar = progressbar.NewOptions64(totalSize,
+		progressbar.OptionSetDescription(fmt.Sprintf("[0/%d] Starting chunking...", cg.totalFileCount)),
+		progressbar.OptionShowCount(),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionUseIECUnits(true),
+	)
+
+	return nil
+}
+
+// increases counter
+func (cg *chunkGen) ProcessedFile() {
+	if cg.bar == nil {
+		return
+	}
+	cg.totalFilesProcessed++
+	cg.bar.Describe(fmt.Sprintf("[%d/%d] Chunking files", cg.totalFilesProcessed, cg.totalFileCount))
 }
 
 // Chunks all files in repoDir. Loop through the stream with ChunkStream.Ch
@@ -89,13 +140,24 @@ func NewChunkGen(chunkDir string) *chunkGen {
 // During the loop check each FileResult error
 // and after the loop, check any errors with ChunkStream.Err()
 func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*ChunkStream, error) {
+
 	if info, err := os.Stat(repoDir); err != nil {
 		return nil, fmt.Errorf("cannot access repo dir: %w", err)
 	} else if !info.IsDir() {
 		return nil, fmt.Errorf("repository is not a dir: %s", repoDir)
 	}
 
-	limit := runtime.NumCPU()
+	if err := cg.initBar(repoDir); err != nil {
+		return nil, fmt.Errorf("initializing bar: %w", err)
+	}
+
+	if cg.totalFileCount == 0 {
+		emptyCh := make(chan FileResults)
+		close(emptyCh)
+		return &ChunkStream{Ch: emptyCh, err: nil}, nil
+	}
+
+	limit := 1
 	g := errgroup.Group{}
 	g.SetLimit(limit)
 
@@ -104,6 +166,7 @@ func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*Chunk
 
 	go func() {
 		defer close(out)
+		defer func() { _ = cg.exit() }()
 
 		walkErr := filepath.WalkDir(repoDir, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
@@ -116,9 +179,11 @@ func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*Chunk
 				return nil
 			}
 			g.Go(func() error {
-				fileHash, hashes, fileState, cerr := cg.chunkFile(path)
-				relPath, ferr := filepath.Rel(repoDir, path)
-				err := errors.Join(cerr, ferr)
+				fileHash, hashes, fileState, chunkErr := cg.chunkFile(path)
+
+				relPath, relErr := filepath.Rel(repoDir, path)
+
+				err := errors.Join(chunkErr, relErr)
 
 				select {
 				case out <- FileResults{
@@ -141,6 +206,8 @@ func (cg *chunkGen) ChunkFilesInDir(ctx context.Context, repoDir string) (*Chunk
 			return
 		}
 
+		cg.ProcessedFile()
+
 		_ = g.Wait()
 	}()
 
@@ -155,20 +222,28 @@ func (cg *chunkGen) chunkFile(path string) (string, []string, stater.FileState, 
 	if err != nil {
 		return "", nil, stater.FileState{}, err
 	}
-	defer func() {
-		_ = f.Close()
-	}()
+	r := progressbar.NewReader(f, cg.bar)
 
-	chunker := chunkFilePool.Get().(*fastcdc.Chunker)
-	chunker.Reset(f)
-	defer chunkFilePool.Put(chunker)
+	pd := chunkFilePool.Get().(*poolData)
+	defer chunkFilePool.Put(pd)
+	if pd.encoder == nil {
+		enc, err := zstd.NewWriter(nil)
+		if err != nil {
+			return "", nil, stater.FileState{}, fmt.Errorf("initializing zstd encoder: %w", err)
+		}
+		pd.encoder = enc
+	}
+	if pd.chunker == nil {
+		pd.chunker = fastcdc.New(nil, fastcdc.Opts{})
+	}
+	pd.chunker.Reset(&r)
 
 	fileHash := blake3.New(32, nil)
 
 	var chunkHashes []string
 
 	for chunkCount := 0; ; chunkCount++ {
-		chunk, err := chunker.Next()
+		chunk, err := pd.chunker.Next()
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -187,17 +262,18 @@ func (cg *chunkGen) chunkFile(path string) (string, []string, stater.FileState, 
 
 		// this means the chunk already exists
 		if chunkFile == nil {
-			atomic.AddInt64(&cg.Info.ChunksSkipped, 1)
+			cg.Info.chunkSkipped.Add(1)
 			continue
 		}
 
-		werr := cg.writeChunk(chunk, chunkFile)
+		pd.encoder.Reset(chunkFile)
+		werr := cg.writeChunk(chunk, pd.encoder)
 		cerr := chunkFile.Close()
 		err = errors.Join(werr, cerr)
 		if err != nil {
 			return "", nil, stater.FileState{}, fmt.Errorf("creating chunk for file %s, chunk nr %d, hash %s: %w", path, chunkCount+1, hashHex, err)
 		}
-		atomic.AddInt64(&cg.Info.ChunksCreated, 1)
+		cg.Info.chunkCreated.Add(1)
 	}
 
 	stat, err := f.Stat()
@@ -268,15 +344,10 @@ func ReadChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, erro
 	return chunkFile, chunkFilePath, nil
 }
 
-// writes bytes to out compressed using zstd
-func (cg *chunkGen) writeChunk(bytes []byte, out io.Writer) error {
-	w, err := zstd.NewWriter(out)
-	if err != nil {
-		return fmt.Errorf("creating writer: %w", err)
-	}
-
-	_, writeErr := w.Write(bytes)
-	closeErr := w.Close()
+// writes bytes to encoder and closes it
+func (cg *chunkGen) writeChunk(bytes []byte, encoder *zstd.Encoder) error {
+	_, writeErr := encoder.Write(bytes)
+	closeErr := encoder.Close()
 	if writeErr != nil {
 		writeErr = fmt.Errorf("writing chunk: %w", writeErr)
 	}
@@ -358,4 +429,29 @@ func (cg *chunkGen) ChunkFilesInDirApiFile(ctx context.Context, repoDir string) 
 	}
 
 	return s, nil
+}
+
+
+
+func dirInfo(dir string) (totalSize int64, fileCount int64, err error) {
+	if err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		totalSize += info.Size()
+		fileCount++
+		
+		return nil
+	}); err != nil {
+		return 0, 0, err
+	}
+
+	return totalSize, fileCount, nil
 }

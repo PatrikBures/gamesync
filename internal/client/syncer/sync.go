@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/schollz/progressbar/v3"
 	"go.pabu.dev/gamesync/internal/client/stater"
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"go.pabu.dev/gamesync/internal/snapshoter"
@@ -36,9 +35,6 @@ func (s *syncer) Sync(mode SyncMode) error {
 		return fmt.Errorf("no snapshot on branch, nothing to pull")
 	}
 
-	chunkGen := snapshoter.NewChunkGen(s.conf.Global.ChunkDir)
-
-
 	unknownState := false
 	previousState, err := s.stater.Get(s.profile.Slug)
 	if err != nil {
@@ -48,40 +44,11 @@ func (s *syncer) Sync(mode SyncMode) error {
 		unknownState = true
 	}
 
-	stream, err := chunkGen.ChunkFilesInDir(ctx, s.profile.Dir)
+	currentFileStates, files, err := chunkFiles(ctx, s.conf.Global.ChunkDir, s.profile.Dir)
 	if err != nil {
 		return err
 	}
 
-	chunkBar := progressbar.NewOptions(-1,
-		progressbar.OptionSetDescription("Chunking"),
-		progressbar.OptionSetElapsedTime(true),
-		progressbar.OptionShowBytes(true),
-		progressbar.OptionUseIECUnits(true),
-		progressbar.OptionShowCount(),
-		progressbar.OptionSpinnerType(4),
-	)
-
-	currentFileStates := make(map[string]stater.FileState)
-	files := []api.File{}
-	for fr := range stream.Ch {
-		if fr.Err != nil {
-			return err
-		}
-		files = append(files, api.File{
-			ChunkHashes: fr.Hashes,
-			Hash: fr.Hash,
-			Path: fr.Path,
-		})
-		currentFileStates[fr.Path] = fr.State
-		if chunkBar.Add64(fr.State.Size) != nil {
-			return fmt.Errorf("adding to progressbar: %w", err)
-		}
-	}
-	if err := chunkBar.Close(); err != nil {
-		return err
-	}
-	fmt.Println()
 
 	if noHead {
 		fmt.Println("Pushing with no head...")
@@ -168,4 +135,32 @@ func (s *syncer) head(ctx context.Context) (bool, int64, int64, error) {
 	}
 
 	return false, branch.HeadSnapshotID, snapshotID, nil
+}
+
+
+func chunkFiles(ctx context.Context, chunkDir string, profileDir string) (map[string]stater.FileState, []api.File, error) {
+	chunkGen := snapshoter.NewChunkGen(chunkDir)
+	stream, err := chunkGen.ChunkFilesInDir(ctx, profileDir)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	currentFileStates := make(map[string]stater.FileState)
+	var files []api.File
+	for fr := range stream.Ch {
+		if fr.Err != nil {
+			return nil, nil, fr.Err
+		}
+		files = append(files, api.File{
+			ChunkHashes: fr.Hashes,
+			Hash: fr.Hash,
+			Path: fr.Path,
+		})
+		currentFileStates[fr.Path] = fr.State
+		chunkGen.ProcessedFile()
+	}
+
+	fmt.Println("New created chunks:", chunkGen.Info.Created(), ", Already existing chunks:", chunkGen.Info.Skipped())
+
+	return currentFileStates, files, nil
 }

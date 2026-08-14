@@ -87,7 +87,7 @@ func (s *syncer) uploadMissing(ctx context.Context, chunkHashes []string) (err e
 		}
 		switch r := result.(type) {
 		case *api.PutChunkOK, *api.PutChunkCreated:
-			bar.Describe(fmt.Sprintf("[%d/%d] Uploading %s...", i+1, len(chunkHashes), ch[:8]))
+			bar.Describe(fmt.Sprintf("[%d/%d] Uploaded %s", i+1, len(chunkHashes), ch[:8]))
 		default:
 			return fmt.Errorf("uploading chunk: unrecognized type %T with result: %v", r, r)
 		}
