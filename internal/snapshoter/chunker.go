@@ -239,7 +239,7 @@ func (cg *chunkGen) chunkFile(path string) (string, []string, stater.FileState, 
 		pd.encoder = enc
 	}
 	if pd.chunker == nil {
-		pd.chunker = fastcdc.New(nil, fastcdc.Opts{})
+		pd.chunker = fastcdc.New(nil)
 	}
 	pd.chunker.Reset(&r)
 

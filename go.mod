@@ -14,7 +14,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.44.0
 	go.opentelemetry.io/otel/trace v1.44.0
 	go.pabu.dev/bytesize v0.3.0
-	go.pabu.dev/fastcdc v0.2.1
+	go.pabu.dev/fastcdc v0.3.0
 	go.pabu.dev/ini v0.1.2
 	golang.org/x/sync v0.22.0
 	lukechampine.com/blake3 v1.4.1
