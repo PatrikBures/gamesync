@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -44,6 +45,7 @@ type opts struct {
 	gcEnabled        bool
 	gcCron           string
 	metricsEnabled   bool
+	metricsPort      int
 }
 
 func serve() error {
@@ -68,6 +70,7 @@ func serve() error {
 	config.AddStringVar(&c.gcCron, "gc-cron", "0 2 * * *", "Cron schedule for garbage collector")
 
 	config.AddBoolVar(&c.metricsEnabled, "metrics-enabled", false, "Enables metrics")
+	config.AddIntVar(&c.metricsPort, "metrics-port", 2020, "Metrics port")
 
 	flag.Parse()
 
@@ -142,7 +145,7 @@ func serve() error {
 
 		metricsHandler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
 		metricsSrv = &http.Server {
-			Addr:         ":2020",
+			Addr:         ":" + strconv.Itoa(c.metricsPort),
 			Handler:      metricsHandler,
 			ReadTimeout:  15 * time.Second,
 			WriteTimeout: 15 * time.Second,
