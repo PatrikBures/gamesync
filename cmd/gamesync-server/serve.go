@@ -16,6 +16,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	prometheusExporter "go.opentelemetry.io/otel/exporters/prometheus"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 
 	"github.com/robfig/cron/v3"
 	api "go.pabu.dev/gamesync/internal/ogen"
@@ -123,11 +125,36 @@ func serve() error {
 		middlewares.LoadPathData(db),
 	)
 
+	var meterProvider *sdkmetric.MeterProvider
+	var metricsSrv *http.Server
+	if c.metricsEnabled {
+		reg := prometheus.NewRegistry()
+		reg.MustRegister(
+			collectors.NewGoCollector(),
+			collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+		)
+
+		exporter, err := prometheusExporter.New(prometheusExporter.WithRegisterer(reg))
+		if err != nil {
+			return fmt.Errorf("failed creating OTel prometheus exporter: %w", err)
+		}
+		meterProvider = sdkmetric.NewMeterProvider(sdkmetric.WithReader(exporter))
+
+		metricsHandler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
+		metricsSrv = &http.Server {
+			Addr:         ":2020",
+			Handler:      metricsHandler,
+			ReadTimeout:  15 * time.Second,
+			WriteTimeout: 15 * time.Second,
+		}
+	}
+
 	srv, err := api.NewServer(
 		s,
 		s,
 		api.WithMiddleware(mw...),
 		api.WithPathPrefix("/api/v1"),
+		api.WithMeterProvider(meterProvider),
 	)
 	if err != nil {
 		return fmt.Errorf("creating server: %v", err)
@@ -176,21 +203,8 @@ func serve() error {
 		}
 	}()
 
-	var metricsSrv *http.Server
-	if c.metricsEnabled {
-		reg := prometheus.NewRegistry()
-		reg.MustRegister(
-			collectors.NewGoCollector(),
-			collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
-		)
-		metricsHandler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
-		metricsSrv = &http.Server {
-			Addr:         ":2020",
-			Handler:      metricsHandler,
-			ReadTimeout:  15 * time.Second,
-			WriteTimeout: 15 * time.Second,
-		}
 
+	if c.metricsEnabled {
 		go func() {
 			slog.Info("starting metrics server", "addr", metricsSrv.Addr)
 			if err := metricsSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -199,9 +213,9 @@ func serve() error {
 		}()
 	}
 
-
 	defer func() {
 		shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancelShutdown()
 		
 		if err := httpSrv.Shutdown(shutdownCtx); err != nil {
 			slog.Error("HTTP server forced shutdown", "error", err)
@@ -212,13 +226,17 @@ func serve() error {
 				slog.Error("metrics server forced shutdown", "error", err)
 			}
 		}
+		if meterProvider != nil {
+			if err := meterProvider.Shutdown(shutdownCtx); err != nil {
+				slog.Error("meter provider forced shutdown", "error", err)
+			}
+		}
 
 		if cr != nil {
 			slog.Info("stopping cron scheduler...")
 			cronCtx := cr.Stop()
 			<-cronCtx.Done()
 		}
-		cancelShutdown()
 	}()
 
 	select {
