@@ -13,6 +13,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/robfig/cron/v3"
 	api "go.pabu.dev/gamesync/internal/ogen"
 	config "go.pabu.dev/gamesync/internal/server/config"
@@ -37,6 +41,7 @@ type opts struct {
 	quietLogRequests string
 	gcEnabled        bool
 	gcCron           string
+	metricsEnabled   bool
 }
 
 func serve() error {
@@ -53,10 +58,14 @@ func serve() error {
 	config.AddStringVar(&c.chunkBaseDir, "chunk-dir", "/var/lib/gamesync/chunks", "Location where chunks are stored")
 	config.AddIntVar(&c.defaultRoleID, "default-role-id", 50, "Default role id for newly created users. Role needs to exist for creation of new users to work")
 	config.AddStringVar(&c.maxChunkSize, "max-chunk-size", "256Ki", "Max chunk size")
+
 	config.AddBoolVar(&c.requestLogs, "log-requests", false, "Enable logs for requests")
 	config.AddStringVar(&c.quietLogRequests, "log-requests-quiet", "GetHealth", "Hide requests from logger, seperated by '|'")
+
 	config.AddBoolVar(&c.gcEnabled, "gc-enabled", true, "Enables background goroutine for garbage collector")
 	config.AddStringVar(&c.gcCron, "gc-cron", "0 2 * * *", "Cron schedule for garbage collector")
+
+	config.AddBoolVar(&c.metricsEnabled, "metrics-enabled", false, "Enables metrics")
 
 	flag.Parse()
 
@@ -159,35 +168,66 @@ func serve() error {
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 	}
-	serverErrChan := make(chan error, 1)
+	serverErrChan := make(chan error, 2)
 	go func() {
 		slog.Info("starting HTTP server", "addr", httpSrv.Addr)
 		if err := httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			serverErrChan <- err
+			serverErrChan <- fmt.Errorf("HTTP server errro: %w", err)
 		}
+	}()
+
+	var metricsSrv *http.Server
+	if c.metricsEnabled {
+		reg := prometheus.NewRegistry()
+		reg.MustRegister(
+			collectors.NewGoCollector(),
+			collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+		)
+		metricsHandler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
+		metricsSrv = &http.Server {
+			Addr:         ":2020",
+			Handler:      metricsHandler,
+			ReadTimeout:  15 * time.Second,
+			WriteTimeout: 15 * time.Second,
+		}
+
+		go func() {
+			slog.Info("starting metrics server", "addr", metricsSrv.Addr)
+			if err := metricsSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				serverErrChan <- fmt.Errorf("metrics server error: %w", err)
+			}
+		}()
+	}
+
+
+	defer func() {
+		shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
+		
+		if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+			slog.Error("HTTP server forced shutdown", "error", err)
+		}
+
+		if metricsSrv != nil {
+			if err := metricsSrv.Shutdown(shutdownCtx); err != nil {
+				slog.Error("metrics server forced shutdown", "error", err)
+			}
+		}
+
+		if cr != nil {
+			slog.Info("stopping cron scheduler...")
+			cronCtx := cr.Stop()
+			<-cronCtx.Done()
+		}
+		cancelShutdown()
 	}()
 
 	select {
 	case err := <- serverErrChan:
-		return fmt.Errorf("HTTP server error: %w", err)
+		return err
 	case <- appCtx.Done():
 		slog.Info("shutdown signal received, starting graceful teardown...")
 	}
 
-	shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancelShutdown()
-
-	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
-		slog.Error("HTTP server forced shutdown", "error", err)
-	}
-
-	if cr != nil {
-		slog.Info("stopping cron scheduler...")
-		cronCtx := cr.Stop()
-		<-cronCtx.Done()
-	}
-
-	slog.Info("server stopped cleanly")
 	return nil
 }
 
