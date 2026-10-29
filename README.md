@@ -1,4 +1,5 @@
-> Currently a rewrite is ongoing on the `main` branch. Check out the `v2.6.0` tag for a working version.
+
+> Currently a full rewrite is ongoing on the `main` branch. Check out the `v0.2.6` tag for a working version.
 
 # Gamesync
 
