@@ -9,6 +9,7 @@ import (
 	"go.pabu.dev/gamesync/internal/client/stater"
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"go.pabu.dev/gamesync/internal/snapshoter"
+	"go.pabu.dev/packer"
 )
 
 type SyncMode int
@@ -48,7 +49,7 @@ func (s *syncer) Sync(mode SyncMode) error {
 		unknownState = true
 	}
 
-	currentFileStates, files, err := chunkFiles(ctx, s.conf.Global.ChunkDir, s.profile.Dir)
+	currentFileStates, files, err := chunkFiles(ctx, s.p, s.profile.Dir)
 	if err != nil {
 		return err
 	}
@@ -142,8 +143,8 @@ func (s *syncer) head(ctx context.Context) (bool, int64, int64, error) {
 }
 
 
-func chunkFiles(ctx context.Context, chunkDir string, profileDir string) (map[string]stater.FileState, []api.File, error) {
-	chunkGen := snapshoter.NewChunkGen(chunkDir)
+func chunkFiles(ctx context.Context, p *packer.Packager, profileDir string) (map[string]stater.FileState, []api.File, error) {
+	chunkGen := snapshoter.NewChunkGen(p)
 	stream, err := chunkGen.ChunkFilesInDir(ctx, profileDir)
 	if err != nil {
 		return nil, nil, err

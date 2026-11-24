@@ -90,7 +90,12 @@ func populateWrapOpts(conf *config.Config, opts *wrapOpts, args []string, cmdArg
 }
 
 func runWrapCmd(c *api.Client, conf *config.Config, opts *wrapOpts) error {
-	s := syncer.New(conf, c, opts.profile)
+	p, err := conf.InitPackager()
+	if err != nil {
+		return err
+	}
+
+	s := syncer.New(conf, c, opts.profile, p)
 
 	if !opts.noPull {
 		if err := s.Sync(syncer.ModePull); err != nil {

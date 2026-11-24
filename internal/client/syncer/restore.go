@@ -2,6 +2,7 @@ package syncer
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 
 	api "go.pabu.dev/gamesync/internal/ogen"
 	"go.pabu.dev/gamesync/internal/snapshoter"
+	"go.pabu.dev/packer"
 
 	"github.com/klauspost/compress/zstd"
 )
@@ -17,9 +19,9 @@ import (
 type puller struct {
 	client           *api.Client
 	decoder          *zstd.Decoder
-	file             *os.File
+	p                *packer.Packager
+	buf              []byte
 	fileBytesWritten int64
-	chunkDir         string
 }
 
 func (s *syncer) Restore(snapshotID int64, currentFilePaths map[string]struct{}) (err error) {
@@ -67,12 +69,8 @@ func (s *syncer) Restore(snapshotID int64, currentFilePaths map[string]struct{})
 
 		puller := puller{
 			client:   s.client,
-			chunkDir: s.conf.Global.ChunkDir,
-		}
-		// if it errors after this point, it is quite likely that it leaves the file in a broken state
-		puller.file, err = os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0664)
-		if err != nil {
-			return fmt.Errorf("opening file: %w", err)
+			p:        s.p,
+			buf:      make([]byte, 128<<10),
 		}
 
 		puller.decoder, err = zstd.NewReader(nil)
@@ -80,7 +78,12 @@ func (s *syncer) Restore(snapshotID int64, currentFilePaths map[string]struct{})
 			return fmt.Errorf("initializing zstd decoder: %w", err)
 		}
 		for _, chunkHash := range f.ChunkHashes {
-			if err := puller.PullChunk(chunkHash); err != nil {
+			chunkHashHex, err := hex.DecodeString(chunkHash)
+			if err != nil {
+				return fmt.Errorf("decoding chunk hash: %w", err)
+			}
+
+			if err := puller.PullChunk(chunkHashHex); err != nil {
 				return fmt.Errorf("pulling chunk for file '%s', chunk '%s': %w", filePath, chunkHash, err)
 			}
 		}
@@ -91,53 +94,33 @@ func (s *syncer) Restore(snapshotID int64, currentFilePaths map[string]struct{})
 	return cleanUp(currentFilePaths)
 }
 
-func (p *puller) PullChunk(chunkHash string) (err error) {
+func (p *puller) PullChunk(chunkHash []byte) (error) {
 
-	var chunkReader io.Reader
+	var chunk []byte
 	chunkExists := false
 
-	chunkFile, _, err := snapshoter.CreateReadChunkFile(p.chunkDir, chunkHash)
-	if err != nil {
-		return fmt.Errorf("opening chunkfile: %w", err)
-	}
-	if chunkFile == nil {
-		return fmt.Errorf("chunkFile is nil")
-	}
-	defer func() {
-		err = errors.Join(err, chunkFile.Close())
-	}()
-
-	if chunkStat, err := chunkFile.Stat(); err != nil {
-		return fmt.Errorf("stating chunk file: %w", err)
-	} else if chunkStat.Size() != 0 {
+	if localChunk, err := p.p.Get(chunkHash, p.buf); !errors.Is(err, packer.ErrChunkNotFound) && err != nil {
+		return fmt.Errorf("getting chunk localy: %w", err)
+	} else if err == nil {
+		chunk = localChunk
 		chunkExists = true
 	}
 
-	fileWriterOffset := io.NewOffsetWriter(p.file, p.fileBytesWritten)
-
-	var chunkWriter io.Writer
-	// if the chunk does not exist, it will write the chunk to the chunk cache and the snapshot file
-	// otherwise it will read from the existing cache into the snapshot file
 	if !chunkExists {
-		chunk, err := p.client.GetChunk(context.Background(), api.GetChunkParams{ChunkHash: chunkHash})
+		chunkReader, err := p.client.GetChunk(context.Background(), api.GetChunkParams{ChunkHash: hex.EncodeToString(chunkHash)})
 		if err != nil {
 			return fmt.Errorf("failed getting chunk: %w", err)
 		}
-		chunkReader = io.TeeReader(chunk.Data, chunkFile)
-		chunkWriter = fileWriterOffset
 		fmt.Print("!")
+		readBytes, err := io.ReadFull(chunkReader, p.buf)
+		if err != nil {
+			return fmt.Errorf("reading chunk: %w", err)
+		}
+		chunk = p.buf[:readBytes]
 	} else {
-		chunkReader = chunkFile
-		chunkWriter = fileWriterOffset
 		fmt.Print("#")
 	}
 
-	if chunkWriter == nil {
-		return fmt.Errorf("chunkWriter is nil")
-	}
-	if chunkReader == nil {
-		return fmt.Errorf("chunkReader is nil")
-	}
 
 	// need to verify that the hash matches the content
 	if err := p.decoder.Reset(chunkReader); err != nil {

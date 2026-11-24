@@ -58,7 +58,12 @@ func populateSyncOpts(conf *config.Config, opts *syncOpts, args []string) error 
 }
 
 func runSyncCmd(c *api.Client, conf *config.Config, opts *syncOpts) error {
-	s := syncer.New(conf, c, opts.profile)
+	p, err := conf.InitPackager()
+	if err != nil {
+		return err
+	}
+
+	s := syncer.New(conf, c, opts.profile, p)
 
 	if err := s.Sync(syncer.ModeAuto); err != nil {
 		return util.ErrHandler(err)

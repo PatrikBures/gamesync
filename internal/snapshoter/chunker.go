@@ -14,6 +14,7 @@ import (
 
 	"go.pabu.dev/gamesync/internal/client/stater"
 	api "go.pabu.dev/gamesync/internal/ogen"
+	"go.pabu.dev/packer"
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/schollz/progressbar/v3"
@@ -21,24 +22,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"lukechampine.com/blake3"
 )
-
-// how many dirs each hash will be in
-//
-// example:
-//
-// 2: as/df/asdf1234
-//
-// 3: as/df/12/asdf1234
-const dirQty = 2
-
-// how many chars each dir will have, is probably better that is to the power of 2
-//
-// example:
-//
-// 2: as/asdf1234
-//
-// 4: asdf/asdf1234
-const dirLen = 2
 
 var chunkFilePool = sync.Pool{
 	New: func() any {
@@ -55,11 +38,11 @@ type poolData struct {
 //
 // any chunks created will be in ChunkDir
 type chunkGen struct {
-	chunkDir string
 	bar *progressbar.ProgressBar
 	totalFileCount int64
 	totalFilesProcessed int64
 	Info chunkGenInfo
+	p *packer.Packager
 }
 
 type chunkGenInfo struct {
@@ -94,9 +77,9 @@ func (s *ChunkStream) Err() error {
 
 // used to generate chunks
 //
-// remember to exit chunkGen and to not reuse the struct
-func NewChunkGen(chunkDir string) *chunkGen {
-	return &chunkGen{chunkDir: chunkDir}
+// remember to exit chunkGen and to not reuse the struct after exit
+func NewChunkGen(p *packer.Packager) *chunkGen {
+	return &chunkGen{p: p}
 }
 
 // exits bar
@@ -227,6 +210,10 @@ func (cg *chunkGen) chunkFile(path string) (string, []string, stater.FileState, 
 	if err != nil {
 		return "", nil, stater.FileState{}, err
 	}
+	defer func() {
+		_ = f.Close()
+	}()
+
 	r := progressbar.NewReader(f, cg.bar)
 
 	pd := chunkFilePool.Get().(*poolData)
@@ -304,50 +291,6 @@ func (cg *chunkGen) createChunk(chunk []byte) ([]byte, string, *os.File, error) 
 	return hashSlice, hashHex, chunkFile, err
 }
 
-func createChunkFile(chunkDir string, chunkHexHash string, flags int) (*os.File, string, error) {
-	hashDir := filepath.Join(chunkDir, DirsForChunk(chunkHexHash))
-	chunkFilePath := filepath.Join(hashDir, chunkHexHash)
-
-	if err := os.MkdirAll(hashDir, 0775); err != nil {
-		return nil, chunkFilePath, err
-	}
-
-	chunkFile, err := os.OpenFile(chunkFilePath, os.O_CREATE|flags, 0664)
-	if err != nil {
-		return nil, chunkFilePath, err
-	}
-	return chunkFile, chunkFilePath, nil
-}
-
-// Creates relative dirs in chunkDir and opens the
-// file which it returns including its path.
-//
-// if the file already exist, error is os.ErrExists
-//
-// File is opened in readonly mode
-func CreateChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
-	return createChunkFile(chunkDir, chunkHexHash, os.O_WRONLY|os.O_EXCL)
-}
-
-// Creates relative dirs in chunkDir and opens the
-// file which it returns including its path.
-// The file is created if it already does not exist. 
-// 
-// File is opened int read and write mode.
-func CreateReadChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
-	return createChunkFile(chunkDir, chunkHexHash, os.O_RDWR)
-}
-
-// Opens chunkfile in read only mode also returning its path.
-func ReadChunkFile(chunkDir string, chunkHexHash string) (*os.File, string, error) {
-	chunkFilePath := filepath.Join(chunkDir, DirsForChunk(chunkHexHash), chunkHexHash)
-
-	chunkFile, err := os.Open(chunkFilePath)
-	if err != nil {
-		return nil, chunkFilePath, err
-	}
-	return chunkFile, chunkFilePath, nil
-}
 
 // writes bytes to encoder and closes it
 func (cg *chunkGen) writeChunk(bytes []byte, encoder *zstd.Encoder) error {
@@ -361,18 +304,6 @@ func (cg *chunkGen) writeChunk(bytes []byte, encoder *zstd.Encoder) error {
 	}
 
 	return errors.Join(writeErr, closeErr)
-}
-
-// returns the dirs that the chunk should be in
-func DirsForChunk(hash string) (dirs string) {
-	dq := dirQty
-	dl := dirLen
-	a := dq * dl
-	parts := make([]string, dq)
-	for i := 0; i < a; i += dl {
-		parts[i/dl] = hash[i : i+dl]
-	}
-	return filepath.Join(parts...)
 }
 
 func PrintFileResultsErrors(result []FileResults) {
